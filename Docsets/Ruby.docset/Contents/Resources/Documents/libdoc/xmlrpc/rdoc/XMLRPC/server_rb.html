@@ -1,0 +1,302 @@
+<!doctype html>
+<!-- paulirish.com/2008/conditional-stylesheets-vs-css-hacks-answer-neither/ -->
+<!--[if lt IE 7]> <html class="no-js ie6 oldie" lang="en"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js ie7 oldie" lang="en"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js ie8 oldie" lang="en"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+<head>
+    <!-- RD version: 0.9.4  -->
+  <meta charset="utf-8">
+
+  <!-- Use the .htaccess and remove these lines to avoid edge case issues.
+       More info: h5bp.com/b/378 -->
+  <!-- meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" -->
+
+
+	<title>File: server.rb [xmlrpc: Ruby Standard Library Documentation]</title>
+  <!-- raw_prefix  = '..'   -->
+  <link rel="stylesheet" href="../css/obf.css" >
+
+
+</head>
+
+<body class="file file-popup">
+	<div id="metadata" style='display:none'>
+		<dl>
+			<dt class="modified-date">Last Modified</dt>
+			<dd class="modified-date">2012-02-03 13:13:51 -0700</dd>
+
+			
+			<dt class="requires">Requires</dt>
+			<dd class="requires">
+				<ul>
+				
+					<li>xmlrpc/parser</li>
+				
+					<li>xmlrpc/create</li>
+				
+					<li>xmlrpc/config</li>
+				
+					<li>xmlrpc/utils</li>
+				
+					<li>webrick</li>
+				
+					<li>webrick/httpstatus</li>
+				
+				</ul>
+			</dd>
+			
+
+			
+		</dl>
+	</div>
+
+	<div id="documentation" style='margin: 10px 10px 10px 10px'>
+		
+		<div class="description">
+			<h2>Description</h2>
+			
+<h1><a href="server_rb.html">xmlrpc/server.rb</a></h1>
+
+<p>Copyright (C) 2001, 2002, 2003, 2005 by Michael Neumann (mneumann@ntecs.de)</p>
+
+<p>Released under the same term of license as Ruby.</p>
+
+<h1>Classes</h1>
+<ul><li>
+<p>((&lt;XMLRPC::BasicServer&gt;))</p>
+</li><li>
+<p>((&lt;XMLRPC::CGIServer&gt;))</p>
+</li><li>
+<p>((&lt;XMLRPC::ModRubyServer&gt;))</p>
+</li><li>
+<p>((&lt;XMLRPC::Server&gt;))</p>
+</li><li>
+<p>((&lt;XMLRPC::WEBrickServlet&gt;))</p>
+</li></ul>
+
+<h1><a href="../XMLRPC/BasicServer.html">XMLRPC::BasicServer</a></h1>
+
+<h2>Description</h2>
+
+<p>Is the base class for all XML-RPC server-types (CGI, standalone). You can
+add handler and set a default handler. Do not use this server, as this
+is/should be an abstract class.</p>
+
+<h3>How the method to call is found</h3>
+
+<p>The arity (number of accepted arguments) of a handler (method or (({Proc}))
+object) is compared to the given arguments submitted by the client for a
+RPC ((-Remote Procedure Call-)). A handler is only called if it accepts the
+number of arguments, otherwise the search for another handler will go on.
+When at the end no handler was found, the ((&lt;default_handler|<a
+href="../XMLRPC/BasicServer.html#method-i-set_default_handler">XMLRPC::BasicServer#set_default_handler</a>&gt;))
+will be called. With this technique it is possible to do overloading by
+number of parameters, but only for (({Proc})) handler, because you cannot
+define two methods of the same name in the same class.</p>
+
+<h2>Class Methods</h2>
+
+<p>— <a
+href="../XMLRPC/BasicServer.html#method-c-new">XMLRPC::BasicServer.new</a>(
+class_delim=“.” )</p>
+
+<pre>Creates a new (({XMLRPC::BasicServer})) instance, which should not be
+done, because (({XMLRPC::BasicServer})) is an abstract class. This
+method should be called from a subclass indirectly by a (({super})) call
+in the method (({initialize})). The paramter ((|class_delim|)) is used
+in ((&lt;add_handler|XMLRPC::BasicServer#add_handler&gt;)) when an object is
+added as handler, to delimit the object-prefix and the method-name.</pre>
+
+<h2>Instance Methods</h2>
+
+<p>— <a
+href="../XMLRPC/BasicServer.html#method-i-add_handler">XMLRPC::BasicServer#add_handler</a>(
+name, signature=nil, help=nil ) { aBlock }</p>
+
+<pre>Adds ((|aBlock|)) to the list of handlers, with ((|name|)) as the name of the method.
+Parameters ((|signature|)) and ((|help|)) are used by the Introspection method if specified,
+where ((|signature|)) is either an Array containing strings each representing a type of it's
+signature (the first is the return value) or an Array of Arrays if the method has multiple
+signatures. Value type-names are &quot;int, boolean, double, string, dateTime.iso8601, base64, array, struct&quot;.
+
+Parameter ((|help|)) is a String with informations about how to call this method etc.
+
+A handler method or code-block can return the types listed at
+((&lt;XMLRPC::Client#call|URL:client.html#index:0&gt;)).
+When a method fails, it can tell it the client by throwing an
+(({XMLRPC::FaultException})) like in this example:
+    s.add_handler(&quot;michael.div&quot;) do |a,b|
+      if b == 0
+        raise XMLRPC::FaultException.new(1, &quot;division by zero&quot;)
+      else
+        a / b
+      end
+    end
+The client gets in the case of (({b==0})) an object back of type
+(({XMLRPC::FaultException})) that has a ((|faultCode|)) and ((|faultString|))
+field.</pre>
+
+<p>— <a
+href="../XMLRPC/BasicServer.html#method-i-add_handler">XMLRPC::BasicServer#add_handler</a>(
+prefix, obj )</p>
+
+<pre>This is the second form of ((&lt;add_handler|XMLRPC::BasicServer#add_handler&gt;)).
+To add an object write:
+    server.add_handler(&quot;michael&quot;, MyHandlerClass.new)
+All public methods of (({MyHandlerClass})) are accessible to
+the XML-RPC clients by (('michael.&quot;name of method&quot;')). This is
+where the ((|class_delim|)) in ((&lt;new|XMLRPC::BasicServer.new&gt;))
+has it's role, a XML-RPC method-name is defined by
+((|prefix|)) + ((|class_delim|)) + (('&quot;name of method&quot;')).</pre>
+
+<p>— <a
+href="../XMLRPC/BasicServer.html#method-i-add_handler">XMLRPC::BasicServer#add_handler</a>(
+interface, obj )</p>
+
+<pre>This is the third form of ((&lt;add_handler|XMLRPC::BasicServer#add_handler&gt;)).
+
+Use (({XMLRPC::interface})) to generate an ServiceInterface object, which
+represents an interface (with signature and help text) for a handler class.
+
+Parameter ((|interface|)) must be of type (({XMLRPC::ServiceInterface})).
+Adds all methods of ((|obj|)) which are defined in ((|interface|)) to the
+server.
+
+This is the recommended way of adding services to a server!</pre>
+
+<p>— <a
+href="../XMLRPC/BasicServer.html#method-i-get_default_handler">XMLRPC::BasicServer#get_default_handler</a></p>
+
+<pre>Returns the default-handler, which is called when no handler for
+a method-name is found.
+It is a (({Proc})) object or (({nil})).</pre>
+
+<p>— <a
+href="../XMLRPC/BasicServer.html#method-i-set_default_handler">XMLRPC::BasicServer#set_default_handler</a>
+( &amp;handler )</p>
+
+<pre>Sets ((|handler|)) as the default-handler, which is called when
+no handler for a method-name is found. ((|handler|)) is a code-block.
+The default-handler is called with the (XML-RPC) method-name as first argument, and
+the other arguments are the parameters given by the client-call.
+
+If no block is specified the default of (({XMLRPC::BasicServer})) is used, which raises a
+XMLRPC::FaultException saying &quot;method missing&quot;.</pre>
+
+<p>— <a
+href="../XMLRPC/ParserWriterChooseMixin.html#method-i-set_writer">XMLRPC::BasicServer#set_writer</a>(
+writer )</p>
+
+<pre>Sets the XML writer to use for generating XML output.
+Should be an instance of a class from module (({XMLRPC::XMLWriter})).
+If this method is not called, then (({XMLRPC::Config::DEFAULT_WRITER})) is used.</pre>
+
+<p>— <a
+href="../XMLRPC/ParserWriterChooseMixin.html#method-i-set_parser">XMLRPC::BasicServer#set_parser</a>(
+parser )</p>
+
+<pre>Sets the XML parser to use for parsing XML documents.
+Should be an instance of a class from module (({XMLRPC::XMLParser})).
+If this method is not called, then (({XMLRPC::Config::DEFAULT_PARSER})) is used.</pre>
+
+<p>— <a
+href="../XMLRPC/BasicServer.html#method-i-add_introspection">XMLRPC::BasicServer#add_introspection</a></p>
+
+<pre>Adds the introspection handlers &quot;system.listMethods&quot;, &quot;system.methodSignature&quot; and &quot;system.methodHelp&quot;,
+where only the first one works.</pre>
+
+<p>— <a
+href="../XMLRPC/BasicServer.html#method-i-add_multicall">XMLRPC::BasicServer#add_multicall</a></p>
+
+<pre>Adds the multi-call handler &quot;system.multicall&quot;.</pre>
+
+<p>— <a
+href="../XMLRPC/BasicServer.html#method-i-get_service_hook">XMLRPC::BasicServer#get_service_hook</a></p>
+
+<pre>Returns the service-hook, which is called on each service request (RPC) unless it's (({nil})).</pre>
+
+<p>— <a
+href="../XMLRPC/BasicServer.html#method-i-set_service_hook">XMLRPC::BasicServer#set_service_hook</a>
+( &amp;handler )</p>
+
+<pre>A service-hook is called for each service request (RPC).
+You can use a service-hook for example to wrap existing methods and catch exceptions of them or
+convert values to values recognized by XMLRPC. You can disable it by passing (({nil})) as parameter
+((|handler|)) .
+
+The service-hook is called with a (({Proc})) object and with the parameters for this (({Proc})).
+An example:
+
+   server.set_service_hook {|obj, *args|
+     begin
+       ret = obj.call(*args)  # call the original service-method
+       # could convert the return value
+     rescue
+       # rescue exceptions
+     end
+   }</pre>
+
+		</div>
+		
+  </div>
+
+
+ <!-- JavaScript at the bottom for fast page loading -->
+
+  <!-- Grab Google CDN's jQuery, with a protocol relative URL; fall back to local if offline -->
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+  <script>window.jQuery || document.write('<script src="../js/libs/jquery-1.6.2.min.js"><\/script>')</script>
+	<script src="../js/thickbox-compressed.js" type="text/javascript" charset="utf-8"></script>
+	<script src="../js/quicksearch.js" type="text/javascript" charset="utf-8"></script>
+	<script src="../js/rubydoc.js" type="text/javascript" charset="utf-8"></script>
+  <script src="../js/libs/modernizr-2.0.6.min.js"></script>
+
+
+  <!-- scripts concatenated and minified via ant build script-->
+  <script defer src="../js/plugins.js"></script>
+  <script defer src="../js/script.js"></script>
+  <!-- end scripts-->
+<!-- Prompt IE 6 users to install Chrome Frame. Remove this if you want to support IE 6.
+       chromium.org/developers/how-tos/chrome-frame-getting-started -->
+  <!--[if lt IE 7 ]>
+    <script src="//ajax.googleapis.com/ajax/libs/chrome-frame/1.0.3/CFInstall.min.js"></script>
+    <script>window.attachEvent('onload',function(){CFInstall.check({mode:'overlay'})})</script>
+  <![endif]-->
+
+<div id="disqus_thread" style='display:none'></div>
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+    // var disqus_shortname = 'rubydocbeta'; // required 
+    var disqus_shortname = 'ruby-doc'; // required 
+    
+    var disqus_developer = true; // DEBUGGERY
+    
+
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink" style='display:none'>blog comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+<div id="footer">
+  
+  <p> <a href="http://www.ruby-doc.org">Ruby-doc.org</a> is provided by <a href="http://www.jamesbritt.com">James Britt</a> and <a href="http://www.neurogami.com">Neurogami</a>. <a href="http://www.neurogami.com">Maximum R+D</a>.  </p>
+
+    <p><small>Generated with the <a href="http://neurogami.com/code/">Rubydoc Rdoc Generator</a> 0.9.4</small>.</p>
+  </div>
+<script src="http://www.google-analytics.com/urchin.js" type="text/javascript">
+</script>
+<script type="text/javascript">
+_uacct = "UA-335317-2";
+urchinTracker(); </script>
+  
+</body>
+
+
+</html>
+
