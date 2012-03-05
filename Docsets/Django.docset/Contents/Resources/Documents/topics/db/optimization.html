@@ -1,0 +1,424 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Database access optimization &mdash; Django v1.3.1 documentation</title>
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '1.3.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="Django v1.3.1 documentation" href="../../index.html" />
+    <link rel="up" title="Models and databases" href="index.html" />
+    <link rel="next" title="Handling HTTP requests" href="../http/index.html" />
+    <link rel="prev" title="Multiple databases" href="multi-db.html" />
+ 
+<script type="text/javascript" src="../../templatebuiltins.js"></script>
+<script type="text/javascript">
+(function($) {
+    if (!django_template_builtins) {
+       // templatebuiltins.js missing, do nothing.
+       return;
+    }
+    $(document).ready(function() {
+        // Hyperlink Django template tags and filters
+        var base = "../../ref/templates/builtins.html";
+        if (base == "#") {
+            // Special case for builtins.html itself
+            base = "";
+        }
+        // Tags are keywords, class '.k'
+        $("div.highlight\\-html\\+django span.k").each(function(i, elem) {
+             var tagname = $(elem).text();
+             if ($.inArray(tagname, django_template_builtins.ttags) != -1) {
+                 var fragment = tagname.replace(/_/, '-');
+                 $(elem).html("<a href='" + base + "#" + fragment + "'>" + tagname + "</a>");
+             }
+        });
+        // Filters are functions, class '.nf'
+        $("div.highlight\\-html\\+django span.nf").each(function(i, elem) {
+             var filtername = $(elem).text();
+             if ($.inArray(filtername, django_template_builtins.tfilters) != -1) {
+                 var fragment = filtername.replace(/_/, '-');
+                 $(elem).html("<a href='" + base + "#" + fragment + "'>" + filtername + "</a>");
+             }
+        });
+    });
+})(jQuery);
+</script>
+
+  </head>
+  <body>
+
+    <div class="document">
+  <div id="custom-doc" class="yui-t6">
+    <div id="hd">
+      <h1><a href="../../index.html">Django v1.3.1 documentation</a></h1>
+      <div id="global-nav">
+        <a title="Home page" href="../../index.html">Home</a>  |
+        <a title="Table of contents" href="../../contents.html">Table of contents</a>  |
+        <a title="Global index" href="../../genindex.html">Index</a>  |
+        <a title="Module index" href="../../py-modindex.html">Modules</a>
+      </div>
+      <div class="nav">
+    &laquo; <a href="multi-db.html" title="Multiple databases">previous</a> 
+     |
+    <a href="../index.html" title="Using Django" accesskey="U">up</a>
+   |
+    <a href="../http/index.html" title="Handling HTTP requests">next</a> &raquo;</div>
+    </div>
+    
+    <div id="bd">
+      <div id="yui-main">
+        <div class="yui-b">
+          <div class="yui-g" id="topics-db-optimization">
+            
+  <div class="section" id="s-database-access-optimization">
+<span id="database-access-optimization"></span><h1>Database access optimization<a class="headerlink" href="#database-access-optimization" title="Permalink to this headline">¶</a></h1>
+<p>Django&#8217;s database layer provides various ways to help developers get the most
+out of their databases. This document gathers together links to the relevant
+documentation, and adds various tips, organized under a number of headings that
+outline the steps to take when attempting to optimize your database usage.</p>
+<div class="section" id="s-profile-first">
+<span id="profile-first"></span><h2>Profile first<a class="headerlink" href="#profile-first" title="Permalink to this headline">¶</a></h2>
+<p>As general programming practice, this goes without saying. Find out <a class="reference internal" href="../../faq/models.html#faq-see-raw-sql-queries"><em>what
+queries you are doing and what they are costing you</em></a>. You may also want to use an external project like
+<a class="reference external" href="https://github.com/django-debug-toolbar/django-debug-toolbar/">django-debug-toolbar</a>, or a tool that monitors your database directly.</p>
+<p>Remember that you may be optimizing for speed or memory or both, depending on
+your requirements. Sometimes optimizing for one will be detrimental to the
+other, but sometimes they will help each other. Also, work that is done by the
+database process might not have the same cost (to you) as the same amount of
+work done in your Python process. It is up to you to decide what your
+priorities are, where the balance must lie, and profile all of these as required
+since this will depend on your application and server.</p>
+<p>With everything that follows, remember to profile after every change to ensure
+that the change is a benefit, and a big enough benefit given the decrease in
+readability of your code. <strong>All</strong> of the suggestions below come with the caveat
+that in your circumstances the general principle might not apply, or might even
+be reversed.</p>
+</div>
+<div class="section" id="s-use-standard-db-optimization-techniques">
+<span id="use-standard-db-optimization-techniques"></span><h2>Use standard DB optimization techniques<a class="headerlink" href="#use-standard-db-optimization-techniques" title="Permalink to this headline">¶</a></h2>
+<p>...including:</p>
+<ul class="simple">
+<li>Indexes. This is a number one priority, <em>after</em> you have determined from
+profiling what indexes should be added. Use
+<a class="reference internal" href="../../ref/models/fields.html#django.db.models.Field.db_index" title="django.db.models.Field.db_index"><tt class="xref py py-attr docutils literal"><span class="pre">django.db.models.Field.db_index</span></tt></a> to add these from Django.</li>
+<li>Appropriate use of field types.</li>
+</ul>
+<p>We will assume you have done the obvious things above. The rest of this document
+focuses on how to use Django in such a way that you are not doing unnecessary
+work. This document also does not address other optimization techniques that
+apply to all expensive operations, such as <a class="reference internal" href="../cache.html"><em>general purpose caching</em></a>.</p>
+</div>
+<div class="section" id="s-understand-querysets">
+<span id="understand-querysets"></span><h2>Understand QuerySets<a class="headerlink" href="#understand-querysets" title="Permalink to this headline">¶</a></h2>
+<p>Understanding <a class="reference internal" href="../../ref/models/querysets.html"><em>QuerySets</em></a> is vital to getting good
+performance with simple code. In particular:</p>
+<div class="section" id="s-understand-queryset-evaluation">
+<span id="understand-queryset-evaluation"></span><h3>Understand QuerySet evaluation<a class="headerlink" href="#understand-queryset-evaluation" title="Permalink to this headline">¶</a></h3>
+<p>To avoid performance problems, it is important to understand:</p>
+<ul class="simple">
+<li>that <a class="reference internal" href="queries.html#querysets-are-lazy"><em>QuerySets are lazy</em></a>.</li>
+<li>when <a class="reference internal" href="../../ref/models/querysets.html#when-querysets-are-evaluated"><em>they are evaluated</em></a>.</li>
+<li>how <a class="reference internal" href="queries.html#caching-and-querysets"><em>the data is held in memory</em></a>.</li>
+</ul>
+</div>
+<div class="section" id="s-understand-cached-attributes">
+<span id="understand-cached-attributes"></span><h3>Understand cached attributes<a class="headerlink" href="#understand-cached-attributes" title="Permalink to this headline">¶</a></h3>
+<p>As well as caching of the whole <tt class="docutils literal"><span class="pre">QuerySet</span></tt>, there is caching of the result of
+attributes on ORM objects. In general, attributes that are not callable will be
+cached. For example, assuming the <a class="reference internal" href="queries.html#queryset-model-example"><em>example Weblog models</em></a>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">entry</span> <span class="o">=</span> <span class="n">Entry</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">entry</span><span class="o">.</span><span class="n">blog</span>   <span class="c"># Blog object is retrieved at this point</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">entry</span><span class="o">.</span><span class="n">blog</span>   <span class="c"># cached version, no DB access</span>
+</pre></div>
+</div>
+<p>But in general, callable attributes cause DB lookups every time:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">entry</span> <span class="o">=</span> <span class="n">Entry</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">entry</span><span class="o">.</span><span class="n">authors</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>   <span class="c"># query performed</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">entry</span><span class="o">.</span><span class="n">authors</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>   <span class="c"># query performed again</span>
+</pre></div>
+</div>
+<p>Be careful when reading template code - the template system does not allow use
+of parentheses, but will call callables automatically, hiding the above
+distinction.</p>
+<p>Be careful with your own custom properties - it is up to you to implement
+caching.</p>
+</div>
+<div class="section" id="s-use-the-with-template-tag">
+<span id="use-the-with-template-tag"></span><h3>Use the <tt class="docutils literal"><span class="pre">with</span></tt> template tag<a class="headerlink" href="#use-the-with-template-tag" title="Permalink to this headline">¶</a></h3>
+<p>To make use of the caching behavior of <tt class="docutils literal"><span class="pre">QuerySet</span></tt>, you may need to use the
+<a class="reference internal" href="../../ref/templates/builtins.html#std:templatetag-with"><tt class="xref std std-ttag docutils literal"><span class="pre">with</span></tt></a> template tag.</p>
+</div>
+<div class="section" id="s-use-iterator">
+<span id="use-iterator"></span><h3>Use <tt class="docutils literal"><span class="pre">iterator()</span></tt><a class="headerlink" href="#use-iterator" title="Permalink to this headline">¶</a></h3>
+<p>When you have a lot of objects, the caching behavior of the <tt class="docutils literal"><span class="pre">QuerySet</span></tt> can
+cause a large amount of memory to be used. In this case,
+<tt class="xref py py-meth docutils literal"><span class="pre">iterator()</span></tt> may help.</p>
+</div>
+</div>
+<div class="section" id="s-do-database-work-in-the-database-rather-than-in-python">
+<span id="do-database-work-in-the-database-rather-than-in-python"></span><h2>Do database work in the database rather than in Python<a class="headerlink" href="#do-database-work-in-the-database-rather-than-in-python" title="Permalink to this headline">¶</a></h2>
+<p>For instance:</p>
+<ul class="simple">
+<li>At the most basic level, use <a class="reference internal" href="../../ref/models/querysets.html#queryset-api"><em>filter and exclude</em></a> to do
+filtering in the database.</li>
+<li>Use <a class="reference internal" href="queries.html#query-expressions"><em>F() object query expressions</em></a> to do filtering
+against other fields within the same model.</li>
+<li>Use <a class="reference internal" href="aggregation.html"><em>annotate to do aggregation in the database</em></a>.</li>
+</ul>
+<p>If these aren't enough to generate the SQL you need:</p>
+<div class="section" id="s-use-queryset-extra">
+<span id="use-queryset-extra"></span><h3>Use <tt class="docutils literal"><span class="pre">QuerySet.extra()</span></tt><a class="headerlink" href="#use-queryset-extra" title="Permalink to this headline">¶</a></h3>
+<p>A less portable but more powerful method is
+<tt class="xref py py-meth docutils literal"><span class="pre">extra()</span></tt>, which allows some SQL to be
+explicitly added to the query. If that still isn't powerful enough:</p>
+</div>
+<div class="section" id="s-use-raw-sql">
+<span id="use-raw-sql"></span><h3>Use raw SQL<a class="headerlink" href="#use-raw-sql" title="Permalink to this headline">¶</a></h3>
+<p>Write your own <a class="reference internal" href="sql.html"><em>custom SQL to retrieve data or populate models</em></a>. Use <tt class="docutils literal"><span class="pre">django.db.connection.queries</span></tt> to find out what Django
+is writing for you and start from there.</p>
+</div>
+</div>
+<div class="section" id="s-retrieve-everything-at-once-if-you-know-you-will-need-it">
+<span id="retrieve-everything-at-once-if-you-know-you-will-need-it"></span><h2>Retrieve everything at once if you know you will need it<a class="headerlink" href="#retrieve-everything-at-once-if-you-know-you-will-need-it" title="Permalink to this headline">¶</a></h2>
+<p>Hitting the database multiple times for different parts of a single 'set' of
+data that you will need all parts of is, in general, less efficient than
+retrieving it all in one query. This is particularly important if you have a
+query that is executed in a loop, and could therefore end up doing many database
+queries, when only one was needed. So:</p>
+<div class="section" id="s-use-queryset-select-related">
+<span id="use-queryset-select-related"></span><h3>Use <tt class="docutils literal"><span class="pre">QuerySet.select_related()</span></tt><a class="headerlink" href="#use-queryset-select-related" title="Permalink to this headline">¶</a></h3>
+<p>Understand <a class="reference internal" href="../../ref/models/querysets.html#select-related"><em>QuerySet.select_related()</em></a> thoroughly, and use it:</p>
+<ul class="simple">
+<li>in view code,</li>
+<li>and in <a class="reference internal" href="managers.html"><em>managers and default managers</em></a> where
+appropriate. Be aware when your manager is and is not used; sometimes this is
+tricky so don't make assumptions.</li>
+</ul>
+</div>
+</div>
+<div class="section" id="s-don-t-retrieve-things-you-don-t-need">
+<span id="don-t-retrieve-things-you-don-t-need"></span><h2>Don't retrieve things you don't need<a class="headerlink" href="#don-t-retrieve-things-you-don-t-need" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="s-use-queryset-values-and-values-list">
+<span id="use-queryset-values-and-values-list"></span><h3>Use <tt class="docutils literal"><span class="pre">QuerySet.values()</span></tt> and <tt class="docutils literal"><span class="pre">values_list()</span></tt><a class="headerlink" href="#use-queryset-values-and-values-list" title="Permalink to this headline">¶</a></h3>
+<p>When you just want a <tt class="docutils literal"><span class="pre">dict</span></tt> or <tt class="docutils literal"><span class="pre">list</span></tt> of values, and don't need ORM model
+objects, make appropriate usage of <tt class="xref py py-meth docutils literal"><span class="pre">values()</span></tt>.
+These can be useful for replacing model objects in template code - as long as
+the dicts you supply have the same attributes as those used in the template,
+you are fine.</p>
+</div>
+<div class="section" id="s-use-queryset-defer-and-only">
+<span id="use-queryset-defer-and-only"></span><h3>Use <tt class="docutils literal"><span class="pre">QuerySet.defer()</span></tt> and <tt class="docutils literal"><span class="pre">only()</span></tt><a class="headerlink" href="#use-queryset-defer-and-only" title="Permalink to this headline">¶</a></h3>
+<p>Use <tt class="xref py py-meth docutils literal"><span class="pre">defer()</span></tt> and
+<tt class="xref py py-meth docutils literal"><span class="pre">only()</span></tt> if there are database columns you
+know that you won't need (or won't need in most cases) to avoid loading
+them. Note that if you <em>do</em> use them, the ORM will have to go and get them in
+a separate query, making this a pessimization if you use it inappropriately.</p>
+<p>Also, be aware that there is some (small extra) overhead incurred inside
+Django when constructing a model with deferred fields. Don't be too aggressive
+in deferring fields without profiling as the database has to read most of the
+non-text, non-VARCHAR data from the disk for a single row in the results, even
+if it ends up only using a few columns. The <tt class="docutils literal"><span class="pre">defer()</span></tt> and <tt class="docutils literal"><span class="pre">only()</span></tt> methods
+are most useful when you can avoid loading a lot of text data or for fields
+that might take a lot of processing to convert back to Python. As always,
+profile first, then optimize.</p>
+</div>
+<div class="section" id="s-use-queryset-count">
+<span id="use-queryset-count"></span><h3>Use QuerySet.count()<a class="headerlink" href="#use-queryset-count" title="Permalink to this headline">¶</a></h3>
+<p>...if you only want the count, rather than doing <tt class="docutils literal"><span class="pre">len(queryset)</span></tt>.</p>
+</div>
+<div class="section" id="s-use-queryset-exists">
+<span id="use-queryset-exists"></span><h3>Use QuerySet.exists()<a class="headerlink" href="#use-queryset-exists" title="Permalink to this headline">¶</a></h3>
+<p>...if you only want to find out if at least one result exists, rather than <tt class="docutils literal"><span class="pre">if</span>
+<span class="pre">queryset</span></tt>.</p>
+<p>But:</p>
+</div>
+<div class="section" id="s-don-t-overuse-count-and-exists">
+<span id="don-t-overuse-count-and-exists"></span><h3>Don't overuse <tt class="docutils literal"><span class="pre">count()</span></tt> and <tt class="docutils literal"><span class="pre">exists()</span></tt><a class="headerlink" href="#don-t-overuse-count-and-exists" title="Permalink to this headline">¶</a></h3>
+<p>If you are going to need other data from the QuerySet, just evaluate it.</p>
+<p>For example, assuming an Email model that has a <tt class="docutils literal"><span class="pre">body</span></tt> attribute and a
+many-to-many relation to User, the following template code is optimal:</p>
+<div class="highlight-html+django"><div class="highlight"><pre><span class="cp">{%</span> <span class="k">if</span> <span class="nv">display_inbox</span> <span class="cp">%}</span>
+  <span class="cp">{%</span> <span class="k">with</span> <span class="nv">emails</span><span class="o">=</span><span class="nv">user.emails.all</span> <span class="cp">%}</span>
+    <span class="cp">{%</span> <span class="k">if</span> <span class="nv">emails</span> <span class="cp">%}</span>
+      <span class="nt">&lt;p&gt;</span>You have <span class="cp">{{</span> <span class="nv">emails</span><span class="o">|</span><span class="nf">length</span> <span class="cp">}}</span> email(s)<span class="nt">&lt;/p&gt;</span>
+      <span class="cp">{%</span> <span class="k">for</span> <span class="nv">email</span> <span class="k">in</span> <span class="nv">emails</span> <span class="cp">%}</span>
+        <span class="nt">&lt;p&gt;</span><span class="cp">{{</span> <span class="nv">email.body</span> <span class="cp">}}</span><span class="nt">&lt;/p&gt;</span>
+      <span class="cp">{%</span> <span class="k">endfor</span> <span class="cp">%}</span>
+    <span class="cp">{%</span> <span class="k">else</span> <span class="cp">%}</span>
+      <span class="nt">&lt;p&gt;</span>No messages today.<span class="nt">&lt;/p&gt;</span>
+    <span class="cp">{%</span> <span class="k">endif</span> <span class="cp">%}</span>
+  <span class="cp">{%</span> <span class="k">endwith</span> <span class="cp">%}</span>
+<span class="cp">{%</span> <span class="k">endif</span> <span class="cp">%}</span>
+</pre></div>
+</div>
+<p>It is optimal because:</p>
+<blockquote>
+<ol class="arabic simple">
+<li>Since QuerySets are lazy, this does no database queries if 'display_inbox'
+is False.</li>
+<li>Use of <tt class="docutils literal"><span class="pre">with</span></tt> means that we store <tt class="docutils literal"><span class="pre">user.emails.all</span></tt> in a variable for
+later use, allowing its cache to be re-used.</li>
+<li>The line <tt class="docutils literal"><span class="pre">{%</span> <span class="pre">if</span> <span class="pre">emails</span> <span class="pre">%}</span></tt> causes <tt class="docutils literal"><span class="pre">QuerySet.__nonzero__()</span></tt> to be called,
+which causes the <tt class="docutils literal"><span class="pre">user.emails.all()</span></tt> query to be run on the database, and
+at the least the first line to be turned into an ORM object. If there aren't
+any results, it will return False, otherwise True.</li>
+<li>The use of <tt class="docutils literal"><span class="pre">{{</span> <span class="pre">emails|length</span> <span class="pre">}}</span></tt> calls <tt class="docutils literal"><span class="pre">QuerySet.__len__()</span></tt>, filling
+out the rest of the cache without doing another query.</li>
+<li>The <tt class="docutils literal"><span class="pre">for</span></tt> loop iterates over the already filled cache.</li>
+</ol>
+</blockquote>
+<p>In total, this code does either one or zero database queries. The only
+deliberate optimization performed is the use of the <tt class="docutils literal"><span class="pre">with</span></tt> tag. Using
+<tt class="docutils literal"><span class="pre">QuerySet.exists()</span></tt> or <tt class="docutils literal"><span class="pre">QuerySet.count()</span></tt> at any point would cause
+additional queries.</p>
+</div>
+<div class="section" id="s-use-queryset-update-and-delete">
+<span id="use-queryset-update-and-delete"></span><h3>Use <tt class="docutils literal"><span class="pre">QuerySet.update()</span></tt> and <tt class="docutils literal"><span class="pre">delete()</span></tt><a class="headerlink" href="#use-queryset-update-and-delete" title="Permalink to this headline">¶</a></h3>
+<p>Rather than retrieve a load of objects, set some values, and save them
+individual, use a bulk SQL UPDATE statement, via <a class="reference internal" href="queries.html#topics-db-queries-update"><em>QuerySet.update()</em></a>. Similarly, do <a class="reference internal" href="queries.html#topics-db-queries-delete"><em>bulk deletes</em></a> where possible.</p>
+<p>Note, however, that these bulk update methods cannot call the <tt class="docutils literal"><span class="pre">save()</span></tt> or
+<tt class="docutils literal"><span class="pre">delete()</span></tt> methods of individual instances, which means that any custom
+behavior you have added for these methods will not be executed, including
+anything driven from the normal database object <a class="reference internal" href="../../ref/signals.html"><em>signals</em></a>.</p>
+</div>
+<div class="section" id="s-use-foreign-key-values-directly">
+<span id="use-foreign-key-values-directly"></span><h3>Use foreign key values directly<a class="headerlink" href="#use-foreign-key-values-directly" title="Permalink to this headline">¶</a></h3>
+<p>If you only need a foreign key value, use the foreign key value that is already on
+the object you've got, rather than getting the whole related object and taking
+its primary key. i.e. do:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">entry</span><span class="o">.</span><span class="n">blog_id</span>
+</pre></div>
+</div>
+<p>instead of:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">entry</span><span class="o">.</span><span class="n">blog</span><span class="o">.</span><span class="n">id</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>         
+        </div>
+      </div>
+      
+        
+          <div class="yui-b" id="sidebar">
+            
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../contents.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Database access optimization</a><ul>
+<li><a class="reference internal" href="#profile-first">Profile first</a></li>
+<li><a class="reference internal" href="#use-standard-db-optimization-techniques">Use standard DB optimization techniques</a></li>
+<li><a class="reference internal" href="#understand-querysets">Understand QuerySets</a><ul>
+<li><a class="reference internal" href="#understand-queryset-evaluation">Understand QuerySet evaluation</a></li>
+<li><a class="reference internal" href="#understand-cached-attributes">Understand cached attributes</a></li>
+<li><a class="reference internal" href="#use-the-with-template-tag">Use the <tt class="docutils literal"><span class="pre">with</span></tt> template tag</a></li>
+<li><a class="reference internal" href="#use-iterator">Use <tt class="docutils literal"><span class="pre">iterator()</span></tt></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#do-database-work-in-the-database-rather-than-in-python">Do database work in the database rather than in Python</a><ul>
+<li><a class="reference internal" href="#use-queryset-extra">Use <tt class="docutils literal"><span class="pre">QuerySet.extra()</span></tt></a></li>
+<li><a class="reference internal" href="#use-raw-sql">Use raw SQL</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#retrieve-everything-at-once-if-you-know-you-will-need-it">Retrieve everything at once if you know you will need it</a><ul>
+<li><a class="reference internal" href="#use-queryset-select-related">Use <tt class="docutils literal"><span class="pre">QuerySet.select_related()</span></tt></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#don-t-retrieve-things-you-don-t-need">Don&#8217;t retrieve things you don&#8217;t need</a><ul>
+<li><a class="reference internal" href="#use-queryset-values-and-values-list">Use <tt class="docutils literal"><span class="pre">QuerySet.values()</span></tt> and <tt class="docutils literal"><span class="pre">values_list()</span></tt></a></li>
+<li><a class="reference internal" href="#use-queryset-defer-and-only">Use <tt class="docutils literal"><span class="pre">QuerySet.defer()</span></tt> and <tt class="docutils literal"><span class="pre">only()</span></tt></a></li>
+<li><a class="reference internal" href="#use-queryset-count">Use QuerySet.count()</a></li>
+<li><a class="reference internal" href="#use-queryset-exists">Use QuerySet.exists()</a></li>
+<li><a class="reference internal" href="#don-t-overuse-count-and-exists">Don&#8217;t overuse <tt class="docutils literal"><span class="pre">count()</span></tt> and <tt class="docutils literal"><span class="pre">exists()</span></tt></a></li>
+<li><a class="reference internal" href="#use-queryset-update-and-delete">Use <tt class="docutils literal"><span class="pre">QuerySet.update()</span></tt> and <tt class="docutils literal"><span class="pre">delete()</span></tt></a></li>
+<li><a class="reference internal" href="#use-foreign-key-values-directly">Use foreign key values directly</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h3>Browse</h3>
+  <ul>
+    
+      <li>Prev: <a href="multi-db.html">Multiple databases</a></li>
+    
+    
+      <li>Next: <a href="../http/index.html">Handling HTTP requests</a></li>
+    
+  </ul>
+  <h3>You are here:</h3>
+  <ul>
+      <li>
+        <a href="../../index.html">Django v1.3.1 documentation</a>
+        
+          <ul><li><a href="../index.html">Using Django</a>
+        
+          <ul><li><a href="index.html">Models and databases</a>
+        
+        <ul><li>Database access optimization</li></ul>
+        </li></ul></li></ul>
+      </li>
+  </ul>  
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/topics/db/optimization.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+              <h3>Last update:</h3>
+              <p class="topless">Feb 14, 2012</p>
+          </div> 
+        
+      
+    </div>
+    
+    <div id="ft">
+      <div class="nav">
+    &laquo; <a href="multi-db.html" title="Multiple databases">previous</a> 
+     |
+    <a href="../index.html" title="Using Django" accesskey="U">up</a>
+   |
+    <a href="../http/index.html" title="Handling HTTP requests">next</a> &raquo;</div>
+    </div>
+  </div>
+
+      <div class="clearer"></div>
+    </div>
+  </body>
+</html>

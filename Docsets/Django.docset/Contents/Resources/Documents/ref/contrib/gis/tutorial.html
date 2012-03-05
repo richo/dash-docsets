@@ -1,0 +1,929 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>GeoDjango Tutorial &mdash; Django v1.3.1 documentation</title>
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '1.3.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="Django v1.3.1 documentation" href="../../../index.html" />
+    <link rel="up" title="GeoDjango" href="index.html" />
+    <link rel="next" title="GeoDjango Installation" href="install.html" />
+    <link rel="prev" title="GeoDjango" href="index.html" />
+ 
+<script type="text/javascript" src="../../../templatebuiltins.js"></script>
+<script type="text/javascript">
+(function($) {
+    if (!django_template_builtins) {
+       // templatebuiltins.js missing, do nothing.
+       return;
+    }
+    $(document).ready(function() {
+        // Hyperlink Django template tags and filters
+        var base = "../../templates/builtins.html";
+        if (base == "#") {
+            // Special case for builtins.html itself
+            base = "";
+        }
+        // Tags are keywords, class '.k'
+        $("div.highlight\\-html\\+django span.k").each(function(i, elem) {
+             var tagname = $(elem).text();
+             if ($.inArray(tagname, django_template_builtins.ttags) != -1) {
+                 var fragment = tagname.replace(/_/, '-');
+                 $(elem).html("<a href='" + base + "#" + fragment + "'>" + tagname + "</a>");
+             }
+        });
+        // Filters are functions, class '.nf'
+        $("div.highlight\\-html\\+django span.nf").each(function(i, elem) {
+             var filtername = $(elem).text();
+             if ($.inArray(filtername, django_template_builtins.tfilters) != -1) {
+                 var fragment = filtername.replace(/_/, '-');
+                 $(elem).html("<a href='" + base + "#" + fragment + "'>" + filtername + "</a>");
+             }
+        });
+    });
+})(jQuery);
+</script>
+
+  </head>
+  <body>
+
+    <div class="document">
+  <div id="custom-doc" class="yui-t6">
+    <div id="hd">
+      <h1><a href="../../../index.html">Django v1.3.1 documentation</a></h1>
+      <div id="global-nav">
+        <a title="Home page" href="../../../index.html">Home</a>  |
+        <a title="Table of contents" href="../../../contents.html">Table of contents</a>  |
+        <a title="Global index" href="../../../genindex.html">Index</a>  |
+        <a title="Module index" href="../../../py-modindex.html">Modules</a>
+      </div>
+      <div class="nav">
+    &laquo; <a href="index.html" title="GeoDjango">previous</a> 
+     |
+    <a href="../../index.html" title="API Reference" accesskey="U">up</a>
+   |
+    <a href="install.html" title="GeoDjango Installation">next</a> &raquo;</div>
+    </div>
+    
+    <div id="bd">
+      <div id="yui-main">
+        <div class="yui-b">
+          <div class="yui-g" id="ref-contrib-gis-tutorial">
+            
+  <div class="section" id="s-geodjango-tutorial">
+<span id="geodjango-tutorial"></span><h1>GeoDjango Tutorial<a class="headerlink" href="#geodjango-tutorial" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="s-introduction">
+<span id="introduction"></span><h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>GeoDjango is an add-on for Django that turns it into a world-class geographic
+Web framework.  GeoDjango strives to make at as simple as possible to create
+geographic Web applications, like location-based services.  Some features include:</p>
+<ul class="simple">
+<li>Django model fields for <a class="reference external" href="http://www.opengeospatial.org/">OGC</a> geometries.</li>
+<li>Extensions to Django&#8217;s ORM for the querying and manipulation of spatial data.</li>
+<li>Loosely-coupled, high-level Python interfaces for GIS geometry operations and
+data formats.</li>
+<li>Editing of geometry fields inside the admin.</li>
+</ul>
+<p>This tutorial assumes a familiarity with Django; thus, if you&#8217;re brand new to
+Django please read through the <a class="reference internal" href="../../../intro/tutorial01.html"><em>regular tutorial</em></a> to introduce
+yourself with basic Django concepts.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">GeoDjango has special prerequisites overwhat is required by Django &#8211;
+please consult the <a class="reference internal" href="install.html#ref-gis-install"><em>installation documentation</em></a>
+for more details.</p>
+</div>
+<p>This tutorial will guide you through the creation of a geographic Web
+application for viewing the <a class="reference external" href="http://thematicmapping.org/downloads/world_borders.php">world borders</a>. <a class="footnote-reference" href="#id10" id="id1">[1]</a> Some of the code
+used in this tutorial is taken from and/or inspired by the <a class="reference external" href="http://code.google.com/p/geodjango-basic-apps/">GeoDjango
+basic apps</a> project. <a class="footnote-reference" href="#id11" id="id2">[2]</a></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Proceed through the tutorial sections sequentially for step-by-step
+instructions.</p>
+</div>
+</div>
+<div class="section" id="s-setting-up">
+<span id="setting-up"></span><h2>Setting Up<a class="headerlink" href="#setting-up" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="s-create-a-spatial-database">
+<span id="create-a-spatial-database"></span><h3>Create a Spatial Database<a class="headerlink" href="#create-a-spatial-database" title="Permalink to this headline">¶</a></h3>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">MySQL and Oracle users can skip this section because spatial types
+are already built into the database.</p>
+</div>
+<p>First, a spatial database needs to be created for our project.  If using
+PostgreSQL and PostGIS, then the following commands will
+create the database from a <a class="reference internal" href="install.html#spatialdb-template"><em>spatial database template</em></a>:</p>
+<div class="highlight-python"><pre>$ createdb -T template_postgis geodjango</pre>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>This command must be issued by a database user that has permissions to
+create a database.  Here is an example set of commands to create such
+a user:</p>
+<div class="highlight-python"><pre>$ sudo su - postgres
+$ createuser --createdb geo
+$ exit</pre>
+</div>
+<p class="last">Replace <tt class="docutils literal"><span class="pre">geo</span></tt> to correspond to the system login user name will be
+connecting to the database.  For example, <tt class="docutils literal"><span class="pre">johndoe</span></tt> if that is the
+system user that will be running GeoDjango.</p>
+</div>
+<p>Users of SQLite and SpatiaLite should consult the instructions on how
+to create a <a class="reference internal" href="install.html#create-spatialite-db"><em>SpatiaLite database</em></a>.</p>
+</div>
+<div class="section" id="s-create-geodjango-project">
+<span id="create-geodjango-project"></span><h3>Create GeoDjango Project<a class="headerlink" href="#create-geodjango-project" title="Permalink to this headline">¶</a></h3>
+<p>Use the <tt class="docutils literal"><span class="pre">django-admin.py</span></tt> script like normal to create a <tt class="docutils literal"><span class="pre">geodjango</span></tt> project:</p>
+<div class="highlight-python"><pre>$ django-admin.py startproject geodjango</pre>
+</div>
+<p>With the project initialized, now create a <tt class="docutils literal"><span class="pre">world</span></tt> Django application within
+the <tt class="docutils literal"><span class="pre">geodjango</span></tt> project:</p>
+<div class="highlight-python"><pre>$ cd geodjango
+$ python manage.py startapp world</pre>
+</div>
+</div>
+<div class="section" id="s-configure-settings-py">
+<span id="configure-settings-py"></span><h3>Configure <tt class="docutils literal"><span class="pre">settings.py</span></tt><a class="headerlink" href="#configure-settings-py" title="Permalink to this headline">¶</a></h3>
+<p>The <tt class="docutils literal"><span class="pre">geodjango</span></tt> project settings are stored in the <tt class="docutils literal"><span class="pre">settings.py</span></tt> file.  Edit
+the database connection settings appropriately:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">DATABASES</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">&#39;default&#39;</span><span class="p">:</span> <span class="p">{</span>
+         <span class="s">&#39;ENGINE&#39;</span><span class="p">:</span> <span class="s">&#39;django.contrib.gis.db.backends.postgis&#39;</span><span class="p">,</span>
+         <span class="s">&#39;NAME&#39;</span><span class="p">:</span> <span class="s">&#39;geodjango&#39;</span><span class="p">,</span>
+         <span class="s">&#39;USER&#39;</span><span class="p">:</span> <span class="s">&#39;geo&#39;</span><span class="p">,</span>
+     <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">These database settings are for Django 1.2 and above.</p>
+</div>
+<p>In addition, modify the <a class="reference internal" href="../../settings.html#std:setting-INSTALLED_APPS"><tt class="xref std std-setting docutils literal"><span class="pre">INSTALLED_APPS</span></tt></a> setting to include
+<a class="reference internal" href="../admin/index.html#module-django.contrib.admin" title="django.contrib.admin: Django's admin site."><tt class="xref py py-mod docutils literal"><span class="pre">django.contrib.admin</span></tt></a>, <a class="reference internal" href="index.html#module-django.contrib.gis" title="django.contrib.gis: Geographic Information System (GIS) extensions for Django"><tt class="xref py py-mod docutils literal"><span class="pre">django.contrib.gis</span></tt></a>,
+and <tt class="docutils literal"><span class="pre">world</span></tt> (our newly created application):</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">INSTALLED_APPS</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="s">&#39;django.contrib.auth&#39;</span><span class="p">,</span>
+    <span class="s">&#39;django.contrib.contenttypes&#39;</span><span class="p">,</span>
+    <span class="s">&#39;django.contrib.sessions&#39;</span><span class="p">,</span>
+    <span class="s">&#39;django.contrib.sites&#39;</span><span class="p">,</span>
+    <span class="s">&#39;django.contrib.admin&#39;</span><span class="p">,</span>
+    <span class="s">&#39;django.contrib.gis&#39;</span><span class="p">,</span>
+    <span class="s">&#39;world&#39;</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="s-geographic-data">
+<span id="geographic-data"></span><h2>Geographic Data<a class="headerlink" href="#geographic-data" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="s-worldborders">
+<span id="s-id3"></span><span id="worldborders"></span><span id="id3"></span><h3>World Borders<a class="headerlink" href="#worldborders" title="Permalink to this headline">¶</a></h3>
+<p>The world borders data is available in this <a class="reference external" href="http://thematicmapping.org/downloads/TM_WORLD_BORDERS-0.3.zip">zip file</a>.  Create a data directory
+in the <tt class="docutils literal"><span class="pre">world</span></tt> application, download the world borders data, and unzip.
+On GNU/Linux platforms the following commands should do it:</p>
+<div class="highlight-python"><pre>$ mkdir world/data
+$ cd world/data
+$ wget http://thematicmapping.org/downloads/TM_WORLD_BORDERS-0.3.zip
+$ unzip TM_WORLD_BORDERS-0.3.zip
+$ cd ../..</pre>
+</div>
+<p>The world borders ZIP file contains a set of data files collectively known as
+an <a class="reference external" href="http://en.wikipedia.org/wiki/Shapefile">ESRI Shapefile</a>, one of the most popular geospatial data formats.  When
+unzipped the world borders data set includes files with the following extensions:</p>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">.shp</span></tt>: Holds the vector data for the world borders geometries.</li>
+<li><tt class="docutils literal"><span class="pre">.shx</span></tt>: Spatial index file for geometries stored in the <tt class="docutils literal"><span class="pre">.shp</span></tt>.</li>
+<li><tt class="docutils literal"><span class="pre">.dbf</span></tt>: Database file for holding non-geometric attribute data
+(e.g., integer and character fields).</li>
+<li><tt class="docutils literal"><span class="pre">.prj</span></tt>: Contains the spatial reference information for the geographic
+data stored in the shapefile.</li>
+</ul>
+</div>
+<div class="section" id="s-use-ogrinfo-to-examine-spatial-data">
+<span id="use-ogrinfo-to-examine-spatial-data"></span><h3>Use <tt class="docutils literal"><span class="pre">ogrinfo</span></tt> to examine spatial data<a class="headerlink" href="#use-ogrinfo-to-examine-spatial-data" title="Permalink to this headline">¶</a></h3>
+<p>The GDAL <tt class="docutils literal"><span class="pre">ogrinfo</span></tt> utility is excellent for examining metadata about
+shapefiles (or other vector data sources):</p>
+<div class="highlight-python"><pre>$ ogrinfo world/data/TM_WORLD_BORDERS-0.3.shp
+INFO: Open of `world/data/TM_WORLD_BORDERS-0.3.shp'
+      using driver `ESRI Shapefile' successful.
+1: TM_WORLD_BORDERS-0.3 (Polygon)</pre>
+</div>
+<p>Here <tt class="docutils literal"><span class="pre">ogrinfo</span></tt> is telling us that the shapefile has one layer, and that
+layer contains polygon data.  To find out more we'll specify the layer name
+and use the <tt class="docutils literal"><span class="pre">-so</span></tt> option to get only important summary information:</p>
+<div class="highlight-python"><pre>$ ogrinfo -so world/data/TM_WORLD_BORDERS-0.3.shp TM_WORLD_BORDERS-0.3
+INFO: Open of `world/data/TM_WORLD_BORDERS-0.3.shp'
+      using driver `ESRI Shapefile' successful.
+
+Layer name: TM_WORLD_BORDERS-0.3
+Geometry: Polygon
+Feature Count: 246
+Extent: (-180.000000, -90.000000) - (180.000000, 83.623596)
+Layer SRS WKT:
+GEOGCS["GCS_WGS_1984",
+    DATUM["WGS_1984",
+        SPHEROID["WGS_1984",6378137.0,298.257223563]],
+    PRIMEM["Greenwich",0.0],
+    UNIT["Degree",0.0174532925199433]]
+FIPS: String (2.0)
+ISO2: String (2.0)
+ISO3: String (3.0)
+UN: Integer (3.0)
+NAME: String (50.0)
+AREA: Integer (7.0)
+POP2005: Integer (10.0)
+REGION: Integer (3.0)
+SUBREGION: Integer (3.0)
+LON: Real (8.3)
+LAT: Real (7.3)</pre>
+</div>
+<p>This detailed summary information tells us the number of features in the layer
+(246), the geographical extent, the spatial reference system (&quot;SRS WKT&quot;),
+as well as detailed information for each attribute field.  For example,
+<tt class="docutils literal"><span class="pre">FIPS:</span> <span class="pre">String</span> <span class="pre">(2.0)</span></tt> indicates that there's a <tt class="docutils literal"><span class="pre">FIPS</span></tt> character field
+with a maximum length of 2; similarly, <tt class="docutils literal"><span class="pre">LON:</span> <span class="pre">Real</span> <span class="pre">(8.3)</span></tt> is a floating-point
+field that holds a maximum of 8 digits up to three decimal places.  Although
+this information may be found right on the <a class="reference external" href="http://thematicmapping.org/downloads/world_borders.php">world borders</a> Web site, this shows
+you how to determine this information yourself when such metadata is not
+provided.</p>
+</div>
+</div>
+<div class="section" id="s-geographic-models">
+<span id="geographic-models"></span><h2>Geographic Models<a class="headerlink" href="#geographic-models" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="s-defining-a-geographic-model">
+<span id="defining-a-geographic-model"></span><h3>Defining a Geographic Model<a class="headerlink" href="#defining-a-geographic-model" title="Permalink to this headline">¶</a></h3>
+<p>Now that we've examined our world borders data set using <tt class="docutils literal"><span class="pre">ogrinfo</span></tt>, we can
+create a GeoDjango model to represent this data:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">django.contrib.gis.db</span> <span class="kn">import</span> <span class="n">models</span>
+
+<span class="k">class</span> <span class="nc">WorldBorders</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+    <span class="c"># Regular Django fields corresponding to the attributes in the</span>
+    <span class="c"># world borders shapefile.</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
+    <span class="n">area</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">()</span>
+    <span class="n">pop2005</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span><span class="s">&#39;Population 2005&#39;</span><span class="p">)</span>
+    <span class="n">fips</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="s">&#39;FIPS Code&#39;</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">iso2</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="s">&#39;2 Digit ISO&#39;</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">iso3</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="s">&#39;3 Digit ISO&#39;</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+    <span class="n">un</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span><span class="s">&#39;United Nations Code&#39;</span><span class="p">)</span>
+    <span class="n">region</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span><span class="s">&#39;Region Code&#39;</span><span class="p">)</span>
+    <span class="n">subregion</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span><span class="s">&#39;Sub-Region Code&#39;</span><span class="p">)</span>
+    <span class="n">lon</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">FloatField</span><span class="p">()</span>
+    <span class="n">lat</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">FloatField</span><span class="p">()</span>
+
+    <span class="c"># GeoDjango-specific: a geometry field (MultiPolygonField), and</span>
+    <span class="c"># overriding the default manager with a GeoManager instance.</span>
+    <span class="n">mpoly</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">MultiPolygonField</span><span class="p">()</span>
+    <span class="n">objects</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">GeoManager</span><span class="p">()</span>
+
+    <span class="c"># So the model is pluralized correctly in the admin.</span>
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">verbose_name_plural</span> <span class="o">=</span> <span class="s">&quot;World Borders&quot;</span>
+
+    <span class="c"># Returns the string representation of the model.</span>
+    <span class="k">def</span> <span class="nf">__unicode__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
+</pre></div>
+</div>
+<p>Two important things to note:</p>
+<ol class="arabic simple">
+<li>The <tt class="docutils literal"><span class="pre">models</span></tt> module is imported from <tt class="xref py py-mod docutils literal"><span class="pre">django.contrib.gis.db</span></tt>.</li>
+<li>The model overrides its default manager with
+<a class="reference internal" href="model-api.html#django.contrib.gis.db.models.GeoManager" title="django.contrib.gis.db.models.GeoManager"><tt class="xref py py-class docutils literal"><span class="pre">GeoManager</span></tt></a>; this is <em>required</em>
+to perform spatial queries.</li>
+</ol>
+<p>When declaring a geometry field on your model the default spatial reference system
+is WGS84 (meaning the <a class="reference external" href="http://en.wikipedia.org/wiki/SRID">SRID</a> is 4326) -- in other words, the field coordinates are in
+longitude/latitude pairs in units of degrees.  If you want the coordinate system to be
+different, then SRID of the geometry field may be customized by setting the <tt class="docutils literal"><span class="pre">srid</span></tt>
+with an integer corresponding to the coordinate system of your choice.</p>
+</div>
+<div class="section" id="s-run-syncdb">
+<span id="run-syncdb"></span><h3>Run <tt class="docutils literal"><span class="pre">syncdb</span></tt><a class="headerlink" href="#run-syncdb" title="Permalink to this headline">¶</a></h3>
+<p>After you've defined your model, it needs to be synced with the spatial database.
+First, let's look at the SQL that will generate the table for the <tt class="docutils literal"><span class="pre">WorldBorders</span></tt>
+model:</p>
+<div class="highlight-python"><pre>$ python manage.py sqlall world</pre>
+</div>
+<p>This management command should produce the following output:</p>
+<div class="highlight-python"><pre>BEGIN;
+CREATE TABLE "world_worldborders" (
+    "id" serial NOT NULL PRIMARY KEY,
+    "name" varchar(50) NOT NULL,
+    "area" integer NOT NULL,
+    "pop2005" integer NOT NULL,
+    "fips" varchar(2) NOT NULL,
+    "iso2" varchar(2) NOT NULL,
+    "iso3" varchar(3) NOT NULL,
+    "un" integer NOT NULL,
+    "region" integer NOT NULL,
+    "subregion" integer NOT NULL,
+    "lon" double precision NOT NULL,
+    "lat" double precision NOT NULL
+)
+;
+SELECT AddGeometryColumn('world_worldborders', 'mpoly', 4326, 'MULTIPOLYGON', 2);
+ALTER TABLE "world_worldborders" ALTER "mpoly" SET NOT NULL;
+CREATE INDEX "world_worldborders_mpoly_id" ON "world_worldborders" USING GIST ( "mpoly" GIST_GEOMETRY_OPS );
+COMMIT;</pre>
+</div>
+<p>If satisfied, you may then create this table in the database by running the
+<tt class="docutils literal"><span class="pre">syncdb</span></tt> management command:</p>
+<div class="highlight-python"><pre>$ python manage.py syncdb
+Creating table world_worldborders
+Installing custom SQL for world.WorldBorders model</pre>
+</div>
+<p>The <tt class="docutils literal"><span class="pre">syncdb</span></tt> command may also prompt you to create an admin user; go ahead and
+do so (not required now, may be done at any point in the future using the
+<tt class="docutils literal"><span class="pre">createsuperuser</span></tt> management command).</p>
+</div>
+</div>
+<div class="section" id="s-importing-spatial-data">
+<span id="importing-spatial-data"></span><h2>Importing Spatial Data<a class="headerlink" href="#importing-spatial-data" title="Permalink to this headline">¶</a></h2>
+<p>This section will show you how to take the data from the world borders
+shapefile and import it into GeoDjango models using the <a class="reference internal" href="layermapping.html#ref-layermapping"><em>LayerMapping data import utility</em></a>.
+There are many different different ways to import data in to a
+spatial database -- besides the tools included within GeoDjango, you
+may also use the following to populate your spatial database:</p>
+<ul class="simple">
+<li><a class="reference external" href="http://www.gdal.org/ogr2ogr.html">ogr2ogr</a>: Command-line utility, included with GDAL, that
+supports loading a multitude of vector data formats into
+the PostGIS, MySQL, and Oracle spatial databases.</li>
+<li><a class="reference external" href="http://postgis.refractions.net/documentation/manual-1.5/ch04.html#shp2pgsql_usage">shp2pgsql</a>: This utility is included with PostGIS and only supports
+ESRI shapefiles.</li>
+</ul>
+<div class="section" id="s-gdal-interface">
+<span id="s-gdalinterface"></span><span id="gdal-interface"></span><span id="gdalinterface"></span><h3>GDAL Interface<a class="headerlink" href="#gdal-interface" title="Permalink to this headline">¶</a></h3>
+<p>Earlier we used the <tt class="docutils literal"><span class="pre">ogrinfo</span></tt> to explore the contents of the world borders
+shapefile.  Included within GeoDjango is an interface to GDAL's powerful OGR
+library -- in other words, you'll be able explore all the vector data sources
+that OGR supports via a Pythonic API.</p>
+<p>First, invoke the Django shell:</p>
+<div class="highlight-python"><pre>$ python manage.py shell</pre>
+</div>
+<p>If the <a class="reference internal" href="#worldborders"><em>World Borders</em></a> data was downloaded like earlier in the
+tutorial, then we can determine the path using Python's built-in
+<tt class="docutils literal"><span class="pre">os</span></tt> module:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">os</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">geodjango</span> <span class="kn">import</span> <span class="n">world</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">world_shp</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">world</span><span class="o">.</span><span class="n">__file__</span><span class="p">),</span>
+<span class="gp">... </span>                            <span class="s">&#39;data/TM_WORLD_BORDERS-0.3.shp&#39;</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>Now, the world borders shapefile may be opened using GeoDjango's
+<a class="reference internal" href="gdal.html#django.contrib.gis.gdal.DataSource" title="django.contrib.gis.gdal.DataSource"><tt class="xref py py-class docutils literal"><span class="pre">DataSource</span></tt></a> interface:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">django.contrib.gis.gdal</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ds</span> <span class="o">=</span> <span class="n">DataSource</span><span class="p">(</span><span class="n">world_shp</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">ds</span>
+<span class="go">/ ... /geodjango/world/data/TM_WORLD_BORDERS-0.3.shp (ESRI Shapefile)</span>
+</pre></div>
+</div>
+<p>Data source objects can have different layers of geospatial features; however,
+shapefiles are only allowed to have one layer:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="nb">len</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
+<span class="go">1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lyr</span> <span class="o">=</span> <span class="n">ds</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">lyr</span>
+<span class="go">TM_WORLD_BORDERS-0.3</span>
+</pre></div>
+</div>
+<p>You can see what the geometry type of the layer is and how many features it
+contains:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">lyr</span><span class="o">.</span><span class="n">geom_type</span>
+<span class="go">Polygon</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="nb">len</span><span class="p">(</span><span class="n">lyr</span><span class="p">)</span>
+<span class="go">246</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Unfortunately the shapefile data format does not allow for greater
+specificity with regards to geometry types.  This shapefile, like
+many others, actually includes <tt class="docutils literal"><span class="pre">MultiPolygon</span></tt> geometries in its
+features.  You need to watch out for this when creating your models
+as a GeoDjango <tt class="docutils literal"><span class="pre">PolygonField</span></tt> will not accept a <tt class="docutils literal"><span class="pre">MultiPolygon</span></tt>
+type geometry -- thus a <tt class="docutils literal"><span class="pre">MultiPolygonField</span></tt> is used in our model's
+definition instead.</p>
+</div>
+<p>The <a class="reference internal" href="gdal.html#django.contrib.gis.gdal.Layer" title="django.contrib.gis.gdal.Layer"><tt class="xref py py-class docutils literal"><span class="pre">Layer</span></tt></a> may also have a spatial reference
+system associated with it -- if it does, the <tt class="docutils literal"><span class="pre">srs</span></tt> attribute will return a
+<a class="reference internal" href="gdal.html#django.contrib.gis.gdal.SpatialReference" title="django.contrib.gis.gdal.SpatialReference"><tt class="xref py py-class docutils literal"><span class="pre">SpatialReference</span></tt></a> object:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">srs</span> <span class="o">=</span> <span class="n">lyr</span><span class="o">.</span><span class="n">srs</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">srs</span>
+<span class="go">GEOGCS[&quot;GCS_WGS_1984&quot;,</span>
+<span class="go">    DATUM[&quot;WGS_1984&quot;,</span>
+<span class="go">        SPHEROID[&quot;WGS_1984&quot;,6378137.0,298.257223563]],</span>
+<span class="go">    PRIMEM[&quot;Greenwich&quot;,0.0],</span>
+<span class="go">    UNIT[&quot;Degree&quot;,0.0174532925199433]]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">srs</span><span class="o">.</span><span class="n">proj4</span> <span class="c"># PROJ.4 representation</span>
+<span class="go">&#39;+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs &#39;</span>
+</pre></div>
+</div>
+<p>Here we've noticed that the shapefile is in the popular WGS84 spatial reference
+system -- in other words, the data uses units of degrees longitude and latitude.</p>
+<p>In addition, shapefiles also support attribute fields that may contain
+additional data.  Here are the fields on the World Borders layer:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">lyr</span><span class="o">.</span><span class="n">fields</span>
+<span class="go">[&#39;FIPS&#39;, &#39;ISO2&#39;, &#39;ISO3&#39;, &#39;UN&#39;, &#39;NAME&#39;, &#39;AREA&#39;, &#39;POP2005&#39;, &#39;REGION&#39;, &#39;SUBREGION&#39;, &#39;LON&#39;, &#39;LAT&#39;]</span>
+</pre></div>
+</div>
+<p>Here we are examining the OGR types (e.g., whether a field is an integer or
+a string) associated with each of the fields:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="n">fld</span><span class="o">.</span><span class="n">__name__</span> <span class="k">for</span> <span class="n">fld</span> <span class="ow">in</span> <span class="n">lyr</span><span class="o">.</span><span class="n">field_types</span><span class="p">]</span>
+<span class="go">[&#39;OFTString&#39;, &#39;OFTString&#39;, &#39;OFTString&#39;, &#39;OFTInteger&#39;, &#39;OFTString&#39;, &#39;OFTInteger&#39;, &#39;OFTInteger&#39;, &#39;OFTInteger&#39;, &#39;OFTInteger&#39;, &#39;OFTReal&#39;, &#39;OFTReal&#39;]</span>
+</pre></div>
+</div>
+<p>You can iterate over each feature in the layer and extract information from both
+the feature's geometry (accessed via the <tt class="docutils literal"><span class="pre">geom</span></tt> attribute) as well as the
+feature's attribute fields (whose <strong>values</strong> are accessed via <tt class="docutils literal"><span class="pre">get()</span></tt>
+method):</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">feat</span> <span class="ow">in</span> <span class="n">lyr</span><span class="p">:</span>
+<span class="gp">... </span>   <span class="k">print</span> <span class="n">feat</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;NAME&#39;</span><span class="p">),</span> <span class="n">feat</span><span class="o">.</span><span class="n">geom</span><span class="o">.</span><span class="n">num_points</span>
+<span class="gp">...</span>
+<span class="go">Guernsey 18</span>
+<span class="go">Jersey 26</span>
+<span class="go">South Georgia South Sandwich Islands 338</span>
+<span class="go">Taiwan 363</span>
+</pre></div>
+</div>
+<p><a class="reference internal" href="gdal.html#django.contrib.gis.gdal.Layer" title="django.contrib.gis.gdal.Layer"><tt class="xref py py-class docutils literal"><span class="pre">Layer</span></tt></a> objects may be sliced:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">lyr</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span>
+<span class="go">[&lt;django.contrib.gis.gdal.feature.Feature object at 0x2f47690&gt;, &lt;django.contrib.gis.gdal.feature.Feature object at 0x2f47650&gt;]</span>
+</pre></div>
+</div>
+<p>And individual features may be retrieved by their feature ID:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">feat</span> <span class="o">=</span> <span class="n">lyr</span><span class="p">[</span><span class="mi">234</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">feat</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;NAME&#39;</span><span class="p">)</span>
+<span class="go">San Marino</span>
+</pre></div>
+</div>
+<p>Here the boundary geometry for San Marino is extracted and looking
+exported to WKT and GeoJSON:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">geom</span> <span class="o">=</span> <span class="n">feat</span><span class="o">.</span><span class="n">geom</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">geom</span><span class="o">.</span><span class="n">wkt</span>
+<span class="go">POLYGON ((12.415798 43.957954,12.450554 ...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">geom</span><span class="o">.</span><span class="n">json</span>
+<span class="go">{ &quot;type&quot;: &quot;Polygon&quot;, &quot;coordinates&quot;: [ [ [ 12.415798, 43.957954 ], [ 12.450554, 43.979721 ], ...</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="s-layermapping">
+<span id="layermapping"></span><h3><tt class="docutils literal"><span class="pre">LayerMapping</span></tt><a class="headerlink" href="#layermapping" title="Permalink to this headline">¶</a></h3>
+<p>We're going to dive right in -- create a file called <tt class="docutils literal"><span class="pre">load.py</span></tt> inside the
+<tt class="docutils literal"><span class="pre">world</span></tt> application, and insert the following:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">django.contrib.gis.utils</span> <span class="kn">import</span> <span class="n">LayerMapping</span>
+<span class="kn">from</span> <span class="nn">models</span> <span class="kn">import</span> <span class="n">WorldBorders</span>
+
+<span class="n">world_mapping</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">&#39;fips&#39;</span> <span class="p">:</span> <span class="s">&#39;FIPS&#39;</span><span class="p">,</span>
+    <span class="s">&#39;iso2&#39;</span> <span class="p">:</span> <span class="s">&#39;ISO2&#39;</span><span class="p">,</span>
+    <span class="s">&#39;iso3&#39;</span> <span class="p">:</span> <span class="s">&#39;ISO3&#39;</span><span class="p">,</span>
+    <span class="s">&#39;un&#39;</span> <span class="p">:</span> <span class="s">&#39;UN&#39;</span><span class="p">,</span>
+    <span class="s">&#39;name&#39;</span> <span class="p">:</span> <span class="s">&#39;NAME&#39;</span><span class="p">,</span>
+    <span class="s">&#39;area&#39;</span> <span class="p">:</span> <span class="s">&#39;AREA&#39;</span><span class="p">,</span>
+    <span class="s">&#39;pop2005&#39;</span> <span class="p">:</span> <span class="s">&#39;POP2005&#39;</span><span class="p">,</span>
+    <span class="s">&#39;region&#39;</span> <span class="p">:</span> <span class="s">&#39;REGION&#39;</span><span class="p">,</span>
+    <span class="s">&#39;subregion&#39;</span> <span class="p">:</span> <span class="s">&#39;SUBREGION&#39;</span><span class="p">,</span>
+    <span class="s">&#39;lon&#39;</span> <span class="p">:</span> <span class="s">&#39;LON&#39;</span><span class="p">,</span>
+    <span class="s">&#39;lat&#39;</span> <span class="p">:</span> <span class="s">&#39;LAT&#39;</span><span class="p">,</span>
+    <span class="s">&#39;mpoly&#39;</span> <span class="p">:</span> <span class="s">&#39;MULTIPOLYGON&#39;</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="n">world_shp</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">__file__</span><span class="p">),</span> <span class="s">&#39;data/TM_WORLD_BORDERS-0.3.shp&#39;</span><span class="p">))</span>
+
+<span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="n">verbose</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+    <span class="n">lm</span> <span class="o">=</span> <span class="n">LayerMapping</span><span class="p">(</span><span class="n">WorldBorders</span><span class="p">,</span> <span class="n">world_shp</span><span class="p">,</span> <span class="n">world_mapping</span><span class="p">,</span>
+                      <span class="n">transform</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s">&#39;iso-8859-1&#39;</span><span class="p">)</span>
+
+    <span class="n">lm</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">strict</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>A few notes about what's going on:</p>
+<ul class="simple">
+<li>Each key in the <tt class="docutils literal"><span class="pre">world_mapping</span></tt> dictionary corresponds to a field in the
+<tt class="docutils literal"><span class="pre">WorldBorders</span></tt> model, and the value is the name of the shapefile field
+that data will be loaded from.</li>
+<li>The key <tt class="docutils literal"><span class="pre">mpoly</span></tt> for the geometry field is <tt class="docutils literal"><span class="pre">MULTIPOLYGON</span></tt>, the
+geometry type we wish to import as.  Even if simple polygons are encountered
+in the shapefile they will automatically be converted into collections prior
+to insertion into the database.</li>
+<li>The path to the shapefile is not absolute -- in other words, if you move the
+<tt class="docutils literal"><span class="pre">world</span></tt> application (with <tt class="docutils literal"><span class="pre">data</span></tt> subdirectory) to a different location,
+then the script will still work.</li>
+<li>The <tt class="docutils literal"><span class="pre">transform</span></tt> keyword is set to <tt class="xref docutils literal"><span class="pre">False</span></tt> because the data in the
+shapefile does not need to be converted -- it's already in WGS84 (SRID=4326).</li>
+<li>The <tt class="docutils literal"><span class="pre">encoding</span></tt> keyword is set to the character encoding of string values in
+the shapefile. This ensures that string values are read and saved correctly
+from their original encoding system.</li>
+</ul>
+<p>Afterwards, invoke the Django shell from the <tt class="docutils literal"><span class="pre">geodjango</span></tt> project directory:</p>
+<div class="highlight-python"><pre>$ python manage.py shell</pre>
+</div>
+<p>Next, import the <tt class="docutils literal"><span class="pre">load</span></tt> module, call the <tt class="docutils literal"><span class="pre">run</span></tt> routine, and watch <tt class="docutils literal"><span class="pre">LayerMapping</span></tt>
+do the work:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">world</span> <span class="kn">import</span> <span class="n">load</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">load</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="s-try-ogrinspect">
+<span id="s-ogrinspect-intro"></span><span id="try-ogrinspect"></span><span id="ogrinspect-intro"></span><h3>Try <tt class="docutils literal"><span class="pre">ogrinspect</span></tt><a class="headerlink" href="#try-ogrinspect" title="Permalink to this headline">¶</a></h3>
+<p>Now that you've seen how to define geographic models and import data with the
+<a class="reference internal" href="layermapping.html#ref-layermapping"><em>LayerMapping data import utility</em></a>, it's possible to further automate this process with
+use of the <a class="reference internal" href="commands.html#django-admin-ogrinspect"><tt class="xref std std-djadmin docutils literal"><span class="pre">ogrinspect</span></tt></a> management command.  The <a class="reference internal" href="commands.html#django-admin-ogrinspect"><tt class="xref std std-djadmin docutils literal"><span class="pre">ogrinspect</span></tt></a>
+command  introspects a GDAL-supported vector data source (e.g., a shapefile) and
+generates a model definition and <tt class="docutils literal"><span class="pre">LayerMapping</span></tt> dictionary automatically.</p>
+<p>The general usage of the command goes as follows:</p>
+<div class="highlight-python"><pre>$ python manage.py ogrinspect [options] &lt;data_source&gt; &lt;model_name&gt; [options]</pre>
+</div>
+<p>Where <tt class="docutils literal"><span class="pre">data_source</span></tt> is the path to the GDAL-supported data source and
+<tt class="docutils literal"><span class="pre">model_name</span></tt> is the name to use for the model.  Command-line options may
+be used to further define how the model is generated.</p>
+<p>For example, the following command nearly reproduces the <tt class="docutils literal"><span class="pre">WorldBorders</span></tt> model
+and mapping dictionary created above, automatically:</p>
+<div class="highlight-python"><pre>$ python manage.py ogrinspect world/data/TM_WORLD_BORDERS-0.3.shp WorldBorders --srid=4326 --mapping --multi</pre>
+</div>
+<p>A few notes about the command-line options given above:</p>
+<ul class="simple">
+<li>The <tt class="docutils literal"><span class="pre">--srid=4326</span></tt> option sets the SRID for the geographic field.</li>
+<li>The <tt class="docutils literal"><span class="pre">--mapping</span></tt> option tells <tt class="docutils literal"><span class="pre">ogrinspect</span></tt> to also generate a
+mapping dictionary for use with <a class="reference internal" href="layermapping.html#django.contrib.gis.utils.LayerMapping" title="django.contrib.gis.utils.LayerMapping"><tt class="xref py py-class docutils literal"><span class="pre">LayerMapping</span></tt></a>.</li>
+<li>The <tt class="docutils literal"><span class="pre">--multi</span></tt> option is specified so that the geographic field is a
+<a class="reference internal" href="model-api.html#django.contrib.gis.db.models.MultiPolygonField" title="django.contrib.gis.db.models.MultiPolygonField"><tt class="xref py py-class docutils literal"><span class="pre">MultiPolygonField</span></tt></a> instead of just a
+<a class="reference internal" href="model-api.html#django.contrib.gis.db.models.PolygonField" title="django.contrib.gis.db.models.PolygonField"><tt class="xref py py-class docutils literal"><span class="pre">PolygonField</span></tt></a>.</li>
+</ul>
+<p>The command produces the following output, which may be copied
+directly into the <tt class="docutils literal"><span class="pre">models.py</span></tt> of a GeoDjango application:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># This is an auto-generated Django model module created by ogrinspect.</span>
+<span class="kn">from</span> <span class="nn">django.contrib.gis.db</span> <span class="kn">import</span> <span class="n">models</span>
+
+<span class="k">class</span> <span class="nc">WorldBorders</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">fips</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">iso2</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">iso3</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+    <span class="n">un</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">()</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
+    <span class="n">area</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">()</span>
+    <span class="n">pop2005</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">()</span>
+    <span class="n">region</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">()</span>
+    <span class="n">subregion</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">()</span>
+    <span class="n">lon</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">FloatField</span><span class="p">()</span>
+    <span class="n">lat</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">FloatField</span><span class="p">()</span>
+    <span class="n">geom</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">MultiPolygonField</span><span class="p">(</span><span class="n">srid</span><span class="o">=</span><span class="mi">4326</span><span class="p">)</span>
+    <span class="n">objects</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">GeoManager</span><span class="p">()</span>
+
+<span class="c"># Auto-generated `LayerMapping` dictionary for WorldBorders model</span>
+<span class="n">worldborders_mapping</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">&#39;fips&#39;</span> <span class="p">:</span> <span class="s">&#39;FIPS&#39;</span><span class="p">,</span>
+    <span class="s">&#39;iso2&#39;</span> <span class="p">:</span> <span class="s">&#39;ISO2&#39;</span><span class="p">,</span>
+    <span class="s">&#39;iso3&#39;</span> <span class="p">:</span> <span class="s">&#39;ISO3&#39;</span><span class="p">,</span>
+    <span class="s">&#39;un&#39;</span> <span class="p">:</span> <span class="s">&#39;UN&#39;</span><span class="p">,</span>
+    <span class="s">&#39;name&#39;</span> <span class="p">:</span> <span class="s">&#39;NAME&#39;</span><span class="p">,</span>
+    <span class="s">&#39;area&#39;</span> <span class="p">:</span> <span class="s">&#39;AREA&#39;</span><span class="p">,</span>
+    <span class="s">&#39;pop2005&#39;</span> <span class="p">:</span> <span class="s">&#39;POP2005&#39;</span><span class="p">,</span>
+    <span class="s">&#39;region&#39;</span> <span class="p">:</span> <span class="s">&#39;REGION&#39;</span><span class="p">,</span>
+    <span class="s">&#39;subregion&#39;</span> <span class="p">:</span> <span class="s">&#39;SUBREGION&#39;</span><span class="p">,</span>
+    <span class="s">&#39;lon&#39;</span> <span class="p">:</span> <span class="s">&#39;LON&#39;</span><span class="p">,</span>
+    <span class="s">&#39;lat&#39;</span> <span class="p">:</span> <span class="s">&#39;LAT&#39;</span><span class="p">,</span>
+    <span class="s">&#39;geom&#39;</span> <span class="p">:</span> <span class="s">&#39;MULTIPOLYGON&#39;</span><span class="p">,</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="s-spatial-queries">
+<span id="spatial-queries"></span><h2>Spatial Queries<a class="headerlink" href="#spatial-queries" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="s-spatial-lookups">
+<span id="spatial-lookups"></span><h3>Spatial Lookups<a class="headerlink" href="#spatial-lookups" title="Permalink to this headline">¶</a></h3>
+<p>GeoDjango extends the Django ORM and allows the use of spatial lookups.
+Let's do an example where we find the <tt class="docutils literal"><span class="pre">WorldBorder</span></tt> model that contains
+a point.  First, fire up the management shell:</p>
+<div class="highlight-python"><pre>$ python manage.py shell</pre>
+</div>
+<p>Now, define a point of interest <a class="footnote-reference" href="#id12" id="id7">[3]</a>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">pnt_wkt</span> <span class="o">=</span> <span class="s">&#39;POINT(-95.3385 29.7245)&#39;</span>
+</pre></div>
+</div>
+<p>The <tt class="docutils literal"><span class="pre">pnt_wkt</span></tt> string represents the point at -95.3385 degrees longitude,
+and 29.7245 degrees latitude.  The geometry is in a format known as
+Well Known Text (WKT), an open standard issued by the Open Geospatial
+Consortium (OGC). <a class="footnote-reference" href="#id13" id="id8">[4]</a>  Import the <tt class="docutils literal"><span class="pre">WorldBorders</span></tt> model, and perform
+a <tt class="docutils literal"><span class="pre">contains</span></tt> lookup using the <tt class="docutils literal"><span class="pre">pnt_wkt</span></tt> as the parameter:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">world.models</span> <span class="kn">import</span> <span class="n">WorldBorders</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">qs</span> <span class="o">=</span> <span class="n">WorldBorders</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">mpoly__contains</span><span class="o">=</span><span class="n">pnt_wkt</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">qs</span>
+<span class="go">[&lt;WorldBorders: United States&gt;]</span>
+</pre></div>
+</div>
+<p>Here we retrieved a <tt class="docutils literal"><span class="pre">GeoQuerySet</span></tt> that has only one model: the one
+for the United States (which is what we would expect).  Similarly,
+a <a class="reference internal" href="geos.html#ref-geos"><em>GEOS geometry object</em></a> may also be used -- here the <tt class="docutils literal"><span class="pre">intersects</span></tt>
+spatial lookup is combined with the <tt class="docutils literal"><span class="pre">get</span></tt> method to retrieve
+only the <tt class="docutils literal"><span class="pre">WorldBorders</span></tt> instance for San Marino instead of a queryset:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">django.contrib.gis.geos</span> <span class="kn">import</span> <span class="n">Point</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pnt</span> <span class="o">=</span> <span class="n">Point</span><span class="p">(</span><span class="mf">12.4604</span><span class="p">,</span> <span class="mf">43.9420</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sm</span> <span class="o">=</span> <span class="n">WorldBorders</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">mpoly__intersects</span><span class="o">=</span><span class="n">pnt</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sm</span>
+<span class="go">&lt;WorldBorders: San Marino&gt;</span>
+</pre></div>
+</div>
+<p>The <tt class="docutils literal"><span class="pre">contains</span></tt> and <tt class="docutils literal"><span class="pre">intersects</span></tt> lookups are just a subset of what's
+available -- the <a class="reference internal" href="db-api.html#ref-gis-db-api"><em>GeoDjango Database API</em></a> documentation has more.</p>
+</div>
+<div class="section" id="s-automatic-spatial-transformations">
+<span id="automatic-spatial-transformations"></span><h3>Automatic Spatial Transformations<a class="headerlink" href="#automatic-spatial-transformations" title="Permalink to this headline">¶</a></h3>
+<p>When querying the spatial database GeoDjango automatically transforms
+geometries if they're in a different coordinate system.  In the following
+example, the coordinate will be expressed in terms of <a class="reference external" href="http://spatialreference.org/ref/epsg/32140/">EPSG SRID 32140</a>,
+a coordinate system specific to south Texas <strong>only</strong> and in units of
+<strong>meters</strong> and not degrees:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">django.contrib.gis.geos</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pnt</span> <span class="o">=</span> <span class="n">Point</span><span class="p">(</span><span class="mf">954158.1</span><span class="p">,</span> <span class="mf">4215137.1</span><span class="p">,</span> <span class="n">srid</span><span class="o">=</span><span class="mi">32140</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Note that <tt class="docutils literal"><span class="pre">pnt</span></tt> may also constructed with EWKT, an &quot;extended&quot; form of
+WKT that includes the SRID:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">pnt</span> <span class="o">=</span> <span class="n">GEOSGeometry</span><span class="p">(</span><span class="s">&#39;SRID=32140;POINT(954158.1 4215137.1)&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>When using GeoDjango's ORM, it will automatically wrap geometry values
+in transformation SQL, allowing the developer to work at a higher level
+of abstraction:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">qs</span> <span class="o">=</span> <span class="n">WorldBorders</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">mpoly__intersects</span><span class="o">=</span><span class="n">pnt</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">qs</span><span class="o">.</span><span class="n">query</span> <span class="c"># Generating the SQL</span>
+<span class="go">SELECT &quot;world_worldborders&quot;.&quot;id&quot;, &quot;world_worldborders&quot;.&quot;name&quot;, &quot;world_worldborders&quot;.&quot;area&quot;,</span>
+<span class="go">&quot;world_worldborders&quot;.&quot;pop2005&quot;, &quot;world_worldborders&quot;.&quot;fips&quot;, &quot;world_worldborders&quot;.&quot;iso2&quot;,</span>
+<span class="go">&quot;world_worldborders&quot;.&quot;iso3&quot;, &quot;world_worldborders&quot;.&quot;un&quot;, &quot;world_worldborders&quot;.&quot;region&quot;,</span>
+<span class="go">&quot;world_worldborders&quot;.&quot;subregion&quot;, &quot;world_worldborders&quot;.&quot;lon&quot;, &quot;world_worldborders&quot;.&quot;lat&quot;,</span>
+<span class="go">&quot;world_worldborders&quot;.&quot;mpoly&quot; FROM &quot;world_worldborders&quot;</span>
+<span class="go">WHERE ST_Intersects(&quot;world_worldborders&quot;.&quot;mpoly&quot;, ST_Transform(%s, 4326))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">qs</span> <span class="c"># printing evaluates the queryset</span>
+<span class="go">[&lt;WorldBorders: United States&gt;]</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="s-lazy-geometries">
+<span id="lazy-geometries"></span><h3>Lazy Geometries<a class="headerlink" href="#lazy-geometries" title="Permalink to this headline">¶</a></h3>
+<p>Geometries come to GeoDjango in a standardized textual representation.  Upon
+access of the geometry field, GeoDjango creates a <cite>GEOS geometry object &lt;ref-geos&gt;</cite>,
+exposing powerful functionality, such as serialization properties for
+popular geospatial formats:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">sm</span> <span class="o">=</span> <span class="n">WorldBorders</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;San Marino&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sm</span><span class="o">.</span><span class="n">mpoly</span>
+<span class="go">&lt;MultiPolygon object at 0x24c6798&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sm</span><span class="o">.</span><span class="n">mpoly</span><span class="o">.</span><span class="n">wkt</span> <span class="c"># WKT</span>
+<span class="go">MULTIPOLYGON (((12.4157980000000006 43.9579540000000009, 12.4505540000000003 43.9797209999999978, ...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sm</span><span class="o">.</span><span class="n">mpoly</span><span class="o">.</span><span class="n">wkb</span> <span class="c"># WKB (as Python binary buffer)</span>
+<span class="go">&lt;read-only buffer for 0x1fe2c70, size -1, offset 0 at 0x2564c40&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sm</span><span class="o">.</span><span class="n">mpoly</span><span class="o">.</span><span class="n">geojson</span> <span class="c"># GeoJSON (requires GDAL)</span>
+<span class="go">&#39;{ &quot;type&quot;: &quot;MultiPolygon&quot;, &quot;coordinates&quot;: [ [ [ [ 12.415798, 43.957954 ], [ 12.450554, 43.979721 ], ...</span>
+</pre></div>
+</div>
+<p>This includes access to all of the advanced geometric operations provided by
+the GEOS library:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">pnt</span> <span class="o">=</span> <span class="n">Point</span><span class="p">(</span><span class="mf">12.4604</span><span class="p">,</span> <span class="mf">43.9420</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sm</span><span class="o">.</span><span class="n">mpoly</span><span class="o">.</span><span class="n">contains</span><span class="p">(</span><span class="n">pnt</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pnt</span><span class="o">.</span><span class="n">contains</span><span class="p">(</span><span class="n">sm</span><span class="o">.</span><span class="n">mpoly</span><span class="p">)</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="s-geoqueryset-methods">
+<span id="geoqueryset-methods"></span><h3><tt class="docutils literal"><span class="pre">GeoQuerySet</span></tt> Methods<a class="headerlink" href="#geoqueryset-methods" title="Permalink to this headline">¶</a></h3>
+</div>
+</div>
+<div class="section" id="s-putting-your-data-on-the-map">
+<span id="putting-your-data-on-the-map"></span><h2>Putting your data on the map<a class="headerlink" href="#putting-your-data-on-the-map" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="s-google">
+<span id="google"></span><h3>Google<a class="headerlink" href="#google" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="s-geographic-admin">
+<span id="geographic-admin"></span><h3>Geographic Admin<a class="headerlink" href="#geographic-admin" title="Permalink to this headline">¶</a></h3>
+<p>GeoDjango extends <a class="reference internal" href="../admin/index.html"><em>Django's admin application</em></a>
+to enable support for editing geometry fields.</p>
+<div class="section" id="s-basics">
+<span id="basics"></span><h4>Basics<a class="headerlink" href="#basics" title="Permalink to this headline">¶</a></h4>
+<p>GeoDjango also supplements the Django admin by allowing users to create
+and modify geometries on a JavaScript slippy map (powered by <a class="reference external" href="http://openlayers.org/">OpenLayers</a>).</p>
+<p>Let's dive in again -- create a file called <tt class="docutils literal"><span class="pre">admin.py</span></tt> inside the
+<tt class="docutils literal"><span class="pre">world</span></tt> application, and insert the following:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">django.contrib.gis</span> <span class="kn">import</span> <span class="n">admin</span>
+<span class="kn">from</span> <span class="nn">models</span> <span class="kn">import</span> <span class="n">WorldBorders</span>
+
+<span class="n">admin</span><span class="o">.</span><span class="n">site</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">WorldBorders</span><span class="p">,</span> <span class="n">admin</span><span class="o">.</span><span class="n">GeoModelAdmin</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Next, edit your <tt class="docutils literal"><span class="pre">urls.py</span></tt> in the <tt class="docutils literal"><span class="pre">geodjango</span></tt> project folder to look
+as follows:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">django.conf.urls.defaults</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">django.contrib.gis</span> <span class="kn">import</span> <span class="n">admin</span>
+
+<span class="n">admin</span><span class="o">.</span><span class="n">autodiscover</span><span class="p">()</span>
+
+<span class="n">urlpatterns</span> <span class="o">=</span> <span class="n">patterns</span><span class="p">(</span><span class="s">&#39;&#39;</span><span class="p">,</span>
+    <span class="p">(</span><span class="s">r&#39;^admin/&#39;</span><span class="p">,</span> <span class="n">include</span><span class="p">(</span><span class="n">admin</span><span class="o">.</span><span class="n">site</span><span class="o">.</span><span class="n">urls</span><span class="p">)),</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>Start up the Django development server:</p>
+<div class="highlight-python"><pre>$ python manage.py runserver</pre>
+</div>
+<p>Finally, browse to <tt class="docutils literal"><span class="pre">http://localhost:8000/admin/</span></tt>, and log in with the admin
+user created after running <tt class="docutils literal"><span class="pre">syncdb</span></tt>.  Browse to any of the <tt class="docutils literal"><span class="pre">WorldBorders</span></tt>
+entries -- the borders may be edited by clicking on a polygon and dragging
+the vertexes to the desired position.</p>
+</div>
+<div class="section" id="s-osmgeoadmin">
+<span id="s-osmgeoadmin-intro"></span><span id="osmgeoadmin"></span><span id="osmgeoadmin-intro"></span><h4><tt class="docutils literal"><span class="pre">OSMGeoAdmin</span></tt><a class="headerlink" href="#osmgeoadmin" title="Permalink to this headline">¶</a></h4>
+<p>With the <a class="reference internal" href="admin.html#django.contrib.gis.admin.OSMGeoAdmin" title="django.contrib.gis.admin.OSMGeoAdmin"><tt class="xref py py-class docutils literal"><span class="pre">OSMGeoAdmin</span></tt></a>, GeoDjango uses
+a <a class="reference external" href="http://openstreetmap.org/">Open Street Map</a> layer in the admin.
+This provides more context (including street and thoroughfare details) than
+available with the <a class="reference internal" href="admin.html#django.contrib.gis.admin.GeoModelAdmin" title="django.contrib.gis.admin.GeoModelAdmin"><tt class="xref py py-class docutils literal"><span class="pre">GeoModelAdmin</span></tt></a>
+(which uses the <a class="reference external" href="http://earth-info.nga.mil/publications/vmap0.html">Vector Map Level 0</a> WMS data set hosted at <a class="reference external" href="http://metacarta.com">Metacarta</a>).</p>
+<p>First, there are some important requirements and limitations:</p>
+<ul class="simple">
+<li><a class="reference internal" href="admin.html#django.contrib.gis.admin.OSMGeoAdmin" title="django.contrib.gis.admin.OSMGeoAdmin"><tt class="xref py py-class docutils literal"><span class="pre">OSMGeoAdmin</span></tt></a> requires that the
+<a class="reference internal" href="install.html#addgoogleprojection"><em>spherical mercator projection be added</em></a>
+to the to be added to the <tt class="docutils literal"><span class="pre">spatial_ref_sys</span></tt> table (PostGIS 1.3 and
+below, only).</li>
+<li>The PROJ.4 datum shifting files must be installed (see the
+<a class="reference internal" href="install.html#proj4"><em>PROJ.4 installation instructions</em></a> for more details).</li>
+</ul>
+<p>If you meet these requirements, then just substitute in the <tt class="docutils literal"><span class="pre">OSMGeoAdmin</span></tt>
+option class in your <tt class="docutils literal"><span class="pre">admin.py</span></tt> file:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">admin</span><span class="o">.</span><span class="n">site</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">WorldBorders</span><span class="p">,</span> <span class="n">admin</span><span class="o">.</span><span class="n">OSMGeoAdmin</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="rubric">Footnotes</p>
+<table class="docutils footnote" frame="void" id="id10" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id1">[1]</a></td><td>Special thanks to Bjørn Sandvik of <a class="reference external" href="http://thematicmapping.org">thematicmapping.org</a> for providing and maintaining this data set.</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id11" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id2">[2]</a></td><td>GeoDjango basic apps was written by Dane Springmeyer, Josh Livni, and Christopher Schmidt.</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id12" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id7">[3]</a></td><td>Here the point is for the <a class="reference external" href="http://www.law.uh.edu/">University of Houston Law Center</a> .</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id13" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id8">[4]</a></td><td>Open Geospatial Consortium, Inc., <a class="reference external" href="http://www.opengis.org/docs/99-049.pdf">OpenGIS Simple Feature Specification For SQL</a>, Document 99-049.</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>         
+        </div>
+      </div>
+      
+        
+          <div class="yui-b" id="sidebar">
+            
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../../contents.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">GeoDjango Tutorial</a><ul>
+<li><a class="reference internal" href="#introduction">Introduction</a></li>
+<li><a class="reference internal" href="#setting-up">Setting Up</a><ul>
+<li><a class="reference internal" href="#create-a-spatial-database">Create a Spatial Database</a></li>
+<li><a class="reference internal" href="#create-geodjango-project">Create GeoDjango Project</a></li>
+<li><a class="reference internal" href="#configure-settings-py">Configure <tt class="docutils literal"><span class="pre">settings.py</span></tt></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#geographic-data">Geographic Data</a><ul>
+<li><a class="reference internal" href="#worldborders">World Borders</a></li>
+<li><a class="reference internal" href="#use-ogrinfo-to-examine-spatial-data">Use <tt class="docutils literal"><span class="pre">ogrinfo</span></tt> to examine spatial data</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#geographic-models">Geographic Models</a><ul>
+<li><a class="reference internal" href="#defining-a-geographic-model">Defining a Geographic Model</a></li>
+<li><a class="reference internal" href="#run-syncdb">Run <tt class="docutils literal"><span class="pre">syncdb</span></tt></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#importing-spatial-data">Importing Spatial Data</a><ul>
+<li><a class="reference internal" href="#gdal-interface">GDAL Interface</a></li>
+<li><a class="reference internal" href="#layermapping"><tt class="docutils literal"><span class="pre">LayerMapping</span></tt></a></li>
+<li><a class="reference internal" href="#try-ogrinspect">Try <tt class="docutils literal"><span class="pre">ogrinspect</span></tt></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#spatial-queries">Spatial Queries</a><ul>
+<li><a class="reference internal" href="#spatial-lookups">Spatial Lookups</a></li>
+<li><a class="reference internal" href="#automatic-spatial-transformations">Automatic Spatial Transformations</a></li>
+<li><a class="reference internal" href="#lazy-geometries">Lazy Geometries</a></li>
+<li><a class="reference internal" href="#geoqueryset-methods"><tt class="docutils literal"><span class="pre">GeoQuerySet</span></tt> Methods</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#putting-your-data-on-the-map">Putting your data on the map</a><ul>
+<li><a class="reference internal" href="#google">Google</a></li>
+<li><a class="reference internal" href="#geographic-admin">Geographic Admin</a><ul>
+<li><a class="reference internal" href="#basics">Basics</a></li>
+<li><a class="reference internal" href="#osmgeoadmin"><tt class="docutils literal"><span class="pre">OSMGeoAdmin</span></tt></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h3>Browse</h3>
+  <ul>
+    
+      <li>Prev: <a href="index.html">GeoDjango</a></li>
+    
+    
+      <li>Next: <a href="install.html">GeoDjango Installation</a></li>
+    
+  </ul>
+  <h3>You are here:</h3>
+  <ul>
+      <li>
+        <a href="../../../index.html">Django v1.3.1 documentation</a>
+        
+          <ul><li><a href="../../index.html">API Reference</a>
+        
+          <ul><li><a href="../index.html"><tt class="docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal"><span class="pre">contrib</span></tt> packages</a>
+        
+          <ul><li><a href="index.html">GeoDjango</a>
+        
+        <ul><li>GeoDjango Tutorial</li></ul>
+        </li></ul></li></ul></li></ul>
+      </li>
+  </ul>  
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../../_sources/ref/contrib/gis/tutorial.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+              <h3>Last update:</h3>
+              <p class="topless">Dec 06, 2011</p>
+          </div> 
+        
+      
+    </div>
+    
+    <div id="ft">
+      <div class="nav">
+    &laquo; <a href="index.html" title="GeoDjango">previous</a> 
+     |
+    <a href="../../index.html" title="API Reference" accesskey="U">up</a>
+   |
+    <a href="install.html" title="GeoDjango Installation">next</a> &raquo;</div>
+    </div>
+  </div>
+
+      <div class="clearer"></div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,309 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Providing initial data for models &mdash; Django v1.3.1 documentation</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.3.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Django v1.3.1 documentation" href="../index.html" />
+    <link rel="up" title="“How-to” guides" href="index.html" />
+    <link rel="next" title="Using internationalization in your own projects" href="i18n.html" />
+    <link rel="prev" title="Error reporting via e-mail" href="error-reporting.html" />
+ 
+<script type="text/javascript" src="../templatebuiltins.js"></script>
+<script type="text/javascript">
+(function($) {
+    if (!django_template_builtins) {
+       // templatebuiltins.js missing, do nothing.
+       return;
+    }
+    $(document).ready(function() {
+        // Hyperlink Django template tags and filters
+        var base = "../ref/templates/builtins.html";
+        if (base == "#") {
+            // Special case for builtins.html itself
+            base = "";
+        }
+        // Tags are keywords, class '.k'
+        $("div.highlight\\-html\\+django span.k").each(function(i, elem) {
+             var tagname = $(elem).text();
+             if ($.inArray(tagname, django_template_builtins.ttags) != -1) {
+                 var fragment = tagname.replace(/_/, '-');
+                 $(elem).html("<a href='" + base + "#" + fragment + "'>" + tagname + "</a>");
+             }
+        });
+        // Filters are functions, class '.nf'
+        $("div.highlight\\-html\\+django span.nf").each(function(i, elem) {
+             var filtername = $(elem).text();
+             if ($.inArray(filtername, django_template_builtins.tfilters) != -1) {
+                 var fragment = filtername.replace(/_/, '-');
+                 $(elem).html("<a href='" + base + "#" + fragment + "'>" + filtername + "</a>");
+             }
+        });
+    });
+})(jQuery);
+</script>
+
+  </head>
+  <body>
+
+    <div class="document">
+  <div id="custom-doc" class="yui-t6">
+    <div id="hd">
+      <h1><a href="../index.html">Django v1.3.1 documentation</a></h1>
+      <div id="global-nav">
+        <a title="Home page" href="../index.html">Home</a>  |
+        <a title="Table of contents" href="../contents.html">Table of contents</a>  |
+        <a title="Global index" href="../genindex.html">Index</a>  |
+        <a title="Module index" href="../py-modindex.html">Modules</a>
+      </div>
+      <div class="nav">
+    &laquo; <a href="error-reporting.html" title="Error reporting via e-mail">previous</a> 
+     |
+    <a href="index.html" title="&amp;#8220;How-to&amp;#8221; guides" accesskey="U">up</a>
+   |
+    <a href="i18n.html" title="Using internationalization in your own projects">next</a> &raquo;</div>
+    </div>
+    
+    <div id="bd">
+      <div id="yui-main">
+        <div class="yui-b">
+          <div class="yui-g" id="howto-initial-data">
+            
+  <div class="section" id="s-providing-initial-data-for-models">
+<span id="providing-initial-data-for-models"></span><h1>Providing initial data for models<a class="headerlink" href="#providing-initial-data-for-models" title="Permalink to this headline">¶</a></h1>
+<p>It&#8217;s sometimes useful to pre-populate your database with hard-coded data when
+you&#8217;re first setting up an app. There&#8217;s a couple of ways you can have Django
+automatically create this data: you can provide <a class="reference internal" href="#providing-initial-data-with-fixtures">initial data via fixtures</a>, or
+you can provide <a class="reference internal" href="#providing-initial-sql-data">initial data as SQL</a>.</p>
+<p>In general, using a fixture is a cleaner method since it&#8217;s database-agnostic,
+but initial SQL is also quite a bit more flexible.</p>
+<div class="section" id="s-providing-initial-data-with-fixtures">
+<span id="s-id1"></span><span id="providing-initial-data-with-fixtures"></span><span id="id1"></span><h2>Providing initial data with fixtures<a class="headerlink" href="#providing-initial-data-with-fixtures" title="Permalink to this headline">¶</a></h2>
+<p>A fixture is a collection of data that Django knows how to import into a
+database. The most straightforward way of creating a fixture if you&#8217;ve already
+got some data is to use the <a class="reference internal" href="../ref/django-admin.html#django-admin-dumpdata"><tt class="xref std std-djadmin docutils literal"><span class="pre">manage.py</span> <span class="pre">dumpdata</span></tt></a> command.
+Or, you can write fixtures by hand; fixtures can be written as XML, YAML, or
+JSON documents. The <a class="reference internal" href="../topics/serialization.html"><em>serialization documentation</em></a>
+has more details about each of these supported <a class="reference internal" href="../topics/serialization.html#serialization-formats"><em>serialization formats</em></a>.</p>
+<p>As an example, though, here&#8217;s what a fixture for a simple <tt class="docutils literal"><span class="pre">Person</span></tt> model might
+look like in JSON:</p>
+<div class="highlight-js"><div class="highlight"><pre><span class="p">[</span>
+  <span class="p">{</span>
+    <span class="s2">&quot;model&quot;</span><span class="o">:</span> <span class="s2">&quot;myapp.person&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;pk&quot;</span><span class="o">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="s2">&quot;fields&quot;</span><span class="o">:</span> <span class="p">{</span>
+      <span class="s2">&quot;first_name&quot;</span><span class="o">:</span> <span class="s2">&quot;John&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;last_name&quot;</span><span class="o">:</span> <span class="s2">&quot;Lennon&quot;</span>
+    <span class="p">}</span>
+  <span class="p">},</span>
+  <span class="p">{</span>
+    <span class="s2">&quot;model&quot;</span><span class="o">:</span> <span class="s2">&quot;myapp.person&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;pk&quot;</span><span class="o">:</span> <span class="mi">2</span><span class="p">,</span>
+    <span class="s2">&quot;fields&quot;</span><span class="o">:</span> <span class="p">{</span>
+      <span class="s2">&quot;first_name&quot;</span><span class="o">:</span> <span class="s2">&quot;Paul&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;last_name&quot;</span><span class="o">:</span> <span class="s2">&quot;McCartney&quot;</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+<p>And here's that same fixture as YAML:</p>
+<div class="highlight-none"><div class="highlight"><pre>- model: myapp.person
+  pk: 1
+  fields:
+    first_name: John
+    last_name: Lennon
+- model: myapp.person
+  pk: 2
+  fields:
+    first_name: Paul
+    last_name: McCartney
+</pre></div>
+</div>
+<p>You'll store this data in a <tt class="docutils literal"><span class="pre">fixtures</span></tt> directory inside your app.</p>
+<p>Loading data is easy: just call <tt class="xref std std-djadmin docutils literal"><span class="pre">manage.py</span> <span class="pre">loaddata</span></tt>, where <tt class="docutils literal"><span class="pre">&lt;fixturename&gt;</span></tt> is the name of the fixture file you've
+created. Every time you run <a class="reference internal" href="../ref/django-admin.html#django-admin-loaddata"><tt class="xref std std-djadmin docutils literal"><span class="pre">loaddata</span></tt></a> the data will be read from the
+fixture and re-loaded into the database. Note that this means that if you
+change one of the rows created by a fixture and then run <a class="reference internal" href="../ref/django-admin.html#django-admin-loaddata"><tt class="xref std std-djadmin docutils literal"><span class="pre">loaddata</span></tt></a>
+again you'll wipe out any changes you've made.</p>
+<div class="section" id="s-automatically-loading-initial-data-fixtures">
+<span id="automatically-loading-initial-data-fixtures"></span><h3>Automatically loading initial data fixtures<a class="headerlink" href="#automatically-loading-initial-data-fixtures" title="Permalink to this headline">¶</a></h3>
+<p>If you create a fixture named <tt class="docutils literal"><span class="pre">initial_data.[xml/yaml/json]</span></tt>, that fixture will
+be loaded every time you run <a class="reference internal" href="../ref/django-admin.html#django-admin-syncdb"><tt class="xref std std-djadmin docutils literal"><span class="pre">syncdb</span></tt></a>. This is extremely convenient,
+but be careful: remember that the data will be refreshed <em>every time</em> you run
+<a class="reference internal" href="../ref/django-admin.html#django-admin-syncdb"><tt class="xref std std-djadmin docutils literal"><span class="pre">syncdb</span></tt></a>. So don't use <tt class="docutils literal"><span class="pre">initial_data</span></tt> for data you'll want to edit.</p>
+</div>
+<div class="section" id="s-where-django-finds-fixture-files">
+<span id="where-django-finds-fixture-files"></span><h3>Where Django finds fixture files<a class="headerlink" href="#where-django-finds-fixture-files" title="Permalink to this headline">¶</a></h3>
+<p>By default, Django looks in the <tt class="docutils literal"><span class="pre">fixtures</span></tt> directory inside each app for
+fixtures. You can set the <a class="reference internal" href="../ref/settings.html#std:setting-FIXTURE_DIRS"><tt class="xref std std-setting docutils literal"><span class="pre">FIXTURE_DIRS</span></tt></a> setting to a list of
+additional directories where Django should look.</p>
+<p>When running <a class="reference internal" href="../ref/django-admin.html#django-admin-loaddata"><tt class="xref std std-djadmin docutils literal"><span class="pre">manage.py</span> <span class="pre">loaddata</span></tt></a>, you can also
+specify an absolute path to a fixture file, which overrides searching
+the usual directories.</p>
+<div class="admonition-see-also admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last">Fixtures are also used by the <a class="reference internal" href="../topics/testing.html#topics-testing-fixtures"><em>testing framework</em></a> to help set up a consistent test environment.</p>
+</div>
+</div>
+</div>
+<div class="section" id="s-providing-initial-sql-data">
+<span id="s-initial-sql"></span><span id="providing-initial-sql-data"></span><span id="initial-sql"></span><h2>Providing initial SQL data<a class="headerlink" href="#providing-initial-sql-data" title="Permalink to this headline">¶</a></h2>
+<p>Django provides a hook for passing the database arbitrary SQL that's executed
+just after the CREATE TABLE statements when you run <a class="reference internal" href="../ref/django-admin.html#django-admin-syncdb"><tt class="xref std std-djadmin docutils literal"><span class="pre">syncdb</span></tt></a>. You can
+use this hook to populate default records, or you could also create SQL
+functions, views, triggers, etc.</p>
+<p>The hook is simple: Django just looks for a file called <tt class="docutils literal"><span class="pre">sql/&lt;modelname&gt;.sql</span></tt>,
+in your app directory, where <tt class="docutils literal"><span class="pre">&lt;modelname&gt;</span></tt> is the model's name in lowercase.</p>
+<p>So, if you had a <tt class="docutils literal"><span class="pre">Person</span></tt> model in an app called <tt class="docutils literal"><span class="pre">myapp</span></tt>, you could add
+arbitrary SQL to the file <tt class="docutils literal"><span class="pre">sql/person.sql</span></tt> inside your <tt class="docutils literal"><span class="pre">myapp</span></tt> directory.
+Here's an example of what the file might contain:</p>
+<div class="highlight-sql"><div class="highlight"><pre><span class="k">INSERT</span> <span class="k">INTO</span> <span class="n">myapp_person</span> <span class="p">(</span><span class="n">first_name</span><span class="p">,</span> <span class="n">last_name</span><span class="p">)</span> <span class="k">VALUES</span> <span class="p">(</span><span class="s1">&#39;John&#39;</span><span class="p">,</span> <span class="s1">&#39;Lennon&#39;</span><span class="p">);</span>
+<span class="k">INSERT</span> <span class="k">INTO</span> <span class="n">myapp_person</span> <span class="p">(</span><span class="n">first_name</span><span class="p">,</span> <span class="n">last_name</span><span class="p">)</span> <span class="k">VALUES</span> <span class="p">(</span><span class="s1">&#39;Paul&#39;</span><span class="p">,</span> <span class="s1">&#39;McCartney&#39;</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Each SQL file, if given, is expected to contain valid SQL statements
+which will insert the desired data (e.g., properly-formatted
+<tt class="docutils literal"><span class="pre">INSERT</span></tt> statements separated by semicolons).</p>
+<p>The SQL files are read by the <a class="reference internal" href="../ref/django-admin.html#django-admin-sqlcustom"><tt class="xref std std-djadmin docutils literal"><span class="pre">sqlcustom</span></tt></a>, <a class="reference internal" href="../ref/django-admin.html#django-admin-sqlreset"><tt class="xref std std-djadmin docutils literal"><span class="pre">sqlreset</span></tt></a>,
+<a class="reference internal" href="../ref/django-admin.html#django-admin-sqlall"><tt class="xref std std-djadmin docutils literal"><span class="pre">sqlall</span></tt></a> and <a class="reference internal" href="../ref/django-admin.html#django-admin-reset"><tt class="xref std std-djadmin docutils literal"><span class="pre">reset</span></tt></a> commands in <a class="reference internal" href="../ref/django-admin.html"><em>manage.py</em></a>. Refer to the <a class="reference internal" href="../ref/django-admin.html"><em>manage.py documentation</em></a> for more information.</p>
+<p>Note that if you have multiple SQL data files, there's no guarantee of
+the order in which they're executed. The only thing you can assume is
+that, by the time your custom data files are executed, all the
+database tables already will have been created.</p>
+<div class="admonition-initial-sql-data-and-testing admonition ">
+<p class="first admonition-title">Initial SQL data and testing</p>
+<p>This technique <em>cannot</em> be used to provide initial data for
+testing purposes. Django's test framework flushes the contents of
+the test database after each test; as a result, any data added
+using the custom SQL hook will be lost.</p>
+<p class="last">If you require data for a test case, you should add it using
+either a <a class="reference internal" href="../topics/testing.html#topics-testing-fixtures"><em>test fixture</em></a>, or
+programatically add it during the <tt class="docutils literal"><span class="pre">setUp()</span></tt> of your test case.</p>
+</div>
+<div class="section" id="s-database-backend-specific-sql-data">
+<span id="database-backend-specific-sql-data"></span><h3>Database-backend-specific SQL data<a class="headerlink" href="#database-backend-specific-sql-data" title="Permalink to this headline">¶</a></h3>
+<p>There's also a hook for backend-specific SQL data. For example, you
+can have separate initial-data files for PostgreSQL and MySQL. For
+each app, Django looks for a file called
+<tt class="docutils literal"><span class="pre">&lt;appname&gt;/sql/&lt;modelname&gt;.&lt;backend&gt;.sql</span></tt>, where <tt class="docutils literal"><span class="pre">&lt;appname&gt;</span></tt> is
+your app directory, <tt class="docutils literal"><span class="pre">&lt;modelname&gt;</span></tt> is the model's name in lowercase
+and <tt class="docutils literal"><span class="pre">&lt;backend&gt;</span></tt> is the last part of the module name provided for the
+<tt class="xref std std-setting docutils literal"><span class="pre">ENGINE</span></tt> in your settings file (e.g., if you have defined a
+database with an <tt class="xref std std-setting docutils literal"><span class="pre">ENGINE</span></tt> value of
+<tt class="docutils literal"><span class="pre">django.db.backends.postgresql</span></tt>, Django will look for
+<tt class="docutils literal"><span class="pre">&lt;appname&gt;/sql/&lt;modelname&gt;.postgresql.sql</span></tt>).</p>
+<p>Backend-specific SQL data is executed before non-backend-specific SQL
+data. For example, if your app contains the files <tt class="docutils literal"><span class="pre">sql/person.sql</span></tt>
+and <tt class="docutils literal"><span class="pre">sql/person.postgresql.sql</span></tt> and you're installing the app on
+PostgreSQL, Django will execute the contents of
+<tt class="docutils literal"><span class="pre">sql/person.postgresql.sql</span></tt> first, then <tt class="docutils literal"><span class="pre">sql/person.sql</span></tt>.</p>
+</div>
+</div>
+</div>
+
+
+          </div>         
+        </div>
+      </div>
+      
+        
+          <div class="yui-b" id="sidebar">
+            
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../contents.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Providing initial data for models</a><ul>
+<li><a class="reference internal" href="#providing-initial-data-with-fixtures">Providing initial data with fixtures</a><ul>
+<li><a class="reference internal" href="#automatically-loading-initial-data-fixtures">Automatically loading initial data fixtures</a></li>
+<li><a class="reference internal" href="#where-django-finds-fixture-files">Where Django finds fixture files</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#providing-initial-sql-data">Providing initial SQL data</a><ul>
+<li><a class="reference internal" href="#database-backend-specific-sql-data">Database-backend-specific SQL data</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h3>Browse</h3>
+  <ul>
+    
+      <li>Prev: <a href="error-reporting.html">Error reporting via e-mail</a></li>
+    
+    
+      <li>Next: <a href="i18n.html">Using internationalization in your own projects</a></li>
+    
+  </ul>
+  <h3>You are here:</h3>
+  <ul>
+      <li>
+        <a href="../index.html">Django v1.3.1 documentation</a>
+        
+          <ul><li><a href="index.html">&#8220;How-to&#8221; guides</a>
+        
+        <ul><li>Providing initial data for models</li></ul>
+        </li></ul>
+      </li>
+  </ul>  
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/howto/initial-data.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+              <h3>Last update:</h3>
+              <p class="topless">Feb 19, 2012</p>
+          </div> 
+        
+      
+    </div>
+    
+    <div id="ft">
+      <div class="nav">
+    &laquo; <a href="error-reporting.html" title="Error reporting via e-mail">previous</a> 
+     |
+    <a href="index.html" title="&amp;#8220;How-to&amp;#8221; guides" accesskey="U">up</a>
+   |
+    <a href="i18n.html" title="Using internationalization in your own projects">next</a> &raquo;</div>
+    </div>
+  </div>
+
+      <div class="clearer"></div>
+    </div>
+  </body>
+</html>

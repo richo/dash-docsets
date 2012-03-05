@@ -1,0 +1,449 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<title>Writing custom django-admin commands — Django v1.3.1 documentation</title>
+<link href="../_static/default.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/pygments.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.3.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+<script src="../_static/jquery.js" type="text/javascript"></script>
+<script src="../_static/underscore.js" type="text/javascript"></script>
+<script src="../_static/doctools.js" type="text/javascript"></script>
+<link href="../index.html" rel="top" title="Django v1.3.1 documentation"/>
+<link href="index.html" rel="up" title="“How-to” guides"/>
+<link href="custom-model-fields.html" rel="next" title="Writing custom model fields"/>
+<link href="contribute.html" rel="prev" title="How to contribute to Django"/>
+<script src="../templatebuiltins.js" type="text/javascript"></script>
+<script type="text/javascript">
+(function($) {
+    if (!django_template_builtins) {
+       // templatebuiltins.js missing, do nothing.
+       return;
+    }
+    $(document).ready(function() {
+        // Hyperlink Django template tags and filters
+        var base = "../ref/templates/builtins.html";
+        if (base == "#") {
+            // Special case for builtins.html itself
+            base = "";
+        }
+        // Tags are keywords, class '.k'
+        $("div.highlight\\-html\\+django span.k").each(function(i, elem) {
+             var tagname = $(elem).text();
+             if ($.inArray(tagname, django_template_builtins.ttags) != -1) {
+                 var fragment = tagname.replace(/_/, '-');
+                 $(elem).html("&lt;a href='" + base + "#" + fragment + "'&gt;" + tagname + "");
+             }
+        });
+        // Filters are functions, class '.nf'
+        $("div.highlight\\-html\\+django span.nf").each(function(i, elem) {
+             var filtername = $(elem).text();
+             if ($.inArray(filtername, django_template_builtins.tfilters) != -1) {
+                 var fragment = filtername.replace(/_/, '-');
+                 $(elem).html("<a href='" + base + "#" + fragment + "'>" + filtername + "</a>");
+             }
+        });
+    });
+})(jQuery);
+</script>
+</head>
+<body>
+<div class="document">
+<div class="yui-t6" id="custom-doc">
+<div id="hd">
+<h1><a href="../index.html">Django v1.3.1 documentation</a></h1>
+<div id="global-nav">
+<a href="../index.html" title="Home page">Home</a>  |
+        <a href="../contents.html" title="Table of contents">Table of contents</a>  |
+        <a href="../genindex.html" title="Global index">Index</a>  |
+        <a href="../py-modindex.html" title="Module index">Modules</a>
+</div>
+<div class="nav">
+    « <a href="contribute.html" title="How to contribute to Django">previous</a> 
+     |
+    <a accesskey="U" href="index.html" title="&#8220;How-to&#8221; guides">up</a>
+   |
+    <a href="custom-model-fields.html" title="Writing custom model fields">next</a> »</div>
+</div>
+<div id="bd">
+<div id="yui-main">
+<div class="yui-b">
+<div class="yui-g" id="howto-custom-management-commands">
+<div class="section" id="s-writing-custom-django-admin-commands">
+<span id="writing-custom-django-admin-commands"></span><h1>Writing custom django-admin commands<a class="headerlink" href="#writing-custom-django-admin-commands" title="Permalink to this headline">¶</a></h1>
+<p>Applications can register their own actions with <tt class="docutils literal"><span class="pre">manage.py</span></tt>. For example,
+you might want to add a <tt class="docutils literal"><span class="pre">manage.py</span></tt> action for a Django app that you’re
+distributing. In this document, we will be building a custom <tt class="docutils literal"><span class="pre">closepoll</span></tt>
+command for the <tt class="docutils literal"><span class="pre">polls</span></tt> application from the
+<a class="reference internal" href="../intro/tutorial01.html"><em>tutorial</em></a>.</p>
+<p>To do this, just add a <tt class="docutils literal"><span class="pre">management/commands</span></tt> directory to the application.
+Each Python module in that directory will be auto-discovered and registered as
+a command that can be executed as an action when you run <tt class="docutils literal"><span class="pre">manage.py</span></tt>:</p>
+<div class="highlight-python"><pre>polls/
+    __init__.py
+    models.py
+    management/
+        __init__.py
+        commands/
+            __init__.py
+            closepoll.py
+    tests.py
+    views.py</pre>
+</div>
+<p>In this example, the <tt class="docutils literal"><span class="pre">closepoll</span></tt> command will be made available to any project
+that includes the <tt class="docutils literal"><span class="pre">polls</span></tt> application in <a class="reference internal" href="../ref/settings.html#std:setting-INSTALLED_APPS"><tt class="xref std std-setting docutils literal"><span class="pre">INSTALLED_APPS</span></tt></a>.</p>
+<p>The <tt class="docutils literal"><span class="pre">closepoll.py</span></tt> module has only one requirement -- it must define a class
+<tt class="docutils literal"><span class="pre">Command</span></tt> that extends <a class="reference internal" href="#BaseCommand" title="BaseCommand"><tt class="xref py py-class docutils literal"><span class="pre">BaseCommand</span></tt></a> or one of its
+<a class="reference internal" href="#ref-basecommand-subclasses"><em>subclasses</em></a>.</p>
+<div class="admonition-standalone-scripts admonition ">
+<p class="first admonition-title">Standalone scripts</p>
+<p class="last">Custom management commands are especially useful for running standalone
+scripts or for scripts that are periodically executed from the UNIX crontab
+or from Windows scheduled tasks control panel.</p>
+</div>
+<p>To implement the command, edit <tt class="docutils literal"><span class="pre">polls/management/commands/closepoll.py</span></tt> to
+look like this:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">django.core.management.base</span> <span class="kn">import</span> <span class="n">BaseCommand</span><span class="p">,</span> <span class="n">CommandError</span>
+<span class="kn">from</span> <span class="nn">example.polls.models</span> <span class="kn">import</span> <span class="n">Poll</span>
+
+<span class="k">class</span> <span class="nc">Command</span><span class="p">(</span><span class="n">BaseCommand</span><span class="p">):</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="s">'&lt;poll_id poll_id ...&gt;'</span>
+    <span class="n">help</span> <span class="o">=</span> <span class="s">'Closes the specified poll for voting'</span>
+
+    <span class="k">def</span> <span class="nf">handle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">poll_id</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">poll</span> <span class="o">=</span> <span class="n">Poll</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pk</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">poll_id</span><span class="p">))</span>
+            <span class="k">except</span> <span class="n">Poll</span><span class="o">.</span><span class="n">DoesNotExist</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">CommandError</span><span class="p">(</span><span class="s">'Poll &quot;</span><span class="si">%s</span><span class="s">&quot; does not exist'</span> <span class="o">%</span> <span class="n">poll_id</span><span class="p">)</span>
+
+            <span class="n">poll</span><span class="o">.</span><span class="n">opened</span> <span class="o">=</span> <span class="bp">False</span>
+            <span class="n">poll</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">'Successfully closed poll &quot;</span><span class="si">%s</span><span class="s">&quot;</span><span class="se">\n</span><span class="s">'</span> <span class="o">%</span> <span class="n">poll_id</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">When you are using management commands and wish to provide console
+output, you should write to <tt class="docutils literal"><span class="pre">self.stdout</span></tt> and <tt class="docutils literal"><span class="pre">self.stderr</span></tt>,
+instead of printing to <tt class="docutils literal"><span class="pre">stdout</span></tt> and <tt class="docutils literal"><span class="pre">stderr</span></tt> directly. By
+using these proxies, it becomes much easier to test your custom
+command.</p>
+</div>
+<p>The new custom command can be called using <tt class="docutils literal"><span class="pre">python</span> <span class="pre">manage.py</span> <span class="pre">closepoll</span>
+<span class="pre">&lt;poll_id&gt;</span></tt>.</p>
+<p>The <tt class="docutils literal"><span class="pre">handle()</span></tt> method takes zero or more <tt class="docutils literal"><span class="pre">poll_ids</span></tt> and sets <tt class="docutils literal"><span class="pre">poll.opened</span></tt>
+to <tt class="xref docutils literal"><span class="pre">False</span></tt> for each one. If the user referenced any nonexistent polls, a
+<a class="reference internal" href="#CommandError" title="CommandError"><tt class="xref py py-class docutils literal"><span class="pre">CommandError</span></tt></a> is raised. The <tt class="docutils literal"><span class="pre">poll.opened</span></tt> attribute does not exist
+in the <a class="reference internal" href="../intro/tutorial01.html"><em>tutorial</em></a> and was added to
+<tt class="docutils literal"><span class="pre">polls.models.Poll</span></tt> for this example.</p>
+<p>The same <tt class="docutils literal"><span class="pre">closepoll</span></tt> could be easily modified to delete a given poll instead
+of closing it by accepting additional command line options. These custom options
+must be added to <a class="reference internal" href="#BaseCommand.option_list" title="BaseCommand.option_list"><tt class="xref py py-attr docutils literal"><span class="pre">option_list</span></tt></a> like this:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">optparse</span> <span class="kn">import</span> <span class="n">make_option</span>
+
+<span class="k">class</span> <span class="nc">Command</span><span class="p">(</span><span class="n">BaseCommand</span><span class="p">):</span>
+    <span class="n">option_list</span> <span class="o">=</span> <span class="n">BaseCommand</span><span class="o">.</span><span class="n">option_list</span> <span class="o">+</span> <span class="p">(</span>
+        <span class="n">make_option</span><span class="p">(</span><span class="s">'--delete'</span><span class="p">,</span>
+            <span class="n">action</span><span class="o">=</span><span class="s">'store_true'</span><span class="p">,</span>
+            <span class="n">dest</span><span class="o">=</span><span class="s">'delete'</span><span class="p">,</span>
+            <span class="n">default</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+            <span class="n">help</span><span class="o">=</span><span class="s">'Delete poll instead of closing it'</span><span class="p">),</span>
+        <span class="p">)</span>
+    <span class="c"># ...</span>
+</pre></div>
+</div>
+<p>In addition to being able to add custom command line options, all
+<a class="reference internal" href="../ref/django-admin.html"><em>management commands</em></a> can accept some
+default options such as <a class="reference internal" href="../ref/django-admin.html#django-admin-option---verbosity"><tt class="xref std std-djadminopt docutils literal"><span class="pre">--verbosity</span></tt></a> and <a class="reference internal" href="../ref/django-admin.html#django-admin-option---traceback"><tt class="xref std std-djadminopt docutils literal"><span class="pre">--traceback</span></tt></a>.</p>
+<div class="admonition-management-commands-and-locales admonition ">
+<p class="first admonition-title">Management commands and locales</p>
+<p>The <a class="reference internal" href="#BaseCommand.execute" title="BaseCommand.execute"><tt class="xref py py-meth docutils literal"><span class="pre">BaseCommand.execute()</span></tt></a> method sets the hardcoded <tt class="docutils literal"><span class="pre">en-us</span></tt> locale
+because the commands shipped with Django perform several tasks
+(for example, user-facing content rendering and database population) that
+require a system-neutral string language (for which we use <tt class="docutils literal"><span class="pre">en-us</span></tt>).</p>
+<p>If your custom management command uses another locale, you should manually
+activate and deactivate it in your <a class="reference internal" href="#BaseCommand.handle" title="BaseCommand.handle"><tt class="xref py py-meth docutils literal"><span class="pre">handle()</span></tt></a> or
+<a class="reference internal" href="#NoArgsCommand.handle_noargs" title="NoArgsCommand.handle_noargs"><tt class="xref py py-meth docutils literal"><span class="pre">handle_noargs()</span></tt></a> method using the functions provided by
+the I18N support code:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">django.core.management.base</span> <span class="kn">import</span> <span class="n">BaseCommand</span><span class="p">,</span> <span class="n">CommandError</span>
+<span class="kn">from</span> <span class="nn">django.utils</span> <span class="kn">import</span> <span class="n">translation</span>
+
+<span class="k">class</span> <span class="nc">Command</span><span class="p">(</span><span class="n">BaseCommand</span><span class="p">):</span>
+    <span class="o">...</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">can_import_settings</span> <span class="o">=</span> <span class="bp">True</span>
+
+    <span class="k">def</span> <span class="nf">handle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">):</span>
+
+        <span class="c"># Activate a fixed locale, e.g. Russian</span>
+        <span class="n">translation</span><span class="o">.</span><span class="n">activate</span><span class="p">(</span><span class="s">'ru'</span><span class="p">)</span>
+
+        <span class="c"># Or you can activate the LANGUAGE_CODE</span>
+        <span class="c"># chosen in the settings:</span>
+        <span class="c">#</span>
+        <span class="c">#from django.conf import settings</span>
+        <span class="c">#translation.activate(settings.LANGUAGE_CODE)</span>
+
+        <span class="c"># Your command logic here</span>
+        <span class="c"># ...</span>
+
+        <span class="n">translation</span><span class="o">.</span><span class="n">deactivate</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Take into account though, that system management commands typically have to
+be very careful about running in non-uniform locales, so:</p>
+<ul class="last simple">
+<li>Make sure the <a class="reference internal" href="../ref/settings.html#std:setting-USE_I18N"><tt class="xref std std-setting docutils literal"><span class="pre">USE_I18N</span></tt></a> setting is always <tt class="xref docutils literal"><span class="pre">True</span></tt> when running
+the command (this is one good example of the potential problems stemming
+from a dynamic runtime environment that Django commands avoid offhand by
+always using a fixed locale).</li>
+<li>Review the code of your command and the code it calls for behavioral
+differences when locales are changed and evaluate its impact on
+predictable behavior of your command.</li>
+</ul>
+</div>
+<div class="section" id="s-command-objects">
+<span id="command-objects"></span><h2>Command objects<a class="headerlink" href="#command-objects" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<a name="//apple_ref/cpp/cl/BaseCommand"></a><dt id="BaseCommand">
+<em class="property">class </em><tt class="descname">BaseCommand</tt><a class="headerlink" href="#BaseCommand" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>The base class from which all management commands ultimately derive.</p>
+<p>Use this class if you want access to all of the mechanisms which
+parse the command-line arguments and work out what code to call in
+response; if you don't need to change any of that behavior,
+consider using one of its <a class="reference internal" href="#ref-basecommand-subclasses"><em>subclasses</em></a>.</p>
+<p>Subclassing the <a class="reference internal" href="#BaseCommand" title="BaseCommand"><tt class="xref py py-class docutils literal"><span class="pre">BaseCommand</span></tt></a> class requires that you implement the
+<a class="reference internal" href="#BaseCommand.handle" title="BaseCommand.handle"><tt class="xref py py-meth docutils literal"><span class="pre">handle()</span></tt></a> method.</p>
+<div class="section" id="s-attributes">
+<span id="attributes"></span><h3>Attributes<a class="headerlink" href="#attributes" title="Permalink to this headline">¶</a></h3>
+<p>All attributes can be set in your derived class and can be used in
+<a class="reference internal" href="#BaseCommand" title="BaseCommand"><tt class="xref py py-class docutils literal"><span class="pre">BaseCommand</span></tt></a>'s <a class="reference internal" href="#ref-basecommand-subclasses"><em>subclasses</em></a>.</p>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/BaseCommand.args"></a><dt id="BaseCommand.args">
+<tt class="descclassname">BaseCommand.</tt><tt class="descname">args</tt><a class="headerlink" href="#BaseCommand.args" title="Permalink to this definition">¶</a></dt>
+<dd><p>A string listing the arguments accepted by the command,
+suitable for use in help messages; e.g., a command which takes
+a list of application names might set this to '&lt;appname
+appname ...&gt;'.</p>
+</dd></dl>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/BaseCommand.can_import_settings"></a><dt id="BaseCommand.can_import_settings">
+<tt class="descclassname">BaseCommand.</tt><tt class="descname">can_import_settings</tt><a class="headerlink" href="#BaseCommand.can_import_settings" title="Permalink to this definition">¶</a></dt>
+<dd><p>A boolean indicating whether the command needs to be able to
+import Django settings; if <tt class="xref docutils literal"><span class="pre">True</span></tt>, <tt class="docutils literal"><span class="pre">execute()</span></tt> will verify
+that this is possible before proceeding. Default value is
+<tt class="xref docutils literal"><span class="pre">True</span></tt>.</p>
+</dd></dl>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/BaseCommand.help"></a><dt id="BaseCommand.help">
+<tt class="descclassname">BaseCommand.</tt><tt class="descname">help</tt><a class="headerlink" href="#BaseCommand.help" title="Permalink to this definition">¶</a></dt>
+<dd><p>A short description of the command, which will be printed in the
+help message when the user runs the command
+<tt class="docutils literal"><span class="pre">python</span> <span class="pre">manage.py</span> <span class="pre">help</span> <span class="pre">&lt;command&gt;</span></tt>.</p>
+</dd></dl>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/BaseCommand.option_list"></a><dt id="BaseCommand.option_list">
+<tt class="descclassname">BaseCommand.</tt><tt class="descname">option_list</tt><a class="headerlink" href="#BaseCommand.option_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>This is the list of <tt class="docutils literal"><span class="pre">optparse</span></tt> options which will be fed
+into the command's <tt class="docutils literal"><span class="pre">OptionParser</span></tt> for parsing arguments.</p>
+</dd></dl>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/BaseCommand.output_transaction"></a><dt id="BaseCommand.output_transaction">
+<tt class="descclassname">BaseCommand.</tt><tt class="descname">output_transaction</tt><a class="headerlink" href="#BaseCommand.output_transaction" title="Permalink to this definition">¶</a></dt>
+<dd><p>A boolean indicating whether the command outputs SQL
+statements; if <tt class="xref docutils literal"><span class="pre">True</span></tt>, the output will automatically be
+wrapped with <tt class="docutils literal"><span class="pre">BEGIN;</span></tt> and <tt class="docutils literal"><span class="pre">COMMIT;</span></tt>. Default value is
+<tt class="xref docutils literal"><span class="pre">False</span></tt>.</p>
+</dd></dl>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/BaseCommand.requires_model_validation"></a><dt id="BaseCommand.requires_model_validation">
+<tt class="descclassname">BaseCommand.</tt><tt class="descname">requires_model_validation</tt><a class="headerlink" href="#BaseCommand.requires_model_validation" title="Permalink to this definition">¶</a></dt>
+<dd><p>A boolean; if <tt class="xref docutils literal"><span class="pre">True</span></tt>, validation of installed models will be
+performed prior to executing the command. Default value is
+<tt class="xref docutils literal"><span class="pre">True</span></tt>. To validate an individual application's models
+rather than all applications' models, call
+<tt class="xref py py-meth docutils literal"><span class="pre">validate()</span></tt> from <a class="reference internal" href="#BaseCommand.handle" title="BaseCommand.handle"><tt class="xref py py-meth docutils literal"><span class="pre">handle()</span></tt></a>.</p>
+</dd></dl>
+</div>
+<div class="section" id="s-methods">
+<span id="methods"></span><h3>Methods<a class="headerlink" href="#methods" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference internal" href="#BaseCommand" title="BaseCommand"><tt class="xref py py-class docutils literal"><span class="pre">BaseCommand</span></tt></a> has a few methods that can be overridden but only
+the <a class="reference internal" href="#BaseCommand.handle" title="BaseCommand.handle"><tt class="xref py py-meth docutils literal"><span class="pre">handle()</span></tt></a> method must be implemented.</p>
+<div class="admonition-implementing-a-constructor-in-a-subclass admonition ">
+<p class="first admonition-title">Implementing a constructor in a subclass</p>
+<p>If you implement <tt class="docutils literal"><span class="pre">__init__</span></tt> in your subclass of <a class="reference internal" href="#BaseCommand" title="BaseCommand"><tt class="xref py py-class docutils literal"><span class="pre">BaseCommand</span></tt></a>,
+you must call <a class="reference internal" href="#BaseCommand" title="BaseCommand"><tt class="xref py py-class docutils literal"><span class="pre">BaseCommand</span></tt></a>'s <tt class="docutils literal"><span class="pre">__init__</span></tt>.</p>
+<div class="last highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">Command</span><span class="p">(</span><span class="n">BaseCommand</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Command</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="c"># ...</span>
+</pre></div>
+</div>
+</div>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/BaseCommand.get_version"></a><dt id="BaseCommand.get_version">
+<tt class="descclassname">BaseCommand.</tt><tt class="descname">get_version</tt>()<a class="headerlink" href="#BaseCommand.get_version" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the Django version, which should be correct for all
+built-in Django commands. User-supplied commands can
+override this method to return their own version.</p>
+</dd></dl>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/BaseCommand.execute"></a><dt id="BaseCommand.execute">
+<tt class="descclassname">BaseCommand.</tt><tt class="descname">execute</tt>(<em>*args</em>, <em>**options</em>)<a class="headerlink" href="#BaseCommand.execute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Try to execute this command, performing model validation if
+needed (as controlled by the attribute
+<a class="reference internal" href="#BaseCommand.requires_model_validation" title="BaseCommand.requires_model_validation"><tt class="xref py py-attr docutils literal"><span class="pre">requires_model_validation</span></tt></a>). If the command raises a
+<a class="reference internal" href="#CommandError" title="CommandError"><tt class="xref py py-class docutils literal"><span class="pre">CommandError</span></tt></a>, intercept it and print it sensibly to
+stderr.</p>
+</dd></dl>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/BaseCommand.handle"></a><dt id="BaseCommand.handle">
+<tt class="descclassname">BaseCommand.</tt><tt class="descname">handle</tt>(<em>*args</em>, <em>**options</em>)<a class="headerlink" href="#BaseCommand.handle" title="Permalink to this definition">¶</a></dt>
+<dd><p>The actual logic of the command. Subclasses must implement this method.</p>
+</dd></dl>
+</div>
+<div class="section" id="s-basecommand-subclasses">
+<span id="s-ref-basecommand-subclasses"></span><span id="basecommand-subclasses"></span><span id="ref-basecommand-subclasses"></span><h3>BaseCommand subclasses<a class="headerlink" href="#basecommand-subclasses" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<a name="//apple_ref/cpp/cl/AppCommand"></a><dt id="AppCommand">
+<em class="property">class </em><tt class="descname">AppCommand</tt><a class="headerlink" href="#AppCommand" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>A management command which takes one or more installed application
+names as arguments, and does something with each of them.</p>
+<p>Rather than implementing <a class="reference internal" href="#BaseCommand.handle" title="BaseCommand.handle"><tt class="xref py py-meth docutils literal"><span class="pre">handle()</span></tt></a>, subclasses must implement
+<a class="reference internal" href="#AppCommand.handle_app" title="AppCommand.handle_app"><tt class="xref py py-meth docutils literal"><span class="pre">handle_app()</span></tt></a>, which will be called once for each application.</p>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/AppCommand.handle_app"></a><dt id="AppCommand.handle_app">
+<tt class="descclassname">AppCommand.</tt><tt class="descname">handle_app</tt>(<em>app</em>, <em>**options</em>)<a class="headerlink" href="#AppCommand.handle_app" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform the command's actions for <tt class="docutils literal"><span class="pre">app</span></tt>, which will be the
+Python module corresponding to an application name given on
+the command line.</p>
+</dd></dl>
+<dl class="class">
+<a name="//apple_ref/cpp/cl/LabelCommand"></a><dt id="LabelCommand">
+<em class="property">class </em><tt class="descname">LabelCommand</tt><a class="headerlink" href="#LabelCommand" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>A management command which takes one or more arbitrary arguments
+(labels) on the command line, and does something with each of
+them.</p>
+<p>Rather than implementing <a class="reference internal" href="#BaseCommand.handle" title="BaseCommand.handle"><tt class="xref py py-meth docutils literal"><span class="pre">handle()</span></tt></a>, subclasses must implement
+<a class="reference internal" href="#LabelCommand.handle_label" title="LabelCommand.handle_label"><tt class="xref py py-meth docutils literal"><span class="pre">handle_label()</span></tt></a>, which will be called once for each label.</p>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/LabelCommand.handle_label"></a><dt id="LabelCommand.handle_label">
+<tt class="descclassname">LabelCommand.</tt><tt class="descname">handle_label</tt>(<em>label</em>, <em>**options</em>)<a class="headerlink" href="#LabelCommand.handle_label" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform the command's actions for <tt class="docutils literal"><span class="pre">label</span></tt>, which will be the
+string as given on the command line.</p>
+</dd></dl>
+<dl class="class">
+<a name="//apple_ref/cpp/cl/NoArgsCommand"></a><dt id="NoArgsCommand">
+<em class="property">class </em><tt class="descname">NoArgsCommand</tt><a class="headerlink" href="#NoArgsCommand" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>A command which takes no arguments on the command line.</p>
+<p>Rather than implementing <a class="reference internal" href="#BaseCommand.handle" title="BaseCommand.handle"><tt class="xref py py-meth docutils literal"><span class="pre">handle()</span></tt></a>, subclasses must implement
+<a class="reference internal" href="#NoArgsCommand.handle_noargs" title="NoArgsCommand.handle_noargs"><tt class="xref py py-meth docutils literal"><span class="pre">handle_noargs()</span></tt></a>; <a class="reference internal" href="#BaseCommand.handle" title="BaseCommand.handle"><tt class="xref py py-meth docutils literal"><span class="pre">handle()</span></tt></a> itself is
+overridden to ensure no arguments are passed to the command.</p>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/NoArgsCommand.handle_noargs"></a><dt id="NoArgsCommand.handle_noargs">
+<tt class="descclassname">NoArgsCommand.</tt><tt class="descname">handle_noargs</tt>(<em>**options</em>)<a class="headerlink" href="#NoArgsCommand.handle_noargs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform this command's actions</p>
+</dd></dl>
+</div>
+<div class="section" id="s-command-exceptions">
+<span id="s-ref-command-exceptions"></span><span id="command-exceptions"></span><span id="ref-command-exceptions"></span><h3>Command exceptions<a class="headerlink" href="#command-exceptions" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<a name="//apple_ref/cpp/cl/CommandError"></a><dt id="CommandError">
+<em class="property">class </em><tt class="descname">CommandError</tt><a class="headerlink" href="#CommandError" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Exception class indicating a problem while executing a management
+command.</p>
+<p>If this exception is raised during the execution of a management
+command, it will be caught and turned into a nicely-printed error
+message to the appropriate output stream (i.e., stderr); as a
+result, raising this exception (with a sensible description of the
+error) is the preferred way to indicate that something has gone
+wrong in the execution of a command.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="yui-b" id="sidebar">
+<div class="sphinxsidebar">
+<div class="sphinxsidebarwrapper">
+<h3><a href="../contents.html">Table Of Contents</a></h3>
+<ul>
+<li><a class="reference internal" href="#">Writing custom django-admin commands</a><ul>
+<li><a class="reference internal" href="#command-objects">Command objects</a><ul>
+<li><a class="reference internal" href="#attributes">Attributes</a></li>
+<li><a class="reference internal" href="#methods">Methods</a></li>
+<li><a class="reference internal" href="#basecommand-subclasses">BaseCommand subclasses</a></li>
+<li><a class="reference internal" href="#command-exceptions">Command exceptions</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3>Browse</h3>
+<ul>
+<li>Prev: <a href="contribute.html">How to contribute to Django</a></li>
+<li>Next: <a href="custom-model-fields.html">Writing custom model fields</a></li>
+</ul>
+<h3>You are here:</h3>
+<ul>
+<li>
+<a href="../index.html">Django v1.3.1 documentation</a>
+<ul><li><a href="index.html">“How-to” guides</a>
+<ul><li>Writing custom django-admin commands</li></ul>
+</li></ul>
+</li>
+</ul>
+<h3>This Page</h3>
+<ul class="this-page-menu">
+<li><a href="../_sources/howto/custom-management-commands.txt" rel="nofollow">Show Source</a></li>
+</ul>
+<div id="searchbox" style="display: none">
+<h3>Quick search</h3>
+<form action="../search.html" class="search" method="get">
+<input name="q" size="18" type="text"/>
+<input type="submit" value="Go"/>
+<input name="check_keywords" type="hidden" value="yes"/>
+<input name="area" type="hidden" value="default"/>
+</form>
+<p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+</div>
+</div>
+<h3>Last update:</h3>
+<p class="topless">Dec 06, 2011</p>
+</div>
+</div>
+<div id="ft">
+<div class="nav">
+    « <a href="contribute.html" title="How to contribute to Django">previous</a> 
+     |
+    <a accesskey="U" href="index.html" title="&#8220;How-to&#8221; guides">up</a>
+   |
+    <a href="custom-model-fields.html" title="Writing custom model fields">next</a> »</div>
+</div>
+</div>
+<div class="clearer"></div>
+</div>
+<div style="display:none;"><a name="#"></a><h3 class="tasks">TOC</h3><ul class="tooltip"><li class="tooltip"><a href="#">Writing custom django-admin commands</a></li><li class="tooltip"><a href="#command-objects">Command objects</a></li><li class="tooltip"><a href="#attributes">Attributes</a></li><li class="tooltip"><a href="#methods">Methods</a></li><li class="tooltip"><a href="#basecommand-subclasses">BaseCommand subclasses</a></li><li class="tooltip"><a href="#command-exceptions">Command exceptions</a></li></ul></div></body>
+</html>

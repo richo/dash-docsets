@@ -1,0 +1,272 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<title>Form preview — Django v1.3.1 documentation</title>
+<link href="../../../_static/default.css" rel="stylesheet" type="text/css"/>
+<link href="../../../_static/pygments.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '1.3.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+<script src="../../../_static/jquery.js" type="text/javascript"></script>
+<script src="../../../_static/underscore.js" type="text/javascript"></script>
+<script src="../../../_static/doctools.js" type="text/javascript"></script>
+<link href="../../../index.html" rel="top" title="Django v1.3.1 documentation"/>
+<link href="index.html" rel="up" title="django.contrib.formtools"/>
+<link href="form-wizard.html" rel="next" title="Form wizard"/>
+<link href="index.html" rel="prev" title="django.contrib.formtools"/>
+<script src="../../../templatebuiltins.js" type="text/javascript"></script>
+<script type="text/javascript">
+(function($) {
+    if (!django_template_builtins) {
+       // templatebuiltins.js missing, do nothing.
+       return;
+    }
+    $(document).ready(function() {
+        // Hyperlink Django template tags and filters
+        var base = "../../templates/builtins.html";
+        if (base == "#") {
+            // Special case for builtins.html itself
+            base = "";
+        }
+        // Tags are keywords, class '.k'
+        $("div.highlight\\-html\\+django span.k").each(function(i, elem) {
+             var tagname = $(elem).text();
+             if ($.inArray(tagname, django_template_builtins.ttags) != -1) {
+                 var fragment = tagname.replace(/_/, '-');
+                 $(elem).html("&lt;a href='" + base + "#" + fragment + "'&gt;" + tagname + "");
+             }
+        });
+        // Filters are functions, class '.nf'
+        $("div.highlight\\-html\\+django span.nf").each(function(i, elem) {
+             var filtername = $(elem).text();
+             if ($.inArray(filtername, django_template_builtins.tfilters) != -1) {
+                 var fragment = filtername.replace(/_/, '-');
+                 $(elem).html("<a href='" + base + "#" + fragment + "'>" + filtername + "</a>");
+             }
+        });
+    });
+})(jQuery);
+</script>
+</head>
+<body>
+<div class="document">
+<div class="yui-t6" id="custom-doc">
+<div id="hd">
+<h1><a href="../../../index.html">Django v1.3.1 documentation</a></h1>
+<div id="global-nav">
+<a href="../../../index.html" title="Home page">Home</a>  |
+        <a href="../../../contents.html" title="Table of contents">Table of contents</a>  |
+        <a href="../../../genindex.html" title="Global index">Index</a>  |
+        <a href="../../../py-modindex.html" title="Module index">Modules</a>
+</div>
+<div class="nav">
+    « <a href="index.html" title="django.contrib.formtools">previous</a> 
+     |
+    <a accesskey="U" href="../../index.html" title="API Reference">up</a>
+   |
+    <a href="form-wizard.html" title="Form wizard">next</a> »</div>
+</div>
+<div id="bd">
+<div id="yui-main">
+<div class="yui-b">
+<div class="yui-g" id="ref-contrib-formtools-form-preview">
+<div class="section" id="s-module-django.contrib.formtools.preview">
+<span id="s-form-preview"></span><span id="module-django.contrib.formtools.preview"></span><span id="form-preview"></span><h1>Form preview<a class="headerlink" href="#module-django.contrib.formtools.preview" title="Permalink to this headline">¶</a></h1>
+<p>Django comes with an optional “form preview” application that helps automate
+the following workflow:</p>
+<p>“Display an HTML form, force a preview, then do something with the submission.”</p>
+<p>To force a preview of a form submission, all you have to do is write a short
+Python class.</p>
+<div class="section" id="s-overview">
+<span id="overview"></span><h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
+<p>Given a <a class="reference internal" href="../../forms/api.html#django.forms.Form" title="django.forms.Form"><tt class="xref py py-class docutils literal"><span class="pre">django.forms.Form</span></tt></a> subclass that you define, this
+application takes care of the following workflow:</p>
+<blockquote>
+<ol class="arabic simple">
+<li>Displays the form as HTML on a Web page.</li>
+<li>Validates the form data when it’s submitted via POST.
+a. If it’s valid, displays a preview page.
+b. If it’s not valid, redisplays the form with error messages.</li>
+<li>When the “confirmation” form is submitted from the preview page, calls
+a hook that you define – a
+<tt class="xref py py-meth docutils literal"><span class="pre">done()</span></tt> method that gets
+passed the valid data.</li>
+</ol>
+</blockquote>
+<p>The framework enforces the required preview by passing a shared-secret hash to
+the preview page via hidden form fields. If somebody tweaks the form parameters
+on the preview page, the form submission will fail the hash-comparison test.</p>
+</div>
+<div class="section" id="s-how-to-use-formpreview">
+<span id="how-to-use-formpreview"></span><h2>How to use <tt class="docutils literal"><span class="pre">FormPreview</span></tt><a class="headerlink" href="#how-to-use-formpreview" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<ol class="arabic">
+<li><p class="first">Point Django at the default FormPreview templates. There are two ways to
+do this:</p>
+<blockquote>
+<ul class="simple">
+<li>Add <tt class="docutils literal"><span class="pre">'django.contrib.formtools'</span></tt> to your
+<a class="reference internal" href="../../settings.html#std:setting-INSTALLED_APPS"><tt class="xref std std-setting docutils literal"><span class="pre">INSTALLED_APPS</span></tt></a> setting. This will work if your
+<a class="reference internal" href="../../settings.html#std:setting-TEMPLATE_LOADERS"><tt class="xref std std-setting docutils literal"><span class="pre">TEMPLATE_LOADERS</span></tt></a> setting includes the
+<tt class="docutils literal"><span class="pre">app_directories</span></tt> template loader (which is the case by
+default). See the <a class="reference internal" href="../../templates/api.html#template-loaders"><em>template loader docs</em></a>
+for more.</li>
+<li>Otherwise, determine the full filesystem path to the
+<tt class="file docutils literal"><span class="pre">django/contrib/formtools/templates</span></tt> directory, and add that
+directory to your <a class="reference internal" href="../../settings.html#std:setting-TEMPLATE_DIRS"><tt class="xref std std-setting docutils literal"><span class="pre">TEMPLATE_DIRS</span></tt></a> setting.</li>
+</ul>
+</blockquote>
+</li>
+<li><p class="first">Create a <a class="reference internal" href="#django.contrib.formtools.preview.FormPreview" title="django.contrib.formtools.preview.FormPreview"><tt class="xref py py-class docutils literal"><span class="pre">FormPreview</span></tt></a> subclass that
+overrides the <tt class="xref py py-meth docutils literal"><span class="pre">done()</span></tt>
+method:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">django.contrib.formtools.preview</span> <span class="kn">import</span> <span class="n">FormPreview</span>
+<span class="kn">from</span> <span class="nn">myapp.models</span> <span class="kn">import</span> <span class="n">SomeModel</span>
+
+<span class="k">class</span> <span class="nc">SomeModelFormPreview</span><span class="p">(</span><span class="n">FormPreview</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">done</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">cleaned_data</span><span class="p">):</span>
+        <span class="c"># Do something with the cleaned_data, then redirect</span>
+        <span class="c"># to a &quot;success&quot; page.</span>
+        <span class="k">return</span> <span class="n">HttpResponseRedirect</span><span class="p">(</span><span class="s">'/form/success'</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This method takes an <a class="reference internal" href="../../request-response.html#django.http.HttpRequest" title="django.http.HttpRequest"><tt class="xref py py-class docutils literal"><span class="pre">HttpRequest</span></tt></a> object and a
+dictionary of the form data after it has been validated and cleaned.
+It should return an <a class="reference internal" href="../../request-response.html#django.http.HttpResponseRedirect" title="django.http.HttpResponseRedirect"><tt class="xref py py-class docutils literal"><span class="pre">HttpResponseRedirect</span></tt></a> that
+is the end result of the form being submitted.</p>
+</li>
+<li><p class="first">Change your URLconf to point to an instance of your
+<a class="reference internal" href="#django.contrib.formtools.preview.FormPreview" title="django.contrib.formtools.preview.FormPreview"><tt class="xref py py-class docutils literal"><span class="pre">FormPreview</span></tt></a> subclass:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">myapp.preview</span> <span class="kn">import</span> <span class="n">SomeModelFormPreview</span>
+<span class="kn">from</span> <span class="nn">myapp.forms</span> <span class="kn">import</span> <span class="n">SomeModelForm</span>
+<span class="kn">from</span> <span class="nn">django</span> <span class="kn">import</span> <span class="n">forms</span>
+</pre></div>
+</div>
+<p>...and add the following line to the appropriate model in your URLconf:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">(</span><span class="s">r'^post/$'</span><span class="p">,</span> <span class="n">SomeModelFormPreview</span><span class="p">(</span><span class="n">SomeModelForm</span><span class="p">)),</span>
+</pre></div>
+</div>
+<p>where <tt class="docutils literal"><span class="pre">SomeModelForm</span></tt> is a Form or ModelForm class for the model.</p>
+</li>
+<li><p class="first">Run the Django server and visit <tt class="file docutils literal"><span class="pre">/post/</span></tt> in your browser.</p>
+</li>
+</ol>
+</blockquote>
+</div>
+<div class="section" id="s-formpreview-classes">
+<span id="formpreview-classes"></span><h2><tt class="docutils literal"><span class="pre">FormPreview</span></tt> classes<a class="headerlink" href="#formpreview-classes" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<a name="//apple_ref/cpp/cl/django.contrib.formtools.preview.FormPreview"></a><dt id="django.contrib.formtools.preview.FormPreview">
+<em class="property">class </em><tt class="descname">FormPreview</tt><a class="headerlink" href="#django.contrib.formtools.preview.FormPreview" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>A <a class="reference internal" href="#django.contrib.formtools.preview.FormPreview" title="django.contrib.formtools.preview.FormPreview"><tt class="xref py py-class docutils literal"><span class="pre">FormPreview</span></tt></a> class is a simple Python class
+that represents the preview workflow.
+<a class="reference internal" href="#django.contrib.formtools.preview.FormPreview" title="django.contrib.formtools.preview.FormPreview"><tt class="xref py py-class docutils literal"><span class="pre">FormPreview</span></tt></a> classes must subclass
+<tt class="docutils literal"><span class="pre">django.contrib.formtools.preview.FormPreview</span></tt> and override the
+<tt class="xref py py-meth docutils literal"><span class="pre">done()</span></tt> method. They can live
+anywhere in your codebase.</p>
+</div>
+<div class="section" id="s-formpreview-templates">
+<span id="formpreview-templates"></span><h2><tt class="docutils literal"><span class="pre">FormPreview</span></tt> templates<a class="headerlink" href="#formpreview-templates" title="Permalink to this headline">¶</a></h2>
+<p>By default, the form is rendered via the template <tt class="file docutils literal"><span class="pre">formtools/form.html</span></tt>,
+and the preview page is rendered via the template <tt class="file docutils literal"><span class="pre">formtools/preview.html</span></tt>.
+These values can be overridden for a particular form preview by setting
+<tt class="xref py py-attr docutils literal"><span class="pre">preview_template</span></tt> and
+<tt class="xref py py-attr docutils literal"><span class="pre">form_template</span></tt> attributes on the
+FormPreview subclass. See <tt class="file docutils literal"><span class="pre">django/contrib/formtools/templates</span></tt> for the
+default templates.</p>
+</div>
+<div class="section" id="s-advanced-formpreview-methods">
+<span id="advanced-formpreview-methods"></span><h2>Advanced <tt class="docutils literal"><span class="pre">FormPreview</span></tt> methods<a class="headerlink" href="#advanced-formpreview-methods" title="Permalink to this headline">¶</a></h2>
+<div class="versionadded">
+<span class="title">New in Django 1.2:</span> <a class="reference internal" href="../../../releases/1.2.html"><em>Please, see the release notes</em></a></div>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.contrib.formtools.preview.FormPreview.process_preview"></a><dt id="django.contrib.formtools.preview.FormPreview.process_preview">
+<tt class="descclassname">FormPreview.</tt><tt class="descname">process_preview</tt>()<a class="headerlink" href="#django.contrib.formtools.preview.FormPreview.process_preview" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a validated form, performs any extra processing before displaying the
+preview page, and saves any extra data in context.</p>
+<p>By default, this method is empty.  It is called after the form is validated,
+but before the context is modified with hash information and rendered.</p>
+</dd></dl>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="yui-b" id="sidebar">
+<div class="sphinxsidebar">
+<div class="sphinxsidebarwrapper">
+<h3><a href="../../../contents.html">Table Of Contents</a></h3>
+<ul>
+<li><a class="reference internal" href="#">Form preview</a><ul>
+<li><a class="reference internal" href="#overview">Overview</a></li>
+<li><a class="reference internal" href="#how-to-use-formpreview">How to use <tt class="docutils literal"><span class="pre">FormPreview</span></tt></a></li>
+<li><a class="reference internal" href="#formpreview-classes"><tt class="docutils literal"><span class="pre">FormPreview</span></tt> classes</a></li>
+<li><a class="reference internal" href="#formpreview-templates"><tt class="docutils literal"><span class="pre">FormPreview</span></tt> templates</a></li>
+<li><a class="reference internal" href="#advanced-formpreview-methods">Advanced <tt class="docutils literal"><span class="pre">FormPreview</span></tt> methods</a></li>
+</ul>
+</li>
+</ul>
+<h3>Browse</h3>
+<ul>
+<li>Prev: <a href="index.html">django.contrib.formtools</a></li>
+<li>Next: <a href="form-wizard.html">Form wizard</a></li>
+</ul>
+<h3>You are here:</h3>
+<ul>
+<li>
+<a href="../../../index.html">Django v1.3.1 documentation</a>
+<ul><li><a href="../../index.html">API Reference</a>
+<ul><li><a href="../index.html"><tt class="docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal"><span class="pre">contrib</span></tt> packages</a>
+<ul><li><a href="index.html">django.contrib.formtools</a>
+<ul><li>Form preview</li></ul>
+</li></ul></li></ul></li></ul>
+</li>
+</ul>
+<h3>This Page</h3>
+<ul class="this-page-menu">
+<li><a href="../../../_sources/ref/contrib/formtools/form-preview.txt" rel="nofollow">Show Source</a></li>
+</ul>
+<div id="searchbox" style="display: none">
+<h3>Quick search</h3>
+<form action="../../../search.html" class="search" method="get">
+<input name="q" size="18" type="text"/>
+<input type="submit" value="Go"/>
+<input name="check_keywords" type="hidden" value="yes"/>
+<input name="area" type="hidden" value="default"/>
+</form>
+<p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+</div>
+</div>
+<h3>Last update:</h3>
+<p class="topless">Dec 06, 2011</p>
+</div>
+</div>
+<div id="ft">
+<div class="nav">
+    « <a href="index.html" title="django.contrib.formtools">previous</a> 
+     |
+    <a accesskey="U" href="../../index.html" title="API Reference">up</a>
+   |
+    <a href="form-wizard.html" title="Form wizard">next</a> »</div>
+</div>
+</div>
+<div class="clearer"></div>
+</div>
+<div style="display:none;"><a name="#"></a><h3 class="tasks">TOC</h3><ul class="tooltip"><li class="tooltip"><a href="#">Form preview</a></li><li class="tooltip"><a href="#overview">Overview</a></li><li class="tooltip"><a href="#how-to-use-formpreview">How to use FormPreview</a></li><li class="tooltip"><a href="#formpreview-classes">FormPreview classes</a></li><li class="tooltip"><a href="#formpreview-templates">FormPreview templates</a></li><li class="tooltip"><a href="#advanced-formpreview-methods">Advanced FormPreview methods</a></li></ul></div></body>
+</html>

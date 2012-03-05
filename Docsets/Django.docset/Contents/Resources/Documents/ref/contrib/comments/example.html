@@ -1,0 +1,387 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Example of using the in-built comments app &mdash; Django v1.3.1 documentation</title>
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '1.3.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="Django v1.3.1 documentation" href="../../../index.html" />
+    <link rel="up" title="Django’s comments framework" href="index.html" />
+    <link rel="next" title="The contenttypes framework" href="../contenttypes.html" />
+    <link rel="prev" title="Generic comment moderation" href="moderation.html" />
+ 
+<script type="text/javascript" src="../../../templatebuiltins.js"></script>
+<script type="text/javascript">
+(function($) {
+    if (!django_template_builtins) {
+       // templatebuiltins.js missing, do nothing.
+       return;
+    }
+    $(document).ready(function() {
+        // Hyperlink Django template tags and filters
+        var base = "../../templates/builtins.html";
+        if (base == "#") {
+            // Special case for builtins.html itself
+            base = "";
+        }
+        // Tags are keywords, class '.k'
+        $("div.highlight\\-html\\+django span.k").each(function(i, elem) {
+             var tagname = $(elem).text();
+             if ($.inArray(tagname, django_template_builtins.ttags) != -1) {
+                 var fragment = tagname.replace(/_/, '-');
+                 $(elem).html("<a href='" + base + "#" + fragment + "'>" + tagname + "</a>");
+             }
+        });
+        // Filters are functions, class '.nf'
+        $("div.highlight\\-html\\+django span.nf").each(function(i, elem) {
+             var filtername = $(elem).text();
+             if ($.inArray(filtername, django_template_builtins.tfilters) != -1) {
+                 var fragment = filtername.replace(/_/, '-');
+                 $(elem).html("<a href='" + base + "#" + fragment + "'>" + filtername + "</a>");
+             }
+        });
+    });
+})(jQuery);
+</script>
+
+  </head>
+  <body>
+
+    <div class="document">
+  <div id="custom-doc" class="yui-t6">
+    <div id="hd">
+      <h1><a href="../../../index.html">Django v1.3.1 documentation</a></h1>
+      <div id="global-nav">
+        <a title="Home page" href="../../../index.html">Home</a>  |
+        <a title="Table of contents" href="../../../contents.html">Table of contents</a>  |
+        <a title="Global index" href="../../../genindex.html">Index</a>  |
+        <a title="Module index" href="../../../py-modindex.html">Modules</a>
+      </div>
+      <div class="nav">
+    &laquo; <a href="moderation.html" title="Generic comment moderation">previous</a> 
+     |
+    <a href="../../index.html" title="API Reference" accesskey="U">up</a>
+   |
+    <a href="../contenttypes.html" title="The contenttypes framework">next</a> &raquo;</div>
+    </div>
+    
+    <div id="bd">
+      <div id="yui-main">
+        <div class="yui-b">
+          <div class="yui-g" id="ref-contrib-comments-example">
+            
+  <div class="section" id="s-example-of-using-the-in-built-comments-app">
+<span id="example-of-using-the-in-built-comments-app"></span><h1>Example of using the in-built comments app<a class="headerlink" href="#example-of-using-the-in-built-comments-app" title="Permalink to this headline">¶</a></h1>
+<p>Follow the first three steps of the quick start guide in the
+<a class="reference internal" href="index.html"><em>documentation</em></a>.</p>
+<p>Now suppose, you have an app (<tt class="docutils literal"><span class="pre">blog</span></tt>) with a model (<tt class="docutils literal"><span class="pre">Post</span></tt>)
+to which you want to attach comments. Let us also suppose that
+you have a template called <tt class="docutils literal"><span class="pre">blog_detail.html</span></tt> where you want
+to display the comments list and comment form.</p>
+<div class="section" id="s-template">
+<span id="template"></span><h2>Template<a class="headerlink" href="#template" title="Permalink to this headline">¶</a></h2>
+<p>First, we should load the <tt class="docutils literal"><span class="pre">comment</span></tt> template tags in the
+<tt class="docutils literal"><span class="pre">blog_detail.html</span></tt> so that we can use it&#8217;s functionality. So
+just like all other custom template tag libraries:</p>
+<div class="highlight-html+django"><div class="highlight"><pre><span class="cp">{%</span> <span class="k">load</span> <span class="nv">comments</span> <span class="cp">%}</span>
+</pre></div>
+</div>
+<p>Next, let us add the number of comments attached to the particular
+model instance of <tt class="docutils literal"><span class="pre">Post</span></tt>. For this we assume that a context
+variable <tt class="docutils literal"><span class="pre">object_pk</span></tt> is present which gives the <tt class="docutils literal"><span class="pre">id</span></tt> of the
+instance of <tt class="docutils literal"><span class="pre">Post</span></tt>.</p>
+<p>The usage of the <a class="reference internal" href="index.html#std:templatetag-get_comment_count"><tt class="xref std std-ttag docutils literal"><span class="pre">get_comment_count</span></tt></a> tag is like below:</p>
+<div class="highlight-html+django"><div class="highlight"><pre><span class="cp">{%</span> <span class="k">get_comment_count</span> <span class="nv">for</span> <span class="nv">blog.post</span> <span class="nv">object_pk</span> <span class="k">as</span> <span class="nv">comment_count</span> <span class="cp">%}</span>
+<span class="nt">&lt;p&gt;</span><span class="cp">{{</span> <span class="nv">comment_count</span> <span class="cp">}}</span> comments have been posted.<span class="nt">&lt;/p&gt;</span>
+</pre></div>
+</div>
+<p>If you have the instance (say <tt class="docutils literal"><span class="pre">entry</span></tt>) of the model (<tt class="docutils literal"><span class="pre">Post</span></tt>)
+available in the context, then you can refer to it directly:</p>
+<div class="highlight-html+django"><div class="highlight"><pre><span class="cp">{%</span> <span class="k">get_comment_count</span> <span class="nv">for</span> <span class="nv">entry</span> <span class="k">as</span> <span class="nv">comment_count</span> <span class="cp">%}</span>
+<span class="nt">&lt;p&gt;</span><span class="cp">{{</span> <span class="nv">comment_count</span> <span class="cp">}}</span> comments have been posted.<span class="nt">&lt;/p&gt;</span>
+</pre></div>
+</div>
+<div class="versionadded">
+<span class="title">New in Django 1.2:</span> <a class="reference internal" href="../../../releases/1.2.html"><em>Please, see the release notes</em></a></div>
+<p>Next, we can use the <a class="reference internal" href="index.html#std:templatetag-render_comment_list"><tt class="xref std std-ttag docutils literal"><span class="pre">render_comment_list</span></tt></a> tag, to render all comments
+to the given instance (<tt class="docutils literal"><span class="pre">entry</span></tt>) by using the <tt class="docutils literal"><span class="pre">comments/list.html</span></tt> template.</p>
+<blockquote>
+{% render_comment_list for entry %}</blockquote>
+<p>Django will will look for the <tt class="docutils literal"><span class="pre">list.html</span></tt> under the following directories
+(for our example):</p>
+<div class="highlight-html+django"><div class="highlight"><pre>comments/blog/post/list.html
+comments/blog/list.html
+comments/list.html
+</pre></div>
+</div>
+<p>To get a list of comments, we make use of the <a class="reference internal" href="index.html#std:templatetag-get_comment_list"><tt class="xref std std-ttag docutils literal"><span class="pre">get_comment_list</span></tt></a> tag.
+This tag's usage is very similar to the <a class="reference internal" href="index.html#std:templatetag-get_comment_count"><tt class="xref std std-ttag docutils literal"><span class="pre">get_comment_count</span></tt></a> tag. We
+need to remember that the <a class="reference internal" href="index.html#std:templatetag-get_comment_list"><tt class="xref std std-ttag docutils literal"><span class="pre">get_comment_list</span></tt></a> returns a list of comments
+and hence we will have to iterate through them to display them:</p>
+<div class="highlight-html+django"><div class="highlight"><pre><span class="cp">{%</span> <span class="k">get_comment_list</span> <span class="nv">for</span> <span class="nv">blog.post</span> <span class="nv">object_pk</span> <span class="k">as</span> <span class="nv">comment_list</span> <span class="cp">%}</span>
+<span class="cp">{%</span> <span class="k">for</span> <span class="nv">comment</span> <span class="k">in</span> <span class="nv">comment_list</span> <span class="cp">%}</span>
+<span class="nt">&lt;p&gt;</span>Posted by: <span class="cp">{{</span> <span class="nv">comment.user_name</span> <span class="cp">}}</span> on <span class="cp">{{</span> <span class="nv">comment.submit_date</span> <span class="cp">}}</span><span class="nt">&lt;/p&gt;</span>
+...
+<span class="nt">&lt;p&gt;</span>Comment: <span class="cp">{{</span> <span class="nv">comment.comment</span> <span class="cp">}}</span><span class="nt">&lt;/p&gt;</span>
+...
+<span class="cp">{%</span> <span class="k">endfor</span> <span class="cp">%}</span>
+</pre></div>
+</div>
+<p>Finally, we display the comment form, enabling users to enter their
+comments. There are two ways of doing so. The first is when you want to
+display the comments template available under your <tt class="docutils literal"><span class="pre">comments/form.html</span></tt>.
+The other method gives you a chance to customize the form.</p>
+<p>The first method makes use of the <a class="reference internal" href="index.html#std:templatetag-render_comment_form"><tt class="xref std std-ttag docutils literal"><span class="pre">render_comment_form</span></tt></a> tag. It's usage
+too is similar to the other three tags we have discussed above:</p>
+<div class="highlight-html+django"><div class="highlight"><pre><span class="cp">{%</span> <span class="k">render_comment_form</span> <span class="nv">for</span> <span class="nv">entry</span> <span class="cp">%}</span>
+</pre></div>
+</div>
+<p>It looks for the <tt class="docutils literal"><span class="pre">form.html</span></tt> under the following directories
+(for our example):</p>
+<div class="highlight-html+django"><div class="highlight"><pre>comments/blog/post/form.html
+comments/blog/form.html
+comments/form.html
+</pre></div>
+</div>
+<p>Since we customize the form in the second method, we make use of another
+tag called <a class="reference internal" href="index.html#std:templatetag-comment_form_target"><tt class="xref std std-ttag docutils literal"><span class="pre">comment_form_target</span></tt></a>. This tag on rendering gives the URL
+where the comment form is posted. Without any <a class="reference internal" href="custom.html"><em>customization</em></a>, <a class="reference internal" href="index.html#std:templatetag-comment_form_target"><tt class="xref std std-ttag docutils literal"><span class="pre">comment_form_target</span></tt></a> evaluates to
+<tt class="docutils literal"><span class="pre">/comments/post/</span></tt>. We use this tag in the form's <tt class="docutils literal"><span class="pre">action</span></tt> attribute.</p>
+<p>The <a class="reference internal" href="index.html#std:templatetag-get_comment_form"><tt class="xref std std-ttag docutils literal"><span class="pre">get_comment_form</span></tt></a> tag renders a <tt class="docutils literal"><span class="pre">form</span></tt> for a model instance by
+creating a context variable. One can iterate over the <tt class="docutils literal"><span class="pre">form</span></tt> object to
+get individual fields. This gives you fine-grain control over the form:</p>
+<div class="highlight-html+django"><div class="highlight"><pre><span class="cp">{%</span> <span class="k">for</span> <span class="nv">field</span> <span class="k">in</span> <span class="nv">form</span> <span class="cp">%}</span>
+<span class="cp">{%</span> <span class="k">ifequal</span> <span class="nv">field.name</span> <span class="s2">&quot;comment&quot;</span> <span class="cp">%}</span>
+  <span class="c">&lt;!-- Customize the &quot;comment&quot; field, say, make CSS changes --&gt;</span>
+...
+<span class="cp">{%</span> <span class="k">endfor</span> <span class="cp">%}</span>
+</pre></div>
+</div>
+<p>But let's look at a simple example:</p>
+<div class="highlight-html+django"><div class="highlight"><pre><span class="cp">{%</span> <span class="k">get_comment_form</span> <span class="nv">for</span> <span class="nv">entry</span> <span class="k">as</span> <span class="nv">form</span> <span class="cp">%}</span>
+<span class="c">&lt;!-- A context variable called form is created with the necessary hidden</span>
+<span class="c">fields, timestamps and security hashes --&gt;</span>
+<span class="nt">&lt;table&gt;</span>
+  <span class="nt">&lt;form</span> <span class="na">action=</span><span class="s">&quot;</span><span class="cp">{%</span> <span class="k">comment_form_target</span> <span class="cp">%}</span><span class="s">&quot;</span> <span class="na">method=</span><span class="s">&quot;post&quot;</span><span class="nt">&gt;</span>
+    <span class="cp">{%</span> <span class="k">csrf_token</span> <span class="cp">%}</span>
+    <span class="cp">{{</span> <span class="nv">form</span> <span class="cp">}}</span>
+    <span class="nt">&lt;tr&gt;</span>
+      <span class="nt">&lt;td</span> <span class="na">colspan=</span><span class="s">&quot;2&quot;</span><span class="nt">&gt;</span>
+        <span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">&quot;submit&quot;</span> <span class="na">name=</span><span class="s">&quot;submit&quot;</span> <span class="na">value=</span><span class="s">&quot;Post&quot;</span><span class="nt">&gt;</span>
+        <span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">&quot;submit&quot;</span> <span class="na">name=</span><span class="s">&quot;preview&quot;</span> <span class="na">value=</span><span class="s">&quot;Preview&quot;</span><span class="nt">&gt;</span>
+      <span class="nt">&lt;/td&gt;</span>
+    <span class="nt">&lt;/tr&gt;</span>
+  <span class="nt">&lt;/form&gt;</span>
+<span class="nt">&lt;/table&gt;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="s-flagging">
+<span id="flagging"></span><h2>Flagging<a class="headerlink" href="#flagging" title="Permalink to this headline">¶</a></h2>
+<p>If you want your users to be able to flag comments (say for profanity), you
+can just direct them (by placing a link in your comment list) to <tt class="docutils literal"><span class="pre">/flag/{{</span>
+<span class="pre">comment.id</span> <span class="pre">}}/</span></tt>. Similarly, a user with requisite permissions (<tt class="docutils literal"><span class="pre">&quot;Can</span>
+<span class="pre">moderate</span> <span class="pre">comments&quot;</span></tt>) can approve and delete comments. This can also be
+done through the <tt class="docutils literal"><span class="pre">admin</span></tt> as you'll see later. You might also want to
+customize the following templates:</p>
+<blockquote>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">flag.html</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">flagged.html</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">approve.html</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">approved.html</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">delete.html</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">deleted.html</span></tt></li>
+</ul>
+</blockquote>
+<p>found under the directory structure we saw for <tt class="docutils literal"><span class="pre">form.html</span></tt>.</p>
+</div>
+<div class="section" id="s-feeds">
+<span id="feeds"></span><h2>Feeds<a class="headerlink" href="#feeds" title="Permalink to this headline">¶</a></h2>
+<p>Suppose you want to export a <a class="reference internal" href="../syndication.html"><em>feed</em></a> of the
+latest comments, you can use the in-built <tt class="xref py py-class docutils literal"><span class="pre">LatestCommentFeed</span></tt>. Just
+enable it in your project's <tt class="docutils literal"><span class="pre">urls.py</span></tt>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">django.conf.urls.defaults</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">django.contrib.comments.feeds</span> <span class="kn">import</span> <span class="n">LatestCommentFeed</span>
+
+<span class="n">urlpatterns</span> <span class="o">=</span> <span class="n">patterns</span><span class="p">(</span><span class="s">&#39;&#39;</span><span class="p">,</span>
+<span class="c"># ...</span>
+    <span class="p">(</span><span class="s">r&#39;^feeds/latest/$&#39;</span><span class="p">,</span> <span class="n">LatestCommentFeed</span><span class="p">()),</span>
+<span class="c"># ...</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>Now you should have the latest comment feeds being served off <tt class="docutils literal"><span class="pre">/feeds/latest/</span></tt>.</p>
+<div class="versionchanged">
+<span class="title">Changed in Django 1.3:</span> <a class="reference internal" href="../../../releases/1.3.html"><em>Please, see the release notes</em></a></div>
+<p>Prior to Django 1.3, the LatestCommentFeed was deployed using the
+syndication feed view:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">django.conf.urls.defaults</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">django.contrib.comments.feeds</span> <span class="kn">import</span> <span class="n">LatestCommentFeed</span>
+
+<span class="n">feeds</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">&#39;latest&#39;</span><span class="p">:</span> <span class="n">LatestCommentFeed</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="n">urlpatterns</span> <span class="o">=</span> <span class="n">patterns</span><span class="p">(</span><span class="s">&#39;&#39;</span><span class="p">,</span>
+<span class="c"># ...</span>
+    <span class="p">(</span><span class="s">r&#39;^feeds/(?P&lt;url&gt;.*)/$&#39;</span><span class="p">,</span> <span class="s">&#39;django.contrib.syndication.views.feed&#39;</span><span class="p">,</span>
+        <span class="p">{</span><span class="s">&#39;feed_dict&#39;</span><span class="p">:</span> <span class="n">feeds</span><span class="p">}),</span>
+<span class="c"># ...</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="s-moderation">
+<span id="moderation"></span><h2>Moderation<a class="headerlink" href="#moderation" title="Permalink to this headline">¶</a></h2>
+<p>Now that we have the comments framework working, we might want to have some
+moderation setup to administer the comments. The comments framework comes
+in-built with <a class="reference internal" href="moderation.html"><em>generic comment moderation</em></a>. The comment moderation has the following
+features (all of which or only certain can be enabled):</p>
+<blockquote>
+<ul class="simple">
+<li>Enable comments for a particular model instance.</li>
+<li>Close comments after a particular (user-defined) number of days.</li>
+<li>Email new comments to the site-staff.</li>
+</ul>
+</blockquote>
+<p>To enable comment moderation, we subclass the <tt class="xref py py-class docutils literal"><span class="pre">CommentModerator</span></tt> and
+register it with the moderation features we want. Let us suppose we want to
+close comments after 7 days of posting and also send out an email to the
+site staff. In <tt class="docutils literal"><span class="pre">blog/models.py</span></tt>, we register a comment moderator in the
+following way:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">django.contrib.comments.moderation</span> <span class="kn">import</span> <span class="n">CommentModerator</span><span class="p">,</span> <span class="n">moderator</span>
+<span class="kn">from</span> <span class="nn">django.db</span> <span class="kn">import</span> <span class="n">models</span>
+
+<span class="k">class</span> <span class="nc">Post</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">title</span>   <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span> <span class="o">=</span> <span class="mi">255</span><span class="p">)</span>
+    <span class="n">content</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">TextField</span><span class="p">()</span>
+    <span class="n">posted_date</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">DateTimeField</span><span class="p">()</span>
+
+<span class="k">class</span> <span class="nc">PostModerator</span><span class="p">(</span><span class="n">CommentModerator</span><span class="p">):</span>
+    <span class="n">email_notification</span> <span class="o">=</span> <span class="bp">True</span>
+    <span class="n">auto_close_field</span>   <span class="o">=</span> <span class="s">&#39;posted_date&#39;</span>
+    <span class="c"># Close the comments after 7 days.</span>
+    <span class="n">close_after</span>        <span class="o">=</span> <span class="mi">7</span>
+
+<span class="n">moderator</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">Post</span><span class="p">,</span> <span class="n">PostModerator</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The generic comment moderation also has the facility to remove comments.
+These comments can then be moderated by any user who has access to the
+<tt class="docutils literal"><span class="pre">admin</span></tt> site and the <tt class="docutils literal"><span class="pre">Can</span> <span class="pre">moderate</span> <span class="pre">comments</span></tt> permission (can be set
+under the <tt class="docutils literal"><span class="pre">Users</span></tt> page in the <tt class="docutils literal"><span class="pre">admin</span></tt>).</p>
+<p>The moderator can <tt class="docutils literal"><span class="pre">Flag</span></tt>, <tt class="docutils literal"><span class="pre">Approve</span></tt> or <tt class="docutils literal"><span class="pre">Remove</span></tt> comments using the
+<tt class="docutils literal"><span class="pre">Action</span></tt> drop-down in the <tt class="docutils literal"><span class="pre">admin</span></tt> under the <tt class="docutils literal"><span class="pre">Comments</span></tt> page.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Only a super-user will be able to delete comments from the database.
+<tt class="docutils literal"><span class="pre">Remove</span> <span class="pre">Comments</span></tt> only sets the <tt class="docutils literal"><span class="pre">is_public</span></tt> attribute to
+<tt class="xref docutils literal"><span class="pre">False</span></tt>.</p>
+</div>
+</div>
+</div>
+
+
+          </div>         
+        </div>
+      </div>
+      
+        
+          <div class="yui-b" id="sidebar">
+            
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../../contents.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Example of using the in-built comments app</a><ul>
+<li><a class="reference internal" href="#template">Template</a></li>
+<li><a class="reference internal" href="#flagging">Flagging</a></li>
+<li><a class="reference internal" href="#feeds">Feeds</a></li>
+<li><a class="reference internal" href="#moderation">Moderation</a></li>
+</ul>
+</li>
+</ul>
+
+  <h3>Browse</h3>
+  <ul>
+    
+      <li>Prev: <a href="moderation.html">Generic comment moderation</a></li>
+    
+    
+      <li>Next: <a href="../contenttypes.html">The contenttypes framework</a></li>
+    
+  </ul>
+  <h3>You are here:</h3>
+  <ul>
+      <li>
+        <a href="../../../index.html">Django v1.3.1 documentation</a>
+        
+          <ul><li><a href="../../index.html">API Reference</a>
+        
+          <ul><li><a href="../index.html"><tt class="docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal"><span class="pre">contrib</span></tt> packages</a>
+        
+          <ul><li><a href="index.html">Django&#8217;s comments framework</a>
+        
+        <ul><li>Example of using the in-built comments app</li></ul>
+        </li></ul></li></ul></li></ul>
+      </li>
+  </ul>  
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../../_sources/ref/contrib/comments/example.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+              <h3>Last update:</h3>
+              <p class="topless">Dec 06, 2011</p>
+          </div> 
+        
+      
+    </div>
+    
+    <div id="ft">
+      <div class="nav">
+    &laquo; <a href="moderation.html" title="Generic comment moderation">previous</a> 
+     |
+    <a href="../../index.html" title="API Reference" accesskey="U">up</a>
+   |
+    <a href="../contenttypes.html" title="The contenttypes framework">next</a> &raquo;</div>
+    </div>
+  </div>
+
+      <div class="clearer"></div>
+    </div>
+  </body>
+</html>

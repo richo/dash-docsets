@@ -1,0 +1,1720 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<title>Class-based generic views — Django v1.3.1 documentation</title>
+<link href="../_static/default.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/pygments.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.3.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+<script src="../_static/jquery.js" type="text/javascript"></script>
+<script src="../_static/underscore.js" type="text/javascript"></script>
+<script src="../_static/doctools.js" type="text/javascript"></script>
+<link href="../index.html" rel="top" title="Django v1.3.1 documentation"/>
+<link href="index.html" rel="up" title="API Reference"/>
+<link href="middleware.html" rel="next" title="Middleware"/>
+<link href="forms/validation.html" rel="prev" title="Form and field validation"/>
+<script src="../templatebuiltins.js" type="text/javascript"></script>
+<script type="text/javascript">
+(function($) {
+    if (!django_template_builtins) {
+       // templatebuiltins.js missing, do nothing.
+       return;
+    }
+    $(document).ready(function() {
+        // Hyperlink Django template tags and filters
+        var base = "templates/builtins.html";
+        if (base == "#") {
+            // Special case for builtins.html itself
+            base = "";
+        }
+        // Tags are keywords, class '.k'
+        $("div.highlight\\-html\\+django span.k").each(function(i, elem) {
+             var tagname = $(elem).text();
+             if ($.inArray(tagname, django_template_builtins.ttags) != -1) {
+                 var fragment = tagname.replace(/_/, '-');
+                 $(elem).html("&lt;a href='" + base + "#" + fragment + "'&gt;" + tagname + "");
+             }
+        });
+        // Filters are functions, class '.nf'
+        $("div.highlight\\-html\\+django span.nf").each(function(i, elem) {
+             var filtername = $(elem).text();
+             if ($.inArray(filtername, django_template_builtins.tfilters) != -1) {
+                 var fragment = filtername.replace(/_/, '-');
+                 $(elem).html("<a href='" + base + "#" + fragment + "'>" + filtername + "</a>");
+             }
+        });
+    });
+})(jQuery);
+</script>
+</head>
+<body>
+<div class="document">
+<div class="yui-t6" id="custom-doc">
+<div id="hd">
+<h1><a href="../index.html">Django v1.3.1 documentation</a></h1>
+<div id="global-nav">
+<a href="../index.html" title="Home page">Home</a>  |
+        <a href="../contents.html" title="Table of contents">Table of contents</a>  |
+        <a href="../genindex.html" title="Global index">Index</a>  |
+        <a href="../py-modindex.html" title="Module index">Modules</a>
+</div>
+<div class="nav">
+    « <a href="forms/validation.html" title="Form and field validation">previous</a> 
+     |
+    <a accesskey="U" href="index.html" title="API Reference">up</a>
+   |
+    <a href="middleware.html" title="Middleware">next</a> »</div>
+</div>
+<div id="bd">
+<div id="yui-main">
+<div class="yui-b">
+<div class="yui-g" id="ref-class-based-views">
+<div class="section" id="s-class-based-generic-views">
+<span id="class-based-generic-views"></span><h1>Class-based generic views<a class="headerlink" href="#class-based-generic-views" title="Permalink to this headline">¶</a></h1>
+<div class="versionadded">
+<span class="title">New in Django 1.3:</span> <a class="reference internal" href="../releases/1.3.html"><em>Please see the release notes</em></a></div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>Prior to Django 1.3, generic views were implemented as functions. The
+function-based implementation has been deprecated in favor of the
+class-based approach described here.</p>
+<p class="last">For details on the previous generic views implementation,
+see the <a class="reference internal" href="../topics/generic-views.html"><em>topic guide</em></a> and
+<a class="reference internal" href="generic-views.html"><em>detailed reference</em></a>.</p>
+</div>
+<p>Writing Web applications can be monotonous, because we repeat certain patterns
+again and again. Django tries to take away some of that monotony at the model
+and template layers, but Web developers also experience this boredom at the view
+level.</p>
+<p>A general introduction to class-based generic views can be found in the
+<a class="reference internal" href="../topics/class-based-views.html"><em>topic guide</em></a>.</p>
+<p>This reference contains details of Django’s built-in generic views, along with
+a list of the keyword arguments that each generic view expects. Remember that
+arguments may either come from the URL pattern or from the <tt class="docutils literal"><span class="pre">extra_context</span></tt>
+additional-information dictionary.</p>
+<p>Most generic views require the <tt class="docutils literal"><span class="pre">queryset</span></tt> key, which is a <tt class="docutils literal"><span class="pre">QuerySet</span></tt>
+instance; see <a class="reference internal" href="../topics/db/queries.html"><em>Making queries</em></a> for more information about <tt class="docutils literal"><span class="pre">QuerySet</span></tt>
+objects.</p>
+<div class="section" id="s-mixins">
+<span id="mixins"></span><h2>Mixins<a class="headerlink" href="#mixins" title="Permalink to this headline">¶</a></h2>
+<p>A mixin class is a way of using the inheritance capabilities of
+classes to compose a class out of smaller pieces of behavior. Django’s
+class-based generic views are constructed by composing mixins into
+usable generic views.</p>
+<p>For example, the <tt class="xref py py-class docutils literal"><span class="pre">DetailView</span></tt>
+is composed from:</p>
+<blockquote>
+<ul class="simple">
+<li><tt class="xref py py-class docutils literal"><span class="pre">View</span></tt>, which provides the
+basic class-based behavior</li>
+<li><tt class="xref py py-class docutils literal"><span class="pre">SingleObjectMixin</span></tt>, which
+provides the utilities for retrieving and displaying a single object</li>
+<li><tt class="xref py py-class docutils literal"><span class="pre">SingleObjectTemplateResponseMixin</span></tt>,
+which provides the tools for rendering a single object into a
+template-based response.</li>
+</ul>
+</blockquote>
+<p>When combined, these mixins provide all the pieces necessary to
+provide a view over a single object that renders a template to produce
+a response.</p>
+<p>Django provides a range of mixins. If you want to write your own
+generic views, you can build classes that compose these mixins in
+interesting ways. Alternatively, you can just use the pre-mixed
+<a class="reference internal" href="#generic-views">Generic views</a> that Django provides.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">When the documentation for a view gives the list of mixins, that view
+inherits all the properties and methods of that mixin.</p>
+</div>
+<div class="section" id="s-simple-mixins">
+<span id="simple-mixins"></span><h3>Simple mixins<a class="headerlink" href="#simple-mixins" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="s-templateresponsemixin">
+<span id="templateresponsemixin"></span><h4>TemplateResponseMixin<a class="headerlink" href="#templateresponsemixin" title="Permalink to this headline">¶</a></h4>
+<dl class="class">
+<a name="//apple_ref/cpp/cl/django.views.generic.base.TemplateResponseMixin"></a><dt id="django.views.generic.base.TemplateResponseMixin">
+<em class="property">class </em><tt class="descname">TemplateResponseMixin</tt><a class="headerlink" href="#django.views.generic.base.TemplateResponseMixin" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.views.generic.base.TemplateResponseMixin.template_name"></a><dt id="django.views.generic.base.TemplateResponseMixin.template_name">
+<tt class="descname">template_name</tt><a class="headerlink" href="#django.views.generic.base.TemplateResponseMixin.template_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>The path to the template to use when rendering the view.</p>
+</dd></dl>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.views.generic.base.TemplateResponseMixin.response_class"></a><dt id="django.views.generic.base.TemplateResponseMixin.response_class">
+<tt class="descname">response_class</tt><a class="headerlink" href="#django.views.generic.base.TemplateResponseMixin.response_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>The response class to be returned by <tt class="docutils literal"><span class="pre">render_to_response</span></tt> method.
+Default is
+<a class="reference internal" href="template-response.html#django.template.response.TemplateResponse" title="django.template.response.TemplateResponse"><tt class="xref py py-class docutils literal"><span class="pre">TemplateResponse</span></tt></a>.
+The template and context of <tt class="docutils literal"><span class="pre">TemplateResponse</span></tt> instances can be
+altered later (e.g. in
+<a class="reference internal" href="../topics/http/middleware.html#template-response-middleware"><em>template response middleware</em></a>).</p>
+<p>If you need custom template loading or custom context object
+instantiation, create a <tt class="docutils literal"><span class="pre">TemplateResponse</span></tt> subclass and assign it to
+<tt class="docutils literal"><span class="pre">response_class</span></tt>.</p>
+</dd></dl>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.views.generic.base.TemplateResponseMixin.render_to_response"></a><dt id="django.views.generic.base.TemplateResponseMixin.render_to_response">
+<tt class="descname">render_to_response</tt>(<em>context</em>, <em>**response_kwargs</em>)<a class="headerlink" href="#django.views.generic.base.TemplateResponseMixin.render_to_response" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a <tt class="docutils literal"><span class="pre">self.response_class</span></tt> instance.</p>
+<p>If any keyword arguments are provided, they will be
+passed to the constructor of the response class.</p>
+<p>Calls <a class="reference internal" href="#django.views.generic.base.TemplateResponseMixin.get_template_names" title="django.views.generic.base.TemplateResponseMixin.get_template_names"><tt class="xref py py-meth docutils literal"><span class="pre">get_template_names()</span></tt></a> to obtain the
+list of template names that will be searched looking for an existent
+template.</p>
+</dd></dl>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.views.generic.base.TemplateResponseMixin.get_template_names"></a><dt id="django.views.generic.base.TemplateResponseMixin.get_template_names">
+<tt class="descname">get_template_names</tt>()<a class="headerlink" href="#django.views.generic.base.TemplateResponseMixin.get_template_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of template names to search for when rendering the
+template.</p>
+<p>If <a class="reference internal" href="#django.views.generic.base.TemplateResponseMixin.template_name" title="django.views.generic.base.TemplateResponseMixin.template_name"><tt class="xref py py-attr docutils literal"><span class="pre">TemplateResponseMixin.template_name</span></tt></a> is specified, the
+default implementation will return a list containing
+<a class="reference internal" href="#django.views.generic.base.TemplateResponseMixin.template_name" title="django.views.generic.base.TemplateResponseMixin.template_name"><tt class="xref py py-attr docutils literal"><span class="pre">TemplateResponseMixin.template_name</span></tt></a> (if it is specified).</p>
+</dd></dl>
+</dd></dl>
+</div>
+</div>
+<div class="section" id="s-single-object-mixins">
+<span id="single-object-mixins"></span><h3>Single object mixins<a class="headerlink" href="#single-object-mixins" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="s-singleobjectmixin">
+<span id="singleobjectmixin"></span><h4>SingleObjectMixin<a class="headerlink" href="#singleobjectmixin" title="Permalink to this headline">¶</a></h4>
+<dl class="class">
+<a name="//apple_ref/cpp/cl/django.views.generic.detail.SingleObjectMixin"></a><dt id="django.views.generic.detail.SingleObjectMixin">
+<em class="property">class </em><tt class="descname">SingleObjectMixin</tt><a class="headerlink" href="#django.views.generic.detail.SingleObjectMixin" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.views.generic.detail.SingleObjectMixin.model"></a><dt id="django.views.generic.detail.SingleObjectMixin.model">
+<tt class="descname">model</tt><a class="headerlink" href="#django.views.generic.detail.SingleObjectMixin.model" title="Permalink to this definition">¶</a></dt>
+<dd><p>The model that this view will display data for. Specifying <tt class="docutils literal"><span class="pre">model</span>
+<span class="pre">=</span> <span class="pre">Foo</span></tt> is effectively the same as specifying <tt class="docutils literal"><span class="pre">queryset</span> <span class="pre">=</span>
+<span class="pre">Foo.objects.all()</span></tt>.</p>
+</dd></dl>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.views.generic.detail.SingleObjectMixin.queryset"></a><dt id="django.views.generic.detail.SingleObjectMixin.queryset">
+<tt class="descname">queryset</tt><a class="headerlink" href="#django.views.generic.detail.SingleObjectMixin.queryset" title="Permalink to this definition">¶</a></dt>
+<dd><p>A <tt class="docutils literal"><span class="pre">QuerySet</span></tt> that represents the objects. If provided, the value of
+<a class="reference internal" href="#django.views.generic.detail.SingleObjectMixin.queryset" title="django.views.generic.detail.SingleObjectMixin.queryset"><tt class="xref py py-attr docutils literal"><span class="pre">SingleObjectMixin.queryset</span></tt></a> supersedes the value provided for
+<a class="reference internal" href="#django.views.generic.detail.SingleObjectMixin.model" title="django.views.generic.detail.SingleObjectMixin.model"><tt class="xref py py-attr docutils literal"><span class="pre">SingleObjectMixin.model</span></tt></a>.</p>
+</dd></dl>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.views.generic.detail.SingleObjectMixin.slug_field"></a><dt id="django.views.generic.detail.SingleObjectMixin.slug_field">
+<tt class="descname">slug_field</tt><a class="headerlink" href="#django.views.generic.detail.SingleObjectMixin.slug_field" title="Permalink to this definition">¶</a></dt>
+<dd><p>The name of the field on the model that contains the slug. By default,
+<tt class="docutils literal"><span class="pre">slug_field</span></tt> is <tt class="docutils literal"><span class="pre">'slug'</span></tt>.</p>
+</dd></dl>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.views.generic.detail.SingleObjectMixin.context_object_name"></a><dt id="django.views.generic.detail.SingleObjectMixin.context_object_name">
+<tt class="descname">context_object_name</tt><a class="headerlink" href="#django.views.generic.detail.SingleObjectMixin.context_object_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Designates the name of the variable to use in the context.</p>
+</dd></dl>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.views.generic.detail.SingleObjectMixin.get_object"></a><dt id="django.views.generic.detail.SingleObjectMixin.get_object">
+<tt class="descname">get_object</tt>(<em>queryset=None</em>)<a class="headerlink" href="#django.views.generic.detail.SingleObjectMixin.get_object" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the single object that this view will display. If
+<tt class="docutils literal"><span class="pre">queryset</span></tt> is provided, that queryset will be used as the
+source of objects; otherwise,
+<a class="reference internal" href="#django.views.generic.detail.SingleObjectMixin.get_queryset" title="django.views.generic.detail.SingleObjectMixin.get_queryset"><tt class="xref py py-meth docutils literal"><span class="pre">get_queryset()</span></tt></a> will be used.
+<a class="reference internal" href="#django.views.generic.detail.SingleObjectMixin.get_object" title="django.views.generic.detail.SingleObjectMixin.get_object"><tt class="xref py py-meth docutils literal"><span class="pre">get_object()</span></tt></a> looks for a <tt class="docutils literal"><span class="pre">pk</span></tt>
+argument in the arguments to the view; if <tt class="docutils literal"><span class="pre">pk</span></tt> is found,
+this method performs a primary-key based lookup using that
+value. If no <tt class="docutils literal"><span class="pre">pk</span></tt> argument is found, it looks for a <tt class="docutils literal"><span class="pre">slug</span></tt>
+argument, and performs a slug lookup using the
+<a class="reference internal" href="#django.views.generic.detail.SingleObjectMixin.slug_field" title="django.views.generic.detail.SingleObjectMixin.slug_field"><tt class="xref py py-attr docutils literal"><span class="pre">SingleObjectMixin.slug_field</span></tt></a>.</p>
+</dd></dl>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.views.generic.detail.SingleObjectMixin.get_queryset"></a><dt id="django.views.generic.detail.SingleObjectMixin.get_queryset">
+<tt class="descname">get_queryset</tt>()<a class="headerlink" href="#django.views.generic.detail.SingleObjectMixin.get_queryset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the queryset that will be used to retrieve the object that
+this view will display. By default,
+<a class="reference internal" href="#django.views.generic.detail.SingleObjectMixin.get_queryset" title="django.views.generic.detail.SingleObjectMixin.get_queryset"><tt class="xref py py-meth docutils literal"><span class="pre">get_queryset()</span></tt></a> returns the value of the
+<a class="reference internal" href="#django.views.generic.detail.SingleObjectMixin.queryset" title="django.views.generic.detail.SingleObjectMixin.queryset"><tt class="xref py py-attr docutils literal"><span class="pre">queryset</span></tt></a> attribute if it is set, otherwise
+it constructs a <tt class="xref py py-class docutils literal"><span class="pre">QuerySet</span></tt> by calling the <cite>all()</cite> method on the
+<a class="reference internal" href="#django.views.generic.detail.SingleObjectMixin.model" title="django.views.generic.detail.SingleObjectMixin.model"><tt class="xref py py-attr docutils literal"><span class="pre">model</span></tt></a> attribute’s default manager.</p>
+</dd></dl>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.views.generic.detail.SingleObjectMixin.get_context_object_name"></a><dt id="django.views.generic.detail.SingleObjectMixin.get_context_object_name">
+<tt class="descname">get_context_object_name</tt>(<em>obj</em>)<a class="headerlink" href="#django.views.generic.detail.SingleObjectMixin.get_context_object_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the context variable name that will be used to contain the
+data that this view is manipulating. If
+<a class="reference internal" href="#django.views.generic.detail.SingleObjectMixin.context_object_name" title="django.views.generic.detail.SingleObjectMixin.context_object_name"><tt class="xref py py-attr docutils literal"><span class="pre">context_object_name</span></tt></a> is not set, the context
+name will be constructed from the <tt class="docutils literal"><span class="pre">object_name</span></tt> of the model that
+the queryset is composed from. For example, the model <tt class="docutils literal"><span class="pre">Article</span></tt>
+would have context object named <tt class="docutils literal"><span class="pre">'article'</span></tt>.</p>
+</dd></dl>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.views.generic.detail.SingleObjectMixin.get_context_data"></a><dt id="django.views.generic.detail.SingleObjectMixin.get_context_data">
+<tt class="descname">get_context_data</tt>(<em>**kwargs</em>)<a class="headerlink" href="#django.views.generic.detail.SingleObjectMixin.get_context_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns context data for displaying the list of objects.</p>
+</dd></dl>
+<p><strong>Context</strong></p>
+<blockquote>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">object</span></tt>: The object that this view is displaying. If
+<tt class="docutils literal"><span class="pre">context_object_name</span></tt> is specified, that variable will also be
+set in the context, with the same value as <tt class="docutils literal"><span class="pre">object</span></tt>.</li>
+</ul>
+</blockquote>
+</dd></dl>
+</div>
+<div class="section" id="s-singleobjecttemplateresponsemixin">
+<span id="singleobjecttemplateresponsemixin"></span><h4>SingleObjectTemplateResponseMixin<a class="headerlink" href="#singleobjecttemplateresponsemixin" title="Permalink to this headline">¶</a></h4>
+<dl class="class">
+<a name="//apple_ref/cpp/cl/django.views.generic.detail.SingleObjectTemplateResponseMixin"></a><dt id="django.views.generic.detail.SingleObjectTemplateResponseMixin">
+<em class="property">class </em><tt class="descname">SingleObjectTemplateResponseMixin</tt><a class="headerlink" href="#django.views.generic.detail.SingleObjectTemplateResponseMixin" title="Permalink to this definition">¶</a></dt>
+<dd><p>A mixin class that performs template-based response rendering for views
+that operate upon a single object instance. Requires that the view it is
+mixed with provides <tt class="docutils literal"><span class="pre">self.object</span></tt>, the object instance that the view is
+operating on. <tt class="docutils literal"><span class="pre">self.object</span></tt> will usually be, but is not required to be,
+an instance of a Django model. It may be <tt class="xref docutils literal"><span class="pre">None</span></tt> if the view is in the
+process of constructing a new instance.</p>
+<p><strong>Extends</strong></p>
+<blockquote>
+<ul class="simple">
+<li><a class="reference internal" href="#django.views.generic.base.TemplateResponseMixin" title="django.views.generic.base.TemplateResponseMixin"><tt class="xref py py-class docutils literal"><span class="pre">TemplateResponseMixin</span></tt></a></li>
+</ul>
+</blockquote>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.views.generic.detail.SingleObjectTemplateResponseMixin.template_name_field"></a><dt id="django.views.generic.detail.SingleObjectTemplateResponseMixin.template_name_field">
+<tt class="descname">template_name_field</tt><a class="headerlink" href="#django.views.generic.detail.SingleObjectTemplateResponseMixin.template_name_field" title="Permalink to this definition">¶</a></dt>
+<dd><p>The field on the current object instance that can be used to determine
+the name of a candidate template. If either <tt class="docutils literal"><span class="pre">template_name_field</span></tt> or
+the value of the <tt class="docutils literal"><span class="pre">template_name_field</span></tt> on the current object instance
+is <tt class="xref docutils literal"><span class="pre">None</span></tt>, the object will not be interrogated for a candidate
+template name.</p>
+</dd></dl>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.views.generic.detail.SingleObjectTemplateResponseMixin.template_name_suffix"></a><dt id="django.views.generic.detail.SingleObjectTemplateResponseMixin.template_name_suffix">
+<tt class="descname">template_name_suffix</tt><a class="headerlink" href="#django.views.generic.detail.SingleObjectTemplateResponseMixin.template_name_suffix" title="Permalink to this definition">¶</a></dt>
+<dd><p>The suffix to append to the auto-generated candidate template name.
+Default suffix is <tt class="docutils literal"><span class="pre">_detail</span></tt>.</p>
+</dd></dl>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.views.generic.detail.SingleObjectTemplateResponseMixin.get_template_names"></a><dt id="django.views.generic.detail.SingleObjectTemplateResponseMixin.get_template_names">
+<tt class="descname">get_template_names</tt>()<a class="headerlink" href="#django.views.generic.detail.SingleObjectTemplateResponseMixin.get_template_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of candidate template names. Returns the following list:</p>
+<blockquote>
+<ul class="simple">
+<li>the value of <tt class="docutils literal"><span class="pre">template_name</span></tt> on the view (if provided)</li>
+<li>the contents of the <tt class="docutils literal"><span class="pre">template_name_field</span></tt> field on the
+object instance that the view is operating upon (if available)</li>
+<li><tt class="docutils literal"><span class="pre">&lt;app_label&gt;/&lt;object_name&gt;&lt;template_name_suffix&gt;.html</span></tt></li>
+</ul>
+</blockquote>
+</dd></dl>
+</dd></dl>
+</div>
+</div>
+<div class="section" id="s-multiple-object-mixins">
+<span id="multiple-object-mixins"></span><h3>Multiple object mixins<a class="headerlink" href="#multiple-object-mixins" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="s-multipleobjectmixin">
+<span id="multipleobjectmixin"></span><h4>MultipleObjectMixin<a class="headerlink" href="#multipleobjectmixin" title="Permalink to this headline">¶</a></h4>
+<dl class="class">
+<a name="//apple_ref/cpp/cl/django.views.generic.list.MultipleObjectMixin"></a><dt id="django.views.generic.list.MultipleObjectMixin">
+<em class="property">class </em><tt class="descname">MultipleObjectMixin</tt><a class="headerlink" href="#django.views.generic.list.MultipleObjectMixin" title="Permalink to this definition">¶</a></dt>
+<dd><p>A mixin that can be used to display a list of objects.</p>
+<p>If <tt class="docutils literal"><span class="pre">paginate_by</span></tt> is specified, Django will paginate the results returned
+by this. You can specify the page number in the URL in one of two ways:</p>
+<blockquote>
+<ul>
+<li><p class="first">Use the <tt class="docutils literal"><span class="pre">page</span></tt> parameter in the URLconf. For example, this is what
+your URLconf might look like:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">(</span><span class="s">r'^objects/page(?P&lt;page&gt;[0-9]+)/$'</span><span class="p">,</span> <span class="n">PaginatedView</span><span class="o">.</span><span class="n">as_view</span><span class="p">())</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">Pass the page number via the <tt class="docutils literal"><span class="pre">page</span></tt> query-string parameter. For
+example, a URL would look like this:</p>
+<div class="highlight-python"><pre>/objects/?page=3</pre>
+</div>
+</li>
+</ul>
+</blockquote>
+<p>These values and lists are 1-based, not 0-based, so the first page would be
+represented as page <tt class="docutils literal"><span class="pre">1</span></tt>.</p>
+<p>For more on pagination, read the <a class="reference internal" href="../topics/pagination.html"><em>pagination documentation</em></a>.</p>
+<p>As a special case, you are also permitted to use <tt class="docutils literal"><span class="pre">last</span></tt> as a value for
+<tt class="docutils literal"><span class="pre">page</span></tt>:</p>
+<div class="highlight-python"><pre>/objects/?page=last</pre>
+</div>
+<p>This allows you to access the final page of results without first having to
+determine how many pages there are.</p>
+<p>Note that <tt class="docutils literal"><span class="pre">page</span></tt> <em>must</em> be either a valid page number or the value
+<tt class="docutils literal"><span class="pre">last</span></tt>; any other value for <tt class="docutils literal"><span class="pre">page</span></tt> will result in a 404 error.</p>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.views.generic.list.MultipleObjectMixin.allow_empty"></a><dt id="django.views.generic.list.MultipleObjectMixin.allow_empty">
+<tt class="descname">allow_empty</tt><a class="headerlink" href="#django.views.generic.list.MultipleObjectMixin.allow_empty" title="Permalink to this definition">¶</a></dt>
+<dd><p>A boolean specifying whether to display the page if no objects are
+available. If this is <tt class="xref docutils literal"><span class="pre">False</span></tt> and no objects are available, the view
+will raise a 404 instead of displaying an empty page. By default, this
+is <tt class="xref docutils literal"><span class="pre">True</span></tt>.</p>
+</dd></dl>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.views.generic.list.MultipleObjectMixin.model"></a><dt id="django.views.generic.list.MultipleObjectMixin.model">
+<tt class="descname">model</tt><a class="headerlink" href="#django.views.generic.list.MultipleObjectMixin.model" title="Permalink to this definition">¶</a></dt>
+<dd><p>The model that this view will display data for. Specifying <tt class="docutils literal"><span class="pre">model</span>
+<span class="pre">=</span> <span class="pre">Foo</span></tt> is effectively the same as specifying <tt class="docutils literal"><span class="pre">queryset</span> <span class="pre">=</span>
+<span class="pre">Foo.objects.all()</span></tt>.</p>
+</dd></dl>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.views.generic.list.MultipleObjectMixin.queryset"></a><dt id="django.views.generic.list.MultipleObjectMixin.queryset">
+<tt class="descname">queryset</tt><a class="headerlink" href="#django.views.generic.list.MultipleObjectMixin.queryset" title="Permalink to this definition">¶</a></dt>
+<dd><p>A <tt class="docutils literal"><span class="pre">QuerySet</span></tt> that represents the objects. If provided, the value of
+<a class="reference internal" href="#django.views.generic.list.MultipleObjectMixin.queryset" title="django.views.generic.list.MultipleObjectMixin.queryset"><tt class="xref py py-attr docutils literal"><span class="pre">MultipleObjectMixin.queryset</span></tt></a> supersedes the value provided for
+<a class="reference internal" href="#django.views.generic.list.MultipleObjectMixin.model" title="django.views.generic.list.MultipleObjectMixin.model"><tt class="xref py py-attr docutils literal"><span class="pre">MultipleObjectMixin.model</span></tt></a>.</p>
+</dd></dl>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.views.generic.list.MultipleObjectMixin.paginate_by"></a><dt id="django.views.generic.list.MultipleObjectMixin.paginate_by">
+<tt class="descname">paginate_by</tt><a class="headerlink" href="#django.views.generic.list.MultipleObjectMixin.paginate_by" title="Permalink to this definition">¶</a></dt>
+<dd><p>An integer specifying how many objects should be displayed per page. If
+this is given, the view will paginate objects with
+<a class="reference internal" href="#django.views.generic.list.MultipleObjectMixin.paginate_by" title="django.views.generic.list.MultipleObjectMixin.paginate_by"><tt class="xref py py-attr docutils literal"><span class="pre">MultipleObjectMixin.paginate_by</span></tt></a> objects per page. The view will
+expect either a <tt class="docutils literal"><span class="pre">page</span></tt> query string parameter (via <tt class="docutils literal"><span class="pre">GET</span></tt>) or a
+<tt class="docutils literal"><span class="pre">page</span></tt> variable specified in the URLconf.</p>
+</dd></dl>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.views.generic.list.MultipleObjectMixin.paginator_class"></a><dt id="django.views.generic.list.MultipleObjectMixin.paginator_class">
+<tt class="descname">paginator_class</tt><a class="headerlink" href="#django.views.generic.list.MultipleObjectMixin.paginator_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>The paginator class to be used for pagination. By default,
+<a class="reference internal" href="../topics/pagination.html#django.core.paginator.Paginator" title="django.core.paginator.Paginator"><tt class="xref py py-class docutils literal"><span class="pre">django.core.paginator.Paginator</span></tt></a> is used. If the custom paginator
+class doesn't have the same constructor interface as
+<a class="reference internal" href="../topics/pagination.html#django.core.paginator.Paginator" title="django.core.paginator.Paginator"><tt class="xref py py-class docutils literal"><span class="pre">django.core.paginator.Paginator</span></tt></a>, you will also need to
+provide an implementation for <a class="reference internal" href="#django.views.generic.list.MultipleObjectMixin.get_paginator" title="django.views.generic.list.MultipleObjectMixin.get_paginator"><tt class="xref py py-meth docutils literal"><span class="pre">MultipleObjectMixin.get_paginator()</span></tt></a>.</p>
+</dd></dl>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.views.generic.list.MultipleObjectMixin.context_object_name"></a><dt id="django.views.generic.list.MultipleObjectMixin.context_object_name">
+<tt class="descname">context_object_name</tt><a class="headerlink" href="#django.views.generic.list.MultipleObjectMixin.context_object_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Designates the name of the variable to use in the context.</p>
+</dd></dl>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.views.generic.list.MultipleObjectMixin.get_queryset"></a><dt id="django.views.generic.list.MultipleObjectMixin.get_queryset">
+<tt class="descname">get_queryset</tt>()<a class="headerlink" href="#django.views.generic.list.MultipleObjectMixin.get_queryset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the queryset that represents the data this view will display.</p>
+</dd></dl>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.views.generic.list.MultipleObjectMixin.paginate_queryset"></a><dt id="django.views.generic.list.MultipleObjectMixin.paginate_queryset">
+<tt class="descname">paginate_queryset</tt>(<em>queryset</em>, <em>page_size</em>)<a class="headerlink" href="#django.views.generic.list.MultipleObjectMixin.paginate_queryset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a 4-tuple containing (<tt class="docutils literal"><span class="pre">paginator</span></tt>, <tt class="docutils literal"><span class="pre">page</span></tt>, <tt class="docutils literal"><span class="pre">object_list</span></tt>,
+<tt class="docutils literal"><span class="pre">is_paginated</span></tt>).</p>
+<p>Constructed by paginating <tt class="docutils literal"><span class="pre">queryset</span></tt> into pages of size <tt class="docutils literal"><span class="pre">page_size</span></tt>.
+If the request contains a <tt class="docutils literal"><span class="pre">page</span></tt> argument, either as a captured URL
+argument or as a GET argument, <tt class="docutils literal"><span class="pre">object_list</span></tt> will correspond to the
+objects from that page.</p>
+</dd></dl>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.views.generic.list.MultipleObjectMixin.get_paginate_by"></a><dt id="django.views.generic.list.MultipleObjectMixin.get_paginate_by">
+<tt class="descname">get_paginate_by</tt>(<em>queryset</em>)<a class="headerlink" href="#django.views.generic.list.MultipleObjectMixin.get_paginate_by" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the number of items to paginate by, or <tt class="xref docutils literal"><span class="pre">None</span></tt> for no
+pagination. By default this simply returns the value of
+<a class="reference internal" href="#django.views.generic.list.MultipleObjectMixin.paginate_by" title="django.views.generic.list.MultipleObjectMixin.paginate_by"><tt class="xref py py-attr docutils literal"><span class="pre">MultipleObjectMixin.paginate_by</span></tt></a>.</p>
+</dd></dl>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.views.generic.list.MultipleObjectMixin.get_paginator"></a><dt id="django.views.generic.list.MultipleObjectMixin.get_paginator">
+<tt class="descname">get_paginator</tt>(<em>queryset</em>, <em>per_page</em>, <em>orphans=0</em>, <em>allow_empty_first_page=True</em>)<a class="headerlink" href="#django.views.generic.list.MultipleObjectMixin.get_paginator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns an instance of the paginator to use for this view. By default,
+instantiates an instance of <a class="reference internal" href="#django.views.generic.list.MultipleObjectMixin.paginator_class" title="django.views.generic.list.MultipleObjectMixin.paginator_class"><tt class="xref py py-attr docutils literal"><span class="pre">paginator_class</span></tt></a>.</p>
+</dd></dl>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.views.generic.list.MultipleObjectMixin.get_allow_empty"></a><dt id="django.views.generic.list.MultipleObjectMixin.get_allow_empty">
+<tt class="descname">get_allow_empty</tt>()<a class="headerlink" href="#django.views.generic.list.MultipleObjectMixin.get_allow_empty" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a boolean specifying whether to display the page if no objects
+are available. If this method returns <tt class="xref docutils literal"><span class="pre">False</span></tt> and no objects are
+available, the view will raise a 404 instead of displaying an empty
+page. By default, this is <tt class="xref docutils literal"><span class="pre">True</span></tt>.</p>
+</dd></dl>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.views.generic.list.MultipleObjectMixin.get_context_object_name"></a><dt id="django.views.generic.list.MultipleObjectMixin.get_context_object_name">
+<tt class="descname">get_context_object_name</tt>(<em>object_list</em>)<a class="headerlink" href="#django.views.generic.list.MultipleObjectMixin.get_context_object_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the context variable name that will be used to contain
+the list of data that this view is manipulating. If
+<tt class="docutils literal"><span class="pre">object_list</span></tt> is a queryset of Django objects and
+<a class="reference internal" href="#django.views.generic.list.MultipleObjectMixin.context_object_name" title="django.views.generic.list.MultipleObjectMixin.context_object_name"><tt class="xref py py-attr docutils literal"><span class="pre">context_object_name</span></tt></a> is not set,
+the context name will be the <tt class="docutils literal"><span class="pre">object_name</span></tt> of the model that
+the queryset is composed from, with postfix <tt class="docutils literal"><span class="pre">'_list'</span></tt>
+appended. For example, the model <tt class="docutils literal"><span class="pre">Article</span></tt> would have a
+context object named <tt class="docutils literal"><span class="pre">article_list</span></tt>.</p>
+</dd></dl>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.views.generic.list.MultipleObjectMixin.get_context_data"></a><dt id="django.views.generic.list.MultipleObjectMixin.get_context_data">
+<tt class="descname">get_context_data</tt>(<em>**kwargs</em>)<a class="headerlink" href="#django.views.generic.list.MultipleObjectMixin.get_context_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns context data for displaying the list of objects.</p>
+</dd></dl>
+<p><strong>Context</strong></p>
+<blockquote>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">object_list</span></tt>: The list of objects that this view is displaying. If
+<tt class="docutils literal"><span class="pre">context_object_name</span></tt> is specified, that variable will also be set
+in the context, with the same value as <tt class="docutils literal"><span class="pre">object_list</span></tt>.</li>
+<li><tt class="docutils literal"><span class="pre">is_paginated</span></tt>: A boolean representing whether the results are
+paginated. Specifically, this is set to <tt class="xref docutils literal"><span class="pre">False</span></tt> if no page size has
+been specified, or if the available objects do not span multiple
+pages.</li>
+<li><tt class="docutils literal"><span class="pre">paginator</span></tt>: An instance of
+<a class="reference internal" href="../topics/pagination.html#django.core.paginator.Paginator" title="django.core.paginator.Paginator"><tt class="xref py py-class docutils literal"><span class="pre">django.core.paginator.Paginator</span></tt></a>. If the page is not
+paginated, this context variable will be <tt class="xref docutils literal"><span class="pre">None</span></tt>.</li>
+<li><tt class="docutils literal"><span class="pre">page_obj</span></tt>: An instance of
+<a class="reference internal" href="../topics/pagination.html#django.core.paginator.Page" title="django.core.paginator.Page"><tt class="xref py py-class docutils literal"><span class="pre">django.core.paginator.Page</span></tt></a>. If the page is not paginated,
+this context variable will be <tt class="xref docutils literal"><span class="pre">None</span></tt>.</li>
+</ul>
+</blockquote>
+</dd></dl>
+</div>
+<div class="section" id="s-multipleobjecttemplateresponsemixin">
+<span id="multipleobjecttemplateresponsemixin"></span><h4>MultipleObjectTemplateResponseMixin<a class="headerlink" href="#multipleobjecttemplateresponsemixin" title="Permalink to this headline">¶</a></h4>
+<dl class="class">
+<a name="//apple_ref/cpp/cl/django.views.generic.list.MultipleObjectTemplateResponseMixin"></a><dt id="django.views.generic.list.MultipleObjectTemplateResponseMixin">
+<em class="property">class </em><tt class="descname">MultipleObjectTemplateResponseMixin</tt><a class="headerlink" href="#django.views.generic.list.MultipleObjectTemplateResponseMixin" title="Permalink to this definition">¶</a></dt>
+<dd><p>A mixin class that performs template-based response rendering for views
+that operate upon a list of object instances. Requires that the view it is
+mixed with provides <tt class="docutils literal"><span class="pre">self.object_list</span></tt>, the list of object instances that
+the view is operating on. <tt class="docutils literal"><span class="pre">self.object_list</span></tt> may be, but is not required
+to be, a <tt class="xref py py-class docutils literal"><span class="pre">Queryset</span></tt>.</p>
+<p><strong>Extends</strong></p>
+<blockquote>
+<ul class="simple">
+<li><a class="reference internal" href="#django.views.generic.base.TemplateResponseMixin" title="django.views.generic.base.TemplateResponseMixin"><tt class="xref py py-class docutils literal"><span class="pre">TemplateResponseMixin</span></tt></a></li>
+</ul>
+</blockquote>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.views.generic.list.MultipleObjectTemplateResponseMixin.template_name_suffix"></a><dt id="django.views.generic.list.MultipleObjectTemplateResponseMixin.template_name_suffix">
+<tt class="descname">template_name_suffix</tt><a class="headerlink" href="#django.views.generic.list.MultipleObjectTemplateResponseMixin.template_name_suffix" title="Permalink to this definition">¶</a></dt>
+<dd><p>The suffix to append to the auto-generated candidate template name.
+Default suffix is <tt class="docutils literal"><span class="pre">_list</span></tt>.</p>
+</dd></dl>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.views.generic.list.MultipleObjectTemplateResponseMixin.get_template_names"></a><dt id="django.views.generic.list.MultipleObjectTemplateResponseMixin.get_template_names">
+<tt class="descname">get_template_names</tt>()<a class="headerlink" href="#django.views.generic.list.MultipleObjectTemplateResponseMixin.get_template_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of candidate template names. Returns the following list:</p>
+<blockquote>
+<ul class="simple">
+<li>the value of <tt class="docutils literal"><span class="pre">template_name</span></tt> on the view (if provided)</li>
+<li><tt class="docutils literal"><span class="pre">&lt;app_label&gt;/&lt;object_name&gt;&lt;template_name_suffix&gt;.html</span></tt></li>
+</ul>
+</blockquote>
+</dd></dl>
+</dd></dl>
+</div>
+</div>
+<div class="section" id="s-editing-mixins">
+<span id="editing-mixins"></span><h3>Editing mixins<a class="headerlink" href="#editing-mixins" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="s-formmixin">
+<span id="formmixin"></span><h4>FormMixin<a class="headerlink" href="#formmixin" title="Permalink to this headline">¶</a></h4>
+<dl class="class">
+<a name="//apple_ref/cpp/cl/django.views.generic.edit.FormMixin"></a><dt id="django.views.generic.edit.FormMixin">
+<em class="property">class </em><tt class="descname">FormMixin</tt><a class="headerlink" href="#django.views.generic.edit.FormMixin" title="Permalink to this definition">¶</a></dt>
+<dd><p>A mixin class that provides facilities for creating and displaying forms.</p>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.views.generic.edit.FormMixin.initial"></a><dt id="django.views.generic.edit.FormMixin.initial">
+<tt class="descname">initial</tt><a class="headerlink" href="#django.views.generic.edit.FormMixin.initial" title="Permalink to this definition">¶</a></dt>
+<dd><p>A dictionary containing initial data for the form.</p>
+</dd></dl>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.views.generic.edit.FormMixin.form_class"></a><dt id="django.views.generic.edit.FormMixin.form_class">
+<tt class="descname">form_class</tt><a class="headerlink" href="#django.views.generic.edit.FormMixin.form_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>The form class to instantiate.</p>
+</dd></dl>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.views.generic.edit.FormMixin.success_url"></a><dt id="django.views.generic.edit.FormMixin.success_url">
+<tt class="descname">success_url</tt><a class="headerlink" href="#django.views.generic.edit.FormMixin.success_url" title="Permalink to this definition">¶</a></dt>
+<dd><p>The URL to redirect to when the form is successfully processed.</p>
+</dd></dl>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.views.generic.edit.FormMixin.get_initial"></a><dt id="django.views.generic.edit.FormMixin.get_initial">
+<tt class="descname">get_initial</tt>()<a class="headerlink" href="#django.views.generic.edit.FormMixin.get_initial" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieve initial data for the form. By default, returns
+<a class="reference internal" href="#django.views.generic.edit.FormMixin.initial" title="django.views.generic.edit.FormMixin.initial"><tt class="xref py py-attr docutils literal"><span class="pre">initial</span></tt></a>.</p>
+</dd></dl>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.views.generic.edit.FormMixin.get_form_class"></a><dt id="django.views.generic.edit.FormMixin.get_form_class">
+<tt class="descname">get_form_class</tt>()<a class="headerlink" href="#django.views.generic.edit.FormMixin.get_form_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieve the form class to instantiate. By default
+<a class="reference internal" href="#django.views.generic.edit.FormMixin.form_class" title="django.views.generic.edit.FormMixin.form_class"><tt class="xref py py-attr docutils literal"><span class="pre">form_class</span></tt></a>.</p>
+</dd></dl>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.views.generic.edit.FormMixin.get_form"></a><dt id="django.views.generic.edit.FormMixin.get_form">
+<tt class="descname">get_form</tt>(<em>form_class</em>)<a class="headerlink" href="#django.views.generic.edit.FormMixin.get_form" title="Permalink to this definition">¶</a></dt>
+<dd><p>Instantiate an instance of <tt class="docutils literal"><span class="pre">form_class</span></tt> using
+<a class="reference internal" href="#django.views.generic.edit.FormMixin.get_form_kwargs" title="django.views.generic.edit.FormMixin.get_form_kwargs"><tt class="xref py py-meth docutils literal"><span class="pre">get_form_kwargs()</span></tt></a>.</p>
+</dd></dl>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.views.generic.edit.FormMixin.get_form_kwargs"></a><dt id="django.views.generic.edit.FormMixin.get_form_kwargs">
+<tt class="descname">get_form_kwargs</tt>()<a class="headerlink" href="#django.views.generic.edit.FormMixin.get_form_kwargs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build the keyword arguments required to instantiate the form.</p>
+<p>The <tt class="docutils literal"><span class="pre">initial</span></tt> argument is set to <a class="reference internal" href="#django.views.generic.edit.FormMixin.get_initial" title="django.views.generic.edit.FormMixin.get_initial"><tt class="xref py py-meth docutils literal"><span class="pre">get_initial()</span></tt></a>. If the
+request is a <tt class="docutils literal"><span class="pre">POST</span></tt> or <tt class="docutils literal"><span class="pre">PUT</span></tt>, the request data (<tt class="docutils literal"><span class="pre">request.POST</span></tt>
+and <tt class="docutils literal"><span class="pre">request.FILES</span></tt>) will also be provided.</p>
+</dd></dl>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.views.generic.edit.FormMixin.get_success_url"></a><dt id="django.views.generic.edit.FormMixin.get_success_url">
+<tt class="descname">get_success_url</tt>()<a class="headerlink" href="#django.views.generic.edit.FormMixin.get_success_url" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine the URL to redirect to when the form is successfully
+validated. Returns <a class="reference internal" href="#django.views.generic.edit.FormMixin.success_url" title="django.views.generic.edit.FormMixin.success_url"><tt class="xref py py-attr docutils literal"><span class="pre">success_url</span></tt></a> by default.</p>
+</dd></dl>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.views.generic.edit.FormMixin.form_valid"></a><dt id="django.views.generic.edit.FormMixin.form_valid">
+<tt class="descname">form_valid</tt>(<em>form</em>)<a class="headerlink" href="#django.views.generic.edit.FormMixin.form_valid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Redirects to <a class="reference internal" href="#django.views.generic.edit.FormMixin.get_success_url" title="django.views.generic.edit.FormMixin.get_success_url"><tt class="xref py py-meth docutils literal"><span class="pre">get_success_url()</span></tt></a>.</p>
+</dd></dl>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.views.generic.edit.FormMixin.form_invalid"></a><dt id="django.views.generic.edit.FormMixin.form_invalid">
+<tt class="descname">form_invalid</tt>(<em>form</em>)<a class="headerlink" href="#django.views.generic.edit.FormMixin.form_invalid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Renders a response, providing the invalid form as context.</p>
+</dd></dl>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.views.generic.edit.FormMixin.get_context_data"></a><dt id="django.views.generic.edit.FormMixin.get_context_data">
+<tt class="descname">get_context_data</tt>(<em>**kwargs</em>)<a class="headerlink" href="#django.views.generic.edit.FormMixin.get_context_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Populates a context containing the contents of <tt class="docutils literal"><span class="pre">kwargs</span></tt>.</p>
+</dd></dl>
+<p><strong>Context</strong></p>
+<blockquote>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">form</span></tt>: The form instance that was generated for the view.</li>
+</ul>
+</blockquote>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Views mixing <a class="reference internal" href="#django.views.generic.edit.FormMixin" title="django.views.generic.edit.FormMixin"><tt class="xref py py-class docutils literal"><span class="pre">FormMixin</span></tt></a> must
+provide an implementation of <a class="reference internal" href="#django.views.generic.edit.FormMixin.form_valid" title="django.views.generic.edit.FormMixin.form_valid"><tt class="xref py py-meth docutils literal"><span class="pre">form_valid()</span></tt></a> and
+<a class="reference internal" href="#django.views.generic.edit.FormMixin.form_invalid" title="django.views.generic.edit.FormMixin.form_invalid"><tt class="xref py py-meth docutils literal"><span class="pre">form_invalid()</span></tt></a>.</p>
+</div>
+</dd></dl>
+</div>
+<div class="section" id="s-modelformmixin">
+<span id="modelformmixin"></span><h4>ModelFormMixin<a class="headerlink" href="#modelformmixin" title="Permalink to this headline">¶</a></h4>
+<dl class="class">
+<a name="//apple_ref/cpp/cl/django.views.generic.edit.ModelFormMixin"></a><dt id="django.views.generic.edit.ModelFormMixin">
+<em class="property">class </em><tt class="descname">ModelFormMixin</tt><a class="headerlink" href="#django.views.generic.edit.ModelFormMixin" title="Permalink to this definition">¶</a></dt>
+<dd><p>A form mixin that works on ModelForms, rather than a standalone form.</p>
+<p>Since this is a subclass of
+<a class="reference internal" href="#django.views.generic.detail.SingleObjectMixin" title="django.views.generic.detail.SingleObjectMixin"><tt class="xref py py-class docutils literal"><span class="pre">SingleObjectMixin</span></tt></a>, instances of this
+mixin have access to the <tt class="xref py py-attr docutils literal"><span class="pre">model</span></tt> and
+<tt class="xref py py-attr docutils literal"><span class="pre">queryset</span></tt> attributes, describing the type of
+object that the ModelForm is manipulating. The view also provides
+<tt class="docutils literal"><span class="pre">self.object</span></tt>, the instance being manipulated. If the instance is being
+created, <tt class="docutils literal"><span class="pre">self.object</span></tt> will be <tt class="xref docutils literal"><span class="pre">None</span></tt></p>
+<p><strong>Mixins</strong></p>
+<blockquote>
+<ul class="simple">
+<li><tt class="xref py py-class docutils literal"><span class="pre">django.views.generic.forms.FormMixin</span></tt></li>
+<li><a class="reference internal" href="#django.views.generic.detail.SingleObjectMixin" title="django.views.generic.detail.SingleObjectMixin"><tt class="xref py py-class docutils literal"><span class="pre">django.views.generic.detail.SingleObjectMixin</span></tt></a></li>
+</ul>
+</blockquote>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.views.generic.edit.ModelFormMixin.success_url"></a><dt id="django.views.generic.edit.ModelFormMixin.success_url">
+<tt class="descname">success_url</tt><a class="headerlink" href="#django.views.generic.edit.ModelFormMixin.success_url" title="Permalink to this definition">¶</a></dt>
+<dd><p>The URL to redirect to when the form is successfully processed.</p>
+<p><tt class="docutils literal"><span class="pre">success_url</span></tt> may contain dictionary string formatting, which
+will be interpolated against the object's field attributes. For
+example, you could use <tt class="docutils literal"><span class="pre">success_url=&quot;/polls/%(slug)s/&quot;</span></tt> to
+redirect to a URL composed out of the <tt class="docutils literal"><span class="pre">slug</span></tt> field on a model.</p>
+</dd></dl>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.views.generic.edit.ModelFormMixin.get_form_class"></a><dt id="django.views.generic.edit.ModelFormMixin.get_form_class">
+<tt class="descname">get_form_class</tt>()<a class="headerlink" href="#django.views.generic.edit.ModelFormMixin.get_form_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieve the form class to instantiate. If
+<a class="reference internal" href="#django.views.generic.edit.FormMixin.form_class" title="django.views.generic.edit.FormMixin.form_class"><tt class="xref py py-attr docutils literal"><span class="pre">FormMixin.form_class</span></tt></a> is provided, that class will be used.
+Otherwise, a ModelForm will be instantiated using the model associated
+with the <tt class="xref py py-attr docutils literal"><span class="pre">queryset</span></tt>, or with the
+<tt class="xref py py-attr docutils literal"><span class="pre">model</span></tt>, depending on which attribute is
+provided.</p>
+</dd></dl>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.views.generic.edit.ModelFormMixin.get_form_kwargs"></a><dt id="django.views.generic.edit.ModelFormMixin.get_form_kwargs">
+<tt class="descname">get_form_kwargs</tt>()<a class="headerlink" href="#django.views.generic.edit.ModelFormMixin.get_form_kwargs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add the current instance (<tt class="docutils literal"><span class="pre">self.object</span></tt>) to the standard
+<a class="reference internal" href="#django.views.generic.edit.FormMixin.get_form_kwargs" title="django.views.generic.edit.FormMixin.get_form_kwargs"><tt class="xref py py-meth docutils literal"><span class="pre">FormMixin.get_form_kwargs()</span></tt></a>.</p>
+</dd></dl>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.views.generic.edit.ModelFormMixin.get_success_url"></a><dt id="django.views.generic.edit.ModelFormMixin.get_success_url">
+<tt class="descname">get_success_url</tt>()<a class="headerlink" href="#django.views.generic.edit.ModelFormMixin.get_success_url" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine the URL to redirect to when the form is successfully
+validated. Returns <a class="reference internal" href="#django.views.generic.edit.FormMixin.success_url" title="django.views.generic.edit.FormMixin.success_url"><tt class="xref py py-attr docutils literal"><span class="pre">FormMixin.success_url</span></tt></a> if it is provided;
+otherwise, attempts to use the <tt class="docutils literal"><span class="pre">get_absolute_url()</span></tt> of the object.</p>
+</dd></dl>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.views.generic.edit.ModelFormMixin.form_valid"></a><dt id="django.views.generic.edit.ModelFormMixin.form_valid">
+<tt class="descname">form_valid</tt>()<a class="headerlink" href="#django.views.generic.edit.ModelFormMixin.form_valid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Saves the form instance, sets the current object for the view, and
+redirects to <a class="reference internal" href="#django.views.generic.edit.ModelFormMixin.get_success_url" title="django.views.generic.edit.ModelFormMixin.get_success_url"><tt class="xref py py-meth docutils literal"><span class="pre">get_success_url()</span></tt></a>.</p>
+</dd></dl>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.views.generic.edit.ModelFormMixin.form_invalid"></a><dt id="django.views.generic.edit.ModelFormMixin.form_invalid">
+<tt class="descname">form_invalid</tt>()<a class="headerlink" href="#django.views.generic.edit.ModelFormMixin.form_invalid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Renders a response, providing the invalid form as context.</p>
+</dd></dl>
+</dd></dl>
+</div>
+<div class="section" id="s-processformview">
+<span id="processformview"></span><h4>ProcessFormView<a class="headerlink" href="#processformview" title="Permalink to this headline">¶</a></h4>
+<dl class="class">
+<a name="//apple_ref/cpp/cl/django.views.generic.edit.ProcessFormView"></a><dt id="django.views.generic.edit.ProcessFormView">
+<em class="property">class </em><tt class="descname">ProcessFormView</tt><a class="headerlink" href="#django.views.generic.edit.ProcessFormView" title="Permalink to this definition">¶</a></dt>
+<dd><p>A mixin that provides basic HTTP GET and POST workflow.</p>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.views.generic.edit.ProcessFormView.get"></a><dt id="django.views.generic.edit.ProcessFormView.get">
+<tt class="descname">get</tt>(<em>request</em>, <em>*args</em>, <em>**kwargs</em>)<a class="headerlink" href="#django.views.generic.edit.ProcessFormView.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>Constructs a form, then renders a response using a context that
+contains that form.</p>
+</dd></dl>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.views.generic.edit.ProcessFormView.post"></a><dt id="django.views.generic.edit.ProcessFormView.post">
+<tt class="descname">post</tt>(<em>request</em>, <em>*args</em>, <em>**kwargs</em>)<a class="headerlink" href="#django.views.generic.edit.ProcessFormView.post" title="Permalink to this definition">¶</a></dt>
+<dd><p>Constructs a form, checks the form for validity, and handles it
+accordingly.</p>
+</dd></dl>
+<p>The PUT action is also handled, as an analog of POST.</p>
+</dd></dl>
+</div>
+<div class="section" id="s-deletionmixin">
+<span id="deletionmixin"></span><h4>DeletionMixin<a class="headerlink" href="#deletionmixin" title="Permalink to this headline">¶</a></h4>
+<dl class="class">
+<a name="//apple_ref/cpp/cl/django.views.generic.edit.DeletionMixin"></a><dt id="django.views.generic.edit.DeletionMixin">
+<em class="property">class </em><tt class="descname">DeletionMixin</tt><a class="headerlink" href="#django.views.generic.edit.DeletionMixin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Enables handling of the <tt class="docutils literal"><span class="pre">DELETE</span></tt> http action.</p>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.views.generic.edit.DeletionMixin.success_url"></a><dt id="django.views.generic.edit.DeletionMixin.success_url">
+<tt class="descname">success_url</tt><a class="headerlink" href="#django.views.generic.edit.DeletionMixin.success_url" title="Permalink to this definition">¶</a></dt>
+<dd><p>The url to redirect to when the nominated object has been
+successfully deleted.</p>
+</dd></dl>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.views.generic.edit.DeletionMixin.get_success_url"></a><dt id="django.views.generic.edit.DeletionMixin.get_success_url">
+<tt class="descname">get_success_url</tt>(<em>obj</em>)<a class="headerlink" href="#django.views.generic.edit.DeletionMixin.get_success_url" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the url to redirect to when the nominated object has been
+successfully deleted. Returns
+<a class="reference internal" href="#django.views.generic.edit.DeletionMixin.success_url" title="django.views.generic.edit.DeletionMixin.success_url"><tt class="xref py py-attr docutils literal"><span class="pre">success_url</span></tt></a> by
+default.</p>
+</dd></dl>
+</dd></dl>
+</div>
+</div>
+<div class="section" id="s-date-based-mixins">
+<span id="date-based-mixins"></span><h3>Date-based mixins<a class="headerlink" href="#date-based-mixins" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="s-yearmixin">
+<span id="yearmixin"></span><h4>YearMixin<a class="headerlink" href="#yearmixin" title="Permalink to this headline">¶</a></h4>
+<dl class="class">
+<a name="//apple_ref/cpp/cl/django.views.generic.dates.YearMixin"></a><dt id="django.views.generic.dates.YearMixin">
+<em class="property">class </em><tt class="descname">YearMixin</tt><a class="headerlink" href="#django.views.generic.dates.YearMixin" title="Permalink to this definition">¶</a></dt>
+<dd><p>A mixin that can be used to retrieve and provide parsing information for a
+year component of a date.</p>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.views.generic.dates.YearMixin.year_format"></a><dt id="django.views.generic.dates.YearMixin.year_format">
+<tt class="descname">year_format</tt><a class="headerlink" href="#django.views.generic.dates.YearMixin.year_format" title="Permalink to this definition">¶</a></dt>
+<dd><p>The <a class="reference external" href="http://docs.python.org/library/time.html#time.strftime">strftime</a> format to use when parsing the year. By default, this is
+<tt class="docutils literal"><span class="pre">'%Y'</span></tt>.</p>
+</dd></dl>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.views.generic.dates.YearMixin.year"></a><dt id="django.views.generic.dates.YearMixin.year">
+<tt class="descname">year</tt><a class="headerlink" href="#django.views.generic.dates.YearMixin.year" title="Permalink to this definition">¶</a></dt>
+<dd><p><strong>Optional</strong> The value for the year (as a string). By default, set to
+<tt class="xref docutils literal"><span class="pre">None</span></tt>, which means the year will be determined using other means.</p>
+</dd></dl>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.views.generic.dates.YearMixin.get_year_format"></a><dt id="django.views.generic.dates.YearMixin.get_year_format">
+<tt class="descname">get_year_format</tt>()<a class="headerlink" href="#django.views.generic.dates.YearMixin.get_year_format" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the <a class="reference external" href="http://docs.python.org/library/time.html#time.strftime">strftime</a> format to use when parsing the year. Returns
+<a class="reference internal" href="#django.views.generic.dates.YearMixin.year_format" title="django.views.generic.dates.YearMixin.year_format"><tt class="xref py py-attr docutils literal"><span class="pre">YearMixin.year_format</span></tt></a> by default.</p>
+</dd></dl>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.views.generic.dates.YearMixin.get_year"></a><dt id="django.views.generic.dates.YearMixin.get_year">
+<tt class="descname">get_year</tt>()<a class="headerlink" href="#django.views.generic.dates.YearMixin.get_year" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the year for which this view will display data. Tries the
+following sources, in order:</p>
+<blockquote>
+<ul class="simple">
+<li>The value of the <a class="reference internal" href="#django.views.generic.dates.YearMixin.year" title="django.views.generic.dates.YearMixin.year"><tt class="xref py py-attr docutils literal"><span class="pre">YearMixin.year</span></tt></a> attribute.</li>
+<li>The value of the <cite>year</cite> argument captured in the URL pattern</li>
+<li>The value of the <cite>year</cite> GET query argument.</li>
+</ul>
+</blockquote>
+<p>Raises a 404 if no valid year specification can be found.</p>
+</dd></dl>
+</dd></dl>
+</div>
+<div class="section" id="s-monthmixin">
+<span id="monthmixin"></span><h4>MonthMixin<a class="headerlink" href="#monthmixin" title="Permalink to this headline">¶</a></h4>
+<dl class="class">
+<a name="//apple_ref/cpp/cl/django.views.generic.dates.MonthMixin"></a><dt id="django.views.generic.dates.MonthMixin">
+<em class="property">class </em><tt class="descname">MonthMixin</tt><a class="headerlink" href="#django.views.generic.dates.MonthMixin" title="Permalink to this definition">¶</a></dt>
+<dd><p>A mixin that can be used to retrieve and provide parsing information for a
+month component of a date.</p>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.views.generic.dates.MonthMixin.month_format"></a><dt id="django.views.generic.dates.MonthMixin.month_format">
+<tt class="descname">month_format</tt><a class="headerlink" href="#django.views.generic.dates.MonthMixin.month_format" title="Permalink to this definition">¶</a></dt>
+<dd><p>The <a class="reference external" href="http://docs.python.org/library/time.html#time.strftime">strftime</a> format to use when parsing the month. By default, this is
+<tt class="docutils literal"><span class="pre">'%b'</span></tt>.</p>
+</dd></dl>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.views.generic.dates.MonthMixin.month"></a><dt id="django.views.generic.dates.MonthMixin.month">
+<tt class="descname">month</tt><a class="headerlink" href="#django.views.generic.dates.MonthMixin.month" title="Permalink to this definition">¶</a></dt>
+<dd><p><strong>Optional</strong> The value for the month (as a string). By default, set to
+<tt class="xref docutils literal"><span class="pre">None</span></tt>, which means the month will be determined using other means.</p>
+</dd></dl>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.views.generic.dates.MonthMixin.get_month_format"></a><dt id="django.views.generic.dates.MonthMixin.get_month_format">
+<tt class="descname">get_month_format</tt>()<a class="headerlink" href="#django.views.generic.dates.MonthMixin.get_month_format" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the <a class="reference external" href="http://docs.python.org/library/time.html#time.strftime">strftime</a> format to use when parsing the month. Returns
+<a class="reference internal" href="#django.views.generic.dates.MonthMixin.month_format" title="django.views.generic.dates.MonthMixin.month_format"><tt class="xref py py-attr docutils literal"><span class="pre">MonthMixin.month_format</span></tt></a> by default.</p>
+</dd></dl>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.views.generic.dates.MonthMixin.get_month"></a><dt id="django.views.generic.dates.MonthMixin.get_month">
+<tt class="descname">get_month</tt>()<a class="headerlink" href="#django.views.generic.dates.MonthMixin.get_month" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the month for which this view will display data. Tries the
+following sources, in order:</p>
+<blockquote>
+<ul class="simple">
+<li>The value of the <a class="reference internal" href="#django.views.generic.dates.MonthMixin.month" title="django.views.generic.dates.MonthMixin.month"><tt class="xref py py-attr docutils literal"><span class="pre">MonthMixin.month</span></tt></a> attribute.</li>
+<li>The value of the <cite>month</cite> argument captured in the URL pattern</li>
+<li>The value of the <cite>month</cite> GET query argument.</li>
+</ul>
+</blockquote>
+<p>Raises a 404 if no valid month specification can be found.</p>
+</dd></dl>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.views.generic.dates.MonthMixin.get_next_month"></a><dt id="django.views.generic.dates.MonthMixin.get_next_month">
+<tt class="descname">get_next_month</tt>(<em>date</em>)<a class="headerlink" href="#django.views.generic.dates.MonthMixin.get_next_month" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a date object containing the first day of the month after the
+date provided. Returns <tt class="xref docutils literal"><span class="pre">None</span></tt> if mixed with a view that sets
+<tt class="docutils literal"><span class="pre">allow_future</span> <span class="pre">=</span> <span class="pre">False</span></tt>, and the next month is in the future. If
+<tt class="docutils literal"><span class="pre">allow_empty</span> <span class="pre">=</span> <span class="pre">False</span></tt>, returns the next month that contains data.</p>
+</dd></dl>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.views.generic.dates.MonthMixin.get_prev_month"></a><dt id="django.views.generic.dates.MonthMixin.get_prev_month">
+<tt class="descname">get_prev_month</tt>(<em>date</em>)<a class="headerlink" href="#django.views.generic.dates.MonthMixin.get_prev_month" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a date object containing the first day of the month before the
+date provided. If <tt class="docutils literal"><span class="pre">allow_empty</span> <span class="pre">=</span> <span class="pre">False</span></tt>, returns the previous month
+that contained data.</p>
+</dd></dl>
+</dd></dl>
+</div>
+<div class="section" id="s-daymixin">
+<span id="daymixin"></span><h4>DayMixin<a class="headerlink" href="#daymixin" title="Permalink to this headline">¶</a></h4>
+<dl class="class">
+<a name="//apple_ref/cpp/cl/django.views.generic.dates.DayMixin"></a><dt id="django.views.generic.dates.DayMixin">
+<em class="property">class </em><tt class="descname">DayMixin</tt><a class="headerlink" href="#django.views.generic.dates.DayMixin" title="Permalink to this definition">¶</a></dt>
+<dd><p>A mixin that can be used to retrieve and provide parsing information for a
+day component of a date.</p>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.views.generic.dates.DayMixin.day_format"></a><dt id="django.views.generic.dates.DayMixin.day_format">
+<tt class="descname">day_format</tt><a class="headerlink" href="#django.views.generic.dates.DayMixin.day_format" title="Permalink to this definition">¶</a></dt>
+<dd><p>The <a class="reference external" href="http://docs.python.org/library/time.html#time.strftime">strftime</a> format to use when parsing the day. By default, this is
+<tt class="docutils literal"><span class="pre">'%d'</span></tt>.</p>
+</dd></dl>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.views.generic.dates.DayMixin.day"></a><dt id="django.views.generic.dates.DayMixin.day">
+<tt class="descname">day</tt><a class="headerlink" href="#django.views.generic.dates.DayMixin.day" title="Permalink to this definition">¶</a></dt>
+<dd><p><strong>Optional</strong> The value for the day (as a string). By default, set to
+<tt class="xref docutils literal"><span class="pre">None</span></tt>, which means the day will be determined using other means.</p>
+</dd></dl>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.views.generic.dates.DayMixin.get_day_format"></a><dt id="django.views.generic.dates.DayMixin.get_day_format">
+<tt class="descname">get_day_format</tt>()<a class="headerlink" href="#django.views.generic.dates.DayMixin.get_day_format" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the <a class="reference external" href="http://docs.python.org/library/time.html#time.strftime">strftime</a> format to use when parsing the day. Returns
+<a class="reference internal" href="#django.views.generic.dates.DayMixin.day_format" title="django.views.generic.dates.DayMixin.day_format"><tt class="xref py py-attr docutils literal"><span class="pre">DayMixin.day_format</span></tt></a> by default.</p>
+</dd></dl>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.views.generic.dates.DayMixin.get_day"></a><dt id="django.views.generic.dates.DayMixin.get_day">
+<tt class="descname">get_day</tt>()<a class="headerlink" href="#django.views.generic.dates.DayMixin.get_day" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the day for which this view will display data. Tries the
+following sources, in order:</p>
+<blockquote>
+<ul class="simple">
+<li>The value of the <a class="reference internal" href="#django.views.generic.dates.DayMixin.day" title="django.views.generic.dates.DayMixin.day"><tt class="xref py py-attr docutils literal"><span class="pre">DayMixin.day</span></tt></a> attribute.</li>
+<li>The value of the <cite>day</cite> argument captured in the URL pattern</li>
+<li>The value of the <cite>day</cite> GET query argument.</li>
+</ul>
+</blockquote>
+<p>Raises a 404 if no valid day specification can be found.</p>
+</dd></dl>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.views.generic.dates.DayMixin.get_next_day"></a><dt id="django.views.generic.dates.DayMixin.get_next_day">
+<tt class="descname">get_next_day</tt>(<em>date</em>)<a class="headerlink" href="#django.views.generic.dates.DayMixin.get_next_day" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a date object containing the next day after the date provided.
+Returns <tt class="xref docutils literal"><span class="pre">None</span></tt> if mixed with a view that sets <tt class="docutils literal"><span class="pre">allow_future</span> <span class="pre">=</span> <span class="pre">False</span></tt>,
+and the next day is in the future. If <tt class="docutils literal"><span class="pre">allow_empty</span> <span class="pre">=</span> <span class="pre">False</span></tt>, returns
+the next day that contains data.</p>
+</dd></dl>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.views.generic.dates.DayMixin.get_prev_day"></a><dt id="django.views.generic.dates.DayMixin.get_prev_day">
+<tt class="descname">get_prev_day</tt>(<em>date</em>)<a class="headerlink" href="#django.views.generic.dates.DayMixin.get_prev_day" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a date object containing the previous day. If
+<tt class="docutils literal"><span class="pre">allow_empty</span> <span class="pre">=</span> <span class="pre">False</span></tt>, returns the previous day that contained data.</p>
+</dd></dl>
+</dd></dl>
+</div>
+<div class="section" id="s-weekmixin">
+<span id="weekmixin"></span><h4>WeekMixin<a class="headerlink" href="#weekmixin" title="Permalink to this headline">¶</a></h4>
+<dl class="class">
+<a name="//apple_ref/cpp/cl/django.views.generic.dates.WeekMixin"></a><dt id="django.views.generic.dates.WeekMixin">
+<em class="property">class </em><tt class="descname">WeekMixin</tt><a class="headerlink" href="#django.views.generic.dates.WeekMixin" title="Permalink to this definition">¶</a></dt>
+<dd><p>A mixin that can be used to retrieve and provide parsing information for a
+week component of a date.</p>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.views.generic.dates.WeekMixin.week_format"></a><dt id="django.views.generic.dates.WeekMixin.week_format">
+<tt class="descname">week_format</tt><a class="headerlink" href="#django.views.generic.dates.WeekMixin.week_format" title="Permalink to this definition">¶</a></dt>
+<dd><p>The <a class="reference external" href="http://docs.python.org/library/time.html#time.strftime">strftime</a> format to use when parsing the week. By default, this is
+<tt class="docutils literal"><span class="pre">'%U'</span></tt>.</p>
+</dd></dl>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.views.generic.dates.WeekMixin.week"></a><dt id="django.views.generic.dates.WeekMixin.week">
+<tt class="descname">week</tt><a class="headerlink" href="#django.views.generic.dates.WeekMixin.week" title="Permalink to this definition">¶</a></dt>
+<dd><p><strong>Optional</strong> The value for the week (as a string). By default, set to
+<tt class="xref docutils literal"><span class="pre">None</span></tt>, which means the week will be determined using other means.</p>
+</dd></dl>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.views.generic.dates.WeekMixin.get_week_format"></a><dt id="django.views.generic.dates.WeekMixin.get_week_format">
+<tt class="descname">get_week_format</tt>()<a class="headerlink" href="#django.views.generic.dates.WeekMixin.get_week_format" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the <a class="reference external" href="http://docs.python.org/library/time.html#time.strftime">strftime</a> format to use when parsing the week. Returns
+<a class="reference internal" href="#django.views.generic.dates.WeekMixin.week_format" title="django.views.generic.dates.WeekMixin.week_format"><tt class="xref py py-attr docutils literal"><span class="pre">WeekMixin.week_format</span></tt></a> by default.</p>
+</dd></dl>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.views.generic.dates.WeekMixin.get_week"></a><dt id="django.views.generic.dates.WeekMixin.get_week">
+<tt class="descname">get_week</tt>()<a class="headerlink" href="#django.views.generic.dates.WeekMixin.get_week" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the week for which this view will display data. Tries the
+following sources, in order:</p>
+<blockquote>
+<ul class="simple">
+<li>The value of the <a class="reference internal" href="#django.views.generic.dates.WeekMixin.week" title="django.views.generic.dates.WeekMixin.week"><tt class="xref py py-attr docutils literal"><span class="pre">WeekMixin.week</span></tt></a> attribute.</li>
+<li>The value of the <cite>week</cite> argument captured in the URL pattern</li>
+<li>The value of the <cite>week</cite> GET query argument.</li>
+</ul>
+</blockquote>
+<p>Raises a 404 if no valid week specification can be found.</p>
+</dd></dl>
+</dd></dl>
+</div>
+<div class="section" id="s-datemixin">
+<span id="datemixin"></span><h4>DateMixin<a class="headerlink" href="#datemixin" title="Permalink to this headline">¶</a></h4>
+<dl class="class">
+<a name="//apple_ref/cpp/cl/django.views.generic.dates.DateMixin"></a><dt id="django.views.generic.dates.DateMixin">
+<em class="property">class </em><tt class="descname">DateMixin</tt><a class="headerlink" href="#django.views.generic.dates.DateMixin" title="Permalink to this definition">¶</a></dt>
+<dd><p>A mixin class providing common behavior for all date-based views.</p>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.views.generic.dates.DateMixin.date_field"></a><dt id="django.views.generic.dates.DateMixin.date_field">
+<tt class="descname">date_field</tt><a class="headerlink" href="#django.views.generic.dates.DateMixin.date_field" title="Permalink to this definition">¶</a></dt>
+<dd><p>The name of the <tt class="docutils literal"><span class="pre">DateField</span></tt> or <tt class="docutils literal"><span class="pre">DateTimeField</span></tt> in the
+<tt class="docutils literal"><span class="pre">QuerySet</span></tt>'s model that the date-based archive should use to
+determine the objects on the page.</p>
+</dd></dl>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.views.generic.dates.DateMixin.allow_future"></a><dt id="django.views.generic.dates.DateMixin.allow_future">
+<tt class="descname">allow_future</tt><a class="headerlink" href="#django.views.generic.dates.DateMixin.allow_future" title="Permalink to this definition">¶</a></dt>
+<dd><p>A boolean specifying whether to include &quot;future&quot; objects on this page,
+where &quot;future&quot; means objects in which the field specified in
+<tt class="docutils literal"><span class="pre">date_field</span></tt> is greater than the current date/time. By default, this
+is <tt class="xref docutils literal"><span class="pre">False</span></tt>.</p>
+</dd></dl>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.views.generic.dates.DateMixin.get_date_field"></a><dt id="django.views.generic.dates.DateMixin.get_date_field">
+<tt class="descname">get_date_field</tt>()<a class="headerlink" href="#django.views.generic.dates.DateMixin.get_date_field" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the name of the field that contains the date data that this
+view will operate on. Returns <a class="reference internal" href="#django.views.generic.dates.DateMixin.date_field" title="django.views.generic.dates.DateMixin.date_field"><tt class="xref py py-attr docutils literal"><span class="pre">DateMixin.date_field</span></tt></a> by default.</p>
+</dd></dl>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.views.generic.dates.DateMixin.get_allow_future"></a><dt id="django.views.generic.dates.DateMixin.get_allow_future">
+<tt class="descname">get_allow_future</tt>()<a class="headerlink" href="#django.views.generic.dates.DateMixin.get_allow_future" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine whether to include &quot;future&quot; objects on this page, where
+&quot;future&quot; means objects in which the field specified in <tt class="docutils literal"><span class="pre">date_field</span></tt>
+is greater than the current date/time. Returns
+<a class="reference internal" href="#django.views.generic.dates.DateMixin.date_field" title="django.views.generic.dates.DateMixin.date_field"><tt class="xref py py-attr docutils literal"><span class="pre">DateMixin.date_field</span></tt></a> by default.</p>
+</dd></dl>
+</dd></dl>
+</div>
+<div class="section" id="s-basedatelistview">
+<span id="basedatelistview"></span><h4>BaseDateListView<a class="headerlink" href="#basedatelistview" title="Permalink to this headline">¶</a></h4>
+<dl class="class">
+<a name="//apple_ref/cpp/cl/django.views.generic.dates.BaseDateListView"></a><dt id="django.views.generic.dates.BaseDateListView">
+<em class="property">class </em><tt class="descname">BaseDateListView</tt><a class="headerlink" href="#django.views.generic.dates.BaseDateListView" title="Permalink to this definition">¶</a></dt>
+<dd><p>A base class that provides common behavior for all date-based views. There
+won't normally be a reason to instantiate
+<a class="reference internal" href="#django.views.generic.dates.BaseDateListView" title="django.views.generic.dates.BaseDateListView"><tt class="xref py py-class docutils literal"><span class="pre">BaseDateListView</span></tt></a>; instantiate one of
+the subclasses instead.</p>
+<p>While this view (and it's subclasses) are executing, <tt class="docutils literal"><span class="pre">self.object_list</span></tt>
+will contain the list of objects that the view is operating upon, and
+<tt class="docutils literal"><span class="pre">self.date_list</span></tt> will contain the list of dates for which data is
+available.</p>
+<p><strong>Mixins</strong></p>
+<blockquote>
+<ul class="simple">
+<li><a class="reference internal" href="#django.views.generic.dates.DateMixin" title="django.views.generic.dates.DateMixin"><tt class="xref py py-class docutils literal"><span class="pre">DateMixin</span></tt></a></li>
+<li><a class="reference internal" href="#django.views.generic.list.MultipleObjectMixin" title="django.views.generic.list.MultipleObjectMixin"><tt class="xref py py-class docutils literal"><span class="pre">MultipleObjectMixin</span></tt></a></li>
+</ul>
+</blockquote>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.views.generic.dates.BaseDateListView.allow_empty"></a><dt id="django.views.generic.dates.BaseDateListView.allow_empty">
+<tt class="descname">allow_empty</tt><a class="headerlink" href="#django.views.generic.dates.BaseDateListView.allow_empty" title="Permalink to this definition">¶</a></dt>
+<dd><p>A boolean specifying whether to display the page if no objects are
+available. If this is <tt class="xref docutils literal"><span class="pre">False</span></tt> and no objects are available, the view
+will raise a 404 instead of displaying an empty page. By default, this
+is <tt class="xref docutils literal"><span class="pre">True</span></tt>.</p>
+</dd></dl>
+<dl class="method">
+<dt>
+<tt class="descname">get_dated_items():</tt></dt>
+<dd><p>Returns a 3-tuple containing (<tt class="docutils literal"><span class="pre">date_list</span></tt>, <tt class="docutils literal"><span class="pre">object_list</span></tt>,
+<tt class="docutils literal"><span class="pre">extra_context</span></tt>).</p>
+<p><tt class="docutils literal"><span class="pre">date_list</span></tt> is the list of dates for which data is available.
+<tt class="docutils literal"><span class="pre">object_list</span></tt> is the list of objects. <tt class="docutils literal"><span class="pre">extra_context</span></tt> is a
+dictionary of context data that will be added to any context data
+provided by the
+<a class="reference internal" href="#django.views.generic.list.MultipleObjectMixin" title="django.views.generic.list.MultipleObjectMixin"><tt class="xref py py-class docutils literal"><span class="pre">MultipleObjectMixin</span></tt></a>.</p>
+</dd></dl>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.views.generic.dates.BaseDateListView.get_dated_queryset"></a><dt id="django.views.generic.dates.BaseDateListView.get_dated_queryset">
+<tt class="descname">get_dated_queryset</tt>(<em>**lookup</em>)<a class="headerlink" href="#django.views.generic.dates.BaseDateListView.get_dated_queryset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a queryset, filtered using the query arguments defined by
+<tt class="docutils literal"><span class="pre">lookup</span></tt>. Enforces any restrictions on the queryset, such as
+<tt class="docutils literal"><span class="pre">allow_empty</span></tt> and <tt class="docutils literal"><span class="pre">allow_future</span></tt>.</p>
+</dd></dl>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.views.generic.dates.BaseDateListView.get_date_list"></a><dt id="django.views.generic.dates.BaseDateListView.get_date_list">
+<tt class="descname">get_date_list</tt>(<em>queryset</em>, <em>date_type</em>)<a class="headerlink" href="#django.views.generic.dates.BaseDateListView.get_date_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the list of dates of type <tt class="docutils literal"><span class="pre">date_type</span></tt> for which
+<tt class="docutils literal"><span class="pre">queryset</span></tt> contains entries. For example, <tt class="docutils literal"><span class="pre">get_date_list(qs,</span>
+<span class="pre">'year')</span></tt> will return the list of years for which <tt class="docutils literal"><span class="pre">qs</span></tt> has entries.
+See <tt class="xref py py-meth docutils literal"><span class="pre">dates()</span></tt> for the
+ways that the <tt class="docutils literal"><span class="pre">date_type</span></tt> argument can be used.</p>
+</dd></dl>
+</dd></dl>
+</div>
+</div>
+</div>
+<div class="section" id="s-generic-views">
+<span id="generic-views"></span><h2>Generic views<a class="headerlink" href="#generic-views" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="s-simple-generic-views">
+<span id="simple-generic-views"></span><h3>Simple generic views<a class="headerlink" href="#simple-generic-views" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="s-view">
+<span id="view"></span><h4>View<a class="headerlink" href="#view" title="Permalink to this headline">¶</a></h4>
+<dl class="class">
+<a name="//apple_ref/cpp/cl/django.views.generic.base.View"></a><dt id="django.views.generic.base.View">
+<em class="property">class </em><tt class="descname">View</tt><a class="headerlink" href="#django.views.generic.base.View" title="Permalink to this definition">¶</a></dt>
+<dd><p>The master class-based base view. All other generic class-based views
+inherit from this base class.</p>
+<p>Each request served by a <a class="reference internal" href="#django.views.generic.base.View" title="django.views.generic.base.View"><tt class="xref py py-class docutils literal"><span class="pre">View</span></tt></a> has an
+independent state; therefore, it is safe to store state variables on the
+instance (i.e., <tt class="docutils literal"><span class="pre">self.foo</span> <span class="pre">=</span> <span class="pre">3</span></tt> is a thread-safe operation).</p>
+<p>A class-based view is deployed into a URL pattern using the
+<tt class="xref py py-meth docutils literal"><span class="pre">as_view()</span></tt> classmethod:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">urlpatterns</span> <span class="o">=</span> <span class="n">patterns</span><span class="p">(</span><span class="s">''</span><span class="p">,</span>
+        <span class="p">(</span><span class="s">r'^view/$'</span><span class="p">,</span> <span class="n">MyView</span><span class="o">.</span><span class="n">as_view</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="mi">42</span><span class="p">)),</span>
+    <span class="p">)</span>
+</pre></div>
+</div>
+<p>Any argument passed into <tt class="xref py py-meth docutils literal"><span class="pre">as_view()</span></tt> will be assigned onto the
+instance that is used to service a request. Using the previous example,
+this means that every request on <tt class="docutils literal"><span class="pre">MyView</span></tt> is able to interrogate
+<tt class="docutils literal"><span class="pre">self.size</span></tt>.</p>
+<div class="admonition-thread-safety-with-view-arguments admonition ">
+<p class="first admonition-title">Thread safety with view arguments</p>
+<p class="last">Arguments passed to a view are shared between every instance of a view.
+This means that you shoudn't use a list, dictionary, or any other
+variable object as an argument to a view. If you did, the actions of
+one user visiting your view could have an effect on subsequent users
+visiting the same view.</p>
+</div>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.views.generic.base.View.dispatch"></a><dt id="django.views.generic.base.View.dispatch">
+<tt class="descname">dispatch</tt>(<em>request</em>, <em>*args</em>, <em>**kwargs</em>)<a class="headerlink" href="#django.views.generic.base.View.dispatch" title="Permalink to this definition">¶</a></dt>
+<dd><p>The <tt class="docutils literal"><span class="pre">view</span></tt> part of the view -- the method that accepts a <tt class="docutils literal"><span class="pre">request</span></tt>
+argument plus arguments, and returns a HTTP response.</p>
+<p>The default implementation will inspect the HTTP method and attempt to
+delegate to a method that matches the HTTP method; a <tt class="docutils literal"><span class="pre">GET</span></tt> will be
+delegated to <tt class="xref py py-meth docutils literal"><span class="pre">get()</span></tt>, a <tt class="docutils literal"><span class="pre">POST</span></tt> to <tt class="xref py py-meth docutils literal"><span class="pre">post()</span></tt>,
+and so on.</p>
+<p>The default implementation also sets <tt class="docutils literal"><span class="pre">request</span></tt>, <tt class="docutils literal"><span class="pre">args</span></tt> and
+<tt class="docutils literal"><span class="pre">kwargs</span></tt> as instance variables, so any method on the view can know
+the full details of the request that was made to invoke the view.</p>
+</dd></dl>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.views.generic.base.View.http_method_not_allowed"></a><dt id="django.views.generic.base.View.http_method_not_allowed">
+<tt class="descname">http_method_not_allowed</tt>(<em>request</em>, <em>*args</em>, <em>**kwargs</em>)<a class="headerlink" href="#django.views.generic.base.View.http_method_not_allowed" title="Permalink to this definition">¶</a></dt>
+<dd><p>If the view was called with HTTP method it doesn't support, this method
+is called instead.</p>
+<p>The default implementation returns <tt class="docutils literal"><span class="pre">HttpResponseNotAllowed</span></tt> with list
+of allowed methods in plain text.</p>
+</dd></dl>
+</dd></dl>
+</div>
+<div class="section" id="s-templateview">
+<span id="templateview"></span><h4>TemplateView<a class="headerlink" href="#templateview" title="Permalink to this headline">¶</a></h4>
+<dl class="class">
+<a name="//apple_ref/cpp/cl/django.views.generic.base.TemplateView"></a><dt id="django.views.generic.base.TemplateView">
+<em class="property">class </em><tt class="descname">TemplateView</tt><a class="headerlink" href="#django.views.generic.base.TemplateView" title="Permalink to this definition">¶</a></dt>
+<dd><p>Renders a given template, passing it a <tt class="docutils literal"><span class="pre">{{</span> <span class="pre">params</span> <span class="pre">}}</span></tt> template variable,
+which is a dictionary of the parameters captured in the URL.</p>
+<p><strong>Mixins</strong></p>
+<blockquote>
+<ul class="simple">
+<li><a class="reference internal" href="#django.views.generic.base.TemplateResponseMixin" title="django.views.generic.base.TemplateResponseMixin"><tt class="xref py py-class docutils literal"><span class="pre">django.views.generic.base.TemplateResponseMixin</span></tt></a></li>
+</ul>
+</blockquote>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.views.generic.base.TemplateView.template_name"></a><dt id="django.views.generic.base.TemplateView.template_name">
+<tt class="descname">template_name</tt><a class="headerlink" href="#django.views.generic.base.TemplateView.template_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>The full name of a template to use.</p>
+</dd></dl>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.views.generic.base.TemplateView.get_context_data"></a><dt id="django.views.generic.base.TemplateView.get_context_data">
+<tt class="descname">get_context_data</tt>(<em>**kwargs</em>)<a class="headerlink" href="#django.views.generic.base.TemplateView.get_context_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a context data dictionary consisting of the contents of
+<tt class="docutils literal"><span class="pre">kwargs</span></tt> stored in the context variable <tt class="docutils literal"><span class="pre">params</span></tt>.</p>
+</dd></dl>
+<p><strong>Context</strong></p>
+<blockquote>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">params</span></tt>: The dictionary of keyword arguments captured from the URL
+pattern that served the view.</li>
+</ul>
+</blockquote>
+</dd></dl>
+</div>
+<div class="section" id="s-redirectview">
+<span id="redirectview"></span><h4>RedirectView<a class="headerlink" href="#redirectview" title="Permalink to this headline">¶</a></h4>
+<dl class="class">
+<a name="//apple_ref/cpp/cl/django.views.generic.base.RedirectView"></a><dt id="django.views.generic.base.RedirectView">
+<em class="property">class </em><tt class="descname">RedirectView</tt><a class="headerlink" href="#django.views.generic.base.RedirectView" title="Permalink to this definition">¶</a></dt>
+<dd><p>Redirects to a given URL.</p>
+<p>The given URL may contain dictionary-style string formatting, which will be
+interpolated against the parameters captured in the URL. Because keyword
+interpolation is <em>always</em> done (even if no arguments are passed in), any
+<tt class="docutils literal"><span class="pre">&quot;%&quot;</span></tt> characters in the URL must be written as <tt class="docutils literal"><span class="pre">&quot;%%&quot;</span></tt> so that Python
+will convert them to a single percent sign on output.</p>
+<p>If the given URL is <tt class="xref docutils literal"><span class="pre">None</span></tt>, Django will return an <tt class="docutils literal"><span class="pre">HttpResponseGone</span></tt>
+(410).</p>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.views.generic.base.RedirectView.url"></a><dt id="django.views.generic.base.RedirectView.url">
+<tt class="descname">url</tt><a class="headerlink" href="#django.views.generic.base.RedirectView.url" title="Permalink to this definition">¶</a></dt>
+<dd><p>The URL to redirect to, as a string. Or <tt class="xref docutils literal"><span class="pre">None</span></tt> to raise a 410 (Gone)
+HTTP error.</p>
+</dd></dl>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.views.generic.base.RedirectView.permanent"></a><dt id="django.views.generic.base.RedirectView.permanent">
+<tt class="descname">permanent</tt><a class="headerlink" href="#django.views.generic.base.RedirectView.permanent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Whether the redirect should be permanent. The only difference here is
+the HTTP status code returned. If <tt class="xref docutils literal"><span class="pre">True</span></tt>, then the redirect will use
+status code 301. If <tt class="xref docutils literal"><span class="pre">False</span></tt>, then the redirect will use status code
+302. By default, <tt class="docutils literal"><span class="pre">permanent</span></tt> is <tt class="xref docutils literal"><span class="pre">True</span></tt>.</p>
+</dd></dl>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.views.generic.base.RedirectView.query_string"></a><dt id="django.views.generic.base.RedirectView.query_string">
+<tt class="descname">query_string</tt><a class="headerlink" href="#django.views.generic.base.RedirectView.query_string" title="Permalink to this definition">¶</a></dt>
+<dd><p>Whether to pass along the GET query string to the new location. If
+<tt class="xref docutils literal"><span class="pre">True</span></tt>, then the query string is appended to the URL. If <tt class="xref docutils literal"><span class="pre">False</span></tt>,
+then the query string is discarded. By default, <tt class="docutils literal"><span class="pre">query_string</span></tt> is
+<tt class="xref docutils literal"><span class="pre">False</span></tt>.</p>
+</dd></dl>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.views.generic.base.RedirectView.get_redirect_url"></a><dt id="django.views.generic.base.RedirectView.get_redirect_url">
+<tt class="descname">get_redirect_url</tt>(<em>**kwargs</em>)<a class="headerlink" href="#django.views.generic.base.RedirectView.get_redirect_url" title="Permalink to this definition">¶</a></dt>
+<dd><p>Constructs the target URL for redirection.</p>
+<p>The default implementation uses <a class="reference internal" href="#django.views.generic.base.RedirectView.url" title="django.views.generic.base.RedirectView.url"><tt class="xref py py-attr docutils literal"><span class="pre">url</span></tt></a> as a starting
+string, performs expansion of <tt class="docutils literal"><span class="pre">%</span></tt> parameters in that string, as well
+as the appending of query string if requested by
+<a class="reference internal" href="#django.views.generic.base.RedirectView.query_string" title="django.views.generic.base.RedirectView.query_string"><tt class="xref py py-attr docutils literal"><span class="pre">query_string</span></tt></a>. Subclasses may implement any
+behavior they wish, as long as the method returns a redirect-ready URL
+string.</p>
+</dd></dl>
+</dd></dl>
+</div>
+</div>
+<div class="section" id="s-detail-views">
+<span id="detail-views"></span><h3>Detail views<a class="headerlink" href="#detail-views" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="s-detailview">
+<span id="detailview"></span><h4>DetailView<a class="headerlink" href="#detailview" title="Permalink to this headline">¶</a></h4>
+<dl class="class">
+<a name="//apple_ref/cpp/cl/django.views.generic.detail.BaseDetailView"></a><dt id="django.views.generic.detail.BaseDetailView">
+<em class="property">class </em><tt class="descname">BaseDetailView</tt><a class="headerlink" href="#django.views.generic.detail.BaseDetailView" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<dl class="class">
+<a name="//apple_ref/cpp/cl/django.views.generic.detail.DetailView"></a><dt id="django.views.generic.detail.DetailView">
+<em class="property">class </em><tt class="descname">DetailView</tt><a class="headerlink" href="#django.views.generic.detail.DetailView" title="Permalink to this definition">¶</a></dt>
+<dd><p>A page representing an individual object.</p>
+<p>While this view is executing, <tt class="docutils literal"><span class="pre">self.object</span></tt> will contain the object that
+the view is operating upon.</p>
+<p><tt class="xref py py-class docutils literal"><span class="pre">BaseDetailView</span></tt> implements the same
+behavior as <tt class="xref py py-class docutils literal"><span class="pre">DetailView</span></tt>, but doesn't
+include the
+<a class="reference internal" href="#django.views.generic.detail.SingleObjectTemplateResponseMixin" title="django.views.generic.detail.SingleObjectTemplateResponseMixin"><tt class="xref py py-class docutils literal"><span class="pre">SingleObjectTemplateResponseMixin</span></tt></a>.</p>
+<p><strong>Mixins</strong></p>
+<blockquote>
+<ul class="simple">
+<li><a class="reference internal" href="#django.views.generic.detail.SingleObjectMixin" title="django.views.generic.detail.SingleObjectMixin"><tt class="xref py py-class docutils literal"><span class="pre">django.views.generic.detail.SingleObjectMixin</span></tt></a></li>
+<li><a class="reference internal" href="#django.views.generic.detail.SingleObjectTemplateResponseMixin" title="django.views.generic.detail.SingleObjectTemplateResponseMixin"><tt class="xref py py-class docutils literal"><span class="pre">django.views.generic.detail.SingleObjectTemplateResponseMixin</span></tt></a></li>
+</ul>
+</blockquote>
+</dd></dl>
+</div>
+</div>
+<div class="section" id="s-list-views">
+<span id="list-views"></span><h3>List views<a class="headerlink" href="#list-views" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="s-listview">
+<span id="listview"></span><h4>ListView<a class="headerlink" href="#listview" title="Permalink to this headline">¶</a></h4>
+<dl class="class">
+<a name="//apple_ref/cpp/cl/django.views.generic.list.BaseListView"></a><dt id="django.views.generic.list.BaseListView">
+<em class="property">class </em><tt class="descname">BaseListView</tt><a class="headerlink" href="#django.views.generic.list.BaseListView" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<dl class="class">
+<a name="//apple_ref/cpp/cl/django.views.generic.list.ListView"></a><dt id="django.views.generic.list.ListView">
+<em class="property">class </em><tt class="descname">ListView</tt><a class="headerlink" href="#django.views.generic.list.ListView" title="Permalink to this definition">¶</a></dt>
+<dd><p>A page representing a list of objects.</p>
+<p>While this view is executing, <tt class="docutils literal"><span class="pre">self.object_list</span></tt> will contain the list of
+objects (usually, but not necessarily a queryset) that the view is
+operating upon.</p>
+<p><a class="reference internal" href="#django.views.generic.list.BaseListView" title="django.views.generic.list.BaseListView"><tt class="xref py py-class docutils literal"><span class="pre">BaseListView</span></tt></a> implements the same
+behavior as <a class="reference internal" href="#django.views.generic.list.ListView" title="django.views.generic.list.ListView"><tt class="xref py py-class docutils literal"><span class="pre">ListView</span></tt></a>, but doesn't
+include the
+<a class="reference internal" href="#django.views.generic.list.MultipleObjectTemplateResponseMixin" title="django.views.generic.list.MultipleObjectTemplateResponseMixin"><tt class="xref py py-class docutils literal"><span class="pre">MultipleObjectTemplateResponseMixin</span></tt></a>.</p>
+<p><strong>Mixins</strong></p>
+<blockquote>
+<ul class="simple">
+<li><a class="reference internal" href="#django.views.generic.list.MultipleObjectMixin" title="django.views.generic.list.MultipleObjectMixin"><tt class="xref py py-class docutils literal"><span class="pre">django.views.generic.list.MultipleObjectMixin</span></tt></a></li>
+<li><a class="reference internal" href="#django.views.generic.list.MultipleObjectTemplateResponseMixin" title="django.views.generic.list.MultipleObjectTemplateResponseMixin"><tt class="xref py py-class docutils literal"><span class="pre">django.views.generic.list.MultipleObjectTemplateResponseMixin</span></tt></a></li>
+</ul>
+</blockquote>
+</dd></dl>
+</div>
+</div>
+<div class="section" id="s-editing-views">
+<span id="editing-views"></span><h3>Editing views<a class="headerlink" href="#editing-views" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="s-formview">
+<span id="formview"></span><h4>FormView<a class="headerlink" href="#formview" title="Permalink to this headline">¶</a></h4>
+<dl class="class">
+<a name="//apple_ref/cpp/cl/django.views.generic.edit.BaseFormView"></a><dt id="django.views.generic.edit.BaseFormView">
+<em class="property">class </em><tt class="descname">BaseFormView</tt><a class="headerlink" href="#django.views.generic.edit.BaseFormView" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<dl class="class">
+<a name="//apple_ref/cpp/cl/django.views.generic.edit.FormView"></a><dt id="django.views.generic.edit.FormView">
+<em class="property">class </em><tt class="descname">FormView</tt><a class="headerlink" href="#django.views.generic.edit.FormView" title="Permalink to this definition">¶</a></dt>
+<dd><p>A view that displays a form. On error, redisplays the form with validation
+errors; on success, redirects to a new URL.</p>
+<p><a class="reference internal" href="#django.views.generic.edit.BaseFormView" title="django.views.generic.edit.BaseFormView"><tt class="xref py py-class docutils literal"><span class="pre">BaseFormView</span></tt></a> implements the same
+behavior as <a class="reference internal" href="#django.views.generic.edit.FormView" title="django.views.generic.edit.FormView"><tt class="xref py py-class docutils literal"><span class="pre">FormView</span></tt></a>, but doesn't
+include the <a class="reference internal" href="#django.views.generic.base.TemplateResponseMixin" title="django.views.generic.base.TemplateResponseMixin"><tt class="xref py py-class docutils literal"><span class="pre">TemplateResponseMixin</span></tt></a>.</p>
+<p><strong>Mixins</strong></p>
+<blockquote>
+<ul class="simple">
+<li><a class="reference internal" href="#django.views.generic.edit.FormMixin" title="django.views.generic.edit.FormMixin"><tt class="xref py py-class docutils literal"><span class="pre">django.views.generic.edit.FormMixin</span></tt></a></li>
+<li><a class="reference internal" href="#django.views.generic.edit.ProcessFormView" title="django.views.generic.edit.ProcessFormView"><tt class="xref py py-class docutils literal"><span class="pre">django.views.generic.edit.ProcessFormView</span></tt></a></li>
+</ul>
+</blockquote>
+</dd></dl>
+</div>
+<div class="section" id="s-createview">
+<span id="createview"></span><h4>CreateView<a class="headerlink" href="#createview" title="Permalink to this headline">¶</a></h4>
+<dl class="class">
+<a name="//apple_ref/cpp/cl/django.views.generic.edit.BaseCreateView"></a><dt id="django.views.generic.edit.BaseCreateView">
+<em class="property">class </em><tt class="descname">BaseCreateView</tt><a class="headerlink" href="#django.views.generic.edit.BaseCreateView" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<dl class="class">
+<a name="//apple_ref/cpp/cl/django.views.generic.edit.CreateView"></a><dt id="django.views.generic.edit.CreateView">
+<em class="property">class </em><tt class="descname">CreateView</tt><a class="headerlink" href="#django.views.generic.edit.CreateView" title="Permalink to this definition">¶</a></dt>
+<dd><p>A view that displays a form for creating an object, redisplaying the form
+with validation errors (if there are any) and saving the object.</p>
+<p><a class="reference internal" href="#django.views.generic.edit.BaseCreateView" title="django.views.generic.edit.BaseCreateView"><tt class="xref py py-class docutils literal"><span class="pre">BaseCreateView</span></tt></a> implements the same
+behavior as <a class="reference internal" href="#django.views.generic.edit.CreateView" title="django.views.generic.edit.CreateView"><tt class="xref py py-class docutils literal"><span class="pre">CreateView</span></tt></a>, but doesn't
+include the <a class="reference internal" href="#django.views.generic.base.TemplateResponseMixin" title="django.views.generic.base.TemplateResponseMixin"><tt class="xref py py-class docutils literal"><span class="pre">TemplateResponseMixin</span></tt></a>.</p>
+<p><strong>Mixins</strong></p>
+<blockquote>
+<ul class="simple">
+<li><a class="reference internal" href="#django.views.generic.edit.ModelFormMixin" title="django.views.generic.edit.ModelFormMixin"><tt class="xref py py-class docutils literal"><span class="pre">django.views.generic.edit.ModelFormMixin</span></tt></a></li>
+<li><a class="reference internal" href="#django.views.generic.edit.ProcessFormView" title="django.views.generic.edit.ProcessFormView"><tt class="xref py py-class docutils literal"><span class="pre">django.views.generic.edit.ProcessFormView</span></tt></a></li>
+</ul>
+</blockquote>
+</dd></dl>
+</div>
+<div class="section" id="s-updateview">
+<span id="updateview"></span><h4>UpdateView<a class="headerlink" href="#updateview" title="Permalink to this headline">¶</a></h4>
+<dl class="class">
+<a name="//apple_ref/cpp/cl/django.views.generic.edit.BaseUpdateView"></a><dt id="django.views.generic.edit.BaseUpdateView">
+<em class="property">class </em><tt class="descname">BaseUpdateView</tt><a class="headerlink" href="#django.views.generic.edit.BaseUpdateView" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<dl class="class">
+<a name="//apple_ref/cpp/cl/django.views.generic.edit.UpdateView"></a><dt id="django.views.generic.edit.UpdateView">
+<em class="property">class </em><tt class="descname">UpdateView</tt><a class="headerlink" href="#django.views.generic.edit.UpdateView" title="Permalink to this definition">¶</a></dt>
+<dd><p>A view that displays a form for editing an existing object, redisplaying
+the form with validation errors (if there are any) and saving changes to
+the object. This uses a form automatically generated from the object's
+model class (unless a form class is manually specified).</p>
+<p><a class="reference internal" href="#django.views.generic.edit.BaseUpdateView" title="django.views.generic.edit.BaseUpdateView"><tt class="xref py py-class docutils literal"><span class="pre">BaseUpdateView</span></tt></a> implements the same
+behavior as <a class="reference internal" href="#django.views.generic.edit.UpdateView" title="django.views.generic.edit.UpdateView"><tt class="xref py py-class docutils literal"><span class="pre">UpdateView</span></tt></a>, but doesn't
+include the <a class="reference internal" href="#django.views.generic.base.TemplateResponseMixin" title="django.views.generic.base.TemplateResponseMixin"><tt class="xref py py-class docutils literal"><span class="pre">TemplateResponseMixin</span></tt></a>.</p>
+<p><strong>Mixins</strong></p>
+<blockquote>
+<ul class="simple">
+<li><a class="reference internal" href="#django.views.generic.edit.ModelFormMixin" title="django.views.generic.edit.ModelFormMixin"><tt class="xref py py-class docutils literal"><span class="pre">django.views.generic.edit.ModelFormMixin</span></tt></a></li>
+<li><a class="reference internal" href="#django.views.generic.edit.ProcessFormView" title="django.views.generic.edit.ProcessFormView"><tt class="xref py py-class docutils literal"><span class="pre">django.views.generic.edit.ProcessFormView</span></tt></a></li>
+</ul>
+</blockquote>
+</dd></dl>
+</div>
+<div class="section" id="s-deleteview">
+<span id="deleteview"></span><h4>DeleteView<a class="headerlink" href="#deleteview" title="Permalink to this headline">¶</a></h4>
+<dl class="class">
+<a name="//apple_ref/cpp/cl/django.views.generic.edit.BaseDeleteView"></a><dt id="django.views.generic.edit.BaseDeleteView">
+<em class="property">class </em><tt class="descname">BaseDeleteView</tt><a class="headerlink" href="#django.views.generic.edit.BaseDeleteView" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<dl class="class">
+<a name="//apple_ref/cpp/cl/django.views.generic.edit.DeleteView"></a><dt id="django.views.generic.edit.DeleteView">
+<em class="property">class </em><tt class="descname">DeleteView</tt><a class="headerlink" href="#django.views.generic.edit.DeleteView" title="Permalink to this definition">¶</a></dt>
+<dd><p>A view that displays a confirmation page and deletes an existing object.
+The given object will only be deleted if the request method is <tt class="docutils literal"><span class="pre">POST</span></tt>. If
+this view is fetched via <tt class="docutils literal"><span class="pre">GET</span></tt>, it will display a confirmation page that
+should contain a form that POSTs to the same URL.</p>
+<p><a class="reference internal" href="#django.views.generic.edit.BaseDeleteView" title="django.views.generic.edit.BaseDeleteView"><tt class="xref py py-class docutils literal"><span class="pre">BaseDeleteView</span></tt></a> implements the same
+behavior as <a class="reference internal" href="#django.views.generic.edit.DeleteView" title="django.views.generic.edit.DeleteView"><tt class="xref py py-class docutils literal"><span class="pre">DeleteView</span></tt></a>, but doesn't
+include the <a class="reference internal" href="#django.views.generic.base.TemplateResponseMixin" title="django.views.generic.base.TemplateResponseMixin"><tt class="xref py py-class docutils literal"><span class="pre">TemplateResponseMixin</span></tt></a>.</p>
+<p><strong>Mixins</strong></p>
+<blockquote>
+<ul class="simple">
+<li><a class="reference internal" href="#django.views.generic.edit.DeletionMixin" title="django.views.generic.edit.DeletionMixin"><tt class="xref py py-class docutils literal"><span class="pre">django.views.generic.edit.DeletionMixin</span></tt></a></li>
+<li><a class="reference internal" href="#django.views.generic.detail.BaseDetailView" title="django.views.generic.detail.BaseDetailView"><tt class="xref py py-class docutils literal"><span class="pre">django.views.generic.detail.BaseDetailView</span></tt></a></li>
+</ul>
+</blockquote>
+<p><strong>Notes</strong></p>
+<blockquote>
+<ul class="simple">
+<li>The delete confirmation page displayed to a GET request uses a
+<tt class="docutils literal"><span class="pre">template_name_suffix</span></tt> of <tt class="docutils literal"><span class="pre">'_confirm_delete'</span></tt>.</li>
+</ul>
+</blockquote>
+</dd></dl>
+</div>
+</div>
+<div class="section" id="s-date-based-views">
+<span id="date-based-views"></span><h3>Date-based views<a class="headerlink" href="#date-based-views" title="Permalink to this headline">¶</a></h3>
+<p>Date-based generic views (in the module <tt class="xref py py-mod docutils literal"><span class="pre">django.views.generic.dates</span></tt>)
+are views for displaying drilldown pages for date-based data.</p>
+<div class="section" id="s-archiveindexview">
+<span id="archiveindexview"></span><h4>ArchiveIndexView<a class="headerlink" href="#archiveindexview" title="Permalink to this headline">¶</a></h4>
+<dl class="class">
+<a name="//apple_ref/cpp/cl/django.views.generic.dates.BaseArchiveIndexView"></a><dt id="django.views.generic.dates.BaseArchiveIndexView">
+<em class="property">class </em><tt class="descname">BaseArchiveIndexView</tt><a class="headerlink" href="#django.views.generic.dates.BaseArchiveIndexView" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<dl class="class">
+<a name="//apple_ref/cpp/cl/django.views.generic.dates.ArchiveIndexView"></a><dt id="django.views.generic.dates.ArchiveIndexView">
+<em class="property">class </em><tt class="descname">ArchiveIndexView</tt><a class="headerlink" href="#django.views.generic.dates.ArchiveIndexView" title="Permalink to this definition">¶</a></dt>
+<dd><p>A top-level index page showing the &quot;latest&quot; objects, by date. Objects with
+a date in the <em>future</em> are not included unless you set <tt class="docutils literal"><span class="pre">allow_future</span></tt> to
+<tt class="xref docutils literal"><span class="pre">True</span></tt>.</p>
+<p><a class="reference internal" href="#django.views.generic.dates.BaseArchiveIndexView" title="django.views.generic.dates.BaseArchiveIndexView"><tt class="xref py py-class docutils literal"><span class="pre">BaseArchiveIndexView</span></tt></a> implements the
+same behavior as <a class="reference internal" href="#django.views.generic.dates.ArchiveIndexView" title="django.views.generic.dates.ArchiveIndexView"><tt class="xref py py-class docutils literal"><span class="pre">ArchiveIndexView</span></tt></a>, but
+doesn't include the
+<a class="reference internal" href="#django.views.generic.list.MultipleObjectTemplateResponseMixin" title="django.views.generic.list.MultipleObjectTemplateResponseMixin"><tt class="xref py py-class docutils literal"><span class="pre">MultipleObjectTemplateResponseMixin</span></tt></a>.</p>
+<p><strong>Mixins</strong></p>
+<blockquote>
+<ul class="simple">
+<li><a class="reference internal" href="#django.views.generic.dates.BaseDateListView" title="django.views.generic.dates.BaseDateListView"><tt class="xref py py-class docutils literal"><span class="pre">django.views.generic.dates.BaseDateListView</span></tt></a></li>
+<li><a class="reference internal" href="#django.views.generic.list.MultipleObjectTemplateResponseMixin" title="django.views.generic.list.MultipleObjectTemplateResponseMixin"><tt class="xref py py-class docutils literal"><span class="pre">django.views.generic.list.MultipleObjectTemplateResponseMixin</span></tt></a></li>
+</ul>
+</blockquote>
+<p><strong>Notes</strong></p>
+<blockquote>
+<ul class="simple">
+<li>Uses a default <tt class="docutils literal"><span class="pre">context_object_name</span></tt> of <tt class="docutils literal"><span class="pre">latest</span></tt>.</li>
+<li>Uses a default <tt class="docutils literal"><span class="pre">template_name_suffix</span></tt> of <tt class="docutils literal"><span class="pre">_archive</span></tt>.</li>
+</ul>
+</blockquote>
+</dd></dl>
+</div>
+<div class="section" id="s-yeararchiveview">
+<span id="yeararchiveview"></span><h4>YearArchiveView<a class="headerlink" href="#yeararchiveview" title="Permalink to this headline">¶</a></h4>
+<dl class="class">
+<a name="//apple_ref/cpp/cl/django.views.generic.dates.BaseYearArchiveView"></a><dt id="django.views.generic.dates.BaseYearArchiveView">
+<em class="property">class </em><tt class="descname">BaseYearArchiveView</tt><a class="headerlink" href="#django.views.generic.dates.BaseYearArchiveView" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<dl class="class">
+<a name="//apple_ref/cpp/cl/django.views.generic.dates.YearArchiveView"></a><dt id="django.views.generic.dates.YearArchiveView">
+<em class="property">class </em><tt class="descname">YearArchiveView</tt><a class="headerlink" href="#django.views.generic.dates.YearArchiveView" title="Permalink to this definition">¶</a></dt>
+<dd><p>A yearly archive page showing all available months in a given year. Objects
+with a date in the <em>future</em> are not displayed unless you set
+<tt class="docutils literal"><span class="pre">allow_future</span></tt> to <tt class="xref docutils literal"><span class="pre">True</span></tt>.</p>
+<p><a class="reference internal" href="#django.views.generic.dates.BaseYearArchiveView" title="django.views.generic.dates.BaseYearArchiveView"><tt class="xref py py-class docutils literal"><span class="pre">BaseYearArchiveView</span></tt></a> implements the
+same behavior as <a class="reference internal" href="#django.views.generic.dates.YearArchiveView" title="django.views.generic.dates.YearArchiveView"><tt class="xref py py-class docutils literal"><span class="pre">YearArchiveView</span></tt></a>, but
+doesn't include the
+<a class="reference internal" href="#django.views.generic.list.MultipleObjectTemplateResponseMixin" title="django.views.generic.list.MultipleObjectTemplateResponseMixin"><tt class="xref py py-class docutils literal"><span class="pre">MultipleObjectTemplateResponseMixin</span></tt></a>.</p>
+<p><strong>Mixins</strong></p>
+<blockquote>
+<ul class="simple">
+<li><a class="reference internal" href="#django.views.generic.list.MultipleObjectTemplateResponseMixin" title="django.views.generic.list.MultipleObjectTemplateResponseMixin"><tt class="xref py py-class docutils literal"><span class="pre">django.views.generic.list.MultipleObjectTemplateResponseMixin</span></tt></a></li>
+<li><a class="reference internal" href="#django.views.generic.dates.YearMixin" title="django.views.generic.dates.YearMixin"><tt class="xref py py-class docutils literal"><span class="pre">django.views.generic.dates.YearMixin</span></tt></a></li>
+<li><a class="reference internal" href="#django.views.generic.dates.BaseDateListView" title="django.views.generic.dates.BaseDateListView"><tt class="xref py py-class docutils literal"><span class="pre">django.views.generic.dates.BaseDateListView</span></tt></a></li>
+</ul>
+</blockquote>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.views.generic.dates.YearArchiveView.make_object_list"></a><dt id="django.views.generic.dates.YearArchiveView.make_object_list">
+<tt class="descname">make_object_list</tt><a class="headerlink" href="#django.views.generic.dates.YearArchiveView.make_object_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>A boolean specifying whether to retrieve the full list of objects for
+this year and pass those to the template. If <tt class="xref docutils literal"><span class="pre">True</span></tt>, the list of
+objects will be made available to the context. By default, this is
+<tt class="xref docutils literal"><span class="pre">False</span></tt>.</p>
+</dd></dl>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.views.generic.dates.YearArchiveView.get_make_object_list"></a><dt id="django.views.generic.dates.YearArchiveView.get_make_object_list">
+<tt class="descname">get_make_object_list</tt>()<a class="headerlink" href="#django.views.generic.dates.YearArchiveView.get_make_object_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine if an object list will be returned as part of the context. If
+<tt class="xref docutils literal"><span class="pre">False</span></tt>, the <tt class="xref docutils literal"><span class="pre">None</span></tt> queryset will be used as the object list.</p>
+</dd></dl>
+<p><strong>Context</strong></p>
+<p>In addition to the context provided by
+<a class="reference internal" href="#django.views.generic.list.MultipleObjectMixin" title="django.views.generic.list.MultipleObjectMixin"><tt class="xref py py-class docutils literal"><span class="pre">django.views.generic.list.MultipleObjectMixin</span></tt></a> (via
+<a class="reference internal" href="#django.views.generic.dates.BaseDateListView" title="django.views.generic.dates.BaseDateListView"><tt class="xref py py-class docutils literal"><span class="pre">django.views.generic.dates.BaseDateListView</span></tt></a>), the template's
+context will be:</p>
+<blockquote>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">date_list</span></tt>: A <tt class="docutils literal"><span class="pre">DateQuerySet</span></tt> object containing all months that
+have objects available according to <tt class="docutils literal"><span class="pre">queryset</span></tt>, represented as
+<tt class="docutils literal"><span class="pre">datetime.datetime</span></tt> objects, in ascending order.</li>
+<li><tt class="docutils literal"><span class="pre">year</span></tt>: The given year, as a four-character string.</li>
+</ul>
+</blockquote>
+<p><strong>Notes</strong></p>
+<blockquote>
+<ul class="simple">
+<li>Uses a default <tt class="docutils literal"><span class="pre">template_name_suffix</span></tt> of <tt class="docutils literal"><span class="pre">_archive_year</span></tt>.</li>
+</ul>
+</blockquote>
+</dd></dl>
+</div>
+<div class="section" id="s-montharchiveview">
+<span id="montharchiveview"></span><h4>MonthArchiveView<a class="headerlink" href="#montharchiveview" title="Permalink to this headline">¶</a></h4>
+<dl class="class">
+<a name="//apple_ref/cpp/cl/django.views.generic.dates.BaseMonthArchiveView"></a><dt id="django.views.generic.dates.BaseMonthArchiveView">
+<em class="property">class </em><tt class="descname">BaseMonthArchiveView</tt><a class="headerlink" href="#django.views.generic.dates.BaseMonthArchiveView" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<dl class="class">
+<a name="//apple_ref/cpp/cl/django.views.generic.dates.MonthArchiveView"></a><dt id="django.views.generic.dates.MonthArchiveView">
+<em class="property">class </em><tt class="descname">MonthArchiveView</tt><a class="headerlink" href="#django.views.generic.dates.MonthArchiveView" title="Permalink to this definition">¶</a></dt>
+<dd><p>A monthly archive page showing all objects in a given month. Objects with a
+date in the <em>future</em> are not displayed unless you set <tt class="docutils literal"><span class="pre">allow_future</span></tt> to
+<tt class="xref docutils literal"><span class="pre">True</span></tt>.</p>
+<p><a class="reference internal" href="#django.views.generic.dates.BaseMonthArchiveView" title="django.views.generic.dates.BaseMonthArchiveView"><tt class="xref py py-class docutils literal"><span class="pre">BaseMonthArchiveView</span></tt></a> implements
+the same behavior as
+<a class="reference internal" href="#django.views.generic.dates.MonthArchiveView" title="django.views.generic.dates.MonthArchiveView"><tt class="xref py py-class docutils literal"><span class="pre">MonthArchiveView</span></tt></a>, but doesn't
+include the
+<a class="reference internal" href="#django.views.generic.list.MultipleObjectTemplateResponseMixin" title="django.views.generic.list.MultipleObjectTemplateResponseMixin"><tt class="xref py py-class docutils literal"><span class="pre">MultipleObjectTemplateResponseMixin</span></tt></a>.</p>
+<p><strong>Mixins</strong></p>
+<blockquote>
+<ul class="simple">
+<li><a class="reference internal" href="#django.views.generic.list.MultipleObjectTemplateResponseMixin" title="django.views.generic.list.MultipleObjectTemplateResponseMixin"><tt class="xref py py-class docutils literal"><span class="pre">django.views.generic.list.MultipleObjectTemplateResponseMixin</span></tt></a></li>
+<li><a class="reference internal" href="#django.views.generic.dates.YearMixin" title="django.views.generic.dates.YearMixin"><tt class="xref py py-class docutils literal"><span class="pre">django.views.generic.dates.YearMixin</span></tt></a></li>
+<li><a class="reference internal" href="#django.views.generic.dates.MonthMixin" title="django.views.generic.dates.MonthMixin"><tt class="xref py py-class docutils literal"><span class="pre">django.views.generic.dates.MonthMixin</span></tt></a></li>
+<li><a class="reference internal" href="#django.views.generic.dates.BaseDateListView" title="django.views.generic.dates.BaseDateListView"><tt class="xref py py-class docutils literal"><span class="pre">django.views.generic.dates.BaseDateListView</span></tt></a></li>
+</ul>
+</blockquote>
+<p><strong>Context</strong></p>
+<p>In addition to the context provided by
+<a class="reference internal" href="#django.views.generic.list.MultipleObjectMixin" title="django.views.generic.list.MultipleObjectMixin"><tt class="xref py py-class docutils literal"><span class="pre">MultipleObjectMixin</span></tt></a> (via
+<a class="reference internal" href="#django.views.generic.dates.BaseDateListView" title="django.views.generic.dates.BaseDateListView"><tt class="xref py py-class docutils literal"><span class="pre">BaseDateListView</span></tt></a>), the template's
+context will be:</p>
+<blockquote>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">date_list</span></tt>: A <tt class="docutils literal"><span class="pre">DateQuerySet</span></tt> object containing all days that
+have objects available in the given month, according to <tt class="docutils literal"><span class="pre">queryset</span></tt>,
+represented as <tt class="docutils literal"><span class="pre">datetime.datetime</span></tt> objects, in ascending order.</li>
+<li><tt class="docutils literal"><span class="pre">month</span></tt>: A <tt class="docutils literal"><span class="pre">datetime.date</span></tt> object representing the given month.</li>
+<li><tt class="docutils literal"><span class="pre">next_month</span></tt>: A <tt class="docutils literal"><span class="pre">datetime.date</span></tt> object representing the first day
+of the next month. If the next month is in the future, this will be
+<tt class="xref docutils literal"><span class="pre">None</span></tt>.</li>
+<li><tt class="docutils literal"><span class="pre">previous_month</span></tt>: A <tt class="docutils literal"><span class="pre">datetime.date</span></tt> object representing the first
+day of the previous month. Unlike <tt class="docutils literal"><span class="pre">next_month</span></tt>, this will never be
+<tt class="xref docutils literal"><span class="pre">None</span></tt>.</li>
+</ul>
+</blockquote>
+<p><strong>Notes</strong></p>
+<blockquote>
+<ul class="simple">
+<li>Uses a default <tt class="docutils literal"><span class="pre">template_name_suffix</span></tt> of <tt class="docutils literal"><span class="pre">_archive_month</span></tt>.</li>
+</ul>
+</blockquote>
+</dd></dl>
+</div>
+<div class="section" id="s-weekarchiveview">
+<span id="weekarchiveview"></span><h4>WeekArchiveView<a class="headerlink" href="#weekarchiveview" title="Permalink to this headline">¶</a></h4>
+<dl class="class">
+<a name="//apple_ref/cpp/cl/django.views.generic.dates.BaseWeekArchiveView"></a><dt id="django.views.generic.dates.BaseWeekArchiveView">
+<em class="property">class </em><tt class="descname">BaseWeekArchiveView</tt><a class="headerlink" href="#django.views.generic.dates.BaseWeekArchiveView" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<dl class="class">
+<a name="//apple_ref/cpp/cl/django.views.generic.dates.WeekArchiveView"></a><dt id="django.views.generic.dates.WeekArchiveView">
+<em class="property">class </em><tt class="descname">WeekArchiveView</tt><a class="headerlink" href="#django.views.generic.dates.WeekArchiveView" title="Permalink to this definition">¶</a></dt>
+<dd><p>A weekly archive page showing all objects in a given week. Objects with a
+date in the <em>future</em> are not displayed unless you set <tt class="docutils literal"><span class="pre">allow_future</span></tt> to
+<tt class="xref docutils literal"><span class="pre">True</span></tt>.</p>
+<p><a class="reference internal" href="#django.views.generic.dates.BaseWeekArchiveView" title="django.views.generic.dates.BaseWeekArchiveView"><tt class="xref py py-class docutils literal"><span class="pre">BaseWeekArchiveView</span></tt></a> implements the
+same behavior as <a class="reference internal" href="#django.views.generic.dates.WeekArchiveView" title="django.views.generic.dates.WeekArchiveView"><tt class="xref py py-class docutils literal"><span class="pre">WeekArchiveView</span></tt></a>, but
+doesn't include the
+<a class="reference internal" href="#django.views.generic.list.MultipleObjectTemplateResponseMixin" title="django.views.generic.list.MultipleObjectTemplateResponseMixin"><tt class="xref py py-class docutils literal"><span class="pre">MultipleObjectTemplateResponseMixin</span></tt></a>.</p>
+<p><strong>Mixins</strong></p>
+<blockquote>
+<ul class="simple">
+<li><a class="reference internal" href="#django.views.generic.list.MultipleObjectTemplateResponseMixin" title="django.views.generic.list.MultipleObjectTemplateResponseMixin"><tt class="xref py py-class docutils literal"><span class="pre">django.views.generic.list.MultipleObjectTemplateResponseMixin</span></tt></a></li>
+<li><a class="reference internal" href="#django.views.generic.dates.YearMixin" title="django.views.generic.dates.YearMixin"><tt class="xref py py-class docutils literal"><span class="pre">django.views.generic.dates.YearMixin</span></tt></a></li>
+<li><a class="reference internal" href="#django.views.generic.dates.MonthMixin" title="django.views.generic.dates.MonthMixin"><tt class="xref py py-class docutils literal"><span class="pre">django.views.generic.dates.MonthMixin</span></tt></a></li>
+<li><a class="reference internal" href="#django.views.generic.dates.BaseDateListView" title="django.views.generic.dates.BaseDateListView"><tt class="xref py py-class docutils literal"><span class="pre">django.views.generic.dates.BaseDateListView</span></tt></a></li>
+</ul>
+</blockquote>
+<p><strong>Context</strong></p>
+<p>In addition to the context provided by
+<a class="reference internal" href="#django.views.generic.list.MultipleObjectMixin" title="django.views.generic.list.MultipleObjectMixin"><tt class="xref py py-class docutils literal"><span class="pre">MultipleObjectMixin</span></tt></a> (via
+<a class="reference internal" href="#django.views.generic.dates.BaseDateListView" title="django.views.generic.dates.BaseDateListView"><tt class="xref py py-class docutils literal"><span class="pre">BaseDateListView</span></tt></a>), the template's
+context will be:</p>
+<blockquote>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">week</span></tt>: A <tt class="docutils literal"><span class="pre">datetime.date</span></tt> object representing the first day of
+the given week.</li>
+</ul>
+</blockquote>
+<p><strong>Notes</strong></p>
+<blockquote>
+<ul class="simple">
+<li>Uses a default <tt class="docutils literal"><span class="pre">template_name_suffix</span></tt> of <tt class="docutils literal"><span class="pre">_archive_week</span></tt>.</li>
+</ul>
+</blockquote>
+</dd></dl>
+</div>
+<div class="section" id="s-dayarchiveview">
+<span id="dayarchiveview"></span><h4>DayArchiveView<a class="headerlink" href="#dayarchiveview" title="Permalink to this headline">¶</a></h4>
+<dl class="class">
+<a name="//apple_ref/cpp/cl/django.views.generic.dates.BaseDayArchiveView"></a><dt id="django.views.generic.dates.BaseDayArchiveView">
+<em class="property">class </em><tt class="descname">BaseDayArchiveView</tt><a class="headerlink" href="#django.views.generic.dates.BaseDayArchiveView" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<dl class="class">
+<a name="//apple_ref/cpp/cl/django.views.generic.dates.DayArchiveView"></a><dt id="django.views.generic.dates.DayArchiveView">
+<em class="property">class </em><tt class="descname">DayArchiveView</tt><a class="headerlink" href="#django.views.generic.dates.DayArchiveView" title="Permalink to this definition">¶</a></dt>
+<dd><p>A day archive page showing all objects in a given day. Days in the future
+throw a 404 error, regardless of whether any objects exist for future days,
+unless you set <tt class="docutils literal"><span class="pre">allow_future</span></tt> to <tt class="xref docutils literal"><span class="pre">True</span></tt>.</p>
+<p><a class="reference internal" href="#django.views.generic.dates.BaseDayArchiveView" title="django.views.generic.dates.BaseDayArchiveView"><tt class="xref py py-class docutils literal"><span class="pre">BaseDayArchiveView</span></tt></a> implements the same
+behavior as <a class="reference internal" href="#django.views.generic.dates.DayArchiveView" title="django.views.generic.dates.DayArchiveView"><tt class="xref py py-class docutils literal"><span class="pre">DayArchiveView</span></tt></a>, but
+doesn't include the
+<a class="reference internal" href="#django.views.generic.list.MultipleObjectTemplateResponseMixin" title="django.views.generic.list.MultipleObjectTemplateResponseMixin"><tt class="xref py py-class docutils literal"><span class="pre">MultipleObjectTemplateResponseMixin</span></tt></a>.</p>
+<p><strong>Mixins</strong></p>
+<blockquote>
+<ul class="simple">
+<li><a class="reference internal" href="#django.views.generic.list.MultipleObjectTemplateResponseMixin" title="django.views.generic.list.MultipleObjectTemplateResponseMixin"><tt class="xref py py-class docutils literal"><span class="pre">django.views.generic.list.MultipleObjectTemplateResponseMixin</span></tt></a></li>
+<li><a class="reference internal" href="#django.views.generic.dates.YearMixin" title="django.views.generic.dates.YearMixin"><tt class="xref py py-class docutils literal"><span class="pre">django.views.generic.dates.YearMixin</span></tt></a></li>
+<li><a class="reference internal" href="#django.views.generic.dates.MonthMixin" title="django.views.generic.dates.MonthMixin"><tt class="xref py py-class docutils literal"><span class="pre">django.views.generic.dates.MonthMixin</span></tt></a></li>
+<li><a class="reference internal" href="#django.views.generic.dates.DayMixin" title="django.views.generic.dates.DayMixin"><tt class="xref py py-class docutils literal"><span class="pre">django.views.generic.dates.DayMixin</span></tt></a></li>
+<li><a class="reference internal" href="#django.views.generic.dates.BaseDateListView" title="django.views.generic.dates.BaseDateListView"><tt class="xref py py-class docutils literal"><span class="pre">django.views.generic.dates.BaseDateListView</span></tt></a></li>
+</ul>
+</blockquote>
+<p><strong>Context</strong></p>
+<p>In addition to the context provided by
+<a class="reference internal" href="#django.views.generic.list.MultipleObjectMixin" title="django.views.generic.list.MultipleObjectMixin"><tt class="xref py py-class docutils literal"><span class="pre">MultipleObjectMixin</span></tt></a> (via
+<a class="reference internal" href="#django.views.generic.dates.BaseDateListView" title="django.views.generic.dates.BaseDateListView"><tt class="xref py py-class docutils literal"><span class="pre">BaseDateListView</span></tt></a>), the template's
+context will be:</p>
+<blockquote>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">day</span></tt>: A <tt class="docutils literal"><span class="pre">datetime.date</span></tt> object representing the given day.</li>
+<li><tt class="docutils literal"><span class="pre">next_day</span></tt>: A <tt class="docutils literal"><span class="pre">datetime.date</span></tt> object representing the next day.
+If the next day is in the future, this will be <tt class="xref docutils literal"><span class="pre">None</span></tt>.</li>
+<li><tt class="docutils literal"><span class="pre">previous_day</span></tt>: A <tt class="docutils literal"><span class="pre">datetime.date</span></tt> object representing the
+previous day. Unlike <tt class="docutils literal"><span class="pre">next_day</span></tt>, this will never be <tt class="xref docutils literal"><span class="pre">None</span></tt>.</li>
+<li><tt class="docutils literal"><span class="pre">next_month</span></tt>: A <tt class="docutils literal"><span class="pre">datetime.date</span></tt> object representing the first day
+of the next month. If the next month is in the future, this will be
+<tt class="xref docutils literal"><span class="pre">None</span></tt>.</li>
+<li><tt class="docutils literal"><span class="pre">previous_month</span></tt>: A <tt class="docutils literal"><span class="pre">datetime.date</span></tt> object representing the first
+day of the previous month. Unlike <tt class="docutils literal"><span class="pre">next_month</span></tt>, this will never be
+<tt class="xref docutils literal"><span class="pre">None</span></tt>.</li>
+</ul>
+</blockquote>
+<p><strong>Notes</strong></p>
+<blockquote>
+<ul class="simple">
+<li>Uses a default <tt class="docutils literal"><span class="pre">template_name_suffix</span></tt> of <tt class="docutils literal"><span class="pre">_archive_day</span></tt>.</li>
+</ul>
+</blockquote>
+</dd></dl>
+</div>
+<div class="section" id="s-todayarchiveview">
+<span id="todayarchiveview"></span><h4>TodayArchiveView<a class="headerlink" href="#todayarchiveview" title="Permalink to this headline">¶</a></h4>
+<dl class="class">
+<a name="//apple_ref/cpp/cl/django.views.generic.dates.BaseTodayArchiveView"></a><dt id="django.views.generic.dates.BaseTodayArchiveView">
+<em class="property">class </em><tt class="descname">BaseTodayArchiveView</tt><a class="headerlink" href="#django.views.generic.dates.BaseTodayArchiveView" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<dl class="class">
+<a name="//apple_ref/cpp/cl/django.views.generic.dates.TodayArchiveView"></a><dt id="django.views.generic.dates.TodayArchiveView">
+<em class="property">class </em><tt class="descname">TodayArchiveView</tt><a class="headerlink" href="#django.views.generic.dates.TodayArchiveView" title="Permalink to this definition">¶</a></dt>
+<dd><p>A day archive page showing all objects for <em>today</em>. This is exactly the
+same as <tt class="docutils literal"><span class="pre">archive_day</span></tt>, except the <tt class="docutils literal"><span class="pre">year</span></tt>/<tt class="docutils literal"><span class="pre">month</span></tt>/<tt class="docutils literal"><span class="pre">day</span></tt> arguments
+are not used,</p>
+<p><a class="reference internal" href="#django.views.generic.dates.BaseTodayArchiveView" title="django.views.generic.dates.BaseTodayArchiveView"><tt class="xref py py-class docutils literal"><span class="pre">BaseTodayArchiveView</span></tt></a> implements the
+same behavior as <a class="reference internal" href="#django.views.generic.dates.TodayArchiveView" title="django.views.generic.dates.TodayArchiveView"><tt class="xref py py-class docutils literal"><span class="pre">TodayArchiveView</span></tt></a>, but
+doesn't include the
+<a class="reference internal" href="#django.views.generic.list.MultipleObjectTemplateResponseMixin" title="django.views.generic.list.MultipleObjectTemplateResponseMixin"><tt class="xref py py-class docutils literal"><span class="pre">MultipleObjectTemplateResponseMixin</span></tt></a>.</p>
+<p><strong>Mixins</strong></p>
+<blockquote>
+<ul class="simple">
+<li><a class="reference internal" href="#django.views.generic.dates.DayArchiveView" title="django.views.generic.dates.DayArchiveView"><tt class="xref py py-class docutils literal"><span class="pre">django.views.generic.dates.DayArchiveView</span></tt></a></li>
+</ul>
+</blockquote>
+</dd></dl>
+</div>
+<div class="section" id="s-datedetailview">
+<span id="datedetailview"></span><h4>DateDetailView<a class="headerlink" href="#datedetailview" title="Permalink to this headline">¶</a></h4>
+<dl class="class">
+<a name="//apple_ref/cpp/cl/django.views.generic.dates.BaseDateDetailView"></a><dt id="django.views.generic.dates.BaseDateDetailView">
+<em class="property">class </em><tt class="descname">BaseDateDetailView</tt><a class="headerlink" href="#django.views.generic.dates.BaseDateDetailView" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<dl class="class">
+<a name="//apple_ref/cpp/cl/django.views.generic.dates.DateDetailView"></a><dt id="django.views.generic.dates.DateDetailView">
+<em class="property">class </em><tt class="descname">DateDetailView</tt><a class="headerlink" href="#django.views.generic.dates.DateDetailView" title="Permalink to this definition">¶</a></dt>
+<dd><p>A page representing an individual object. If the object has a date value in
+the future, the view will throw a 404 error by default, unless you set
+<tt class="docutils literal"><span class="pre">allow_future</span></tt> to <tt class="xref docutils literal"><span class="pre">True</span></tt>.</p>
+<p><a class="reference internal" href="#django.views.generic.dates.BaseDateDetailView" title="django.views.generic.dates.BaseDateDetailView"><tt class="xref py py-class docutils literal"><span class="pre">BaseDateDetailView</span></tt></a> implements the same
+behavior as <a class="reference internal" href="#django.views.generic.dates.DateDetailView" title="django.views.generic.dates.DateDetailView"><tt class="xref py py-class docutils literal"><span class="pre">DateDetailView</span></tt></a>, but
+doesn't include the
+<a class="reference internal" href="#django.views.generic.detail.SingleObjectTemplateResponseMixin" title="django.views.generic.detail.SingleObjectTemplateResponseMixin"><tt class="xref py py-class docutils literal"><span class="pre">SingleObjectTemplateResponseMixin</span></tt></a>.</p>
+<p><strong>Mixins</strong></p>
+<blockquote>
+<ul class="simple">
+<li><a class="reference internal" href="#django.views.generic.list.MultipleObjectTemplateResponseMixin" title="django.views.generic.list.MultipleObjectTemplateResponseMixin"><tt class="xref py py-class docutils literal"><span class="pre">django.views.generic.list.MultipleObjectTemplateResponseMixin</span></tt></a></li>
+<li><a class="reference internal" href="#django.views.generic.dates.YearMixin" title="django.views.generic.dates.YearMixin"><tt class="xref py py-class docutils literal"><span class="pre">django.views.generic.dates.YearMixin</span></tt></a></li>
+<li><a class="reference internal" href="#django.views.generic.dates.MonthMixin" title="django.views.generic.dates.MonthMixin"><tt class="xref py py-class docutils literal"><span class="pre">django.views.generic.dates.MonthMixin</span></tt></a></li>
+<li><a class="reference internal" href="#django.views.generic.dates.DayMixin" title="django.views.generic.dates.DayMixin"><tt class="xref py py-class docutils literal"><span class="pre">django.views.generic.dates.DayMixin</span></tt></a></li>
+<li><a class="reference internal" href="#django.views.generic.dates.BaseDateListView" title="django.views.generic.dates.BaseDateListView"><tt class="xref py py-class docutils literal"><span class="pre">django.views.generic.dates.BaseDateListView</span></tt></a></li>
+</ul>
+</blockquote>
+</dd></dl>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="yui-b" id="sidebar">
+<div class="sphinxsidebar">
+<div class="sphinxsidebarwrapper">
+<h3><a href="../contents.html">Table Of Contents</a></h3>
+<ul>
+<li><a class="reference internal" href="#">Class-based generic views</a><ul>
+<li><a class="reference internal" href="#mixins">Mixins</a><ul>
+<li><a class="reference internal" href="#simple-mixins">Simple mixins</a><ul>
+<li><a class="reference internal" href="#templateresponsemixin">TemplateResponseMixin</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#single-object-mixins">Single object mixins</a><ul>
+<li><a class="reference internal" href="#singleobjectmixin">SingleObjectMixin</a></li>
+<li><a class="reference internal" href="#singleobjecttemplateresponsemixin">SingleObjectTemplateResponseMixin</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#multiple-object-mixins">Multiple object mixins</a><ul>
+<li><a class="reference internal" href="#multipleobjectmixin">MultipleObjectMixin</a></li>
+<li><a class="reference internal" href="#multipleobjecttemplateresponsemixin">MultipleObjectTemplateResponseMixin</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#editing-mixins">Editing mixins</a><ul>
+<li><a class="reference internal" href="#formmixin">FormMixin</a></li>
+<li><a class="reference internal" href="#modelformmixin">ModelFormMixin</a></li>
+<li><a class="reference internal" href="#processformview">ProcessFormView</a></li>
+<li><a class="reference internal" href="#deletionmixin">DeletionMixin</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#date-based-mixins">Date-based mixins</a><ul>
+<li><a class="reference internal" href="#yearmixin">YearMixin</a></li>
+<li><a class="reference internal" href="#monthmixin">MonthMixin</a></li>
+<li><a class="reference internal" href="#daymixin">DayMixin</a></li>
+<li><a class="reference internal" href="#weekmixin">WeekMixin</a></li>
+<li><a class="reference internal" href="#datemixin">DateMixin</a></li>
+<li><a class="reference internal" href="#basedatelistview">BaseDateListView</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#generic-views">Generic views</a><ul>
+<li><a class="reference internal" href="#simple-generic-views">Simple generic views</a><ul>
+<li><a class="reference internal" href="#view">View</a></li>
+<li><a class="reference internal" href="#templateview">TemplateView</a></li>
+<li><a class="reference internal" href="#redirectview">RedirectView</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#detail-views">Detail views</a><ul>
+<li><a class="reference internal" href="#detailview">DetailView</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#list-views">List views</a><ul>
+<li><a class="reference internal" href="#listview">ListView</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#editing-views">Editing views</a><ul>
+<li><a class="reference internal" href="#formview">FormView</a></li>
+<li><a class="reference internal" href="#createview">CreateView</a></li>
+<li><a class="reference internal" href="#updateview">UpdateView</a></li>
+<li><a class="reference internal" href="#deleteview">DeleteView</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#date-based-views">Date-based views</a><ul>
+<li><a class="reference internal" href="#archiveindexview">ArchiveIndexView</a></li>
+<li><a class="reference internal" href="#yeararchiveview">YearArchiveView</a></li>
+<li><a class="reference internal" href="#montharchiveview">MonthArchiveView</a></li>
+<li><a class="reference internal" href="#weekarchiveview">WeekArchiveView</a></li>
+<li><a class="reference internal" href="#dayarchiveview">DayArchiveView</a></li>
+<li><a class="reference internal" href="#todayarchiveview">TodayArchiveView</a></li>
+<li><a class="reference internal" href="#datedetailview">DateDetailView</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3>Browse</h3>
+<ul>
+<li>Prev: <a href="forms/validation.html">Form and field validation</a></li>
+<li>Next: <a href="middleware.html">Middleware</a></li>
+</ul>
+<h3>You are here:</h3>
+<ul>
+<li>
+<a href="../index.html">Django v1.3.1 documentation</a>
+<ul><li><a href="index.html">API Reference</a>
+<ul><li>Class-based generic views</li></ul>
+</li></ul>
+</li>
+</ul>
+<h3>This Page</h3>
+<ul class="this-page-menu">
+<li><a href="../_sources/ref/class-based-views.txt" rel="nofollow">Show Source</a></li>
+</ul>
+<div id="searchbox" style="display: none">
+<h3>Quick search</h3>
+<form action="../search.html" class="search" method="get">
+<input name="q" size="18" type="text"/>
+<input type="submit" value="Go"/>
+<input name="check_keywords" type="hidden" value="yes"/>
+<input name="area" type="hidden" value="default"/>
+</form>
+<p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+</div>
+</div>
+<h3>Last update:</h3>
+<p class="topless">Feb 18, 2012</p>
+</div>
+</div>
+<div id="ft">
+<div class="nav">
+    « <a href="forms/validation.html" title="Form and field validation">previous</a> 
+     |
+    <a accesskey="U" href="index.html" title="API Reference">up</a>
+   |
+    <a href="middleware.html" title="Middleware">next</a> »</div>
+</div>
+</div>
+<div class="clearer"></div>
+</div>
+<div style="display:none;"><a name="#"></a><h3 class="tasks">TOC</h3><ul class="tooltip"><li class="tooltip"><a href="#">Class-based generic views</a></li><li class="tooltip"><a href="#mixins">Mixins</a></li><li class="tooltip"><a href="#simple-mixins">Simple mixins</a></li><li class="tooltip"><a href="#templateresponsemixin">TemplateResponseMixin</a></li><li class="tooltip"><a href="#single-object-mixins">Single object mixins</a></li><li class="tooltip"><a href="#singleobjectmixin">SingleObjectMixin</a></li><li class="tooltip"><a href="#singleobjecttemplateresponsemixin">SingleObjectTemplateResponseMixin</a></li><li class="tooltip"><a href="#multiple-object-mixins">Multiple object mixins</a></li><li class="tooltip"><a href="#multipleobjectmixin">MultipleObjectMixin</a></li><li class="tooltip"><a href="#multipleobjecttemplateresponsemixin">MultipleObjectTemplateResponseMixin</a></li><li class="tooltip"><a href="#editing-mixins">Editing mixins</a></li><li class="tooltip"><a href="#formmixin">FormMixin</a></li><li class="tooltip"><a href="#modelformmixin">ModelFormMixin</a></li><li class="tooltip"><a href="#processformview">ProcessFormView</a></li><li class="tooltip"><a href="#deletionmixin">DeletionMixin</a></li><li class="tooltip"><a href="#date-based-mixins">Date-based mixins</a></li><li class="tooltip"><a href="#yearmixin">YearMixin</a></li><li class="tooltip"><a href="#monthmixin">MonthMixin</a></li><li class="tooltip"><a href="#daymixin">DayMixin</a></li><li class="tooltip"><a href="#weekmixin">WeekMixin</a></li><li class="tooltip"><a href="#datemixin">DateMixin</a></li><li class="tooltip"><a href="#basedatelistview">BaseDateListView</a></li><li class="tooltip"><a href="#generic-views">Generic views</a></li><li class="tooltip"><a href="#simple-generic-views">Simple generic views</a></li><li class="tooltip"><a href="#view">View</a></li><li class="tooltip"><a href="#templateview">TemplateView</a></li><li class="tooltip"><a href="#redirectview">RedirectView</a></li><li class="tooltip"><a href="#detail-views">Detail views</a></li><li class="tooltip"><a href="#detailview">DetailView</a></li><li class="tooltip"><a href="#list-views">List views</a></li><li class="tooltip"><a href="#listview">ListView</a></li><li class="tooltip"><a href="#editing-views">Editing views</a></li><li class="tooltip"><a href="#formview">FormView</a></li><li class="tooltip"><a href="#createview">CreateView</a></li><li class="tooltip"><a href="#updateview">UpdateView</a></li><li class="tooltip"><a href="#deleteview">DeleteView</a></li><li class="tooltip"><a href="#date-based-views">Date-based views</a></li><li class="tooltip"><a href="#archiveindexview">ArchiveIndexView</a></li><li class="tooltip"><a href="#yeararchiveview">YearArchiveView</a></li><li class="tooltip"><a href="#montharchiveview">MonthArchiveView</a></li><li class="tooltip"><a href="#weekarchiveview">WeekArchiveView</a></li><li class="tooltip"><a href="#dayarchiveview">DayArchiveView</a></li><li class="tooltip"><a href="#todayarchiveview">TodayArchiveView</a></li><li class="tooltip"><a href="#datedetailview">DateDetailView</a></li></ul></div></body>
+</html>

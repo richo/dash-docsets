@@ -1,0 +1,544 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Localization &mdash; Django v1.3.1 documentation</title>
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '1.3.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="Django v1.3.1 documentation" href="../../index.html" />
+    <link rel="up" title="Internationalization and localization" href="index.html" />
+    <link rel="next" title="Deployment of translations" href="deployment.html" />
+    <link rel="prev" title="Internationalization" href="internationalization.html" />
+ 
+<script type="text/javascript" src="../../templatebuiltins.js"></script>
+<script type="text/javascript">
+(function($) {
+    if (!django_template_builtins) {
+       // templatebuiltins.js missing, do nothing.
+       return;
+    }
+    $(document).ready(function() {
+        // Hyperlink Django template tags and filters
+        var base = "../../ref/templates/builtins.html";
+        if (base == "#") {
+            // Special case for builtins.html itself
+            base = "";
+        }
+        // Tags are keywords, class '.k'
+        $("div.highlight\\-html\\+django span.k").each(function(i, elem) {
+             var tagname = $(elem).text();
+             if ($.inArray(tagname, django_template_builtins.ttags) != -1) {
+                 var fragment = tagname.replace(/_/, '-');
+                 $(elem).html("<a href='" + base + "#" + fragment + "'>" + tagname + "</a>");
+             }
+        });
+        // Filters are functions, class '.nf'
+        $("div.highlight\\-html\\+django span.nf").each(function(i, elem) {
+             var filtername = $(elem).text();
+             if ($.inArray(filtername, django_template_builtins.tfilters) != -1) {
+                 var fragment = filtername.replace(/_/, '-');
+                 $(elem).html("<a href='" + base + "#" + fragment + "'>" + filtername + "</a>");
+             }
+        });
+    });
+})(jQuery);
+</script>
+
+  </head>
+  <body>
+
+    <div class="document">
+  <div id="custom-doc" class="yui-t6">
+    <div id="hd">
+      <h1><a href="../../index.html">Django v1.3.1 documentation</a></h1>
+      <div id="global-nav">
+        <a title="Home page" href="../../index.html">Home</a>  |
+        <a title="Table of contents" href="../../contents.html">Table of contents</a>  |
+        <a title="Global index" href="../../genindex.html">Index</a>  |
+        <a title="Module index" href="../../py-modindex.html">Modules</a>
+      </div>
+      <div class="nav">
+    &laquo; <a href="internationalization.html" title="Internationalization">previous</a> 
+     |
+    <a href="../index.html" title="Using Django" accesskey="U">up</a>
+   |
+    <a href="deployment.html" title="Deployment of translations">next</a> &raquo;</div>
+    </div>
+    
+    <div id="bd">
+      <div id="yui-main">
+        <div class="yui-b">
+          <div class="yui-g" id="topics-i18n-localization">
+            
+  <div class="section" id="s-localization">
+<span id="localization"></span><h1>Localization<a class="headerlink" href="#localization" title="Permalink to this headline">¶</a></h1>
+<p>This document covers three localization-related topics: <a class="reference internal" href="#how-to-create-language-files">Creating language
+files</a> , <a class="reference internal" href="#format-localization">locale aware date, time and numbers input/output in forms</a>,
+and <a class="reference internal" href="#topic-l10n-templates">controlling localization in templates</a>.</p>
+<div class="admonition-see-also admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last">The <a class="reference internal" href="../../howto/i18n.html"><em>Using internationalization in your own projects</em></a> document included with the Django HOW-TO documents collection.</p>
+</div>
+<div class="section" id="s-how-to-create-language-files">
+<span id="s-id1"></span><span id="how-to-create-language-files"></span><span id="id1"></span><h2>How to create language files<a class="headerlink" href="#how-to-create-language-files" title="Permalink to this headline">¶</a></h2>
+<p>Once the string literals of an application have been tagged for later
+translation, the translation themselves need to be written (or obtained). Here&#8217;s
+how that works.</p>
+<div class="admonition-locale-restrictions admonition " id="locale-restrictions">
+<p class="first admonition-title">Locale restrictions</p>
+<p>Django does not support localizing your application into a locale for which
+Django itself has not been translated. In this case, it will ignore your
+translation files. If you were to try this and Django supported it, you
+would inevitably see a mixture of translated strings (from your application)
+and English strings (from Django itself). If you want to support a locale
+for your application that is not already part of Django, you&#8217;ll need to make
+at least a minimal translation of the Django core.</p>
+<p class="last">A good starting point is to copy the Django English <tt class="docutils literal"><span class="pre">.po</span></tt> file and to
+translate at least some <a class="reference internal" href="index.html#term-translation-string"><em class="xref std std-term">translation strings</em></a>.</p>
+</div>
+<div class="section" id="s-message-files">
+<span id="message-files"></span><h3>Message files<a class="headerlink" href="#message-files" title="Permalink to this headline">¶</a></h3>
+<p>The first step is to create a <a class="reference internal" href="index.html#term-message-file"><em class="xref std std-term">message file</em></a> for a new language. A message
+file is a plain-text file, representing a single language, that contains all
+available translation strings and how they should be represented in the given
+language. Message files have a <tt class="docutils literal"><span class="pre">.po</span></tt> file extension.</p>
+<p>Django comes with a tool, <tt class="docutils literal"><span class="pre">django-admin.py</span> <span class="pre">makemessages</span></tt>, that automates the
+creation and upkeep of these files.</p>
+<div class="admonition-a-note-to-django-veterans admonition ">
+<p class="first admonition-title">A note to Django veterans</p>
+<p class="last">The old tool <tt class="docutils literal"><span class="pre">bin/make-messages.py</span></tt> has been moved to the command
+<tt class="docutils literal"><span class="pre">django-admin.py</span> <span class="pre">makemessages</span></tt> to provide consistency throughout Django.</p>
+</div>
+<div class="admonition-gettext-utilities admonition ">
+<p class="first admonition-title">Gettext utilities</p>
+<p>The <tt class="docutils literal"><span class="pre">makemessages</span></tt> command (and <tt class="docutils literal"><span class="pre">compilemessages</span></tt> discussed later) use
+commands from the GNU gettext toolset: <tt class="docutils literal"><span class="pre">xgettext</span></tt>, <tt class="docutils literal"><span class="pre">msgfmt</span></tt>,
+<tt class="docutils literal"><span class="pre">msgmerge</span></tt> and <tt class="docutils literal"><span class="pre">msguniq</span></tt>.</p>
+<div class="versionchanged">
+<span class="title">Changed in Django 1.2:</span> <a class="reference internal" href="../../releases/1.2.html"><em>Please, see the release notes</em></a></div>
+<p class="last">The minimum version of the <tt class="docutils literal"><span class="pre">gettext</span></tt> utilities supported is 0.15.</p>
+</div>
+<p>To create or update a message file, run this command:</p>
+<div class="highlight-python"><pre>django-admin.py makemessages -l de</pre>
+</div>
+<p>...where <tt class="docutils literal"><span class="pre">de</span></tt> is the language code for the message file you want to create.
+The language code, in this case, is in <a class="reference internal" href="index.html#term-locale-name"><em class="xref std std-term">locale format</em></a>. For
+example, it's <tt class="docutils literal"><span class="pre">pt_BR</span></tt> for Brazilian Portuguese and <tt class="docutils literal"><span class="pre">de_AT</span></tt> for Austrian
+German.</p>
+<p>The script should be run from one of two places:</p>
+<blockquote>
+<ul class="simple">
+<li>The root directory of your Django project.</li>
+<li>The root directory of your Django app.</li>
+</ul>
+</blockquote>
+<p>The script runs over your project source tree or your application source tree
+and pulls out all strings marked for translation. It creates (or updates) a
+message file in the directory <tt class="docutils literal"><span class="pre">locale/LANG/LC_MESSAGES</span></tt>. In the <tt class="docutils literal"><span class="pre">de</span></tt>
+example, the file will be <tt class="docutils literal"><span class="pre">locale/de/LC_MESSAGES/django.po</span></tt>.</p>
+<p>By default <tt class="docutils literal"><span class="pre">django-admin.py</span> <span class="pre">makemessages</span></tt> examines every file that has the
+<tt class="docutils literal"><span class="pre">.html</span></tt> file extension. In case you want to override that default, use the
+<tt class="docutils literal"><span class="pre">--extension</span></tt> or <tt class="docutils literal"><span class="pre">-e</span></tt> option to specify the file extensions to examine:</p>
+<div class="highlight-python"><pre>django-admin.py makemessages -l de -e txt</pre>
+</div>
+<p>Separate multiple extensions with commas and/or use <tt class="docutils literal"><span class="pre">-e</span></tt> or <tt class="docutils literal"><span class="pre">--extension</span></tt>
+multiple times:</p>
+<div class="highlight-python"><pre>django-admin.py makemessages -l de -e html,txt -e xml</pre>
+</div>
+<p>When <a class="reference internal" href="#creating-message-files-from-js-code"><em>creating message files from JavaScript source code</em></a> you need to use the special 'djangojs'
+domain, <strong>not</strong> <tt class="docutils literal"><span class="pre">-e</span> <span class="pre">js</span></tt>.</p>
+<div class="admonition-no-gettext admonition ">
+<p class="first admonition-title">No gettext?</p>
+<p class="last">If you don't have the <tt class="docutils literal"><span class="pre">gettext</span></tt> utilities installed, <tt class="docutils literal"><span class="pre">django-admin.py</span>
+<span class="pre">makemessages</span></tt> will create empty files. If that's the case, either install
+the <tt class="docutils literal"><span class="pre">gettext</span></tt> utilities or just copy the English message file
+(<tt class="docutils literal"><span class="pre">locale/en/LC_MESSAGES/django.po</span></tt>) if available and use it as a starting
+point; it's just an empty translation file.</p>
+</div>
+<div class="admonition-working-on-windows admonition ">
+<p class="first admonition-title">Working on Windows?</p>
+<p class="last">If you're using Windows and need to install the GNU gettext utilities so
+<tt class="docutils literal"><span class="pre">django-admin</span> <span class="pre">makemessages</span></tt> works see <a class="reference internal" href="#gettext-on-windows"><em>gettext on Windows</em></a> for more
+information.</p>
+</div>
+<p>The format of <tt class="docutils literal"><span class="pre">.po</span></tt> files is straightforward. Each <tt class="docutils literal"><span class="pre">.po</span></tt> file contains a
+small bit of metadata, such as the translation maintainer's contact
+information, but the bulk of the file is a list of <strong>messages</strong> -- simple
+mappings between translation strings and the actual translated text for the
+particular language.</p>
+<p>For example, if your Django app contained a translation string for the text
+<tt class="docutils literal"><span class="pre">&quot;Welcome</span> <span class="pre">to</span> <span class="pre">my</span> <span class="pre">site.&quot;</span></tt>, like so:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">_</span><span class="p">(</span><span class="s">&quot;Welcome to my site.&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>...then <tt class="docutils literal"><span class="pre">django-admin.py</span> <span class="pre">makemessages</span></tt> will have created a <tt class="docutils literal"><span class="pre">.po</span></tt> file
+containing the following snippet -- a message:</p>
+<div class="highlight-python"><pre>#: path/to/python/module.py:23
+msgid "Welcome to my site."
+msgstr ""</pre>
+</div>
+<p>A quick explanation:</p>
+<blockquote>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">msgid</span></tt> is the translation string, which appears in the source. Don't
+change it.</li>
+<li><tt class="docutils literal"><span class="pre">msgstr</span></tt> is where you put the language-specific translation. It starts
+out empty, so it's your responsibility to change it. Make sure you keep
+the quotes around your translation.</li>
+<li>As a convenience, each message includes, in the form of a comment line
+prefixed with <tt class="docutils literal"><span class="pre">#</span></tt> and located above the <tt class="docutils literal"><span class="pre">msgid</span></tt> line, the filename and
+line number from which the translation string was gleaned.</li>
+</ul>
+</blockquote>
+<p>Long messages are a special case. There, the first string directly after the
+<tt class="docutils literal"><span class="pre">msgstr</span></tt> (or <tt class="docutils literal"><span class="pre">msgid</span></tt>) is an empty string. Then the content itself will be
+written over the next few lines as one string per line. Those strings are
+directly concatenated. Don't forget trailing spaces within the strings;
+otherwise, they'll be tacked together without whitespace!</p>
+<div class="admonition-mind-your-charset admonition ">
+<p class="first admonition-title">Mind your charset</p>
+<p class="last">When creating a PO file with your favorite text editor, first edit
+the charset line (search for <tt class="docutils literal"><span class="pre">&quot;CHARSET&quot;</span></tt>) and set it to the charset
+you'll be using to edit the content. Due to the way the <tt class="docutils literal"><span class="pre">gettext</span></tt> tools
+work internally and because we want to allow non-ASCII source strings in
+Django's core and your applications, you <strong>must</strong> use UTF-8 as the encoding
+for your PO file. This means that everybody will be using the same
+encoding, which is important when Django processes the PO files.</p>
+</div>
+<p>To reexamine all source code and templates for new translation strings and
+update all message files for <strong>all</strong> languages, run this:</p>
+<div class="highlight-python"><pre>django-admin.py makemessages -a</pre>
+</div>
+</div>
+<div class="section" id="s-compiling-message-files">
+<span id="compiling-message-files"></span><h3>Compiling message files<a class="headerlink" href="#compiling-message-files" title="Permalink to this headline">¶</a></h3>
+<p>After you create your message file -- and each time you make changes to it --
+you'll need to compile it into a more efficient form, for use by <tt class="docutils literal"><span class="pre">gettext</span></tt>.
+Do this with the <tt class="docutils literal"><span class="pre">django-admin.py</span> <span class="pre">compilemessages</span></tt> utility.</p>
+<p>This tool runs over all available <tt class="docutils literal"><span class="pre">.po</span></tt> files and creates <tt class="docutils literal"><span class="pre">.mo</span></tt> files, which
+are binary files optimized for use by <tt class="docutils literal"><span class="pre">gettext</span></tt>. In the same directory from
+which you ran <tt class="docutils literal"><span class="pre">django-admin.py</span> <span class="pre">makemessages</span></tt>, run <tt class="docutils literal"><span class="pre">django-admin.py</span>
+<span class="pre">compilemessages</span></tt> like this:</p>
+<div class="highlight-python"><pre>django-admin.py compilemessages</pre>
+</div>
+<p>That's it. Your translations are ready for use.</p>
+<div class="admonition-a-note-to-django-veterans admonition ">
+<p class="first admonition-title">A note to Django veterans</p>
+<p class="last">The old tool <tt class="docutils literal"><span class="pre">bin/compile-messages.py</span></tt> has been moved to the command
+<tt class="docutils literal"><span class="pre">django-admin.py</span> <span class="pre">compilemessages</span></tt> to provide consistency throughout
+Django.</p>
+</div>
+<div class="admonition-working-on-windows admonition ">
+<p class="first admonition-title">Working on Windows?</p>
+<p class="last">If you're using Windows and need to install the GNU gettext utilities so
+<tt class="docutils literal"><span class="pre">django-admin</span> <span class="pre">compilemessages</span></tt> works see <a class="reference internal" href="#gettext-on-windows"><em>gettext on Windows</em></a> for more
+information.</p>
+</div>
+<div class="admonition-po-files-encoding-and-bom-usage admonition ">
+<p class="first admonition-title">.po files: Encoding and BOM usage.</p>
+<p class="last">Django only supports <tt class="docutils literal"><span class="pre">.po</span></tt> files encoded in UTF-8 and without any BOM
+(Byte Order Mark) so if your text editor adds such marks to the beginning of
+files by default then you will need to reconfigure it.</p>
+</div>
+</div>
+</div>
+<div class="section" id="s-creating-message-files-from-javascript-source-code">
+<span id="s-creating-message-files-from-js-code"></span><span id="creating-message-files-from-javascript-source-code"></span><span id="creating-message-files-from-js-code"></span><h2>Creating message files from JavaScript source code<a class="headerlink" href="#creating-message-files-from-javascript-source-code" title="Permalink to this headline">¶</a></h2>
+<p>You create and update the message files the same way as the other Django message
+files -- with the <tt class="docutils literal"><span class="pre">django-admin.py</span> <span class="pre">makemessages</span></tt> tool. The only difference is
+you need to provide a <tt class="docutils literal"><span class="pre">-d</span> <span class="pre">djangojs</span></tt> parameter, like this:</p>
+<div class="highlight-python"><pre>django-admin.py makemessages -d djangojs -l de</pre>
+</div>
+<p>This would create or update the message file for JavaScript for German.
+After updating message files, just run <tt class="docutils literal"><span class="pre">django-admin.py</span> <span class="pre">compilemessages</span></tt>
+the same way as you do with normal Django message files.</p>
+</div>
+<div class="section" id="s-gettext-on-windows">
+<span id="s-id2"></span><span id="gettext-on-windows"></span><span id="id2"></span><h2><tt class="docutils literal"><span class="pre">gettext</span></tt> on Windows<a class="headerlink" href="#gettext-on-windows" title="Permalink to this headline">¶</a></h2>
+<p>This is only needed for people who either want to extract message IDs or compile
+message files (<tt class="docutils literal"><span class="pre">.po</span></tt>). Translation work itself just involves editing existing
+files of this type, but if you want to create your own message files, or want to
+test or compile a changed message file, you will need the <tt class="docutils literal"><span class="pre">gettext</span></tt> utilities:</p>
+<blockquote>
+<ul>
+<li><p class="first">Download the following zip files from the GNOME servers
+<a class="reference external" href="http://ftp.gnome.org/pub/gnome/binaries/win32/dependencies/">http://ftp.gnome.org/pub/gnome/binaries/win32/dependencies/</a> or from one
+of its <a class="reference external" href="http://ftp.gnome.org/pub/GNOME/MIRRORS">mirrors</a></p>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">gettext-runtime-X.zip</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">gettext-tools-X.zip</span></tt></li>
+</ul>
+<p><tt class="docutils literal"><span class="pre">X</span></tt> is the version number, we are requiring <tt class="docutils literal"><span class="pre">0.15</span></tt> or higher.</p>
+</li>
+<li><p class="first">Extract the contents of the <tt class="docutils literal"><span class="pre">bin\</span></tt> directories in both files to the
+same folder on your system (i.e. <tt class="docutils literal"><span class="pre">C:\Program</span> <span class="pre">Files\gettext-utils</span></tt>)</p>
+</li>
+<li><p class="first">Update the system PATH:</p>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">Control</span> <span class="pre">Panel</span> <span class="pre">&gt;</span> <span class="pre">System</span> <span class="pre">&gt;</span> <span class="pre">Advanced</span> <span class="pre">&gt;</span> <span class="pre">Environment</span> <span class="pre">Variables</span></tt>.</li>
+<li>In the <tt class="docutils literal"><span class="pre">System</span> <span class="pre">variables</span></tt> list, click <tt class="docutils literal"><span class="pre">Path</span></tt>, click <tt class="docutils literal"><span class="pre">Edit</span></tt>.</li>
+<li>Add <tt class="docutils literal"><span class="pre">;C:\Program</span> <span class="pre">Files\gettext-utils\bin</span></tt> at the end of the
+<tt class="docutils literal"><span class="pre">Variable</span> <span class="pre">value</span></tt> field.</li>
+</ul>
+</li>
+</ul>
+</blockquote>
+<p>You may also use <tt class="docutils literal"><span class="pre">gettext</span></tt> binaries you have obtained elsewhere, so long as
+the <tt class="docutils literal"><span class="pre">xgettext</span> <span class="pre">--version</span></tt> command works properly. Do not attempt to use Django
+translation utilities with a <tt class="docutils literal"><span class="pre">gettext</span></tt> package if the command <tt class="docutils literal"><span class="pre">xgettext</span>
+<span class="pre">--version</span></tt> entered at a Windows command prompt causes a popup window saying
+&quot;xgettext.exe has generated errors and will be closed by Windows&quot;.</p>
+</div>
+<div class="section" id="s-format-localization">
+<span id="s-id3"></span><span id="format-localization"></span><span id="id3"></span><h2>Format localization<a class="headerlink" href="#format-localization" title="Permalink to this headline">¶</a></h2>
+<div class="versionadded">
+<span class="title">New in Django 1.2:</span> <a class="reference internal" href="../../releases/1.2.html"><em>Please, see the release notes</em></a></div>
+<p>Django's formatting system is disabled by default. To enable it, it's
+necessary to set <a class="reference internal" href="../../ref/settings.html#std:setting-USE_L10N"><tt class="xref std std-setting docutils literal"><span class="pre">USE_L10N</span> <span class="pre">=</span> <span class="pre">True</span></tt></a> in your settings file.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The default <tt class="file docutils literal"><span class="pre">settings.py</span></tt> file created by
+<a class="reference internal" href="../../ref/django-admin.html#django-admin-startproject"><tt class="xref std std-djadmin docutils literal"><span class="pre">django-admin.py</span> <span class="pre">startproject</span></tt></a> includes
+<a class="reference internal" href="../../ref/settings.html#std:setting-USE_L10N"><tt class="xref std std-setting docutils literal"><span class="pre">USE_L10N</span> <span class="pre">=</span> <span class="pre">True</span></tt></a> for convenience.</p>
+</div>
+<p>When using Django's formatting system, dates and numbers on templates will be
+displayed using the format specified for the current locale. Two users
+accessing the same content, but in different language, will see date and
+number fields formatted in different ways, depending on the format for their
+current locale.</p>
+<p>Django will also use localized formats when parsing data in forms. That means
+Django uses different formats for different locales when guessing the format
+used by the user when inputting data on forms.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Django uses different formats for displaying data to those it uses for
+parsing data. Most notably, the formats for parsing dates can't use the
+<tt class="docutils literal"><span class="pre">%a</span></tt> (abbreviated weekday name), <tt class="docutils literal"><span class="pre">%A</span></tt> (full weekday name),
+<tt class="docutils literal"><span class="pre">%b</span></tt> (abbreviated month name), <tt class="docutils literal"><span class="pre">%B</span></tt> (full month name),
+or <tt class="docutils literal"><span class="pre">%p</span></tt> (AM/PM).</p>
+</div>
+<p>To enable a form field to localize input and output data simply use its
+<tt class="docutils literal"><span class="pre">localize</span></tt> argument:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">CashRegisterForm</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">Form</span><span class="p">):</span>
+   <span class="n">product</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">()</span>
+   <span class="n">revenue</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">DecimalField</span><span class="p">(</span><span class="n">max_digits</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">decimal_places</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">localize</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="section" id="s-creating-custom-format-files">
+<span id="creating-custom-format-files"></span><h3>Creating custom format files<a class="headerlink" href="#creating-custom-format-files" title="Permalink to this headline">¶</a></h3>
+<p>Django provides format definitions for many locales, but sometimes you might
+want to create your own, because a format files doesn't exist for your locale,
+or because you want to overwrite some of the values.</p>
+<p>To use custom formats, first thing to do, is to specify the path where you'll
+place format files. To do that, just set your <a class="reference internal" href="../../ref/settings.html#std:setting-FORMAT_MODULE_PATH"><tt class="xref std std-setting docutils literal"><span class="pre">FORMAT_MODULE_PATH</span></tt></a>
+setting to the path (in the format <tt class="docutils literal"><span class="pre">'foo.bar.baz</span></tt>) where format files
+will exists.</p>
+<p>Files are not placed directly in this directory, but in a directory named as
+the locale, and must be named <tt class="docutils literal"><span class="pre">formats.py</span></tt>.</p>
+<p>To customize the English formats, a structure like this would be needed:</p>
+<div class="highlight-python"><pre>mysite/
+    formats/
+        __init__.py
+        en/
+            __init__.py
+            formats.py</pre>
+</div>
+<p>where <tt class="file docutils literal"><span class="pre">formats.py</span></tt> contains custom format definitions. For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">THOUSAND_SEPARATOR</span> <span class="o">=</span> <span class="s">&#39; &#39;</span>
+</pre></div>
+</div>
+<p>to use a space as a thousand separator, instead of the default for English,
+a comma.</p>
+</div>
+</div>
+<div class="section" id="s-topic-l10n-templates">
+<span id="s-id4"></span><span id="topic-l10n-templates"></span><span id="id4"></span><h2>Controlling localization in templates<a class="headerlink" href="#topic-l10n-templates" title="Permalink to this headline">¶</a></h2>
+<p>When you have enabled localization using <a class="reference internal" href="../../ref/settings.html#std:setting-USE_L10N"><tt class="xref std std-setting docutils literal"><span class="pre">USE_L10N</span></tt></a>, Django
+will try to use a locale specific format whenever it outputs a value
+in a template.</p>
+<p>However, it may not always be appropriate to use localized values --
+for example, if you're outputting Javascript or XML that is designed
+to be machine-readable, you will always want unlocalized values. You
+may also want to use localization in selected templates, rather than
+using localization everywhere.</p>
+<p>To allow for fine control over the use of localization, Django
+provides the <tt class="docutils literal"><span class="pre">l10n</span></tt> template library that contains the following
+tags and filters.</p>
+<div class="section" id="s-template-tags">
+<span id="template-tags"></span><h3>Template tags<a class="headerlink" href="#template-tags" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="s-localize">
+<span id="s-std:templatetag-localize"></span><span id="localize"></span><span id="std:templatetag-localize"></span><h4>localize<a class="headerlink" href="#localize" title="Permalink to this headline">¶</a></h4>
+<div class="versionadded">
+<span class="title">New in Django 1.3:</span> <a class="reference internal" href="../../releases/1.3.html"><em>Please, see the release notes</em></a></div>
+<p>Enables or disables localization of template variables in the
+contained block.</p>
+<p>This tag allows a more fine grained control of localization than
+<a class="reference internal" href="../../ref/settings.html#std:setting-USE_L10N"><tt class="xref std std-setting docutils literal"><span class="pre">USE_L10N</span></tt></a>.</p>
+<p>To activate or deactivate localization for a template block, use:</p>
+<div class="highlight-python"><pre>{% localize on %}
+    {{ value }}
+{% endlocalize %}
+
+{% localize off %}
+    {{ value }}
+{% endlocalize %}</pre>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The value of <a class="reference internal" href="../../ref/settings.html#std:setting-USE_L10N"><tt class="xref std std-setting docutils literal"><span class="pre">USE_L10N</span></tt></a> is not respected inside of a
+<cite>{% localize %}</cite> block.</p>
+</div>
+<p>See <tt class="xref std std-tfilter docutils literal"><span class="pre">localized</span></tt> and <tt class="xref std std-tfilter docutils literal"><span class="pre">unlocalized</span></tt> for a template filter that will
+do the same job on a per-variable basis.</p>
+</div>
+</div>
+<div class="section" id="s-template-filters">
+<span id="template-filters"></span><h3>Template filters<a class="headerlink" href="#template-filters" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="s-std:templatefilter-localize">
+<span id="s-id5"></span><span id="std:templatefilter-localize"></span><span id="id5"></span><h4>localize<a class="headerlink" href="#std:templatefilter-localize" title="Permalink to this headline">¶</a></h4>
+<div class="versionadded">
+<span class="title">New in Django 1.3:</span> <a class="reference internal" href="../../releases/1.3.html"><em>Please, see the release notes</em></a></div>
+<p>Forces localization of a single value.</p>
+<p>For example:</p>
+<div class="highlight-python"><pre>{{ value|localize }}</pre>
+</div>
+<p>To disable localization on a single value, use <a class="reference internal" href="#std:templatefilter-unlocalize"><tt class="xref std std-tfilter docutils literal"><span class="pre">unlocalize</span></tt></a>. To control
+localization over a large section of a template, use the <a class="reference internal" href="#std:templatetag-localize"><tt class="xref std std-ttag docutils literal"><span class="pre">localize</span></tt></a> template
+tag.</p>
+</div>
+<div class="section" id="s-unlocalize">
+<span id="s-std:templatefilter-unlocalize"></span><span id="unlocalize"></span><span id="std:templatefilter-unlocalize"></span><h4>unlocalize<a class="headerlink" href="#unlocalize" title="Permalink to this headline">¶</a></h4>
+<div class="versionadded">
+<span class="title">New in Django 1.3:</span> <a class="reference internal" href="../../releases/1.3.html"><em>Please, see the release notes</em></a></div>
+<p>Forces a single value to be printed without localization.</p>
+<p>For example:</p>
+<div class="highlight-python"><pre>{{ value|unlocalize }}</pre>
+</div>
+<p>To force localization of a single value, use <a class="reference internal" href="#std:templatefilter-localize"><tt class="xref std std-tfilter docutils literal"><span class="pre">localize</span></tt></a>. To
+control localization over a large section of a template, use the
+<a class="reference internal" href="#std:templatetag-localize"><tt class="xref std std-ttag docutils literal"><span class="pre">localize</span></tt></a> template tag.</p>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>         
+        </div>
+      </div>
+      
+        
+          <div class="yui-b" id="sidebar">
+            
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../contents.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Localization</a><ul>
+<li><a class="reference internal" href="#how-to-create-language-files">How to create language files</a><ul>
+<li><a class="reference internal" href="#message-files">Message files</a></li>
+<li><a class="reference internal" href="#compiling-message-files">Compiling message files</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#creating-message-files-from-javascript-source-code">Creating message files from JavaScript source code</a></li>
+<li><a class="reference internal" href="#gettext-on-windows"><tt class="docutils literal"><span class="pre">gettext</span></tt> on Windows</a></li>
+<li><a class="reference internal" href="#format-localization">Format localization</a><ul>
+<li><a class="reference internal" href="#creating-custom-format-files">Creating custom format files</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#topic-l10n-templates">Controlling localization in templates</a><ul>
+<li><a class="reference internal" href="#template-tags">Template tags</a><ul>
+<li><a class="reference internal" href="#localize">localize</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#template-filters">Template filters</a><ul>
+<li><a class="reference internal" href="#std:templatefilter-localize">localize</a></li>
+<li><a class="reference internal" href="#unlocalize">unlocalize</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h3>Browse</h3>
+  <ul>
+    
+      <li>Prev: <a href="internationalization.html">Internationalization</a></li>
+    
+    
+      <li>Next: <a href="deployment.html">Deployment of translations</a></li>
+    
+  </ul>
+  <h3>You are here:</h3>
+  <ul>
+      <li>
+        <a href="../../index.html">Django v1.3.1 documentation</a>
+        
+          <ul><li><a href="../index.html">Using Django</a>
+        
+          <ul><li><a href="index.html">Internationalization and localization</a>
+        
+        <ul><li>Localization</li></ul>
+        </li></ul></li></ul>
+      </li>
+  </ul>  
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/topics/i18n/localization.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+              <h3>Last update:</h3>
+              <p class="topless">Dec 06, 2011</p>
+          </div> 
+        
+      
+    </div>
+    
+    <div id="ft">
+      <div class="nav">
+    &laquo; <a href="internationalization.html" title="Internationalization">previous</a> 
+     |
+    <a href="../index.html" title="Using Django" accesskey="U">up</a>
+   |
+    <a href="deployment.html" title="Deployment of translations">next</a> &raquo;</div>
+    </div>
+  </div>
+
+      <div class="clearer"></div>
+    </div>
+  </body>
+</html>

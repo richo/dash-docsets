@@ -1,0 +1,462 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<title>GeoDjango Model API — Django v1.3.1 documentation</title>
+<link href="../../../_static/default.css" rel="stylesheet" type="text/css"/>
+<link href="../../../_static/pygments.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '1.3.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+<script src="../../../_static/jquery.js" type="text/javascript"></script>
+<script src="../../../_static/underscore.js" type="text/javascript"></script>
+<script src="../../../_static/doctools.js" type="text/javascript"></script>
+<link href="../../../index.html" rel="top" title="Django v1.3.1 documentation"/>
+<link href="index.html" rel="up" title="GeoDjango"/>
+<link href="db-api.html" rel="next" title="GeoDjango Database API"/>
+<link href="install.html" rel="prev" title="GeoDjango Installation"/>
+<script src="../../../templatebuiltins.js" type="text/javascript"></script>
+<script type="text/javascript">
+(function($) {
+    if (!django_template_builtins) {
+       // templatebuiltins.js missing, do nothing.
+       return;
+    }
+    $(document).ready(function() {
+        // Hyperlink Django template tags and filters
+        var base = "../../templates/builtins.html";
+        if (base == "#") {
+            // Special case for builtins.html itself
+            base = "";
+        }
+        // Tags are keywords, class '.k'
+        $("div.highlight\\-html\\+django span.k").each(function(i, elem) {
+             var tagname = $(elem).text();
+             if ($.inArray(tagname, django_template_builtins.ttags) != -1) {
+                 var fragment = tagname.replace(/_/, '-');
+                 $(elem).html("&lt;a href='" + base + "#" + fragment + "'&gt;" + tagname + "");
+             }
+        });
+        // Filters are functions, class '.nf'
+        $("div.highlight\\-html\\+django span.nf").each(function(i, elem) {
+             var filtername = $(elem).text();
+             if ($.inArray(filtername, django_template_builtins.tfilters) != -1) {
+                 var fragment = filtername.replace(/_/, '-');
+                 $(elem).html("<a href='" + base + "#" + fragment + "'>" + filtername + "</a>");
+             }
+        });
+    });
+})(jQuery);
+</script>
+</head>
+<body>
+<div class="document">
+<div class="yui-t6" id="custom-doc">
+<div id="hd">
+<h1><a href="../../../index.html">Django v1.3.1 documentation</a></h1>
+<div id="global-nav">
+<a href="../../../index.html" title="Home page">Home</a>  |
+        <a href="../../../contents.html" title="Table of contents">Table of contents</a>  |
+        <a href="../../../genindex.html" title="Global index">Index</a>  |
+        <a href="../../../py-modindex.html" title="Module index">Modules</a>
+</div>
+<div class="nav">
+    « <a href="install.html" title="GeoDjango Installation">previous</a> 
+     |
+    <a accesskey="U" href="../../index.html" title="API Reference">up</a>
+   |
+    <a href="db-api.html" title="GeoDjango Database API">next</a> »</div>
+</div>
+<div id="bd">
+<div id="yui-main">
+<div class="yui-b">
+<div class="yui-g" id="ref-contrib-gis-model-api">
+<div class="section" id="s-module-django.contrib.gis.db.models">
+<span id="s-geodjango-model-api"></span><span id="s-ref-gis-model-api"></span><span id="module-django.contrib.gis.db.models"></span><span id="geodjango-model-api"></span><span id="ref-gis-model-api"></span><h1>GeoDjango Model API<a class="headerlink" href="#module-django.contrib.gis.db.models" title="Permalink to this headline">¶</a></h1>
+<p>This document explores the details of the GeoDjango Model API.  Throughout this
+section, we’ll be using the following geographic model of a <a class="reference external" href="http://en.wikipedia.org/wiki/ZIP_code">ZIP code</a> as our
+example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">django.contrib.gis.db</span> <span class="kn">import</span> <span class="n">models</span>
+
+<span class="k">class</span> <span class="nc">Zipcode</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">code</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+    <span class="n">poly</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">PolygonField</span><span class="p">()</span>
+    <span class="n">objects</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">GeoManager</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="section" id="s-geometry-field-types">
+<span id="geometry-field-types"></span><h2>Geometry Field Types<a class="headerlink" href="#geometry-field-types" title="Permalink to this headline">¶</a></h2>
+<p>Each of the following geometry field types correspond with the
+OpenGIS Simple Features specification <a class="footnote-reference" href="#fnogc" id="id2">[1]</a>.</p>
+<div class="section" id="s-geometryfield">
+<span id="geometryfield"></span><h3><tt class="docutils literal"><span class="pre">GeometryField</span></tt><a class="headerlink" href="#geometryfield" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<a name="//apple_ref/cpp/cl/django.contrib.gis.db.models.GeometryField"></a><dt id="django.contrib.gis.db.models.GeometryField">
+<em class="property">class </em><tt class="descname">GeometryField</tt><a class="headerlink" href="#django.contrib.gis.db.models.GeometryField" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+</div>
+<div class="section" id="s-pointfield">
+<span id="pointfield"></span><h3><tt class="docutils literal"><span class="pre">PointField</span></tt><a class="headerlink" href="#pointfield" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<a name="//apple_ref/cpp/cl/django.contrib.gis.db.models.PointField"></a><dt id="django.contrib.gis.db.models.PointField">
+<em class="property">class </em><tt class="descname">PointField</tt><a class="headerlink" href="#django.contrib.gis.db.models.PointField" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+</div>
+<div class="section" id="s-linestringfield">
+<span id="linestringfield"></span><h3><tt class="docutils literal"><span class="pre">LineStringField</span></tt><a class="headerlink" href="#linestringfield" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<a name="//apple_ref/cpp/cl/django.contrib.gis.db.models.LineStringField"></a><dt id="django.contrib.gis.db.models.LineStringField">
+<em class="property">class </em><tt class="descname">LineStringField</tt><a class="headerlink" href="#django.contrib.gis.db.models.LineStringField" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+</div>
+<div class="section" id="s-polygonfield">
+<span id="polygonfield"></span><h3><tt class="docutils literal"><span class="pre">PolygonField</span></tt><a class="headerlink" href="#polygonfield" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<a name="//apple_ref/cpp/cl/django.contrib.gis.db.models.PolygonField"></a><dt id="django.contrib.gis.db.models.PolygonField">
+<em class="property">class </em><tt class="descname">PolygonField</tt><a class="headerlink" href="#django.contrib.gis.db.models.PolygonField" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+</div>
+<div class="section" id="s-multipointfield">
+<span id="multipointfield"></span><h3><tt class="docutils literal"><span class="pre">MultiPointField</span></tt><a class="headerlink" href="#multipointfield" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<a name="//apple_ref/cpp/cl/django.contrib.gis.db.models.MultiPointField"></a><dt id="django.contrib.gis.db.models.MultiPointField">
+<em class="property">class </em><tt class="descname">MultiPointField</tt><a class="headerlink" href="#django.contrib.gis.db.models.MultiPointField" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+</div>
+<div class="section" id="s-multilinestringfield">
+<span id="multilinestringfield"></span><h3><tt class="docutils literal"><span class="pre">MultiLineStringField</span></tt><a class="headerlink" href="#multilinestringfield" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<a name="//apple_ref/cpp/cl/django.contrib.gis.db.models.MultiLineStringField"></a><dt id="django.contrib.gis.db.models.MultiLineStringField">
+<em class="property">class </em><tt class="descname">MultiLineStringField</tt><a class="headerlink" href="#django.contrib.gis.db.models.MultiLineStringField" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+</div>
+<div class="section" id="s-multipolygonfield">
+<span id="multipolygonfield"></span><h3><tt class="docutils literal"><span class="pre">MultiPolygonField</span></tt><a class="headerlink" href="#multipolygonfield" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<a name="//apple_ref/cpp/cl/django.contrib.gis.db.models.MultiPolygonField"></a><dt id="django.contrib.gis.db.models.MultiPolygonField">
+<em class="property">class </em><tt class="descname">MultiPolygonField</tt><a class="headerlink" href="#django.contrib.gis.db.models.MultiPolygonField" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+</div>
+<div class="section" id="s-geometrycollectionfield">
+<span id="geometrycollectionfield"></span><h3><tt class="docutils literal"><span class="pre">GeometryCollectionField</span></tt><a class="headerlink" href="#geometrycollectionfield" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<a name="//apple_ref/cpp/cl/django.contrib.gis.db.models.GeometryCollectionField"></a><dt id="django.contrib.gis.db.models.GeometryCollectionField">
+<em class="property">class </em><tt class="descname">GeometryCollectionField</tt><a class="headerlink" href="#django.contrib.gis.db.models.GeometryCollectionField" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+</div>
+</div>
+<div class="section" id="s-geometry-field-options">
+<span id="s-id3"></span><span id="geometry-field-options"></span><span id="id3"></span><h2>Geometry Field Options<a class="headerlink" href="#geometry-field-options" title="Permalink to this headline">¶</a></h2>
+<p>In addition to the regular <a class="reference internal" href="../../models/fields.html#common-model-field-options"><em>Field options</em></a> available for
+Django model fields, geometry fields have the following additional options.
+All are optional.</p>
+<div class="section" id="s-srid">
+<span id="srid"></span><h3><tt class="docutils literal"><span class="pre">srid</span></tt><a class="headerlink" href="#srid" title="Permalink to this headline">¶</a></h3>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.db.models.GeometryField.srid"></a><dt id="django.contrib.gis.db.models.GeometryField.srid">
+<tt class="descclassname">GeometryField.</tt><tt class="descname">srid</tt><a class="headerlink" href="#django.contrib.gis.db.models.GeometryField.srid" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Sets the SRID <a class="footnote-reference" href="#fnogcsrid" id="id4">[2]</a> (Spatial Reference System Identity) of the geometry field to
+the given value. Defaults to 4326 (also known as <a class="reference external" href="http://en.wikipedia.org/wiki/WGS84">WGS84</a>, units are in degrees
+of longitude and latitude).</p>
+<div class="section" id="s-selecting-an-srid">
+<span id="s-id6"></span><span id="selecting-an-srid"></span><span id="id6"></span><h4>Selecting an SRID<a class="headerlink" href="#selecting-an-srid" title="Permalink to this headline">¶</a></h4>
+<p>Choosing an appropriate SRID for your model is an important decision that the
+developer should consider carefully.  The SRID is an integer specifier that
+corresponds to the projection system that will be used to interpret the data
+in the spatial database. <a class="footnote-reference" href="#fnsrid" id="id7">[3]</a>  Projection systems give the context to the
+coordinates that specify a location.  Although the details of <a class="reference external" href="http://en.wikipedia.org/wiki/Geodesy">geodesy</a> are
+beyond the scope of this documentation, the general problem is that the earth
+is spherical and representations of the earth (e.g., paper maps, Web maps)
+are not.</p>
+<p>Most people are familiar with using latitude and longitude to reference a
+location on the earth's surface.  However, latitude and longitude are angles,
+not distances. <a class="footnote-reference" href="#fnharvard" id="id8">[4]</a>  In other words, while the shortest path between two points on
+a flat surface is a straight line, the shortest path between two points on a curved
+surface (such as the earth) is an <em>arc</em> of a <a class="reference external" href="http://en.wikipedia.org/wiki/Great_circle">great circle</a>. <a class="footnote-reference" href="#fnthematic" id="id9">[5]</a>  Thus,
+additional computation is required to obtain distances in planar units (e.g.,
+kilometers and miles).  Using a geographic coordinate system may introduce
+complications for the developer later on.  For example, PostGIS versions 1.4
+and below do not have the capability to perform distance calculations between
+non-point geometries using geographic coordinate systems, e.g., constructing a
+query to  find all points within 5 miles of a county boundary stored as WGS84.
+<a class="footnote-reference" href="#fndist" id="id10">[6]</a></p>
+<p>Portions of the earth's surface may projected onto a two-dimensional, or
+Cartesian, plane.  Projected coordinate systems are especially convenient
+for region-specific applications, e.g., if you know that your database will
+only cover geometries in <a class="reference external" href="http://www.spatialreference.org/ref/epsg/2796/">North Kansas</a>, then you may consider using projection
+system specific to that region.  Moreover, projected coordinate systems are
+defined in Cartesian units (such as meters or feet), easing distance
+calculations.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If you wish to peform arbitrary distance queries using non-point
+geometries in WGS84, consider upgrading to PostGIS 1.5. For
+better performance, enable the <a class="reference internal" href="#django.contrib.gis.db.models.GeometryField.geography" title="django.contrib.gis.db.models.GeometryField.geography"><tt class="xref py py-attr docutils literal"><span class="pre">GeometryField.geography</span></tt></a>
+keyword so that <a class="reference internal" href="#geography-type"><em>geography database type</em></a>
+is used instead.</p>
+</div>
+<p>Additional Resources:</p>
+<ul class="simple">
+<li><a class="reference external" href="http://spatialreference.org/">spatialreference.org</a>: A Django-powered database of spatial reference
+systems.</li>
+<li><a class="reference external" href="http://welcome.warnercnr.colostate.edu/class_info/nr502/lg3/datums_coordinates/spcs.html">The State Plane Coordinate System</a>: A Web site covering the various
+projection systems used in the United States.  Much of the U.S. spatial
+data encountered will be in one of these coordinate systems rather than
+in a geographic coordinate system such as WGS84.</li>
+</ul>
+</div>
+</div>
+<div class="section" id="s-spatial-index">
+<span id="spatial-index"></span><h3><tt class="docutils literal"><span class="pre">spatial_index</span></tt><a class="headerlink" href="#spatial-index" title="Permalink to this headline">¶</a></h3>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.db.models.GeometryField.spatial_index"></a><dt id="django.contrib.gis.db.models.GeometryField.spatial_index">
+<tt class="descclassname">GeometryField.</tt><tt class="descname">spatial_index</tt><a class="headerlink" href="#django.contrib.gis.db.models.GeometryField.spatial_index" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Defaults to <tt class="xref docutils literal"><span class="pre">True</span></tt>.  Creates a spatial index for the given geometry
+field.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This is different from the <tt class="docutils literal"><span class="pre">db_index</span></tt> field option because spatial
+indexes are created in a different manner than regular database
+indexes.  Specifically, spatial indexes are typically created using
+a variant of the R-Tree, while regular database indexes typically
+use B-Trees.</p>
+</div>
+</div>
+<div class="section" id="s-dim">
+<span id="dim"></span><h3><tt class="docutils literal"><span class="pre">dim</span></tt><a class="headerlink" href="#dim" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<span class="title">New in Django 1.2:</span> <a class="reference internal" href="../../../releases/1.2.html"><em>Please, see the release notes</em></a></div>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.db.models.GeometryField.dim"></a><dt id="django.contrib.gis.db.models.GeometryField.dim">
+<tt class="descclassname">GeometryField.</tt><tt class="descname">dim</tt><a class="headerlink" href="#django.contrib.gis.db.models.GeometryField.dim" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>This option may be used for customizing the coordinate dimension of the
+geometry field.  By default, it is set to 2, for representing two-dimensional
+geometries.  For spatial backends that support it, it may be set to 3 for
+three-dimensonal support.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">At this time 3D support requires that GEOS 3.1 be installed, and is
+limited only to the PostGIS spatial backend.</p>
+</div>
+</div>
+<div class="section" id="s-geography">
+<span id="geography"></span><h3><tt class="docutils literal"><span class="pre">geography</span></tt><a class="headerlink" href="#geography" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<span class="title">New in Django 1.2:</span> <a class="reference internal" href="../../../releases/1.2.html"><em>Please, see the release notes</em></a></div>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.db.models.GeometryField.geography"></a><dt id="django.contrib.gis.db.models.GeometryField.geography">
+<tt class="descclassname">GeometryField.</tt><tt class="descname">geography</tt><a class="headerlink" href="#django.contrib.gis.db.models.GeometryField.geography" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>If set to <tt class="xref docutils literal"><span class="pre">True</span></tt>, this option will create a database column of
+type geography, rather than geometry.  Please refer to the
+<a class="reference internal" href="#geography-type"><em>geography type</em></a> section below for more
+details.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Geography support is limited only to PostGIS 1.5+, and will
+force the SRID to be 4326.</p>
+</div>
+<div class="section" id="s-geography-type">
+<span id="s-id16"></span><span id="geography-type"></span><span id="id16"></span><h4>Geography Type<a class="headerlink" href="#geography-type" title="Permalink to this headline">¶</a></h4>
+<p>In PostGIS 1.5, the geography type was introduced -- it provides
+provides native support for spatial features represented with geographic
+coordinates (e.g., WGS84 longitude/latitude). <a class="footnote-reference" href="#fngeography" id="id17">[7]</a>
+Unlike the plane used by a geometry type, the geography type uses a spherical
+representation of its data.  Distance and measurement operations
+performed on a geography column automatically employ great circle arc
+calculations and return linear units.  In other words, when <tt class="docutils literal"><span class="pre">ST_Distance</span></tt>
+is called on two geographies, a value in meters is returned (as opposed
+to degrees if called on a geometry column in WGS84).</p>
+<p>Because geography calculations involve more mathematics, only a subset of the
+PostGIS spatial lookups are available for the geography type. Practically,
+this means that in addition to the <a class="reference internal" href="geoquerysets.html#distance-lookups"><em>distance lookups</em></a>
+only the following additional <a class="reference internal" href="geoquerysets.html#spatial-lookups"><em>spatial lookups</em></a> are
+available for geography columns:</p>
+<ul class="simple">
+<li><a class="reference internal" href="geoquerysets.html#std:fieldlookup-bboverlaps"><tt class="xref std std-lookup docutils literal"><span class="pre">bboverlaps</span></tt></a></li>
+<li><a class="reference internal" href="geoquerysets.html#std:fieldlookup-coveredby"><tt class="xref std std-lookup docutils literal"><span class="pre">coveredby</span></tt></a></li>
+<li><a class="reference internal" href="geoquerysets.html#std:fieldlookup-covers"><tt class="xref std std-lookup docutils literal"><span class="pre">covers</span></tt></a></li>
+<li><a class="reference internal" href="geoquerysets.html#std:fieldlookup-intersects"><tt class="xref std std-lookup docutils literal"><span class="pre">intersects</span></tt></a></li>
+</ul>
+<p>For more information, the PostGIS documentation contains a helpful section on
+determining <a class="reference external" href="http://postgis.refractions.net/documentation/manual-1.5/ch04.html#PostGIS_GeographyVSGeometry">when to use geography data type over geometry data type</a>.</p>
+</div>
+</div>
+</div>
+<div class="section" id="s-geomanager">
+<span id="geomanager"></span><h2><tt class="docutils literal"><span class="pre">GeoManager</span></tt><a class="headerlink" href="#geomanager" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<a name="//apple_ref/cpp/cl/django.contrib.gis.db.models.GeoManager"></a><dt id="django.contrib.gis.db.models.GeoManager">
+<em class="property">class </em><tt class="descname">GeoManager</tt><a class="headerlink" href="#django.contrib.gis.db.models.GeoManager" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>In order to conduct geographic queries, each geographic model requires
+a <tt class="docutils literal"><span class="pre">GeoManager</span></tt> model manager.  This manager allows for the proper SQL
+construction for geographic queries; thus, without it, all geographic filters
+will fail.  It should also be noted that <tt class="docutils literal"><span class="pre">GeoManager</span></tt> is required even if the
+model does not have a geographic field itself, e.g., in the case of a
+<tt class="docutils literal"><span class="pre">ForeignKey</span></tt> relation to a model with a geographic field.  For example,
+if we had an <tt class="docutils literal"><span class="pre">Address</span></tt> model with a <tt class="docutils literal"><span class="pre">ForeignKey</span></tt> to our <tt class="docutils literal"><span class="pre">Zipcode</span></tt>
+model:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">django.contrib.gis.db</span> <span class="kn">import</span> <span class="n">models</span>
+<span class="kn">from</span> <span class="nn">django.contrib.localflavor.us.models</span> <span class="kn">import</span> <span class="n">USStateField</span>
+
+<span class="k">class</span> <span class="nc">Address</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">num</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">()</span>
+    <span class="n">street</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+    <span class="n">city</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+    <span class="n">state</span> <span class="o">=</span> <span class="n">USStateField</span><span class="p">()</span>
+    <span class="n">zipcode</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span><span class="n">Zipcode</span><span class="p">)</span>
+    <span class="n">objects</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">GeoManager</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>The geographic manager is needed to do spatial queries on related <tt class="docutils literal"><span class="pre">Zipcode</span></tt> objects,
+for example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">qs</span> <span class="o">=</span> <span class="n">Address</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">zipcode__poly__contains</span><span class="o">=</span><span class="s">'POINT(-104.590948 38.319914)'</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="rubric">Footnotes</p>
+<table class="docutils footnote" frame="void" id="fnogc" rules="none">
+<colgroup><col class="label"></col><col></col></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id2">[1]</a></td><td>OpenGIS Consortium, Inc., <a class="reference external" href="http://www.opengis.org/docs/99-049.pdf">Simple Feature Specification For SQL</a>, Document 99-049 (May 5, 1999).</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="fnogcsrid" rules="none">
+<colgroup><col class="label"></col><col></col></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id4">[2]</a></td><td><em>See id.</em> at Ch. 2.3.8, p. 39 (Geometry Values and Spatial Reference Systems).</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="fnsrid" rules="none">
+<colgroup><col class="label"></col><col></col></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id7">[3]</a></td><td>Typically, SRID integer corresponds to an EPSG (<a class="reference external" href="http://www.epsg.org">European Petroleum Survey Group</a>) identifier.  However, it may also be associated with custom projections defined in spatial database's spatial reference systems table.</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="fnharvard" rules="none">
+<colgroup><col class="label"></col><col></col></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id8">[4]</a></td><td>Harvard Graduate School of Design, <a class="reference external" href="http://www.gsd.harvard.edu/gis/manual/projections/fundamentals/">An Overview of Geodesy and Geographic Referencing Systems</a>.  This is an excellent resource for an overview of principles relating to geographic and Cartesian coordinate systems.</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="fnthematic" rules="none">
+<colgroup><col class="label"></col><col></col></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id9">[5]</a></td><td>Terry A. Slocum, Robert B. McMaster, Fritz C. Kessler, &amp; Hugh H. Howard, <em>Thematic Cartography and Geographic Visualization</em> (Prentice Hall, 2nd edition), at Ch. 7.1.3.</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="fndist" rules="none">
+<colgroup><col class="label"></col><col></col></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id10">[6]</a></td><td>This limitation does not apply to PostGIS 1.5.  It should be noted that even in previous versions of PostGIS, this isn't impossible using GeoDjango; you could for example, take a known point in a projected coordinate system, buffer it to the appropriate radius, and then perform an intersection operation with the buffer transformed to the geographic coordinate system.</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="fngeography" rules="none">
+<colgroup><col class="label"></col><col></col></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id17">[7]</a></td><td>Please refer to the <a class="reference external" href="http://postgis.refractions.net/documentation/manual-1.5/ch04.html#PostGIS_Geography">PostGIS Geography Type</a> documentation for more details.</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="yui-b" id="sidebar">
+<div class="sphinxsidebar">
+<div class="sphinxsidebarwrapper">
+<h3><a href="../../../contents.html">Table Of Contents</a></h3>
+<ul>
+<li><a class="reference internal" href="#">GeoDjango Model API</a><ul>
+<li><a class="reference internal" href="#geometry-field-types">Geometry Field Types</a><ul>
+<li><a class="reference internal" href="#geometryfield"><tt class="docutils literal"><span class="pre">GeometryField</span></tt></a></li>
+<li><a class="reference internal" href="#pointfield"><tt class="docutils literal"><span class="pre">PointField</span></tt></a></li>
+<li><a class="reference internal" href="#linestringfield"><tt class="docutils literal"><span class="pre">LineStringField</span></tt></a></li>
+<li><a class="reference internal" href="#polygonfield"><tt class="docutils literal"><span class="pre">PolygonField</span></tt></a></li>
+<li><a class="reference internal" href="#multipointfield"><tt class="docutils literal"><span class="pre">MultiPointField</span></tt></a></li>
+<li><a class="reference internal" href="#multilinestringfield"><tt class="docutils literal"><span class="pre">MultiLineStringField</span></tt></a></li>
+<li><a class="reference internal" href="#multipolygonfield"><tt class="docutils literal"><span class="pre">MultiPolygonField</span></tt></a></li>
+<li><a class="reference internal" href="#geometrycollectionfield"><tt class="docutils literal"><span class="pre">GeometryCollectionField</span></tt></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#geometry-field-options">Geometry Field Options</a><ul>
+<li><a class="reference internal" href="#srid"><tt class="docutils literal"><span class="pre">srid</span></tt></a><ul>
+<li><a class="reference internal" href="#selecting-an-srid">Selecting an SRID</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#spatial-index"><tt class="docutils literal"><span class="pre">spatial_index</span></tt></a></li>
+<li><a class="reference internal" href="#dim"><tt class="docutils literal"><span class="pre">dim</span></tt></a></li>
+<li><a class="reference internal" href="#geography"><tt class="docutils literal"><span class="pre">geography</span></tt></a><ul>
+<li><a class="reference internal" href="#geography-type">Geography Type</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#geomanager"><tt class="docutils literal"><span class="pre">GeoManager</span></tt></a></li>
+</ul>
+</li>
+</ul>
+<h3>Browse</h3>
+<ul>
+<li>Prev: <a href="install.html">GeoDjango Installation</a></li>
+<li>Next: <a href="db-api.html">GeoDjango Database API</a></li>
+</ul>
+<h3>You are here:</h3>
+<ul>
+<li>
+<a href="../../../index.html">Django v1.3.1 documentation</a>
+<ul><li><a href="../../index.html">API Reference</a>
+<ul><li><a href="../index.html"><tt class="docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal"><span class="pre">contrib</span></tt> packages</a>
+<ul><li><a href="index.html">GeoDjango</a>
+<ul><li>GeoDjango Model API</li></ul>
+</li></ul></li></ul></li></ul>
+</li>
+</ul>
+<h3>This Page</h3>
+<ul class="this-page-menu">
+<li><a href="../../../_sources/ref/contrib/gis/model-api.txt" rel="nofollow">Show Source</a></li>
+</ul>
+<div id="searchbox" style="display: none">
+<h3>Quick search</h3>
+<form action="../../../search.html" class="search" method="get">
+<input name="q" size="18" type="text"/>
+<input type="submit" value="Go"/>
+<input name="check_keywords" type="hidden" value="yes"/>
+<input name="area" type="hidden" value="default"/>
+</form>
+<p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+</div>
+</div>
+<h3>Last update:</h3>
+<p class="topless">Dec 06, 2011</p>
+</div>
+</div>
+<div id="ft">
+<div class="nav">
+    « <a href="install.html" title="GeoDjango Installation">previous</a> 
+     |
+    <a accesskey="U" href="../../index.html" title="API Reference">up</a>
+   |
+    <a href="db-api.html" title="GeoDjango Database API">next</a> »</div>
+</div>
+</div>
+<div class="clearer"></div>
+</div>
+<div style="display:none;"><a name="#"></a><h3 class="tasks">TOC</h3><ul class="tooltip"><li class="tooltip"><a href="#">GeoDjango Model API</a></li><li class="tooltip"><a href="#geometry-field-types">Geometry Field Types</a></li><li class="tooltip"><a href="#geometryfield">GeometryField</a></li><li class="tooltip"><a href="#pointfield">PointField</a></li><li class="tooltip"><a href="#linestringfield">LineStringField</a></li><li class="tooltip"><a href="#polygonfield">PolygonField</a></li><li class="tooltip"><a href="#multipointfield">MultiPointField</a></li><li class="tooltip"><a href="#multilinestringfield">MultiLineStringField</a></li><li class="tooltip"><a href="#multipolygonfield">MultiPolygonField</a></li><li class="tooltip"><a href="#geometrycollectionfield">GeometryCollectionField</a></li><li class="tooltip"><a href="#geometry-field-options">Geometry Field Options</a></li><li class="tooltip"><a href="#srid">srid</a></li><li class="tooltip"><a href="#selecting-an-srid">Selecting an SRID</a></li><li class="tooltip"><a href="#spatial-index">spatial_index</a></li><li class="tooltip"><a href="#dim">dim</a></li><li class="tooltip"><a href="#geography">geography</a></li><li class="tooltip"><a href="#geography-type">Geography Type</a></li><li class="tooltip"><a href="#geomanager">GeoManager</a></li></ul></div></body>
+</html>

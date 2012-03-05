@@ -1,0 +1,368 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Deployment of translations &mdash; Django v1.3.1 documentation</title>
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '1.3.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="Django v1.3.1 documentation" href="../../index.html" />
+    <link rel="up" title="Internationalization and localization" href="index.html" />
+    <link rel="next" title="Logging" href="../logging.html" />
+    <link rel="prev" title="Localization" href="localization.html" />
+ 
+<script type="text/javascript" src="../../templatebuiltins.js"></script>
+<script type="text/javascript">
+(function($) {
+    if (!django_template_builtins) {
+       // templatebuiltins.js missing, do nothing.
+       return;
+    }
+    $(document).ready(function() {
+        // Hyperlink Django template tags and filters
+        var base = "../../ref/templates/builtins.html";
+        if (base == "#") {
+            // Special case for builtins.html itself
+            base = "";
+        }
+        // Tags are keywords, class '.k'
+        $("div.highlight\\-html\\+django span.k").each(function(i, elem) {
+             var tagname = $(elem).text();
+             if ($.inArray(tagname, django_template_builtins.ttags) != -1) {
+                 var fragment = tagname.replace(/_/, '-');
+                 $(elem).html("<a href='" + base + "#" + fragment + "'>" + tagname + "</a>");
+             }
+        });
+        // Filters are functions, class '.nf'
+        $("div.highlight\\-html\\+django span.nf").each(function(i, elem) {
+             var filtername = $(elem).text();
+             if ($.inArray(filtername, django_template_builtins.tfilters) != -1) {
+                 var fragment = filtername.replace(/_/, '-');
+                 $(elem).html("<a href='" + base + "#" + fragment + "'>" + filtername + "</a>");
+             }
+        });
+    });
+})(jQuery);
+</script>
+
+  </head>
+  <body>
+
+    <div class="document">
+  <div id="custom-doc" class="yui-t6">
+    <div id="hd">
+      <h1><a href="../../index.html">Django v1.3.1 documentation</a></h1>
+      <div id="global-nav">
+        <a title="Home page" href="../../index.html">Home</a>  |
+        <a title="Table of contents" href="../../contents.html">Table of contents</a>  |
+        <a title="Global index" href="../../genindex.html">Index</a>  |
+        <a title="Module index" href="../../py-modindex.html">Modules</a>
+      </div>
+      <div class="nav">
+    &laquo; <a href="localization.html" title="Localization">previous</a> 
+     |
+    <a href="../index.html" title="Using Django" accesskey="U">up</a>
+   |
+    <a href="../logging.html" title="Logging">next</a> &raquo;</div>
+    </div>
+    
+    <div id="bd">
+      <div id="yui-main">
+        <div class="yui-b">
+          <div class="yui-g" id="topics-i18n-deployment">
+            
+  <div class="section" id="s-deployment-of-translations">
+<span id="deployment-of-translations"></span><h1>Deployment of translations<a class="headerlink" href="#deployment-of-translations" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="s-if-you-don-t-need-internationalization">
+<span id="if-you-don-t-need-internationalization"></span><h2>If you don&#8217;t need internationalization<a class="headerlink" href="#if-you-don-t-need-internationalization" title="Permalink to this headline">¶</a></h2>
+<p>Django&#8217;s internationalization hooks are on by default, and that means there&#8217;s a
+bit of i18n-related overhead in certain places of the framework. If you don&#8217;t
+use internationalization, you should take the two seconds to set
+<a class="reference internal" href="../../ref/settings.html#std:setting-USE_I18N"><tt class="xref std std-setting docutils literal"><span class="pre">USE_I18N</span> <span class="pre">=</span> <span class="pre">False</span></tt></a> in your settings file. If
+<a class="reference internal" href="../../ref/settings.html#std:setting-USE_I18N"><tt class="xref std std-setting docutils literal"><span class="pre">USE_I18N</span></tt></a> is set to <tt class="xref docutils literal"><span class="pre">False</span></tt>, then Django will make some
+optimizations so as not to load the internationalization machinery.</p>
+<p>You&#8217;ll probably also want to remove <tt class="docutils literal"><span class="pre">'django.core.context_processors.i18n'</span></tt>
+from your <a class="reference internal" href="../../ref/settings.html#std:setting-TEMPLATE_CONTEXT_PROCESSORS"><tt class="xref std std-setting docutils literal"><span class="pre">TEMPLATE_CONTEXT_PROCESSORS</span></tt></a> setting.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>There is also an independent but related <a class="reference internal" href="../../ref/settings.html#std:setting-USE_L10N"><tt class="xref std std-setting docutils literal"><span class="pre">USE_L10N</span></tt></a> setting that
+controls if Django should implement format localization.</p>
+<p>If <a class="reference internal" href="../../ref/settings.html#std:setting-USE_L10N"><tt class="xref std std-setting docutils literal"><span class="pre">USE_L10N</span></tt></a> is set to <tt class="xref docutils literal"><span class="pre">True</span></tt>, Django will handle numbers times,
+and dates in the format of the current locale. That includes representation
+of these field types on templates and allowed input formats for dates,
+times on model forms.</p>
+<p class="last">See <a class="reference internal" href="localization.html#format-localization"><em>Format localization</em></a> for more details.</p>
+</div>
+</div>
+<div class="section" id="s-if-you-do-need-internationalization">
+<span id="if-you-do-need-internationalization"></span><h2>If you do need internationalization<a class="headerlink" href="#if-you-do-need-internationalization" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="s-how-django-discovers-language-preference">
+<span id="s-id1"></span><span id="how-django-discovers-language-preference"></span><span id="id1"></span><h3>How Django discovers language preference<a class="headerlink" href="#how-django-discovers-language-preference" title="Permalink to this headline">¶</a></h3>
+<p>Once you&#8217;ve prepared your translations &#8211; or, if you just want to use the
+translations that come with Django &#8211; you&#8217;ll just need to activate translation
+for your app.</p>
+<p>Behind the scenes, Django has a very flexible model of deciding which language
+should be used &#8211; installation-wide, for a particular user, or both.</p>
+<p>To set an installation-wide language preference, set <a class="reference internal" href="../../ref/settings.html#std:setting-LANGUAGE_CODE"><tt class="xref std std-setting docutils literal"><span class="pre">LANGUAGE_CODE</span></tt></a>.
+Django uses this language as the default translation &#8211; the final attempt if no
+other translator finds a translation.</p>
+<p>If all you want to do is run Django with your native language, and a language
+file is available for it, all you need to do is set <a class="reference internal" href="../../ref/settings.html#std:setting-LANGUAGE_CODE"><tt class="xref std std-setting docutils literal"><span class="pre">LANGUAGE_CODE</span></tt></a>.</p>
+<p>If you want to let each individual user specify which language he or she
+prefers, use <tt class="docutils literal"><span class="pre">LocaleMiddleware</span></tt>. <tt class="docutils literal"><span class="pre">LocaleMiddleware</span></tt> enables language
+selection based on data from the request. It customizes content for each user.</p>
+<p>To use <tt class="docutils literal"><span class="pre">LocaleMiddleware</span></tt>, add <tt class="docutils literal"><span class="pre">'django.middleware.locale.LocaleMiddleware'</span></tt>
+to your <a class="reference internal" href="../../ref/settings.html#std:setting-MIDDLEWARE_CLASSES"><tt class="xref std std-setting docutils literal"><span class="pre">MIDDLEWARE_CLASSES</span></tt></a> setting. Because middleware order
+matters, you should follow these guidelines:</p>
+<blockquote>
+<ul class="simple">
+<li>Make sure it&#8217;s one of the first middlewares installed.</li>
+<li>It should come after <tt class="docutils literal"><span class="pre">SessionMiddleware</span></tt>, because <tt class="docutils literal"><span class="pre">LocaleMiddleware</span></tt>
+makes use of session data.</li>
+<li>If you use <tt class="docutils literal"><span class="pre">CacheMiddleware</span></tt>, put <tt class="docutils literal"><span class="pre">LocaleMiddleware</span></tt> after it.</li>
+</ul>
+</blockquote>
+<p>For example, your <a class="reference internal" href="../../ref/settings.html#std:setting-MIDDLEWARE_CLASSES"><tt class="xref std std-setting docutils literal"><span class="pre">MIDDLEWARE_CLASSES</span></tt></a> might look like this:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">MIDDLEWARE_CLASSES</span> <span class="o">=</span> <span class="p">(</span>
+   <span class="s">&#39;django.contrib.sessions.middleware.SessionMiddleware&#39;</span><span class="p">,</span>
+   <span class="s">&#39;django.middleware.locale.LocaleMiddleware&#39;</span><span class="p">,</span>
+   <span class="s">&#39;django.middleware.common.CommonMiddleware&#39;</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>(For more on middleware, see the <a class="reference internal" href="../http/middleware.html"><em>middleware documentation</em></a>.)</p>
+<p><tt class="docutils literal"><span class="pre">LocaleMiddleware</span></tt> tries to determine the user's language preference by
+following this algorithm:</p>
+<blockquote>
+<ul>
+<li><p class="first">First, it looks for a <tt class="docutils literal"><span class="pre">django_language</span></tt> key in the current user's
+session.</p>
+</li>
+<li><p class="first">Failing that, it looks for a cookie.</p>
+<p>The name of the cookie used is set by the <a class="reference internal" href="../../ref/settings.html#std:setting-LANGUAGE_COOKIE_NAME"><tt class="xref std std-setting docutils literal"><span class="pre">LANGUAGE_COOKIE_NAME</span></tt></a>
+setting. (The default name is <tt class="docutils literal"><span class="pre">django_language</span></tt>.)</p>
+</li>
+<li><p class="first">Failing that, it looks at the <tt class="docutils literal"><span class="pre">Accept-Language</span></tt> HTTP header. This
+header is sent by your browser and tells the server which language(s) you
+prefer, in order by priority. Django tries each language in the header
+until it finds one with available translations.</p>
+</li>
+<li><p class="first">Failing that, it uses the global <a class="reference internal" href="../../ref/settings.html#std:setting-LANGUAGE_CODE"><tt class="xref std std-setting docutils literal"><span class="pre">LANGUAGE_CODE</span></tt></a> setting.</p>
+</li>
+</ul>
+</blockquote>
+<p id="locale-middleware-notes">Notes:</p>
+<blockquote>
+<ul>
+<li><p class="first">In each of these places, the language preference is expected to be in the
+standard <a class="reference internal" href="index.html#term-language-code"><em class="xref std std-term">language format</em></a>, as a string. For example,
+Brazilian Portuguese is <tt class="docutils literal"><span class="pre">pt-br</span></tt>.</p>
+</li>
+<li><p class="first">If a base language is available but the sublanguage specified is not,
+Django uses the base language. For example, if a user specifies <tt class="docutils literal"><span class="pre">de-at</span></tt>
+(Austrian German) but Django only has <tt class="docutils literal"><span class="pre">de</span></tt> available, Django uses
+<tt class="docutils literal"><span class="pre">de</span></tt>.</p>
+</li>
+<li><p class="first">Only languages listed in the <a class="reference internal" href="../../ref/settings.html#std:setting-LANGUAGES"><tt class="xref std std-setting docutils literal"><span class="pre">LANGUAGES</span></tt></a> setting can be selected.
+If you want to restrict the language selection to a subset of provided
+languages (because your application doesn't provide all those languages),
+set <a class="reference internal" href="../../ref/settings.html#std:setting-LANGUAGES"><tt class="xref std std-setting docutils literal"><span class="pre">LANGUAGES</span></tt></a> to a list of languages. For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">LANGUAGES</span> <span class="o">=</span> <span class="p">(</span>
+  <span class="p">(</span><span class="s">&#39;de&#39;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;German&#39;</span><span class="p">)),</span>
+  <span class="p">(</span><span class="s">&#39;en&#39;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;English&#39;</span><span class="p">)),</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>This example restricts languages that are available for automatic
+selection to German and English (and any sublanguage, like de-ch or
+en-us).</p>
+</li>
+<li><p class="first">If you define a custom <a class="reference internal" href="../../ref/settings.html#std:setting-LANGUAGES"><tt class="xref std std-setting docutils literal"><span class="pre">LANGUAGES</span></tt></a> setting, as explained in the
+previous bullet, it's OK to mark the languages as translation strings
+-- but use a &quot;dummy&quot; <tt class="docutils literal"><span class="pre">ugettext()</span></tt> function, not the one in
+<tt class="docutils literal"><span class="pre">django.utils.translation</span></tt>. You should <em>never</em> import
+<tt class="docutils literal"><span class="pre">django.utils.translation</span></tt> from within your settings file, because that
+module in itself depends on the settings, and that would cause a circular
+import.</p>
+<p>The solution is to use a &quot;dummy&quot; <tt class="docutils literal"><span class="pre">ugettext()</span></tt> function. Here's a sample
+settings file:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">ugettext</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">s</span><span class="p">:</span> <span class="n">s</span>
+
+<span class="n">LANGUAGES</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="p">(</span><span class="s">&#39;de&#39;</span><span class="p">,</span> <span class="n">ugettext</span><span class="p">(</span><span class="s">&#39;German&#39;</span><span class="p">)),</span>
+    <span class="p">(</span><span class="s">&#39;en&#39;</span><span class="p">,</span> <span class="n">ugettext</span><span class="p">(</span><span class="s">&#39;English&#39;</span><span class="p">)),</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>With this arrangement, <tt class="docutils literal"><span class="pre">django-admin.py</span> <span class="pre">makemessages</span></tt> will still find
+and mark these strings for translation, but the translation won't happen
+at runtime -- so you'll have to remember to wrap the languages in the
+<em>real</em> <tt class="docutils literal"><span class="pre">ugettext()</span></tt> in any code that uses <a class="reference internal" href="../../ref/settings.html#std:setting-LANGUAGES"><tt class="xref std std-setting docutils literal"><span class="pre">LANGUAGES</span></tt></a> at
+runtime.</p>
+</li>
+<li><p class="first">The <tt class="docutils literal"><span class="pre">LocaleMiddleware</span></tt> can only select languages for which there is a
+Django-provided base translation. If you want to provide translations
+for your application that aren't already in the set of translations
+in Django's source tree, you'll want to provide at least a basic
+one as described in the <a class="reference internal" href="localization.html#locale-restrictions"><em>Locale restrictions</em></a>
+note.</p>
+</li>
+</ul>
+</blockquote>
+<p>Once <tt class="docutils literal"><span class="pre">LocaleMiddleware</span></tt> determines the user's preference, it makes this
+preference available as <tt class="docutils literal"><span class="pre">request.LANGUAGE_CODE</span></tt> for each
+<a class="reference internal" href="../../ref/request-response.html#django.http.HttpRequest" title="django.http.HttpRequest"><tt class="xref py py-class docutils literal"><span class="pre">HttpRequest</span></tt></a>. Feel free to read this value in your view
+code. Here's a simple example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">hello_world</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">count</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">LANGUAGE_CODE</span> <span class="o">==</span> <span class="s">&#39;de-at&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">HttpResponse</span><span class="p">(</span><span class="s">&quot;You prefer to read Austrian German.&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">HttpResponse</span><span class="p">(</span><span class="s">&quot;You prefer to read another language.&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Note that, with static (middleware-less) translation, the language is in
+<tt class="docutils literal"><span class="pre">settings.LANGUAGE_CODE</span></tt>, while with dynamic (middleware) translation, it's
+in <tt class="docutils literal"><span class="pre">request.LANGUAGE_CODE</span></tt>.</p>
+</div>
+<div class="section" id="s-how-django-discovers-translations">
+<span id="how-django-discovers-translations"></span><h3>How Django discovers translations<a class="headerlink" href="#how-django-discovers-translations" title="Permalink to this headline">¶</a></h3>
+<p>As described in <a class="reference internal" href="../../howto/i18n.html#using-translations-in-your-own-projects"><em>Using internationalization in your own projects</em></a>, Django looks for
+translations by following this algorithm regarding the order in which it
+examines the different file paths to load the compiled <a class="reference internal" href="index.html#term-message-file"><em class="xref std std-term">message files</em></a> (<tt class="docutils literal"><span class="pre">.mo</span></tt>) and the precedence of multiple translations for the
+same literal:</p>
+<blockquote>
+<ol class="arabic simple">
+<li>The directories listed in <a class="reference internal" href="../../ref/settings.html#std:setting-LOCALE_PATHS"><tt class="xref std std-setting docutils literal"><span class="pre">LOCALE_PATHS</span></tt></a> have the highest
+precedence, with the ones appearing first having higher precedence than
+the ones appearing later.</li>
+<li>Then, it looks for and uses if it exists a <tt class="docutils literal"><span class="pre">locale</span></tt> directory in each
+of the installed apps listed in <a class="reference internal" href="../../ref/settings.html#std:setting-INSTALLED_APPS"><tt class="xref std std-setting docutils literal"><span class="pre">INSTALLED_APPS</span></tt></a>.  The ones
+appearing first have higher precedence than the ones appearing later.</li>
+<li>Then, it looks for a <tt class="docutils literal"><span class="pre">locale</span></tt> directory in the project directory, or
+more accurately, in the directory containing your settings file.</li>
+<li>Finally, the Django-provided base translation in <tt class="docutils literal"><span class="pre">django/conf/locale</span></tt>
+is used as a fallback.</li>
+</ol>
+</blockquote>
+<div class="deprecated">
+<span class="title">Deprecated in Django 1.3:</span> Lookup in the <tt class="docutils literal"><span class="pre">locale</span></tt> subdirectory of the directory containing your
+settings file (item 3 above) is deprecated since the 1.3 release and will be
+removed in Django 1.5. You can use the <a class="reference internal" href="../../ref/settings.html#std:setting-LOCALE_PATHS"><tt class="xref std std-setting docutils literal"><span class="pre">LOCALE_PATHS</span></tt></a> setting
+instead, by listing the absolute filesystem path of such <tt class="docutils literal"><span class="pre">locale</span></tt>
+directory in the setting value.</div>
+<div class="admonition-see-also admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last">The translations for literals included in JavaScript assets are looked up
+following a similar but not identical algorithm. See the
+<a class="reference internal" href="internationalization.html#javascript-catalog-view"><em>javascript_catalog view documentation</em></a> for
+more details.</p>
+</div>
+<p>In all cases the name of the directory containing the translation is expected to
+be named using <a class="reference internal" href="index.html#term-locale-name"><em class="xref std std-term">locale name</em></a> notation. E.g. <tt class="docutils literal"><span class="pre">de</span></tt>, <tt class="docutils literal"><span class="pre">pt_BR</span></tt>, <tt class="docutils literal"><span class="pre">es_AR</span></tt>,
+etc.</p>
+</div>
+</div>
+</div>
+
+
+          </div>         
+        </div>
+      </div>
+      
+        
+          <div class="yui-b" id="sidebar">
+            
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../contents.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Deployment of translations</a><ul>
+<li><a class="reference internal" href="#if-you-don-t-need-internationalization">If you don&#8217;t need internationalization</a></li>
+<li><a class="reference internal" href="#if-you-do-need-internationalization">If you do need internationalization</a><ul>
+<li><a class="reference internal" href="#how-django-discovers-language-preference">How Django discovers language preference</a></li>
+<li><a class="reference internal" href="#how-django-discovers-translations">How Django discovers translations</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h3>Browse</h3>
+  <ul>
+    
+      <li>Prev: <a href="localization.html">Localization</a></li>
+    
+    
+      <li>Next: <a href="../logging.html">Logging</a></li>
+    
+  </ul>
+  <h3>You are here:</h3>
+  <ul>
+      <li>
+        <a href="../../index.html">Django v1.3.1 documentation</a>
+        
+          <ul><li><a href="../index.html">Using Django</a>
+        
+          <ul><li><a href="index.html">Internationalization and localization</a>
+        
+        <ul><li>Deployment of translations</li></ul>
+        </li></ul></li></ul>
+      </li>
+  </ul>  
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/topics/i18n/deployment.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+              <h3>Last update:</h3>
+              <p class="topless">Dec 06, 2011</p>
+          </div> 
+        
+      
+    </div>
+    
+    <div id="ft">
+      <div class="nav">
+    &laquo; <a href="localization.html" title="Localization">previous</a> 
+     |
+    <a href="../index.html" title="Using Django" accesskey="U">up</a>
+   |
+    <a href="../logging.html" title="Logging">next</a> &raquo;</div>
+    </div>
+  </div>
+
+      <div class="clearer"></div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,232 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Integrating Django with a legacy database &mdash; Django v1.3.1 documentation</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.3.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Django v1.3.1 documentation" href="../index.html" />
+    <link rel="up" title="“How-to” guides" href="index.html" />
+    <link rel="next" title="Outputting CSV with Django" href="outputting-csv.html" />
+    <link rel="prev" title="Running Django on Jython" href="jython.html" />
+ 
+<script type="text/javascript" src="../templatebuiltins.js"></script>
+<script type="text/javascript">
+(function($) {
+    if (!django_template_builtins) {
+       // templatebuiltins.js missing, do nothing.
+       return;
+    }
+    $(document).ready(function() {
+        // Hyperlink Django template tags and filters
+        var base = "../ref/templates/builtins.html";
+        if (base == "#") {
+            // Special case for builtins.html itself
+            base = "";
+        }
+        // Tags are keywords, class '.k'
+        $("div.highlight\\-html\\+django span.k").each(function(i, elem) {
+             var tagname = $(elem).text();
+             if ($.inArray(tagname, django_template_builtins.ttags) != -1) {
+                 var fragment = tagname.replace(/_/, '-');
+                 $(elem).html("<a href='" + base + "#" + fragment + "'>" + tagname + "</a>");
+             }
+        });
+        // Filters are functions, class '.nf'
+        $("div.highlight\\-html\\+django span.nf").each(function(i, elem) {
+             var filtername = $(elem).text();
+             if ($.inArray(filtername, django_template_builtins.tfilters) != -1) {
+                 var fragment = filtername.replace(/_/, '-');
+                 $(elem).html("<a href='" + base + "#" + fragment + "'>" + filtername + "</a>");
+             }
+        });
+    });
+})(jQuery);
+</script>
+
+  </head>
+  <body>
+
+    <div class="document">
+  <div id="custom-doc" class="yui-t6">
+    <div id="hd">
+      <h1><a href="../index.html">Django v1.3.1 documentation</a></h1>
+      <div id="global-nav">
+        <a title="Home page" href="../index.html">Home</a>  |
+        <a title="Table of contents" href="../contents.html">Table of contents</a>  |
+        <a title="Global index" href="../genindex.html">Index</a>  |
+        <a title="Module index" href="../py-modindex.html">Modules</a>
+      </div>
+      <div class="nav">
+    &laquo; <a href="jython.html" title="Running Django on Jython">previous</a> 
+     |
+    <a href="index.html" title="&amp;#8220;How-to&amp;#8221; guides" accesskey="U">up</a>
+   |
+    <a href="outputting-csv.html" title="Outputting CSV with Django">next</a> &raquo;</div>
+    </div>
+    
+    <div id="bd">
+      <div id="yui-main">
+        <div class="yui-b">
+          <div class="yui-g" id="howto-legacy-databases">
+            
+  <div class="section" id="s-integrating-django-with-a-legacy-database">
+<span id="integrating-django-with-a-legacy-database"></span><h1>Integrating Django with a legacy database<a class="headerlink" href="#integrating-django-with-a-legacy-database" title="Permalink to this headline">¶</a></h1>
+<p>While Django is best suited for developing new applications, it&#8217;s quite
+possible to integrate it into legacy databases. Django includes a couple of
+utilities to automate as much of this process as possible.</p>
+<p>This document assumes you know the Django basics, as covered in the
+<a class="reference internal" href="../intro/tutorial01.html"><em>tutorial</em></a>.</p>
+<p>Once you&#8217;ve got Django set up, you&#8217;ll follow this general process to integrate
+with an existing database.</p>
+<div class="section" id="s-give-django-your-database-parameters">
+<span id="give-django-your-database-parameters"></span><h2>Give Django your database parameters<a class="headerlink" href="#give-django-your-database-parameters" title="Permalink to this headline">¶</a></h2>
+<p>You&#8217;ll need to tell Django what your database connection parameters are, and
+what the name of the database is. Do that by editing the <a class="reference internal" href="../ref/settings.html#std:setting-DATABASES"><tt class="xref std std-setting docutils literal"><span class="pre">DATABASES</span></tt></a>
+setting and assigning values to the following keys for the <tt class="docutils literal"><span class="pre">'default'</span></tt>
+connection:</p>
+<blockquote>
+<ul class="simple">
+<li><a class="reference internal" href="../ref/settings.html#std:setting-NAME"><tt class="xref std std-setting docutils literal"><span class="pre">NAME</span></tt></a></li>
+<li><tt class="xref std std-setting docutils literal"><span class="pre">ENGINE</span></tt></li>
+<li><a class="reference internal" href="../ref/settings.html#std:setting-USER"><tt class="xref std std-setting docutils literal"><span class="pre">USER</span></tt></a></li>
+<li><a class="reference internal" href="../ref/settings.html#std:setting-PASSWORD"><tt class="xref std std-setting docutils literal"><span class="pre">PASSWORD</span></tt></a></li>
+<li><a class="reference internal" href="../ref/settings.html#std:setting-HOST"><tt class="xref std std-setting docutils literal"><span class="pre">HOST</span></tt></a></li>
+<li><a class="reference internal" href="../ref/settings.html#std:setting-PORT"><tt class="xref std std-setting docutils literal"><span class="pre">PORT</span></tt></a></li>
+</ul>
+</blockquote>
+</div>
+<div class="section" id="s-auto-generate-the-models">
+<span id="auto-generate-the-models"></span><h2>Auto-generate the models<a class="headerlink" href="#auto-generate-the-models" title="Permalink to this headline">¶</a></h2>
+<p>Django comes with a utility called <a class="reference internal" href="../ref/django-admin.html#django-admin-inspectdb"><tt class="xref std std-djadmin docutils literal"><span class="pre">inspectdb</span></tt></a> that can create models
+by introspecting an existing database. You can view the output by running this
+command:</p>
+<div class="highlight-bash"><div class="highlight"><pre>python manage.py inspectdb
+</pre></div>
+</div>
+<p>Save this as a file by using standard Unix output redirection:</p>
+<div class="highlight-bash"><div class="highlight"><pre>python manage.py inspectdb &gt; models.py
+</pre></div>
+</div>
+<p>This feature is meant as a shortcut, not as definitive model generation. See the
+<a class="reference internal" href="../ref/django-admin.html#django-admin-inspectdb"><tt class="xref std std-djadmin docutils literal"><span class="pre">documentation</span> <span class="pre">of</span> <span class="pre">inspectdb</span></tt></a> for more information.</p>
+<p>Once you've cleaned up your models, name the file <tt class="docutils literal"><span class="pre">models.py</span></tt> and put it in
+the Python package that holds your app. Then add the app to your
+<a class="reference internal" href="../ref/settings.html#std:setting-INSTALLED_APPS"><tt class="xref std std-setting docutils literal"><span class="pre">INSTALLED_APPS</span></tt></a> setting.</p>
+</div>
+<div class="section" id="s-install-the-core-django-tables">
+<span id="install-the-core-django-tables"></span><h2>Install the core Django tables<a class="headerlink" href="#install-the-core-django-tables" title="Permalink to this headline">¶</a></h2>
+<p>Next, run the <a class="reference internal" href="../ref/django-admin.html#django-admin-syncdb"><tt class="xref std std-djadmin docutils literal"><span class="pre">syncdb</span></tt></a> command to install any extra needed database
+records such as admin permissions and content types:</p>
+<div class="highlight-bash"><div class="highlight"><pre>python manage.py syncdb
+</pre></div>
+</div>
+</div>
+<div class="section" id="s-test-and-tweak">
+<span id="test-and-tweak"></span><h2>Test and tweak<a class="headerlink" href="#test-and-tweak" title="Permalink to this headline">¶</a></h2>
+<p>Those are the basic steps -- from here you'll want to tweak the models Django
+generated until they work the way you'd like. Try accessing your data via the
+Django database API, and try editing objects via Django's admin site, and edit
+the models file accordingly.</p>
+</div>
+</div>
+
+
+          </div>         
+        </div>
+      </div>
+      
+        
+          <div class="yui-b" id="sidebar">
+            
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../contents.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Integrating Django with a legacy database</a><ul>
+<li><a class="reference internal" href="#give-django-your-database-parameters">Give Django your database parameters</a></li>
+<li><a class="reference internal" href="#auto-generate-the-models">Auto-generate the models</a></li>
+<li><a class="reference internal" href="#install-the-core-django-tables">Install the core Django tables</a></li>
+<li><a class="reference internal" href="#test-and-tweak">Test and tweak</a></li>
+</ul>
+</li>
+</ul>
+
+  <h3>Browse</h3>
+  <ul>
+    
+      <li>Prev: <a href="jython.html">Running Django on Jython</a></li>
+    
+    
+      <li>Next: <a href="outputting-csv.html">Outputting CSV with Django</a></li>
+    
+  </ul>
+  <h3>You are here:</h3>
+  <ul>
+      <li>
+        <a href="../index.html">Django v1.3.1 documentation</a>
+        
+          <ul><li><a href="index.html">&#8220;How-to&#8221; guides</a>
+        
+        <ul><li>Integrating Django with a legacy database</li></ul>
+        </li></ul>
+      </li>
+  </ul>  
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/howto/legacy-databases.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+              <h3>Last update:</h3>
+              <p class="topless">Dec 06, 2011</p>
+          </div> 
+        
+      
+    </div>
+    
+    <div id="ft">
+      <div class="nav">
+    &laquo; <a href="jython.html" title="Running Django on Jython">previous</a> 
+     |
+    <a href="index.html" title="&amp;#8220;How-to&amp;#8221; guides" accesskey="U">up</a>
+   |
+    <a href="outputting-csv.html" title="Outputting CSV with Django">next</a> &raquo;</div>
+    </div>
+  </div>
+
+      <div class="clearer"></div>
+    </div>
+  </body>
+</html>

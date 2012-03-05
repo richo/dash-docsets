@@ -1,0 +1,752 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Class-based generic views &mdash; Django v1.3.1 documentation</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.3.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Django v1.3.1 documentation" href="../index.html" />
+    <link rel="up" title="Using Django" href="index.html" />
+    <link rel="next" title="Migrating function-based generic views" href="generic-views-migration.html" />
+    <link rel="prev" title="The Django template language" href="templates.html" />
+ 
+<script type="text/javascript" src="../templatebuiltins.js"></script>
+<script type="text/javascript">
+(function($) {
+    if (!django_template_builtins) {
+       // templatebuiltins.js missing, do nothing.
+       return;
+    }
+    $(document).ready(function() {
+        // Hyperlink Django template tags and filters
+        var base = "../ref/templates/builtins.html";
+        if (base == "#") {
+            // Special case for builtins.html itself
+            base = "";
+        }
+        // Tags are keywords, class '.k'
+        $("div.highlight\\-html\\+django span.k").each(function(i, elem) {
+             var tagname = $(elem).text();
+             if ($.inArray(tagname, django_template_builtins.ttags) != -1) {
+                 var fragment = tagname.replace(/_/, '-');
+                 $(elem).html("<a href='" + base + "#" + fragment + "'>" + tagname + "</a>");
+             }
+        });
+        // Filters are functions, class '.nf'
+        $("div.highlight\\-html\\+django span.nf").each(function(i, elem) {
+             var filtername = $(elem).text();
+             if ($.inArray(filtername, django_template_builtins.tfilters) != -1) {
+                 var fragment = filtername.replace(/_/, '-');
+                 $(elem).html("<a href='" + base + "#" + fragment + "'>" + filtername + "</a>");
+             }
+        });
+    });
+})(jQuery);
+</script>
+
+  </head>
+  <body>
+
+    <div class="document">
+  <div id="custom-doc" class="yui-t6">
+    <div id="hd">
+      <h1><a href="../index.html">Django v1.3.1 documentation</a></h1>
+      <div id="global-nav">
+        <a title="Home page" href="../index.html">Home</a>  |
+        <a title="Table of contents" href="../contents.html">Table of contents</a>  |
+        <a title="Global index" href="../genindex.html">Index</a>  |
+        <a title="Module index" href="../py-modindex.html">Modules</a>
+      </div>
+      <div class="nav">
+    &laquo; <a href="templates.html" title="The Django template language">previous</a> 
+     |
+    <a href="index.html" title="Using Django" accesskey="U">up</a>
+   |
+    <a href="generic-views-migration.html" title="Migrating function-based generic views">next</a> &raquo;</div>
+    </div>
+    
+    <div id="bd">
+      <div id="yui-main">
+        <div class="yui-b">
+          <div class="yui-g" id="topics-class-based-views">
+            
+  <div class="section" id="s-class-based-generic-views">
+<span id="class-based-generic-views"></span><h1>Class-based generic views<a class="headerlink" href="#class-based-generic-views" title="Permalink to this headline">¶</a></h1>
+<div class="versionadded">
+<span class="title">New in Django 1.3:</span> <a class="reference internal" href="../releases/1.3.html"><em>Please see the release notes</em></a></div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>Prior to Django 1.3, generic views were implemented as functions. The
+function-based implementation has been deprecated in favor of the
+class-based approach described here.</p>
+<p class="last">For details on the previous generic views implementation,
+see the <a class="reference internal" href="generic-views.html"><em>topic guide</em></a> and
+<a class="reference internal" href="../ref/generic-views.html"><em>detailed reference</em></a>.</p>
+</div>
+<p>Writing Web applications can be monotonous, because we repeat certain patterns
+again and again. Django tries to take away some of that monotony at the model
+and template layers, but Web developers also experience this boredom at the view
+level.</p>
+<p>Django&#8217;s <em>generic views</em> were developed to ease that pain. They take certain
+common idioms and patterns found in view development and abstract them so that
+you can quickly write common views of data without having to write too much
+code.</p>
+<p>We can recognize certain common tasks, like displaying a list of objects, and
+write code that displays a list of <em>any</em> object. Then the model in question can
+be passed as an extra argument to the URLconf.</p>
+<p>Django ships with generic views to do the following:</p>
+<blockquote>
+<ul class="simple">
+<li>Perform common &#8220;simple&#8221; tasks: redirect to a different page and
+render a given template.</li>
+<li>Display list and detail pages for a single object. If we were creating an
+application to manage conferences then a <tt class="docutils literal"><span class="pre">TalkListView</span></tt> and a
+<tt class="docutils literal"><span class="pre">RegisteredUserListView</span></tt> would be examples of list views. A single
+talk page is an example of what we call a &#8220;detail&#8221; view.</li>
+<li>Present date-based objects in year/month/day archive pages,
+associated detail, and &#8220;latest&#8221; pages.
+<a class="reference external" href="http://www.djangoproject.com/weblog/">The Django Weblog</a>&#8216;s
+year, month, and day archives are built with these, as would be a typical
+newspaper&#8217;s archives.</li>
+<li>Allow users to create, update, and delete objects &#8211; with or
+without authorization.</li>
+</ul>
+</blockquote>
+<p>Taken together, these views provide easy interfaces to perform the most common
+tasks developers encounter.</p>
+<div class="section" id="s-simple-usage">
+<span id="simple-usage"></span><h2>Simple usage<a class="headerlink" href="#simple-usage" title="Permalink to this headline">¶</a></h2>
+<p>Class-based generic views (and any class-based views that inherit from
+the base classes Django provides) can be configured in two
+ways: subclassing, or passing in arguments directly in the URLconf.</p>
+<p>When you subclass a class-based view, you can override attributes
+(such as the <tt class="docutils literal"><span class="pre">template_name</span></tt>) or methods (such as <tt class="docutils literal"><span class="pre">get_context_data</span></tt>)
+in your subclass to provide new values or methods. Consider, for example,
+a view that just displays one template, <tt class="docutils literal"><span class="pre">about.html</span></tt>. Django has a
+generic view to do this - <a class="reference internal" href="../ref/class-based-views.html#django.views.generic.base.TemplateView" title="django.views.generic.base.TemplateView"><tt class="xref py py-class docutils literal"><span class="pre">TemplateView</span></tt></a> -
+so we can just subclass it, and override the template name:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># some_app/views.py</span>
+<span class="kn">from</span> <span class="nn">django.views.generic</span> <span class="kn">import</span> <span class="n">TemplateView</span>
+
+<span class="k">class</span> <span class="nc">AboutView</span><span class="p">(</span><span class="n">TemplateView</span><span class="p">):</span>
+    <span class="n">template_name</span> <span class="o">=</span> <span class="s">&quot;about.html&quot;</span>
+</pre></div>
+</div>
+<p>Then, we just need to add this new view into our URLconf. As the class-based
+views themselves are classes, we point the URL to the <tt class="docutils literal"><span class="pre">as_view</span></tt> class method
+instead, which is the entry point for class-based views:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># urls.py</span>
+<span class="kn">from</span> <span class="nn">django.conf.urls.defaults</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">some_app.views</span> <span class="kn">import</span> <span class="n">AboutView</span>
+
+<span class="n">urlpatterns</span> <span class="o">=</span> <span class="n">patterns</span><span class="p">(</span><span class="s">&#39;&#39;</span><span class="p">,</span>
+    <span class="p">(</span><span class="s">r&#39;^about/&#39;</span><span class="p">,</span> <span class="n">AboutView</span><span class="o">.</span><span class="n">as_view</span><span class="p">()),</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>Alternatively, if you're only changing a few simple attributes on a
+class-based view, you can simply pass the new attributes into the <tt class="docutils literal"><span class="pre">as_view</span></tt>
+method call itself:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">django.conf.urls.defaults</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">django.views.generic</span> <span class="kn">import</span> <span class="n">TemplateView</span>
+
+<span class="n">urlpatterns</span> <span class="o">=</span> <span class="n">patterns</span><span class="p">(</span><span class="s">&#39;&#39;</span><span class="p">,</span>
+    <span class="p">(</span><span class="s">r&#39;^about/&#39;</span><span class="p">,</span> <span class="n">TemplateView</span><span class="o">.</span><span class="n">as_view</span><span class="p">(</span><span class="n">template_name</span><span class="o">=</span><span class="s">&quot;about.html&quot;</span><span class="p">)),</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>A similar overriding pattern can be used for the <tt class="docutils literal"><span class="pre">url</span></tt> attribute on
+<a class="reference internal" href="../ref/class-based-views.html#django.views.generic.base.RedirectView" title="django.views.generic.base.RedirectView"><tt class="xref py py-class docutils literal"><span class="pre">RedirectView</span></tt></a>, another simple
+generic view.</p>
+</div>
+<div class="section" id="s-generic-views-of-objects">
+<span id="generic-views-of-objects"></span><h2>Generic views of objects<a class="headerlink" href="#generic-views-of-objects" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference internal" href="../ref/class-based-views.html#django.views.generic.base.TemplateView" title="django.views.generic.base.TemplateView"><tt class="xref py py-class docutils literal"><span class="pre">TemplateView</span></tt></a> certainly is useful,
+but Django's generic views really shine when it comes to presenting
+views of your database content. Because it's such a common task,
+Django comes with a handful of built-in generic views that make
+generating list and detail views of objects incredibly easy.</p>
+<p>Let's take a look at one of these generic views: the &quot;object list&quot; view. We'll
+be using these models:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># models.py</span>
+<span class="kn">from</span> <span class="nn">django.db</span> <span class="kn">import</span> <span class="n">models</span>
+
+<span class="k">class</span> <span class="nc">Publisher</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+    <span class="n">address</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
+    <span class="n">city</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">60</span><span class="p">)</span>
+    <span class="n">state_province</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+    <span class="n">country</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
+    <span class="n">website</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">URLField</span><span class="p">()</span>
+
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">ordering</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;-name&quot;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">__unicode__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
+
+<span class="k">class</span> <span class="nc">Book</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">title</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+    <span class="n">authors</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ManyToManyField</span><span class="p">(</span><span class="s">&#39;Author&#39;</span><span class="p">)</span>
+    <span class="n">publisher</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span><span class="n">Publisher</span><span class="p">)</span>
+    <span class="n">publication_date</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">DateField</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>To build a list page of all publishers, we'd use a URLconf along these lines:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">django.conf.urls.defaults</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">django.views.generic</span> <span class="kn">import</span> <span class="n">ListView</span>
+<span class="kn">from</span> <span class="nn">books.models</span> <span class="kn">import</span> <span class="n">Publisher</span>
+
+<span class="n">urlpatterns</span> <span class="o">=</span> <span class="n">patterns</span><span class="p">(</span><span class="s">&#39;&#39;</span><span class="p">,</span>
+    <span class="p">(</span><span class="s">r&#39;^publishers/$&#39;</span><span class="p">,</span> <span class="n">ListView</span><span class="o">.</span><span class="n">as_view</span><span class="p">(</span>
+        <span class="n">model</span><span class="o">=</span><span class="n">Publisher</span><span class="p">,</span>
+    <span class="p">)),</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>That's all the Python code we need to write. We still need to write a template,
+however. We could explicitly tell the view which template to use
+by including a <tt class="docutils literal"><span class="pre">template_name</span></tt> key in the arguments to as_view, but in
+the absence of an explicit template Django will infer one from the object's
+name. In this case, the inferred template will be
+<tt class="docutils literal"><span class="pre">&quot;books/publisher_list.html&quot;</span></tt> -- the &quot;books&quot; part comes from the name of the
+app that defines the model, while the &quot;publisher&quot; bit is just the lowercased
+version of the model's name.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>Thus, when (for example) the <tt class="xref py py-class docutils literal"><span class="pre">django.template.loaders.app_directories.Loader</span></tt>
+template loader is enabled in <a class="reference internal" href="../ref/settings.html#std:setting-TEMPLATE_LOADERS"><tt class="xref std std-setting docutils literal"><span class="pre">TEMPLATE_LOADERS</span></tt></a>, the template
+location would be:</p>
+<div class="last highlight-python"><pre>/path/to/project/books/templates/books/publisher_list.html</pre>
+</div>
+</div>
+<p>This template will be rendered against a context containing a variable called
+<tt class="docutils literal"><span class="pre">object_list</span></tt> that contains all the publisher objects. A very simple template
+might look like the following:</p>
+<div class="highlight-html+django"><div class="highlight"><pre><span class="cp">{%</span> <span class="k">extends</span> <span class="s2">&quot;base.html&quot;</span> <span class="cp">%}</span>
+
+<span class="cp">{%</span> <span class="k">block</span> <span class="nv">content</span> <span class="cp">%}</span>
+    <span class="nt">&lt;h2&gt;</span>Publishers<span class="nt">&lt;/h2&gt;</span>
+    <span class="nt">&lt;ul&gt;</span>
+        <span class="cp">{%</span> <span class="k">for</span> <span class="nv">publisher</span> <span class="k">in</span> <span class="nv">object_list</span> <span class="cp">%}</span>
+            <span class="nt">&lt;li&gt;</span><span class="cp">{{</span> <span class="nv">publisher.name</span> <span class="cp">}}</span><span class="nt">&lt;/li&gt;</span>
+        <span class="cp">{%</span> <span class="k">endfor</span> <span class="cp">%}</span>
+    <span class="nt">&lt;/ul&gt;</span>
+<span class="cp">{%</span> <span class="k">endblock</span> <span class="cp">%}</span>
+</pre></div>
+</div>
+<p>That's really all there is to it. All the cool features of generic views come
+from changing the &quot;info&quot; dictionary passed to the generic view. The
+<a class="reference internal" href="../ref/class-based-views.html"><em>generic views reference</em></a> documents all the generic
+views and their options in detail; the rest of this document will consider
+some of the common ways you might customize and extend generic views.</p>
+</div>
+<div class="section" id="s-extending-generic-views">
+<span id="extending-generic-views"></span><h2>Extending generic views<a class="headerlink" href="#extending-generic-views" title="Permalink to this headline">¶</a></h2>
+<p>There's no question that using generic views can speed up development
+substantially. In most projects, however, there comes a moment when the
+generic views no longer suffice. Indeed, the most common question asked by new
+Django developers is how to make generic views handle a wider array of
+situations.</p>
+<p>This is one of the reasons generic views were redesigned for the 1.3 release -
+previously, they were just view functions with a bewildering array of options;
+now, rather than passing in a large amount of configuration in the URLconf,
+the recommended way to extend generic views is to subclass them, and override
+their attributes or methods.</p>
+<div class="section" id="s-making-friendly-template-contexts">
+<span id="making-friendly-template-contexts"></span><h3>Making &quot;friendly&quot; template contexts<a class="headerlink" href="#making-friendly-template-contexts" title="Permalink to this headline">¶</a></h3>
+<p>You might have noticed that our sample publisher list template stores
+all the publishers in a variable named <tt class="docutils literal"><span class="pre">object_list</span></tt>. While this
+works just fine, it isn't all that &quot;friendly&quot; to template authors:
+they have to &quot;just know&quot; that they're dealing with publishers here.</p>
+<p>Well, if you're dealing with a model object, this is already done for
+you. When you are dealing with an object or queryset, Django is able
+to populate the context using the verbose name (or the plural verbose
+name, in the case of a list of objects) of the object being displayed.
+This is provided in addition to the default <tt class="docutils literal"><span class="pre">object_list</span></tt> entry, but
+contains exactly the same data.</p>
+<p>If the verbose name (or plural verbose name) still isn't a good match,
+you can manually set the name of the context variable. The
+<tt class="docutils literal"><span class="pre">context_object_name</span></tt> attribute on a generic view specifies the
+context variable to use. In this example, we'll override it in the
+URLconf, since it's a simple change:</p>
+<pre class="literal-block">
+urlpatterns = patterns('',
+    (r'^publishers/$', ListView.as_view(
+        model=Publisher,
+        <strong>context_object_name=&quot;publisher_list&quot;,</strong>
+    )),
+)
+</pre>
+<p>Providing a useful <tt class="docutils literal"><span class="pre">context_object_name</span></tt> is always a good idea. Your
+coworkers who design templates will thank you.</p>
+</div>
+<div class="section" id="s-adding-extra-context">
+<span id="adding-extra-context"></span><h3>Adding extra context<a class="headerlink" href="#adding-extra-context" title="Permalink to this headline">¶</a></h3>
+<p>Often you simply need to present some extra information beyond that
+provided by the generic view. For example, think of showing a list of
+all the books on each publisher detail page. The
+<a class="reference internal" href="../ref/class-based-views.html#django.views.generic.detail.DetailView" title="django.views.generic.detail.DetailView"><tt class="xref py py-class docutils literal"><span class="pre">DetailView</span></tt></a> generic view provides
+the publisher to the context, but it seems there's no way to get
+additional information in that template.</p>
+<p>However, there is; you can subclass
+<a class="reference internal" href="../ref/class-based-views.html#django.views.generic.detail.DetailView" title="django.views.generic.detail.DetailView"><tt class="xref py py-class docutils literal"><span class="pre">DetailView</span></tt></a> and provide your own
+implementation of the <tt class="docutils literal"><span class="pre">get_context_data</span></tt> method. The default
+implementation of this that comes with
+<a class="reference internal" href="../ref/class-based-views.html#django.views.generic.detail.DetailView" title="django.views.generic.detail.DetailView"><tt class="xref py py-class docutils literal"><span class="pre">DetailView</span></tt></a> simply adds in the
+object being displayed to the template, but you can override it to show
+more:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">django.views.generic</span> <span class="kn">import</span> <span class="n">DetailView</span>
+<span class="kn">from</span> <span class="nn">books.models</span> <span class="kn">import</span> <span class="n">Publisher</span><span class="p">,</span> <span class="n">Book</span>
+
+<span class="k">class</span> <span class="nc">PublisherDetailView</span><span class="p">(</span><span class="n">DetailView</span><span class="p">):</span>
+
+    <span class="n">context_object_name</span> <span class="o">=</span> <span class="s">&quot;publisher&quot;</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">Publisher</span>
+
+    <span class="k">def</span> <span class="nf">get_context_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="c"># Call the base implementation first to get a context</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">PublisherDetailView</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_context_data</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="c"># Add in a QuerySet of all the books</span>
+        <span class="n">context</span><span class="p">[</span><span class="s">&#39;book_list&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Book</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">context</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="s-viewing-subsets-of-objects">
+<span id="viewing-subsets-of-objects"></span><h3>Viewing subsets of objects<a class="headerlink" href="#viewing-subsets-of-objects" title="Permalink to this headline">¶</a></h3>
+<p>Now let's take a closer look at the <tt class="docutils literal"><span class="pre">model</span></tt> argument we've been
+using all along. The <tt class="docutils literal"><span class="pre">model</span></tt> argument, which specifies the database
+model that the view will operate upon, is available on all the
+generic views that operate on a single object or a collection of
+objects. However, the <tt class="docutils literal"><span class="pre">model</span></tt> argument is not the only way to
+specify the objects that the view will operate upon -- you can also
+specify the list of objects using the <tt class="docutils literal"><span class="pre">queryset</span></tt> argument:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">django.views.generic</span> <span class="kn">import</span> <span class="n">DetailView</span>
+<span class="kn">from</span> <span class="nn">books.models</span> <span class="kn">import</span> <span class="n">Publisher</span><span class="p">,</span> <span class="n">Book</span>
+
+<span class="k">class</span> <span class="nc">PublisherDetailView</span><span class="p">(</span><span class="n">DetailView</span><span class="p">):</span>
+
+    <span class="n">context_object_name</span> <span class="o">=</span> <span class="s">&quot;publisher&quot;</span>
+    <span class="n">queryset</span> <span class="o">=</span> <span class="n">Publisher</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Specifying <tt class="docutils literal"><span class="pre">model</span> <span class="pre">=</span> <span class="pre">Publisher</span></tt> is really just shorthand for saying
+<tt class="docutils literal"><span class="pre">queryset</span> <span class="pre">=</span> <span class="pre">Publisher.objects.all()</span></tt>. However, by using <tt class="docutils literal"><span class="pre">queryset</span></tt>
+to define a filtered list of objects you can be more specific about the
+objects that will be visible in the view (see <a class="reference internal" href="db/queries.html"><em>Making queries</em></a>
+for more information about <tt class="xref py py-class docutils literal"><span class="pre">QuerySet</span></tt> objects, and see the
+<a class="reference internal" href="../ref/class-based-views.html"><em>class-based views reference</em></a> for the complete
+details).</p>
+<p>To pick a simple example, we might want to order a list of books by
+publication date, with the most recent first:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">urlpatterns</span> <span class="o">=</span> <span class="n">patterns</span><span class="p">(</span><span class="s">&#39;&#39;</span><span class="p">,</span>
+    <span class="p">(</span><span class="s">r&#39;^publishers/$&#39;</span><span class="p">,</span> <span class="n">ListView</span><span class="o">.</span><span class="n">as_view</span><span class="p">(</span>
+        <span class="n">queryset</span><span class="o">=</span><span class="n">Publisher</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span>
+        <span class="n">context_object_name</span><span class="o">=</span><span class="s">&quot;publisher_list&quot;</span><span class="p">,</span>
+    <span class="p">)),</span>
+    <span class="p">(</span><span class="s">r&#39;^books/$&#39;</span><span class="p">,</span> <span class="n">ListView</span><span class="o">.</span><span class="n">as_view</span><span class="p">(</span>
+        <span class="n">queryset</span><span class="o">=</span><span class="n">Book</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="s">&quot;-publication_date&quot;</span><span class="p">),</span>
+        <span class="n">context_object_name</span><span class="o">=</span><span class="s">&quot;book_list&quot;</span><span class="p">,</span>
+    <span class="p">)),</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>That's a pretty simple example, but it illustrates the idea nicely. Of course,
+you'll usually want to do more than just reorder objects. If you want to
+present a list of books by a particular publisher, you can use the same
+technique (here, illustrated using subclassing rather than by passing arguments
+in the URLconf):</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">django.views.generic</span> <span class="kn">import</span> <span class="n">ListView</span>
+<span class="kn">from</span> <span class="nn">books.models</span> <span class="kn">import</span> <span class="n">Book</span>
+
+<span class="k">class</span> <span class="nc">AcmeBookListView</span><span class="p">(</span><span class="n">ListView</span><span class="p">):</span>
+
+    <span class="n">context_object_name</span> <span class="o">=</span> <span class="s">&quot;book_list&quot;</span>
+    <span class="n">queryset</span> <span class="o">=</span> <span class="n">Book</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">publisher__name</span><span class="o">=</span><span class="s">&quot;Acme Publishing&quot;</span><span class="p">)</span>
+    <span class="n">template_name</span> <span class="o">=</span> <span class="s">&quot;books/acme_list.html&quot;</span>
+</pre></div>
+</div>
+<p>Notice that along with a filtered <tt class="docutils literal"><span class="pre">queryset</span></tt>, we're also using a custom
+template name. If we didn't, the generic view would use the same template as the
+&quot;vanilla&quot; object list, which might not be what we want.</p>
+<p>Also notice that this isn't a very elegant way of doing publisher-specific
+books. If we want to add another publisher page, we'd need another handful of
+lines in the URLconf, and more than a few publishers would get unreasonable.
+We'll deal with this problem in the next section.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If you get a 404 when requesting <tt class="docutils literal"><span class="pre">/books/acme/</span></tt>, check to ensure you
+actually have a Publisher with the name 'ACME Publishing'.  Generic
+views have an <tt class="docutils literal"><span class="pre">allow_empty</span></tt> parameter for this case.  See the
+<a class="reference internal" href="../ref/class-based-views.html"><em>class-based-views reference</em></a> for more details.</p>
+</div>
+</div>
+<div class="section" id="s-dynamic-filtering">
+<span id="dynamic-filtering"></span><h3>Dynamic filtering<a class="headerlink" href="#dynamic-filtering" title="Permalink to this headline">¶</a></h3>
+<p>Another common need is to filter down the objects given in a list page by some
+key in the URL. Earlier we hard-coded the publisher's name in the URLconf, but
+what if we wanted to write a view that displayed all the books by some arbitrary
+publisher?</p>
+<p>Handily, the <tt class="docutils literal"><span class="pre">ListView</span></tt> has a
+<tt class="xref py py-meth docutils literal"><span class="pre">get_queryset()</span></tt> method we can
+override. Previously, it has just been returning the value of the <tt class="docutils literal"><span class="pre">queryset</span></tt>
+attribute, but now we can add more logic.</p>
+<p>The key part to making this work is that when class-based views are called,
+various useful things are stored on <tt class="docutils literal"><span class="pre">self</span></tt>; as well as the request
+(<tt class="docutils literal"><span class="pre">self.request</span></tt>) this includes the positional (<tt class="docutils literal"><span class="pre">self.args</span></tt>) and name-based
+(<tt class="docutils literal"><span class="pre">self.kwargs</span></tt>) arguments captured according to the URLconf.</p>
+<p>Here, we have a URLconf with a single captured group:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">books.views</span> <span class="kn">import</span> <span class="n">PublisherBookListView</span>
+
+<span class="n">urlpatterns</span> <span class="o">=</span> <span class="n">patterns</span><span class="p">(</span><span class="s">&#39;&#39;</span><span class="p">,</span>
+    <span class="p">(</span><span class="s">r&#39;^books/(\w+)/$&#39;</span><span class="p">,</span> <span class="n">PublisherBookListView</span><span class="o">.</span><span class="n">as_view</span><span class="p">()),</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>Next, we'll write the <tt class="docutils literal"><span class="pre">PublisherBookListView</span></tt> view itself:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">django.shortcuts</span> <span class="kn">import</span> <span class="n">get_object_or_404</span>
+<span class="kn">from</span> <span class="nn">django.views.generic</span> <span class="kn">import</span> <span class="n">ListView</span>
+<span class="kn">from</span> <span class="nn">books.models</span> <span class="kn">import</span> <span class="n">Book</span><span class="p">,</span> <span class="n">Publisher</span>
+
+<span class="k">class</span> <span class="nc">PublisherBookListView</span><span class="p">(</span><span class="n">ListView</span><span class="p">):</span>
+
+    <span class="n">context_object_name</span> <span class="o">=</span> <span class="s">&quot;book_list&quot;</span>
+    <span class="n">template_name</span> <span class="o">=</span> <span class="s">&quot;books/books_by_publisher.html&quot;</span>
+
+    <span class="k">def</span> <span class="nf">get_queryset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">publisher</span> <span class="o">=</span> <span class="n">get_object_or_404</span><span class="p">(</span><span class="n">Publisher</span><span class="p">,</span> <span class="n">name__iexact</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">Book</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">publisher</span><span class="o">=</span><span class="n">publisher</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>As you can see, it's quite easy to add more logic to the queryset selection;
+if we wanted, we could use <tt class="docutils literal"><span class="pre">self.request.user</span></tt> to filter using the current
+user, or other more complex logic.</p>
+<p>We can also add the publisher into the context at the same time, so we can
+use it in the template:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">PublisherBookListView</span><span class="p">(</span><span class="n">ListView</span><span class="p">):</span>
+
+    <span class="n">context_object_name</span> <span class="o">=</span> <span class="s">&quot;book_list&quot;</span>
+    <span class="n">template_name</span> <span class="o">=</span> <span class="s">&quot;books/books_by_publisher.html&quot;</span>
+
+    <span class="k">def</span> <span class="nf">get_queryset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">publisher</span> <span class="o">=</span> <span class="n">get_object_or_404</span><span class="p">(</span><span class="n">Publisher</span><span class="p">,</span> <span class="n">name__iexact</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">Book</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">publisher</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">publisher</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">get_context_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="c"># Call the base implementation first to get a context</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">PublisherBookListView</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_context_data</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="c"># Add in the publisher</span>
+        <span class="n">context</span><span class="p">[</span><span class="s">&#39;publisher&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">publisher</span>
+        <span class="k">return</span> <span class="n">context</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="s-performing-extra-work">
+<span id="performing-extra-work"></span><h3>Performing extra work<a class="headerlink" href="#performing-extra-work" title="Permalink to this headline">¶</a></h3>
+<p>The last common pattern we'll look at involves doing some extra work before
+or after calling the generic view.</p>
+<p>Imagine we had a <tt class="docutils literal"><span class="pre">last_accessed</span></tt> field on our <tt class="docutils literal"><span class="pre">Author</span></tt> object that we were
+using to keep track of the last time anybody looked at that author:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># models.py</span>
+
+<span class="k">class</span> <span class="nc">Author</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">salutation</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+    <span class="n">first_name</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+    <span class="n">last_name</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">40</span><span class="p">)</span>
+    <span class="n">email</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">EmailField</span><span class="p">()</span>
+    <span class="n">headshot</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ImageField</span><span class="p">(</span><span class="n">upload_to</span><span class="o">=</span><span class="s">&#39;/tmp&#39;</span><span class="p">)</span>
+    <span class="n">last_accessed</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">DateTimeField</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>The generic <tt class="docutils literal"><span class="pre">DetailView</span></tt> class, of course, wouldn't know anything about this
+field, but once again we could easily write a custom view to keep that field
+updated.</p>
+<p>First, we'd need to add an author detail bit in the URLconf to point to a
+custom view:</p>
+<pre class="literal-block">
+from books.views import AuthorDetailView
+
+urlpatterns = patterns('',
+    #...
+    <strong>(r'^authors/(?P&lt;pk&gt;\d+)/$', AuthorDetailView.as_view()),</strong>
+)
+</pre>
+<p>Then we'd write our new view -- <tt class="docutils literal"><span class="pre">get_object</span></tt> is the method that retrieves the
+object -- so we simply override it and wrap the call:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">datetime</span>
+<span class="kn">from</span> <span class="nn">books.models</span> <span class="kn">import</span> <span class="n">Author</span>
+<span class="kn">from</span> <span class="nn">django.views.generic</span> <span class="kn">import</span> <span class="n">DetailView</span>
+<span class="kn">from</span> <span class="nn">django.shortcuts</span> <span class="kn">import</span> <span class="n">get_object_or_404</span>
+
+<span class="k">class</span> <span class="nc">AuthorDetailView</span><span class="p">(</span><span class="n">DetailView</span><span class="p">):</span>
+
+    <span class="n">queryset</span> <span class="o">=</span> <span class="n">Author</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">get_object</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c"># Call the superclass</span>
+        <span class="nb">object</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">AuthorDetailView</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_object</span><span class="p">()</span>
+        <span class="c"># Record the last accessed date</span>
+        <span class="nb">object</span><span class="o">.</span><span class="n">last_accessed</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+        <span class="nb">object</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+        <span class="c"># Return the object</span>
+        <span class="k">return</span> <span class="nb">object</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This code won't actually work unless you create a
+<tt class="docutils literal"><span class="pre">books/author_detail.html</span></tt> template.</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>The URLconf here uses the named group <tt class="docutils literal"><span class="pre">pk</span></tt> - this name is the default
+name that <tt class="docutils literal"><span class="pre">DetailView</span></tt> uses to find the value of the primary key used to
+filter the queryset.</p>
+<p class="last">If you want to change it, you'll need to do your own <tt class="docutils literal"><span class="pre">get()</span></tt> call
+on <tt class="docutils literal"><span class="pre">self.queryset</span></tt> using the new named parameter from <tt class="docutils literal"><span class="pre">self.kwargs</span></tt>.</p>
+</div>
+</div>
+<div class="section" id="s-more-than-just-html">
+<span id="more-than-just-html"></span><h3>More than just HTML<a class="headerlink" href="#more-than-just-html" title="Permalink to this headline">¶</a></h3>
+<p>So far, we've been focusing on rendering templates to generate
+responses. However, that's not all generic views can do.</p>
+<p>Each generic view is composed out of a series of mixins, and each
+mixin contributes a little piece of the entire view. Some of these
+mixins -- such as
+<a class="reference internal" href="../ref/class-based-views.html#django.views.generic.base.TemplateResponseMixin" title="django.views.generic.base.TemplateResponseMixin"><tt class="xref py py-class docutils literal"><span class="pre">TemplateResponseMixin</span></tt></a> -- are
+specifically designed for rendering content to an HTML response using a
+template. However, you can write your own mixins that perform
+different rendering behavior.</p>
+<p>For example, a simple JSON mixin might look something like this:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">django</span> <span class="kn">import</span> <span class="n">http</span>
+<span class="kn">from</span> <span class="nn">django.utils</span> <span class="kn">import</span> <span class="n">simplejson</span> <span class="k">as</span> <span class="n">json</span>
+
+<span class="k">class</span> <span class="nc">JSONResponseMixin</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">render_to_response</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="s">&quot;Returns a JSON response containing &#39;context&#39; as payload&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_json_response</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">convert_context_to_json</span><span class="p">(</span><span class="n">context</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">get_json_response</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="o">**</span><span class="n">httpresponse_kwargs</span><span class="p">):</span>
+        <span class="s">&quot;Construct an `HttpResponse` object.&quot;</span>
+        <span class="k">return</span> <span class="n">http</span><span class="o">.</span><span class="n">HttpResponse</span><span class="p">(</span><span class="n">content</span><span class="p">,</span>
+                                 <span class="n">content_type</span><span class="o">=</span><span class="s">&#39;application/json&#39;</span><span class="p">,</span>
+                                 <span class="o">**</span><span class="n">httpresponse_kwargs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">convert_context_to_json</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="s">&quot;Convert the context dictionary into a JSON object&quot;</span>
+        <span class="c"># Note: This is *EXTREMELY* naive; in reality, you&#39;ll need</span>
+        <span class="c"># to do much more complex handling to ensure that arbitrary</span>
+        <span class="c"># objects -- such as Django model instances or querysets</span>
+        <span class="c"># -- can be serialized as JSON.</span>
+        <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Then, you could build a JSON-returning
+<a class="reference internal" href="../ref/class-based-views.html#django.views.generic.detail.DetailView" title="django.views.generic.detail.DetailView"><tt class="xref py py-class docutils literal"><span class="pre">DetailView</span></tt></a> by mixing your
+<tt class="xref py py-class docutils literal"><span class="pre">JSONResponseMixin</span></tt> with the
+<a class="reference internal" href="../ref/class-based-views.html#django.views.generic.detail.BaseDetailView" title="django.views.generic.detail.BaseDetailView"><tt class="xref py py-class docutils literal"><span class="pre">BaseDetailView</span></tt></a> -- (the
+<a class="reference internal" href="../ref/class-based-views.html#django.views.generic.detail.DetailView" title="django.views.generic.detail.DetailView"><tt class="xref py py-class docutils literal"><span class="pre">DetailView</span></tt></a> before template
+rendering behavior has been mixed in):</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">JSONDetailView</span><span class="p">(</span><span class="n">JSONResponseMixin</span><span class="p">,</span> <span class="n">BaseDetailView</span><span class="p">):</span>
+    <span class="k">pass</span>
+</pre></div>
+</div>
+<p>This view can then be deployed in the same way as any other
+<a class="reference internal" href="../ref/class-based-views.html#django.views.generic.detail.DetailView" title="django.views.generic.detail.DetailView"><tt class="xref py py-class docutils literal"><span class="pre">DetailView</span></tt></a>, with exactly the
+same behavior -- except for the format of the response.</p>
+<p>If you want to be really adventurous, you could even mix a
+<a class="reference internal" href="../ref/class-based-views.html#django.views.generic.detail.DetailView" title="django.views.generic.detail.DetailView"><tt class="xref py py-class docutils literal"><span class="pre">DetailView</span></tt></a> subclass that is able
+to return <em>both</em> HTML and JSON content, depending on some property of
+the HTTP request, such as a query argument or a HTTP header. Just mix
+in both the <tt class="xref py py-class docutils literal"><span class="pre">JSONResponseMixin</span></tt> and a
+<a class="reference internal" href="../ref/class-based-views.html#django.views.generic.detail.SingleObjectTemplateResponseMixin" title="django.views.generic.detail.SingleObjectTemplateResponseMixin"><tt class="xref py py-class docutils literal"><span class="pre">SingleObjectTemplateResponseMixin</span></tt></a>,
+and override the implementation of <tt class="xref py py-func docutils literal"><span class="pre">render_to_response()</span></tt> to defer
+to the appropriate subclass depending on the type of response that the user
+requested:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">HybridDetailView</span><span class="p">(</span><span class="n">JSONResponseMixin</span><span class="p">,</span> <span class="n">SingleObjectTemplateResponseMixin</span><span class="p">,</span> <span class="n">BaseDetailView</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">render_to_response</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="c"># Look for a &#39;format=json&#39; GET argument</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;format&#39;</span><span class="p">,</span><span class="s">&#39;html&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s">&#39;json&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">JSONResponseMixin</span><span class="o">.</span><span class="n">render_to_response</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">SingleObjectTemplateResponseMixin</span><span class="o">.</span><span class="n">render_to_response</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Because of the way that Python resolves method overloading, the local
+<tt class="xref py py-func docutils literal"><span class="pre">render_to_response()</span></tt> implementation will override the
+versions provided by <tt class="xref py py-class docutils literal"><span class="pre">JSONResponseMixin</span></tt> and
+<a class="reference internal" href="../ref/class-based-views.html#django.views.generic.detail.SingleObjectTemplateResponseMixin" title="django.views.generic.detail.SingleObjectTemplateResponseMixin"><tt class="xref py py-class docutils literal"><span class="pre">SingleObjectTemplateResponseMixin</span></tt></a>.</p>
+</div>
+</div>
+<div class="section" id="s-decorating-class-based-views">
+<span id="decorating-class-based-views"></span><h2>Decorating class-based views<a class="headerlink" href="#decorating-class-based-views" title="Permalink to this headline">¶</a></h2>
+<p>The extension of class-based views isn't limited to using mixins. You
+can use also use decorators.</p>
+<div class="section" id="s-decorating-in-urlconf">
+<span id="decorating-in-urlconf"></span><h3>Decorating in URLconf<a class="headerlink" href="#decorating-in-urlconf" title="Permalink to this headline">¶</a></h3>
+<p>The simplest way of decorating class-based views is to decorate the
+result of the <tt class="xref py py-meth docutils literal"><span class="pre">as_view()</span></tt> method.
+The easiest place to do this is in the URLconf where you deploy your
+view:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">django.contrib.auth.decorators</span> <span class="kn">import</span> <span class="n">login_required</span><span class="p">,</span> <span class="n">permission_required</span>
+<span class="kn">from</span> <span class="nn">django.views.generic</span> <span class="kn">import</span> <span class="n">TemplateView</span>
+
+<span class="kn">from</span> <span class="nn">.views</span> <span class="kn">import</span> <span class="n">VoteView</span>
+
+<span class="n">urlpatterns</span> <span class="o">=</span> <span class="n">patterns</span><span class="p">(</span><span class="s">&#39;&#39;</span><span class="p">,</span>
+    <span class="p">(</span><span class="s">r&#39;^about/&#39;</span><span class="p">,</span> <span class="n">login_required</span><span class="p">(</span><span class="n">TemplateView</span><span class="o">.</span><span class="n">as_view</span><span class="p">(</span><span class="n">template_name</span><span class="o">=</span><span class="s">&quot;secret.html&quot;</span><span class="p">))),</span>
+    <span class="p">(</span><span class="s">r&#39;^vote/&#39;</span><span class="p">,</span> <span class="n">permission_required</span><span class="p">(</span><span class="s">&#39;polls.can_vote&#39;</span><span class="p">)(</span><span class="n">VoteView</span><span class="o">.</span><span class="n">as_view</span><span class="p">())),</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>This approach applies the decorator on a per-instance basis. If you
+want every instance of a view to be decorated, you need to take a
+different approach.</p>
+</div>
+<div class="section" id="s-decorating-the-class">
+<span id="s-id1"></span><span id="decorating-the-class"></span><span id="id1"></span><h3>Decorating the class<a class="headerlink" href="#decorating-the-class" title="Permalink to this headline">¶</a></h3>
+<p>To decorate every instance of a class-based view, you need to decorate
+the class definition itself. To do this you apply the decorator to the
+<a class="reference internal" href="../ref/class-based-views.html#django.views.generic.base.View.dispatch" title="django.views.generic.base.View.dispatch"><tt class="xref py py-meth docutils literal"><span class="pre">dispatch()</span></tt></a> method of the class.</p>
+<p>A method on a class isn't quite the same as a standalone function, so
+you can't just apply a function decorator to the method -- you need to
+transform it into a method decorator first. The <tt class="docutils literal"><span class="pre">method_decorator</span></tt>
+decorator transforms a function decorator into a method decorator so
+that it can be used on an instance method. For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">django.contrib.auth.decorators</span> <span class="kn">import</span> <span class="n">login_required</span>
+<span class="kn">from</span> <span class="nn">django.utils.decorators</span> <span class="kn">import</span> <span class="n">method_decorator</span>
+<span class="kn">from</span> <span class="nn">django.views.generic</span> <span class="kn">import</span> <span class="n">TemplateView</span>
+
+<span class="k">class</span> <span class="nc">ProtectedView</span><span class="p">(</span><span class="n">TemplateView</span><span class="p">):</span>
+    <span class="n">template_name</span> <span class="o">=</span> <span class="s">&#39;secret.html&#39;</span>
+
+    <span class="nd">@method_decorator</span><span class="p">(</span><span class="n">login_required</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">dispatch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">ProtectedView</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">dispatch</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>In this example, every instance of <tt class="docutils literal"><span class="pre">ProtectedView</span></tt> will have
+login protection.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last"><tt class="docutils literal"><span class="pre">method_decorator</span></tt> passes <tt class="docutils literal"><span class="pre">*args</span></tt> and <tt class="docutils literal"><span class="pre">**kwargs</span></tt>
+as parameters to the decorated method on the class. If your method
+does not accept a compatible set of parameters it will raise a
+<tt class="docutils literal"><span class="pre">TypeError</span></tt> exception.</p>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>         
+        </div>
+      </div>
+      
+        
+          <div class="yui-b" id="sidebar">
+            
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../contents.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Class-based generic views</a><ul>
+<li><a class="reference internal" href="#simple-usage">Simple usage</a></li>
+<li><a class="reference internal" href="#generic-views-of-objects">Generic views of objects</a></li>
+<li><a class="reference internal" href="#extending-generic-views">Extending generic views</a><ul>
+<li><a class="reference internal" href="#making-friendly-template-contexts">Making &#8220;friendly&#8221; template contexts</a></li>
+<li><a class="reference internal" href="#adding-extra-context">Adding extra context</a></li>
+<li><a class="reference internal" href="#viewing-subsets-of-objects">Viewing subsets of objects</a></li>
+<li><a class="reference internal" href="#dynamic-filtering">Dynamic filtering</a></li>
+<li><a class="reference internal" href="#performing-extra-work">Performing extra work</a></li>
+<li><a class="reference internal" href="#more-than-just-html">More than just HTML</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#decorating-class-based-views">Decorating class-based views</a><ul>
+<li><a class="reference internal" href="#decorating-in-urlconf">Decorating in URLconf</a></li>
+<li><a class="reference internal" href="#decorating-the-class">Decorating the class</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h3>Browse</h3>
+  <ul>
+    
+      <li>Prev: <a href="templates.html">The Django template language</a></li>
+    
+    
+      <li>Next: <a href="generic-views-migration.html">Migrating function-based generic views</a></li>
+    
+  </ul>
+  <h3>You are here:</h3>
+  <ul>
+      <li>
+        <a href="../index.html">Django v1.3.1 documentation</a>
+        
+          <ul><li><a href="index.html">Using Django</a>
+        
+        <ul><li>Class-based generic views</li></ul>
+        </li></ul>
+      </li>
+  </ul>  
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/topics/class-based-views.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+              <h3>Last update:</h3>
+              <p class="topless">Feb 20, 2012</p>
+          </div> 
+        
+      
+    </div>
+    
+    <div id="ft">
+      <div class="nav">
+    &laquo; <a href="templates.html" title="The Django template language">previous</a> 
+     |
+    <a href="index.html" title="Using Django" accesskey="U">up</a>
+   |
+    <a href="generic-views-migration.html" title="Migrating function-based generic views">next</a> &raquo;</div>
+    </div>
+  </div>
+
+      <div class="clearer"></div>
+    </div>
+  </body>
+</html>

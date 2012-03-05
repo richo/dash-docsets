@@ -1,0 +1,1690 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<title>GeoQuerySet API Reference — Django v1.3.1 documentation</title>
+<link href="../../../_static/default.css" rel="stylesheet" type="text/css"/>
+<link href="../../../_static/pygments.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '1.3.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+<script src="../../../_static/jquery.js" type="text/javascript"></script>
+<script src="../../../_static/underscore.js" type="text/javascript"></script>
+<script src="../../../_static/doctools.js" type="text/javascript"></script>
+<link href="../../../index.html" rel="top" title="Django v1.3.1 documentation"/>
+<link href="index.html" rel="up" title="GeoDjango"/>
+<link href="measure.html" rel="next" title="Measurement Objects"/>
+<link href="db-api.html" rel="prev" title="GeoDjango Database API"/>
+<script src="../../../templatebuiltins.js" type="text/javascript"></script>
+<script type="text/javascript">
+(function($) {
+    if (!django_template_builtins) {
+       // templatebuiltins.js missing, do nothing.
+       return;
+    }
+    $(document).ready(function() {
+        // Hyperlink Django template tags and filters
+        var base = "../../templates/builtins.html";
+        if (base == "#") {
+            // Special case for builtins.html itself
+            base = "";
+        }
+        // Tags are keywords, class '.k'
+        $("div.highlight\\-html\\+django span.k").each(function(i, elem) {
+             var tagname = $(elem).text();
+             if ($.inArray(tagname, django_template_builtins.ttags) != -1) {
+                 var fragment = tagname.replace(/_/, '-');
+                 $(elem).html("&lt;a href='" + base + "#" + fragment + "'&gt;" + tagname + "");
+             }
+        });
+        // Filters are functions, class '.nf'
+        $("div.highlight\\-html\\+django span.nf").each(function(i, elem) {
+             var filtername = $(elem).text();
+             if ($.inArray(filtername, django_template_builtins.tfilters) != -1) {
+                 var fragment = filtername.replace(/_/, '-');
+                 $(elem).html("<a href='" + base + "#" + fragment + "'>" + filtername + "</a>");
+             }
+        });
+    });
+})(jQuery);
+</script>
+</head>
+<body>
+<div class="document">
+<div class="yui-t6" id="custom-doc">
+<div id="hd">
+<h1><a href="../../../index.html">Django v1.3.1 documentation</a></h1>
+<div id="global-nav">
+<a href="../../../index.html" title="Home page">Home</a>  |
+        <a href="../../../contents.html" title="Table of contents">Table of contents</a>  |
+        <a href="../../../genindex.html" title="Global index">Index</a>  |
+        <a href="../../../py-modindex.html" title="Module index">Modules</a>
+</div>
+<div class="nav">
+    « <a href="db-api.html" title="GeoDjango Database API">previous</a> 
+     |
+    <a accesskey="U" href="../../index.html" title="API Reference">up</a>
+   |
+    <a href="measure.html" title="Measurement Objects">next</a> »</div>
+</div>
+<div id="bd">
+<div id="yui-main">
+<div class="yui-b">
+<div class="yui-g" id="ref-contrib-gis-geoquerysets">
+<div class="section" id="s-geoqueryset-api-reference">
+<span id="s-ref-geoquerysets"></span><span id="geoqueryset-api-reference"></span><span id="ref-geoquerysets"></span><h1>GeoQuerySet API Reference<a class="headerlink" href="#geoqueryset-api-reference" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<a name="//apple_ref/cpp/cl/django.contrib.gis.db.models.GeoQuerySet"></a><dt id="django.contrib.gis.db.models.GeoQuerySet">
+<em class="property">class </em><tt class="descname">GeoQuerySet</tt>(<span class="optional">[</span><em>model=None</em><span class="optional">]</span>)<a class="headerlink" href="#django.contrib.gis.db.models.GeoQuerySet" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<div class="section" id="s-spatial-lookups">
+<span id="s-id1"></span><span id="spatial-lookups"></span><span id="id1"></span><h2>Spatial Lookups<a class="headerlink" href="#spatial-lookups" title="Permalink to this headline">¶</a></h2>
+<p>Just like when using the <a class="reference internal" href="../../models/querysets.html#queryset-api"><em>QuerySet API</em></a>, interaction
+with <tt class="docutils literal"><span class="pre">GeoQuerySet</span></tt> by <a class="reference internal" href="../../../topics/db/queries.html#chaining-filters"><em>chaining filters</em></a>.
+Instead of the regular Django <a class="reference internal" href="../../models/querysets.html#field-lookups"><em>Field lookups</em></a>, the
+spatial lookups in this section are available for <a class="reference internal" href="model-api.html#django.contrib.gis.db.models.GeometryField" title="django.contrib.gis.db.models.GeometryField"><tt class="xref py py-class docutils literal"><span class="pre">GeometryField</span></tt></a>.</p>
+<p>For an introduction, see the <a class="reference internal" href="db-api.html#spatial-lookups-intro"><em>spatial lookups introduction</em></a>.  For an overview of what lookups are
+compatible with a particular spatial backend, refer to the
+<a class="reference internal" href="db-api.html#spatial-lookup-compatibility"><em>spatial lookup compatibility table</em></a>.</p>
+<div class="section" id="s-bbcontains">
+<span id="s-std:fieldlookup-bbcontains"></span><span id="bbcontains"></span><span id="std:fieldlookup-bbcontains"></span><h3>bbcontains<a class="headerlink" href="#bbcontains" title="Permalink to this headline">¶</a></h3>
+<p><em>Availability</em>: PostGIS, MySQL, SpatiaLite</p>
+<p>Tests if the geometry field’s bounding box completely contains the lookup
+geometry’s bounding box.</p>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">Zipcode</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">poly__bbcontains</span><span class="o">=</span><span class="n">geom</span><span class="p">)</span>
+</pre></div>
+</div>
+<table class="docutils">
+<colgroup>
+<col width="27%"></col>
+<col width="73%"></col>
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">Backend</th>
+<th class="head">SQL Equivalent</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td>PostGIS</td>
+<td><tt class="docutils literal"><span class="pre">poly</span> <span class="pre">~</span> <span class="pre">geom</span></tt></td>
+</tr>
+<tr><td>MySQL</td>
+<td><tt class="docutils literal"><span class="pre">MBRContains(poly,</span> <span class="pre">geom)</span></tt></td>
+</tr>
+<tr><td>SpatiaLite</td>
+<td><tt class="docutils literal"><span class="pre">MbrContains(poly,</span> <span class="pre">geom)</span></tt></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="s-bboverlaps">
+<span id="s-std:fieldlookup-bboverlaps"></span><span id="bboverlaps"></span><span id="std:fieldlookup-bboverlaps"></span><h3>bboverlaps<a class="headerlink" href="#bboverlaps" title="Permalink to this headline">¶</a></h3>
+<p><em>Availability</em>: PostGIS, MySQL, SpatiaLite</p>
+<p>Tests if the geometry field's bounding box overlaps the lookup geometry's
+bounding box.</p>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">Zipcode</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">poly__bboverlaps</span><span class="o">=</span><span class="n">geom</span><span class="p">)</span>
+</pre></div>
+</div>
+<table class="docutils">
+<colgroup>
+<col width="27%"></col>
+<col width="73%"></col>
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">Backend</th>
+<th class="head">SQL Equivalent</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td>PostGIS</td>
+<td><tt class="docutils literal"><span class="pre">poly</span> <span class="pre">&amp;&amp;</span> <span class="pre">geom</span></tt></td>
+</tr>
+<tr><td>MySQL</td>
+<td><tt class="docutils literal"><span class="pre">MBROverlaps(poly,</span> <span class="pre">geom)</span></tt></td>
+</tr>
+<tr><td>SpatiaLite</td>
+<td><tt class="docutils literal"><span class="pre">MbrOverlaps(poly,</span> <span class="pre">geom)</span></tt></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="s-contained">
+<span id="s-std:fieldlookup-contained"></span><span id="contained"></span><span id="std:fieldlookup-contained"></span><h3>contained<a class="headerlink" href="#contained" title="Permalink to this headline">¶</a></h3>
+<p><em>Availability</em>: PostGIS, MySQL, SpatiaLite</p>
+<p>Tests if the geometry field's bounding box is completely contained by the
+lookup geometry's bounding box.</p>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">Zipcode</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">poly__contained</span><span class="o">=</span><span class="n">geom</span><span class="p">)</span>
+</pre></div>
+</div>
+<table class="docutils">
+<colgroup>
+<col width="28%"></col>
+<col width="72%"></col>
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">Backend</th>
+<th class="head">SQL Equivalent</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td>PostGIS</td>
+<td><tt class="docutils literal"><span class="pre">poly</span> <span class="pre">@</span> <span class="pre">geom</span></tt></td>
+</tr>
+<tr><td>MySQL</td>
+<td><tt class="docutils literal"><span class="pre">MBRWithin(poly,</span> <span class="pre">geom)</span></tt></td>
+</tr>
+<tr><td>SpatiaLite</td>
+<td><tt class="docutils literal"><span class="pre">MbrWithin(poly,</span> <span class="pre">geom)</span></tt></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="s-contains">
+<span id="s-std:fieldlookup-gis-contains"></span><span id="contains"></span><span id="std:fieldlookup-gis-contains"></span><h3>contains<a class="headerlink" href="#contains" title="Permalink to this headline">¶</a></h3>
+<p><em>Availability</em>: PostGIS, Oracle, MySQL, SpatiaLite</p>
+<p>Tests if the geometry field spatially contains the lookup geometry.</p>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">Zipcode</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">poly__contains</span><span class="o">=</span><span class="n">geom</span><span class="p">)</span>
+</pre></div>
+</div>
+<table class="docutils">
+<colgroup>
+<col width="26%"></col>
+<col width="74%"></col>
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">Backend</th>
+<th class="head">SQL Equivalent</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td>PostGIS</td>
+<td><tt class="docutils literal"><span class="pre">ST_Contains(poly,</span> <span class="pre">geom)</span></tt></td>
+</tr>
+<tr><td>Oracle</td>
+<td><tt class="docutils literal"><span class="pre">SDO_CONTAINS(poly,</span> <span class="pre">geom)</span></tt></td>
+</tr>
+<tr><td>MySQL</td>
+<td><tt class="docutils literal"><span class="pre">MBRContains(poly,</span> <span class="pre">geom)</span></tt></td>
+</tr>
+<tr><td>SpatiaLite</td>
+<td><tt class="docutils literal"><span class="pre">Contains(poly,</span> <span class="pre">geom)</span></tt></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="s-contains-properly">
+<span id="s-std:fieldlookup-contains_properly"></span><span id="contains-properly"></span><span id="std:fieldlookup-contains_properly"></span><h3>contains_properly<a class="headerlink" href="#contains-properly" title="Permalink to this headline">¶</a></h3>
+<div class="versionadded">
+<span class="title">New in Django 1.2:</span> <a class="reference internal" href="../../../releases/1.2.html"><em>Please, see the release notes</em></a></div>
+<p><em>Availability</em>: PostGIS</p>
+<p>Returns true if the lookup geometry intersects the interior of the
+geometry field, but not the boundary (or exterior). <a class="footnote-reference" href="#fncontainsproperly" id="id2">[4]</a></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Requires PostGIS 1.4 and above.</p>
+</div>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">Zipcode</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">poly__contains_properly</span><span class="o">=</span><span class="n">geom</span><span class="p">)</span>
+</pre></div>
+</div>
+<table class="docutils">
+<colgroup>
+<col width="22%"></col>
+<col width="78%"></col>
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">Backend</th>
+<th class="head">SQL Equivalent</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td>PostGIS</td>
+<td><tt class="docutils literal"><span class="pre">ST_ContainsProperly(poly,</span> <span class="pre">geom)</span></tt></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="s-coveredby">
+<span id="s-std:fieldlookup-coveredby"></span><span id="coveredby"></span><span id="std:fieldlookup-coveredby"></span><h3>coveredby<a class="headerlink" href="#coveredby" title="Permalink to this headline">¶</a></h3>
+<p><em>Availability</em>: PostGIS, Oracle</p>
+<p>Tests if no point in the geometry field is outside the lookup geometry.
+<a class="footnote-reference" href="#fncovers" id="id3">[3]</a></p>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">Zipcode</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">poly__coveredby</span><span class="o">=</span><span class="n">geom</span><span class="p">)</span>
+</pre></div>
+</div>
+<table class="docutils">
+<colgroup>
+<col width="26%"></col>
+<col width="74%"></col>
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">Backend</th>
+<th class="head">SQL Equivalent</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td>PostGIS</td>
+<td><tt class="docutils literal"><span class="pre">ST_CoveredBy(poly,</span> <span class="pre">geom)</span></tt></td>
+</tr>
+<tr><td>Oracle</td>
+<td><tt class="docutils literal"><span class="pre">SDO_COVEREDBY(poly,</span> <span class="pre">geom)</span></tt></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="s-covers">
+<span id="s-std:fieldlookup-covers"></span><span id="covers"></span><span id="std:fieldlookup-covers"></span><h3>covers<a class="headerlink" href="#covers" title="Permalink to this headline">¶</a></h3>
+<p><em>Availability</em>: PostGIS, Oracle</p>
+<p>Tests if no point in the lookup geometry is outside the geometry field.
+<a class="footnote-reference" href="#fncovers" id="id4">[3]</a></p>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">Zipcode</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">poly__covers</span><span class="o">=</span><span class="n">geom</span><span class="p">)</span>
+</pre></div>
+</div>
+<table class="docutils">
+<colgroup>
+<col width="28%"></col>
+<col width="72%"></col>
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">Backend</th>
+<th class="head">SQL Equivalent</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td>PostGIS</td>
+<td><tt class="docutils literal"><span class="pre">ST_Covers(poly,</span> <span class="pre">geom)</span></tt></td>
+</tr>
+<tr><td>Oracle</td>
+<td><tt class="docutils literal"><span class="pre">SDO_COVERS(poly,</span> <span class="pre">geom)</span></tt></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="s-crosses">
+<span id="s-std:fieldlookup-crosses"></span><span id="crosses"></span><span id="std:fieldlookup-crosses"></span><h3>crosses<a class="headerlink" href="#crosses" title="Permalink to this headline">¶</a></h3>
+<p><em>Availability</em>: PostGIS, SpatiaLite</p>
+<p>Tests if the geometry field spatially crosses the lookup geometry.</p>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">Zipcode</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">poly__crosses</span><span class="o">=</span><span class="n">geom</span><span class="p">)</span>
+</pre></div>
+</div>
+<table class="docutils">
+<colgroup>
+<col width="28%"></col>
+<col width="72%"></col>
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">Backend</th>
+<th class="head">SQL Equivalent</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td>PostGIS</td>
+<td><tt class="docutils literal"><span class="pre">ST_Crosses(poly,</span> <span class="pre">geom)</span></tt></td>
+</tr>
+<tr><td>SpatiaLite</td>
+<td><tt class="docutils literal"><span class="pre">Crosses(poly,</span> <span class="pre">geom)</span></tt></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="s-disjoint">
+<span id="s-std:fieldlookup-disjoint"></span><span id="disjoint"></span><span id="std:fieldlookup-disjoint"></span><h3>disjoint<a class="headerlink" href="#disjoint" title="Permalink to this headline">¶</a></h3>
+<p><em>Availability</em>: PostGIS, Oracle, MySQL, SpatiaLite</p>
+<p>Tests if the geometry field is spatially disjoint from the lookup geometry.</p>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">Zipcode</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">poly__disjoint</span><span class="o">=</span><span class="n">geom</span><span class="p">)</span>
+</pre></div>
+</div>
+<table class="docutils">
+<colgroup>
+<col width="17%"></col>
+<col width="83%"></col>
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">Backend</th>
+<th class="head">SQL Equivalent</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td>PostGIS</td>
+<td><tt class="docutils literal"><span class="pre">ST_Disjoint(poly,</span> <span class="pre">geom)</span></tt></td>
+</tr>
+<tr><td>Oracle</td>
+<td><tt class="docutils literal"><span class="pre">SDO_GEOM.RELATE(poly,</span> <span class="pre">'DISJOINT',</span> <span class="pre">geom,</span> <span class="pre">0.05)</span></tt></td>
+</tr>
+<tr><td>MySQL</td>
+<td><tt class="docutils literal"><span class="pre">MBRDisjoint(poly,</span> <span class="pre">geom)</span></tt></td>
+</tr>
+<tr><td>SpatiaLite</td>
+<td><tt class="docutils literal"><span class="pre">Disjoint(poly,</span> <span class="pre">geom)</span></tt></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="s-equals">
+<span id="equals"></span><h3>equals<a class="headerlink" href="#equals" title="Permalink to this headline">¶</a></h3>
+<p><em>Availability</em>: PostGIS, Oracle, MySQL, SpatiaLite</p>
+<span class="target" id="std:fieldlookup-exact"></span></div>
+<div class="section" id="s-exact-same-as">
+<span id="s-std:fieldlookup-same_as"></span><span id="exact-same-as"></span><span id="std:fieldlookup-same_as"></span><h3>exact, same_as<a class="headerlink" href="#exact-same-as" title="Permalink to this headline">¶</a></h3>
+<p><em>Availability</em>: PostGIS, Oracle, MySQL, SpatiaLite</p>
+</div>
+<div class="section" id="s-intersects">
+<span id="s-std:fieldlookup-intersects"></span><span id="intersects"></span><span id="std:fieldlookup-intersects"></span><h3>intersects<a class="headerlink" href="#intersects" title="Permalink to this headline">¶</a></h3>
+<p><em>Availability</em>: PostGIS, Oracle, MySQL, SpatiaLite</p>
+<p>Tests if the geometry field spatially intersects the lookup geometry.</p>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">Zipcode</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">poly__intersects</span><span class="o">=</span><span class="n">geom</span><span class="p">)</span>
+</pre></div>
+</div>
+<table class="docutils">
+<colgroup>
+<col width="17%"></col>
+<col width="83%"></col>
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">Backend</th>
+<th class="head">SQL Equivalent</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td>PostGIS</td>
+<td><tt class="docutils literal"><span class="pre">ST_Intersects(poly,</span> <span class="pre">geom)</span></tt></td>
+</tr>
+<tr><td>Oracle</td>
+<td><tt class="docutils literal"><span class="pre">SDO_OVERLAPBDYINTERSECT(poly,</span> <span class="pre">geom)</span></tt></td>
+</tr>
+<tr><td>MySQL</td>
+<td><tt class="docutils literal"><span class="pre">MBRIntersects(poly,</span> <span class="pre">geom)</span></tt></td>
+</tr>
+<tr><td>SpatiaLite</td>
+<td><tt class="docutils literal"><span class="pre">Intersects(poly,</span> <span class="pre">geom)</span></tt></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="s-overlaps">
+<span id="s-std:fieldlookup-overlaps"></span><span id="overlaps"></span><span id="std:fieldlookup-overlaps"></span><h3>overlaps<a class="headerlink" href="#overlaps" title="Permalink to this headline">¶</a></h3>
+<p><em>Availability</em>: PostGIS, Oracle, MySQL, SpatiaLite</p>
+</div>
+<div class="section" id="s-relate">
+<span id="s-std:fieldlookup-relate"></span><span id="relate"></span><span id="std:fieldlookup-relate"></span><h3>relate<a class="headerlink" href="#relate" title="Permalink to this headline">¶</a></h3>
+<p><em>Availability</em>: PostGIS, Oracle, SpatiaLite</p>
+<p>Tests if the geometry field is spatially related to the lookup geometry by
+the values given in the given pattern.  This lookup requires a tuple parameter,
+<tt class="docutils literal"><span class="pre">(geom,</span> <span class="pre">pattern)</span></tt>; the form of <tt class="docutils literal"><span class="pre">pattern</span></tt> will depend on the spatial backend:</p>
+<div class="section" id="s-postgis-spatialite">
+<span id="postgis-spatialite"></span><h4>PostGIS &amp; SpatiaLite<a class="headerlink" href="#postgis-spatialite" title="Permalink to this headline">¶</a></h4>
+<p>On these spatial backends the intersection pattern is a string comprising
+nine characters, which  define intersections between  the interior, boundary,
+and exterior of the geometry field and the lookup geometry.
+The intersection pattern matrix may only use the following characters:
+<tt class="docutils literal"><span class="pre">1</span></tt>, <tt class="docutils literal"><span class="pre">2</span></tt>, <tt class="docutils literal"><span class="pre">T</span></tt>, <tt class="docutils literal"><span class="pre">F</span></tt>, or <tt class="docutils literal"><span class="pre">*</span></tt>.  This lookup type allows users to &quot;fine tune&quot;
+a specific geometric relationship consistent with the DE-9IM model. <a class="footnote-reference" href="#fnde9im" id="id5">[1]</a></p>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># A tuple lookup parameter is used to specify the geometry and</span>
+<span class="c"># the intersection pattern (the pattern here is for 'contains').</span>
+<span class="n">Zipcode</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">poly__relate</span><span class="p">(</span><span class="n">geom</span><span class="p">,</span> <span class="s">'T*T***FF*'</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>PostGIS SQL equivalent:</p>
+<div class="highlight-python"><pre>SELECT ... WHERE ST_Relate(poly, geom, 'T*T***FF*')</pre>
+</div>
+<p>SpatiaLite SQL equivalent:</p>
+<div class="highlight-python"><pre>SELECT ... WHERE Relate(poly, geom, 'T*T***FF*')</pre>
+</div>
+</div>
+<div class="section" id="s-oracle">
+<span id="oracle"></span><h4>Oracle<a class="headerlink" href="#oracle" title="Permalink to this headline">¶</a></h4>
+<p>Here the relation pattern is compreised at least one of the nine relation
+strings: <tt class="docutils literal"><span class="pre">TOUCH</span></tt>, <tt class="docutils literal"><span class="pre">OVERLAPBDYDISJOINT</span></tt>, <tt class="docutils literal"><span class="pre">OVERLAPBDYINTERSECT</span></tt>,
+<tt class="docutils literal"><span class="pre">EQUAL</span></tt>, <tt class="docutils literal"><span class="pre">INSIDE</span></tt>, <tt class="docutils literal"><span class="pre">COVEREDBY</span></tt>, <tt class="docutils literal"><span class="pre">CONTAINS</span></tt>, <tt class="docutils literal"><span class="pre">COVERS</span></tt>, <tt class="docutils literal"><span class="pre">ON</span></tt>, and
+<tt class="docutils literal"><span class="pre">ANYINTERACT</span></tt>.   Multiple strings may be combined with the logical Boolean
+operator OR, for example, <tt class="docutils literal"><span class="pre">'inside+touch'</span></tt>. <a class="footnote-reference" href="#fnsdorelate" id="id6">[2]</a>  The relation
+strings are case-insensitive.</p>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">Zipcode</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">poly__relate</span><span class="p">(</span><span class="n">geom</span><span class="p">,</span> <span class="s">'anyinteract'</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>Oracle SQL equivalent:</p>
+<div class="highlight-python"><pre>SELECT ... WHERE SDO_RELATE(poly, geom, 'anyinteract')</pre>
+</div>
+</div>
+</div>
+<div class="section" id="s-touches">
+<span id="s-std:fieldlookup-touches"></span><span id="touches"></span><span id="std:fieldlookup-touches"></span><h3>touches<a class="headerlink" href="#touches" title="Permalink to this headline">¶</a></h3>
+<p><em>Availability</em>: PostGIS, Oracle, MySQL, SpatiaLite</p>
+<p>Tests if the geometry field spatially touches the lookup geometry.</p>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">Zipcode</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">poly__touches</span><span class="o">=</span><span class="n">geom</span><span class="p">)</span>
+</pre></div>
+</div>
+<table class="docutils">
+<colgroup>
+<col width="28%"></col>
+<col width="72%"></col>
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">Backend</th>
+<th class="head">SQL Equivalent</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td>PostGIS</td>
+<td><tt class="docutils literal"><span class="pre">ST_Touches(poly,</span> <span class="pre">geom)</span></tt></td>
+</tr>
+<tr><td>MySQL</td>
+<td><tt class="docutils literal"><span class="pre">MBRTouches(poly,</span> <span class="pre">geom)</span></tt></td>
+</tr>
+<tr><td>Oracle</td>
+<td><tt class="docutils literal"><span class="pre">SDO_TOUCH(poly,</span> <span class="pre">geom)</span></tt></td>
+</tr>
+<tr><td>SpatiaLite</td>
+<td><tt class="docutils literal"><span class="pre">Touches(poly,</span> <span class="pre">geom)</span></tt></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="s-within">
+<span id="s-std:fieldlookup-within"></span><span id="within"></span><span id="std:fieldlookup-within"></span><h3>within<a class="headerlink" href="#within" title="Permalink to this headline">¶</a></h3>
+<p><em>Availability</em>: PostGIS, Oracle, MySQL, SpatiaLite</p>
+<p>Tests if the geometry field is spatially within the lookup geometry.</p>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">Zipcode</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">poly__within</span><span class="o">=</span><span class="n">geom</span><span class="p">)</span>
+</pre></div>
+</div>
+<table class="docutils">
+<colgroup>
+<col width="28%"></col>
+<col width="72%"></col>
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">Backend</th>
+<th class="head">SQL Equivalent</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td>PostGIS</td>
+<td><tt class="docutils literal"><span class="pre">ST_Within(poly,</span> <span class="pre">geom)</span></tt></td>
+</tr>
+<tr><td>MySQL</td>
+<td><tt class="docutils literal"><span class="pre">MBRWithin(poly,</span> <span class="pre">geom)</span></tt></td>
+</tr>
+<tr><td>Oracle</td>
+<td><tt class="docutils literal"><span class="pre">SDO_INSIDE(poly,</span> <span class="pre">geom)</span></tt></td>
+</tr>
+<tr><td>SpatiaLite</td>
+<td><tt class="docutils literal"><span class="pre">Within(poly,</span> <span class="pre">geom)</span></tt></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="s-left">
+<span id="s-std:fieldlookup-left"></span><span id="left"></span><span id="std:fieldlookup-left"></span><h3>left<a class="headerlink" href="#left" title="Permalink to this headline">¶</a></h3>
+<p><em>Availability</em>: PostGIS</p>
+<p>Tests if the geometry field's bounding box is strictly to the left of the
+lookup geometry's bounding box.</p>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">Zipcode</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">poly__left</span><span class="o">=</span><span class="n">geom</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>PostGIS equivalent:</p>
+<div class="highlight-python"><pre>SELECT ... WHERE poly &lt;&lt; geom</pre>
+</div>
+</div>
+<div class="section" id="s-right">
+<span id="s-std:fieldlookup-right"></span><span id="right"></span><span id="std:fieldlookup-right"></span><h3>right<a class="headerlink" href="#right" title="Permalink to this headline">¶</a></h3>
+<p><em>Availability</em>: PostGIS</p>
+<p>Tests if the geometry field's bounding box is strictly to the right of the
+lookup geometry's bounding box.</p>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">Zipcode</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">poly__right</span><span class="o">=</span><span class="n">geom</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>PostGIS equivalent:</p>
+<div class="highlight-python"><pre>SELECT ... WHERE poly &gt;&gt; geom</pre>
+</div>
+</div>
+<div class="section" id="s-overlaps-left">
+<span id="s-std:fieldlookup-overlaps_left"></span><span id="overlaps-left"></span><span id="std:fieldlookup-overlaps_left"></span><h3>overlaps_left<a class="headerlink" href="#overlaps-left" title="Permalink to this headline">¶</a></h3>
+<p><em>Availability</em>: PostGIS</p>
+<p>Tests if the geometry field's bounding box overlaps or is to the left of the lookup
+geometry's bounding box.</p>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">Zipcode</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">poly__overlaps_left</span><span class="o">=</span><span class="n">geom</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>PostGIS equivalent:</p>
+<div class="highlight-python"><pre>SELECT ... WHERE poly &amp;&lt; geom</pre>
+</div>
+</div>
+<div class="section" id="s-overlaps-right">
+<span id="s-std:fieldlookup-overlaps_right"></span><span id="overlaps-right"></span><span id="std:fieldlookup-overlaps_right"></span><h3>overlaps_right<a class="headerlink" href="#overlaps-right" title="Permalink to this headline">¶</a></h3>
+<p><em>Availability</em>: PostGIS</p>
+<p>Tests if the geometry field's bounding box overlaps or is to the right of the lookup
+geometry's bounding box.</p>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">Zipcode</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">poly__overlaps_right</span><span class="o">=</span><span class="n">geom</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>PostGIS equivalent:</p>
+<div class="highlight-python"><pre>SELECT ... WHERE poly &amp;&gt; geom</pre>
+</div>
+</div>
+<div class="section" id="s-overlaps-above">
+<span id="s-std:fieldlookup-overlaps_above"></span><span id="overlaps-above"></span><span id="std:fieldlookup-overlaps_above"></span><h3>overlaps_above<a class="headerlink" href="#overlaps-above" title="Permalink to this headline">¶</a></h3>
+<p><em>Availability</em>: PostGIS</p>
+<p>Tests if the geometry field's bounding box overlaps or is above the lookup
+geometry's bounding box.</p>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">Zipcode</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">poly__overlaps_above</span><span class="o">=</span><span class="n">geom</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>PostGIS equivalent:</p>
+<div class="highlight-python"><pre>SELECT ... WHERE poly |&amp;&gt; geom</pre>
+</div>
+</div>
+<div class="section" id="s-overlaps-below">
+<span id="s-std:fieldlookup-overlaps_below"></span><span id="overlaps-below"></span><span id="std:fieldlookup-overlaps_below"></span><h3>overlaps_below<a class="headerlink" href="#overlaps-below" title="Permalink to this headline">¶</a></h3>
+<p><em>Availability</em>: PostGIS</p>
+<p>Tests if the geometry field's bounding box overlaps or is below the lookup
+geometry's bounding box.</p>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">Zipcode</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">poly__overlaps_below</span><span class="o">=</span><span class="n">geom</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>PostGIS equivalent:</p>
+<div class="highlight-python"><pre>SELECT ... WHERE poly &amp;&lt;| geom</pre>
+</div>
+</div>
+<div class="section" id="s-strictly-above">
+<span id="s-std:fieldlookup-strictly_above"></span><span id="strictly-above"></span><span id="std:fieldlookup-strictly_above"></span><h3>strictly_above<a class="headerlink" href="#strictly-above" title="Permalink to this headline">¶</a></h3>
+<p><em>Availability</em>: PostGIS</p>
+<p>Tests if the geometry field's bounding box is strictly above the lookup
+geometry's bounding box.</p>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">Zipcode</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">poly__strictly_above</span><span class="o">=</span><span class="n">geom</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>PostGIS equivalent:</p>
+<div class="highlight-python"><pre>SELECT ... WHERE poly |&gt;&gt; geom</pre>
+</div>
+</div>
+<div class="section" id="s-strictly-below">
+<span id="s-std:fieldlookup-strictly_below"></span><span id="strictly-below"></span><span id="std:fieldlookup-strictly_below"></span><h3>strictly_below<a class="headerlink" href="#strictly-below" title="Permalink to this headline">¶</a></h3>
+<p><em>Availability</em>: PostGIS</p>
+<p>Tests if the geometry field's bounding box is strictly above the lookup
+geometry's bounding box.</p>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">Zipcode</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">poly__strictly_above</span><span class="o">=</span><span class="n">geom</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>PostGIS equivalent:</p>
+<div class="highlight-python"><pre>SELECT ... WHERE poly |&gt;&gt; geom</pre>
+</div>
+</div>
+</div>
+<div class="section" id="s-distance-lookups">
+<span id="s-id7"></span><span id="distance-lookups"></span><span id="id7"></span><h2>Distance Lookups<a class="headerlink" href="#distance-lookups" title="Permalink to this headline">¶</a></h2>
+<p><em>Availability</em>: PostGIS, Oracle, SpatiaLite</p>
+<p>For an overview on performing distance queries, please refer to
+the <a class="reference internal" href="db-api.html#distance-queries"><em>distance queries introduction</em></a>.</p>
+<p>Distance lookups take the following form:</p>
+<div class="highlight-python"><pre>&lt;field&gt;__&lt;distance lookup&gt;=(&lt;geometry&gt;, &lt;distance value&gt;[, 'spheroid'])</pre>
+</div>
+<p>The value passed into a distance lookup is a tuple; the first two
+values are mandatory, and are the geometry to calculate distances to,
+and a distance value (either a number in units of the field or a
+<a class="reference internal" href="measure.html#django.contrib.gis.measure.Distance" title="django.contrib.gis.measure.Distance"><tt class="xref py py-class docutils literal"><span class="pre">Distance</span></tt></a> object).  On every
+distance lookup but <a class="reference internal" href="#std:fieldlookup-dwithin"><tt class="xref std std-lookup docutils literal"><span class="pre">dwithin</span></tt></a>, an optional
+third element, <tt class="docutils literal"><span class="pre">'spheroid'</span></tt>, may be included to tell GeoDjango
+to use the more accurate spheroid distance calculation functions on
+fields with a geodetic coordinate system (e.g., <tt class="docutils literal"><span class="pre">ST_Distance_Spheroid</span></tt>
+would be used instead of <tt class="docutils literal"><span class="pre">ST_Distance_Sphere</span></tt>).</p>
+<div class="section" id="s-distance-gt">
+<span id="s-std:fieldlookup-distance_gt"></span><span id="distance-gt"></span><span id="std:fieldlookup-distance_gt"></span><h3>distance_gt<a class="headerlink" href="#distance-gt" title="Permalink to this headline">¶</a></h3>
+<p>Returns models where the distance to the geometry field from the lookup
+geometry is greater than the given distance value.</p>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">Zipcode</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">poly__distance_gt</span><span class="o">=</span><span class="p">(</span><span class="n">geom</span><span class="p">,</span> <span class="n">D</span><span class="p">(</span><span class="n">m</span><span class="o">=</span><span class="mi">5</span><span class="p">)))</span>
+</pre></div>
+</div>
+<table class="docutils">
+<colgroup>
+<col width="18%"></col>
+<col width="82%"></col>
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">Backend</th>
+<th class="head">SQL Equivalent</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td>PostGIS</td>
+<td><tt class="docutils literal"><span class="pre">ST_Distance(poly,</span> <span class="pre">geom)</span> <span class="pre">&gt;</span> <span class="pre">5</span></tt></td>
+</tr>
+<tr><td>Oracle</td>
+<td><tt class="docutils literal"><span class="pre">SDO_GEOM.SDO_DISTANCE(poly,</span> <span class="pre">geom,</span> <span class="pre">0.05)</span> <span class="pre">&gt;</span> <span class="pre">5</span></tt></td>
+</tr>
+<tr><td>SpatiaLite</td>
+<td><tt class="docutils literal"><span class="pre">Distance(poly,</span> <span class="pre">geom)</span> <span class="pre">&gt;</span> <span class="pre">5</span></tt></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="s-distance-gte">
+<span id="s-std:fieldlookup-distance_gte"></span><span id="distance-gte"></span><span id="std:fieldlookup-distance_gte"></span><h3>distance_gte<a class="headerlink" href="#distance-gte" title="Permalink to this headline">¶</a></h3>
+<p>Returns models where the distance to the geometry field from the lookup
+geometry is greater than or equal to the given distance value.</p>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">Zipcode</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">poly__distance_gte</span><span class="o">=</span><span class="p">(</span><span class="n">geom</span><span class="p">,</span> <span class="n">D</span><span class="p">(</span><span class="n">m</span><span class="o">=</span><span class="mi">5</span><span class="p">)))</span>
+</pre></div>
+</div>
+<table class="docutils">
+<colgroup>
+<col width="17%"></col>
+<col width="83%"></col>
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">Backend</th>
+<th class="head">SQL Equivalent</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td>PostGIS</td>
+<td><tt class="docutils literal"><span class="pre">ST_Distance(poly,</span> <span class="pre">geom)</span> <span class="pre">&gt;=</span> <span class="pre">5</span></tt></td>
+</tr>
+<tr><td>Oracle</td>
+<td><tt class="docutils literal"><span class="pre">SDO_GEOM.SDO_DISTANCE(poly,</span> <span class="pre">geom,</span> <span class="pre">0.05)</span> <span class="pre">&gt;=</span> <span class="pre">5</span></tt></td>
+</tr>
+<tr><td>SpatiaLite</td>
+<td><tt class="docutils literal"><span class="pre">Distance(poly,</span> <span class="pre">geom)</span> <span class="pre">&gt;=</span> <span class="pre">5</span></tt></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="s-distance-lt">
+<span id="s-std:fieldlookup-distance_lt"></span><span id="distance-lt"></span><span id="std:fieldlookup-distance_lt"></span><h3>distance_lt<a class="headerlink" href="#distance-lt" title="Permalink to this headline">¶</a></h3>
+<p>Returns models where the distance to the geometry field from the lookup
+geometry is less than the given distance value.</p>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">Zipcode</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">poly__distance_lt</span><span class="o">=</span><span class="p">(</span><span class="n">geom</span><span class="p">,</span> <span class="n">D</span><span class="p">(</span><span class="n">m</span><span class="o">=</span><span class="mi">5</span><span class="p">)))</span>
+</pre></div>
+</div>
+<table class="docutils">
+<colgroup>
+<col width="18%"></col>
+<col width="82%"></col>
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">Backend</th>
+<th class="head">SQL Equivalent</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td>PostGIS</td>
+<td><tt class="docutils literal"><span class="pre">ST_Distance(poly,</span> <span class="pre">geom)</span> <span class="pre">&lt;</span> <span class="pre">5</span></tt></td>
+</tr>
+<tr><td>Oracle</td>
+<td><tt class="docutils literal"><span class="pre">SDO_GEOM.SDO_DISTANCE(poly,</span> <span class="pre">geom,</span> <span class="pre">0.05)</span> <span class="pre">&lt;</span> <span class="pre">5</span></tt></td>
+</tr>
+<tr><td>SpatiaLite</td>
+<td><tt class="docutils literal"><span class="pre">Distance(poly,</span> <span class="pre">geom)</span> <span class="pre">&lt;</span> <span class="pre">5</span></tt></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="s-distance-lte">
+<span id="s-std:fieldlookup-distance_lte"></span><span id="distance-lte"></span><span id="std:fieldlookup-distance_lte"></span><h3>distance_lte<a class="headerlink" href="#distance-lte" title="Permalink to this headline">¶</a></h3>
+<p>Returns models where the distance to the geometry field from the lookup
+geometry is less than or equal to the given distance value.</p>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">Zipcode</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">poly__distance_lte</span><span class="o">=</span><span class="p">(</span><span class="n">geom</span><span class="p">,</span> <span class="n">D</span><span class="p">(</span><span class="n">m</span><span class="o">=</span><span class="mi">5</span><span class="p">)))</span>
+</pre></div>
+</div>
+<table class="docutils">
+<colgroup>
+<col width="17%"></col>
+<col width="83%"></col>
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">Backend</th>
+<th class="head">SQL Equivalent</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td>PostGIS</td>
+<td><tt class="docutils literal"><span class="pre">ST_Distance(poly,</span> <span class="pre">geom)</span> <span class="pre">&lt;=</span> <span class="pre">5</span></tt></td>
+</tr>
+<tr><td>Oracle</td>
+<td><tt class="docutils literal"><span class="pre">SDO_GEOM.SDO_DISTANCE(poly,</span> <span class="pre">geom,</span> <span class="pre">0.05)</span> <span class="pre">&lt;=</span> <span class="pre">5</span></tt></td>
+</tr>
+<tr><td>SpatiaLite</td>
+<td><tt class="docutils literal"><span class="pre">Distance(poly,</span> <span class="pre">geom)</span> <span class="pre">&lt;=</span> <span class="pre">5</span></tt></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="s-dwithin">
+<span id="s-std:fieldlookup-dwithin"></span><span id="dwithin"></span><span id="std:fieldlookup-dwithin"></span><h3>dwithin<a class="headerlink" href="#dwithin" title="Permalink to this headline">¶</a></h3>
+<p>Returns models where the distance to the geometry field from the
+lookup geometry are within the given distance from one another.</p>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">Zipcode</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">poly__dwithin</span><span class="o">=</span><span class="p">(</span><span class="n">geom</span><span class="p">,</span> <span class="n">D</span><span class="p">(</span><span class="n">m</span><span class="o">=</span><span class="mi">5</span><span class="p">)))</span>
+</pre></div>
+</div>
+<table class="docutils">
+<colgroup>
+<col width="21%"></col>
+<col width="79%"></col>
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">Backend</th>
+<th class="head">SQL Equivalent</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td>PostGIS</td>
+<td><tt class="docutils literal"><span class="pre">ST_DWithin(poly,</span> <span class="pre">geom,</span> <span class="pre">5)</span></tt></td>
+</tr>
+<tr><td>Oracle</td>
+<td><tt class="docutils literal"><span class="pre">SDO_WITHIN_DISTANCE(poly,</span> <span class="pre">geom,</span> <span class="pre">5)</span></tt></td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This lookup is not available on SpatiaLite.</p>
+</div>
+</div>
+</div>
+<div class="section" id="s-geoqueryset-methods">
+<span id="s-std:fieldlookup-equals"></span><span id="geoqueryset-methods"></span><span id="std:fieldlookup-equals"></span><h2><tt class="docutils literal"><span class="pre">GeoQuerySet</span></tt> Methods<a class="headerlink" href="#geoqueryset-methods" title="Permalink to this headline">¶</a></h2>
+<p><tt class="docutils literal"><span class="pre">GeoQuerySet</span></tt> methods specify that a spatial operation be performed
+on each patial operation on each geographic
+field in the queryset and store its output in a new attribute on the model
+(which is generally the name of the <tt class="docutils literal"><span class="pre">GeoQuerySet</span></tt> method).</p>
+<p>There are also aggregate <tt class="docutils literal"><span class="pre">GeoQuerySet</span></tt> methods which return a single value
+instead of a queryset.  This section will describe the API and availability
+of every <tt class="docutils literal"><span class="pre">GeoQuerySet</span></tt> method available in GeoDjango.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">What methods are available depend on your spatial backend.  See
+the <a class="reference internal" href="db-api.html#geoqueryset-method-compatibility"><em>compatibility table</em></a>
+for more details.</p>
+</div>
+<p>With a few exceptions, the following keyword arguments may be used with all
+<tt class="docutils literal"><span class="pre">GeoQuerySet</span></tt> methods:</p>
+<table class="docutils">
+<colgroup>
+<col width="28%"></col>
+<col width="72%"></col>
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">Keyword Argument</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td><tt class="docutils literal"><span class="pre">field_name</span></tt></td>
+<td><p class="first">By default, <tt class="docutils literal"><span class="pre">GeoQuerySet</span></tt> methods use the first
+geographic field encountered in the model.  This
+keyword should be used to specify another
+geographic field (e.g., <tt class="docutils literal"><span class="pre">field_name='point2'</span></tt>)
+when there are multiple geographic fields in a model.</p>
+<p class="last">On PostGIS, the <tt class="docutils literal"><span class="pre">field_name</span></tt> keyword may also be
+used on geometry fields in models that are related
+via a <tt class="docutils literal"><span class="pre">ForeignKey</span></tt> relation (e.g.,
+<tt class="docutils literal"><span class="pre">field_name='related__point'</span></tt>).</p>
+</td>
+</tr>
+<tr><td><tt class="docutils literal"><span class="pre">model_att</span></tt></td>
+<td><p class="first">By default, <tt class="docutils literal"><span class="pre">GeoQuerySet</span></tt> methods typically attach
+their output in an attribute with the same name as
+the <tt class="docutils literal"><span class="pre">GeoQuerySet</span></tt> method.  Setting this keyword
+with the desired attribute name will override this
+default behavior.  For example,
+<tt class="docutils literal"><span class="pre">qs</span> <span class="pre">=</span> <span class="pre">Zipcode.objects.centroid(model_att='c')</span></tt> will
+attach the centroid of the <tt class="docutils literal"><span class="pre">Zipcode</span></tt> geometry field
+in a <tt class="docutils literal"><span class="pre">c</span></tt> attribute on every model rather than in a
+<tt class="docutils literal"><span class="pre">centroid</span></tt> attribute.</p>
+<p class="last">This keyword is required if
+a method name clashes with an existing
+<tt class="docutils literal"><span class="pre">GeoQuerySet</span></tt> method -- if you wanted to use the
+<tt class="docutils literal"><span class="pre">area()</span></tt> method on model with a <tt class="docutils literal"><span class="pre">PolygonField</span></tt>
+named <tt class="docutils literal"><span class="pre">area</span></tt>, for example.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="section" id="s-measurement">
+<span id="measurement"></span><h3>Measurement<a class="headerlink" href="#measurement" title="Permalink to this headline">¶</a></h3>
+<p><em>Availability</em>: PostGIS, Oracle, SpatiaLite</p>
+<div class="section" id="s-area">
+<span id="area"></span><h4><tt class="docutils literal"><span class="pre">area</span></tt><a class="headerlink" href="#area" title="Permalink to this headline">¶</a></h4>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.contrib.gis.db.models.GeoQuerySet.area"></a><dt id="django.contrib.gis.db.models.GeoQuerySet.area">
+<tt class="descclassname">GeoQuerySet.</tt><tt class="descname">area</tt>(<em>**kwargs</em>)<a class="headerlink" href="#django.contrib.gis.db.models.GeoQuerySet.area" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns the area of the geographic field in an <tt class="docutils literal"><span class="pre">area</span></tt> attribute on
+each element of this GeoQuerySet.</p>
+</div>
+<div class="section" id="s-distance">
+<span id="distance"></span><h4><tt class="docutils literal"><span class="pre">distance</span></tt><a class="headerlink" href="#distance" title="Permalink to this headline">¶</a></h4>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.contrib.gis.db.models.GeoQuerySet.distance"></a><dt id="django.contrib.gis.db.models.GeoQuerySet.distance">
+<tt class="descclassname">GeoQuerySet.</tt><tt class="descname">distance</tt>(<em>geom</em>, <em>**kwargs</em>)<a class="headerlink" href="#django.contrib.gis.db.models.GeoQuerySet.distance" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>This method takes a geometry as a parameter, and attaches a <tt class="docutils literal"><span class="pre">distance</span></tt>
+attribute to every model in the returned queryset that contains the
+distance (as a <a class="reference internal" href="measure.html#django.contrib.gis.measure.Distance" title="django.contrib.gis.measure.Distance"><tt class="xref py py-class docutils literal"><span class="pre">Distance</span></tt></a> object) to the given geometry.</p>
+<p>In the following example (taken from the <a class="reference external" href="http://code.djangoproject.com/browser/django/trunk/django/contrib/gis/tests/distapp/models.py">GeoDjango distance tests</a>),
+the distance from the <a class="reference external" href="http://en.wikipedia.org/wiki/Tasmania">Tasmanian</a> city of Hobart to every other
+<a class="reference internal" href="model-api.html#django.contrib.gis.db.models.PointField" title="django.contrib.gis.db.models.PointField"><tt class="xref py py-class docutils literal"><span class="pre">PointField</span></tt></a> in the <tt class="docutils literal"><span class="pre">AustraliaCity</span></tt> queryset is calculated:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">pnt</span> <span class="o">=</span> <span class="n">AustraliaCity</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">'Hobart'</span><span class="p">)</span><span class="o">.</span><span class="n">point</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">city</span> <span class="ow">in</span> <span class="n">AustraliaCity</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">distance</span><span class="p">(</span><span class="n">pnt</span><span class="p">):</span> <span class="k">print</span> <span class="n">city</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">city</span><span class="o">.</span><span class="n">distance</span>
+<span class="go">Wollongong 990071.220408 m</span>
+<span class="go">Shellharbour 972804.613941 m</span>
+<span class="go">Thirroul 1002334.36351 m</span>
+<span class="go">Mittagong 975691.632637 m</span>
+<span class="go">Batemans Bay 834342.185561 m</span>
+<span class="go">Canberra 598140.268959 m</span>
+<span class="go">Melbourne 575337.765042 m</span>
+<span class="go">Sydney 1056978.87363 m</span>
+<span class="go">Hobart 0.0 m</span>
+<span class="go">Adelaide 1162031.83522 m</span>
+<span class="go">Hillsdale 1049200.46122 m</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Because the <tt class="docutils literal"><span class="pre">distance</span></tt> attribute is a
+<a class="reference internal" href="measure.html#django.contrib.gis.measure.Distance" title="django.contrib.gis.measure.Distance"><tt class="xref py py-class docutils literal"><span class="pre">Distance</span></tt></a> object, you can easily express
+the value in the units of your choice.  For example, <tt class="docutils literal"><span class="pre">city.distance.mi</span></tt> is
+the distance value in miles and <tt class="docutils literal"><span class="pre">city.distance.km</span></tt> is the distance value
+in kilometers.  See the <a class="reference internal" href="measure.html#ref-measure"><em>Measurement Objects</em></a> for usage details and the list of
+<a class="reference internal" href="measure.html#supported-units"><em>Supported units</em></a>.</p>
+</div>
+</div>
+<div class="section" id="s-length">
+<span id="length"></span><h4><tt class="docutils literal"><span class="pre">length</span></tt><a class="headerlink" href="#length" title="Permalink to this headline">¶</a></h4>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.contrib.gis.db.models.GeoQuerySet.length"></a><dt id="django.contrib.gis.db.models.GeoQuerySet.length">
+<tt class="descclassname">GeoQuerySet.</tt><tt class="descname">length</tt>(<em>**kwargs</em>)<a class="headerlink" href="#django.contrib.gis.db.models.GeoQuerySet.length" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns the length of the geometry field in a <tt class="docutils literal"><span class="pre">length</span></tt> attribute
+(a <a class="reference internal" href="measure.html#django.contrib.gis.measure.Distance" title="django.contrib.gis.measure.Distance"><tt class="xref py py-class docutils literal"><span class="pre">Distance</span></tt></a> object) on each model in
+the queryset.</p>
+</div>
+<div class="section" id="s-perimeter">
+<span id="perimeter"></span><h4><tt class="docutils literal"><span class="pre">perimeter</span></tt><a class="headerlink" href="#perimeter" title="Permalink to this headline">¶</a></h4>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.contrib.gis.db.models.GeoQuerySet.perimeter"></a><dt id="django.contrib.gis.db.models.GeoQuerySet.perimeter">
+<tt class="descclassname">GeoQuerySet.</tt><tt class="descname">perimeter</tt>(<em>**kwargs</em>)<a class="headerlink" href="#django.contrib.gis.db.models.GeoQuerySet.perimeter" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns the perimeter of the geometry field in a <tt class="docutils literal"><span class="pre">perimeter</span></tt> attribute
+(a <a class="reference internal" href="measure.html#django.contrib.gis.measure.Distance" title="django.contrib.gis.measure.Distance"><tt class="xref py py-class docutils literal"><span class="pre">Distance</span></tt></a> object) on each model in
+the queryset.</p>
+</div>
+</div>
+<div class="section" id="s-geometry-relationships">
+<span id="geometry-relationships"></span><h3>Geometry Relationships<a class="headerlink" href="#geometry-relationships" title="Permalink to this headline">¶</a></h3>
+<p>The following methods take no arguments, and attach geometry objects
+each element of the <a class="reference internal" href="#django.contrib.gis.db.models.GeoQuerySet" title="django.contrib.gis.db.models.GeoQuerySet"><tt class="xref py py-class docutils literal"><span class="pre">GeoQuerySet</span></tt></a> that is the result of relationship
+function evaluated on the geometry field.</p>
+<div class="section" id="s-centroid">
+<span id="centroid"></span><h4><tt class="docutils literal"><span class="pre">centroid</span></tt><a class="headerlink" href="#centroid" title="Permalink to this headline">¶</a></h4>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.contrib.gis.db.models.GeoQuerySet.centroid"></a><dt id="django.contrib.gis.db.models.GeoQuerySet.centroid">
+<tt class="descclassname">GeoQuerySet.</tt><tt class="descname">centroid</tt>(<em>**kwargs</em>)<a class="headerlink" href="#django.contrib.gis.db.models.GeoQuerySet.centroid" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p><em>Availability</em>: PostGIS, Oracle, SpatiaLite</p>
+<p>Returns the <tt class="docutils literal"><span class="pre">centroid</span></tt> value for the geographic field in a <tt class="docutils literal"><span class="pre">centroid</span></tt>
+attribute on each element of the <tt class="docutils literal"><span class="pre">GeoQuerySet</span></tt>.</p>
+</div>
+<div class="section" id="s-envelope">
+<span id="envelope"></span><h4><tt class="docutils literal"><span class="pre">envelope</span></tt><a class="headerlink" href="#envelope" title="Permalink to this headline">¶</a></h4>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.contrib.gis.db.models.GeoQuerySet.envelope"></a><dt id="django.contrib.gis.db.models.GeoQuerySet.envelope">
+<tt class="descclassname">GeoQuerySet.</tt><tt class="descname">envelope</tt>(<em>**kwargs</em>)<a class="headerlink" href="#django.contrib.gis.db.models.GeoQuerySet.envelope" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p><em>Availability</em>: PostGIS, SpatiaLite</p>
+<p>Returns a geometry representing the bounding box of the geometry field in
+an <tt class="docutils literal"><span class="pre">envelope</span></tt> attribute on each element of the <tt class="docutils literal"><span class="pre">GeoQuerySet</span></tt>.</p>
+</div>
+<div class="section" id="s-point-on-surface">
+<span id="point-on-surface"></span><h4><tt class="docutils literal"><span class="pre">point_on_surface</span></tt><a class="headerlink" href="#point-on-surface" title="Permalink to this headline">¶</a></h4>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.contrib.gis.db.models.GeoQuerySet.point_on_surface"></a><dt id="django.contrib.gis.db.models.GeoQuerySet.point_on_surface">
+<tt class="descclassname">GeoQuerySet.</tt><tt class="descname">point_on_surface</tt>(<em>**kwargs</em>)<a class="headerlink" href="#django.contrib.gis.db.models.GeoQuerySet.point_on_surface" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p><em>Availability</em>: PostGIS, Oracle, SpatiaLite</p>
+<p>Returns a Point geometry guaranteed to lie on the surface of the
+geometry field in a <tt class="docutils literal"><span class="pre">point_on_surface</span></tt> attribute on each element
+of the queryset; otherwise sets with None.</p>
+</div>
+</div>
+<div class="section" id="s-geometry-editors">
+<span id="geometry-editors"></span><h3>Geometry Editors<a class="headerlink" href="#geometry-editors" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="s-force-rhr">
+<span id="force-rhr"></span><h4><tt class="docutils literal"><span class="pre">force_rhr</span></tt><a class="headerlink" href="#force-rhr" title="Permalink to this headline">¶</a></h4>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.contrib.gis.db.models.GeoQuerySet.force_rhr"></a><dt id="django.contrib.gis.db.models.GeoQuerySet.force_rhr">
+<tt class="descclassname">GeoQuerySet.</tt><tt class="descname">force_rhr</tt>(<em>**kwargs</em>)<a class="headerlink" href="#django.contrib.gis.db.models.GeoQuerySet.force_rhr" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<div class="versionadded">
+<span class="title">New in Django 1.2:</span> <a class="reference internal" href="../../../releases/1.2.html"><em>Please, see the release notes</em></a></div>
+<p><em>Availability</em>: PostGIS</p>
+<p>Returns a modified version of the polygon/multipolygon in which all
+of the vertices follow the Right-Hand-Rule, and attaches as a
+<tt class="docutils literal"><span class="pre">force_rhr</span></tt> attribute on each element of the queryset.</p>
+</div>
+<div class="section" id="s-reverse-geom">
+<span id="reverse-geom"></span><h4><tt class="docutils literal"><span class="pre">reverse_geom</span></tt><a class="headerlink" href="#reverse-geom" title="Permalink to this headline">¶</a></h4>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.contrib.gis.db.models.GeoQuerySet.reverse_geom"></a><dt id="django.contrib.gis.db.models.GeoQuerySet.reverse_geom">
+<tt class="descclassname">GeoQuerySet.</tt><tt class="descname">reverse_geom</tt>(<em>**kwargs</em>)<a class="headerlink" href="#django.contrib.gis.db.models.GeoQuerySet.reverse_geom" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<div class="versionadded">
+<span class="title">New in Django 1.2:</span> <a class="reference internal" href="../../../releases/1.2.html"><em>Please, see the release notes</em></a></div>
+<p><em>Availability</em>: PostGIS, Oracle</p>
+<p>Reverse the coordinate order of the geometry field, and attaches as a
+<tt class="docutils literal"><span class="pre">reverse</span></tt> attribute on each element of the queryset.</p>
+</div>
+<div class="section" id="s-scale">
+<span id="scale"></span><h4><tt class="docutils literal"><span class="pre">scale</span></tt><a class="headerlink" href="#scale" title="Permalink to this headline">¶</a></h4>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.contrib.gis.db.models.GeoQuerySet.scale"></a><dt id="django.contrib.gis.db.models.GeoQuerySet.scale">
+<tt class="descclassname">GeoQuerySet.</tt><tt class="descname">scale</tt>(<em>x</em>, <em>y</em>, <em>z=0.0</em>, <em>**kwargs</em>)<a class="headerlink" href="#django.contrib.gis.db.models.GeoQuerySet.scale" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p><em>Availability</em>: PostGIS, SpatiaLite</p>
+</div>
+<div class="section" id="s-snap-to-grid">
+<span id="snap-to-grid"></span><h4><tt class="docutils literal"><span class="pre">snap_to_grid</span></tt><a class="headerlink" href="#snap-to-grid" title="Permalink to this headline">¶</a></h4>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.contrib.gis.db.models.GeoQuerySet.snap_to_grid"></a><dt id="django.contrib.gis.db.models.GeoQuerySet.snap_to_grid">
+<tt class="descclassname">GeoQuerySet.</tt><tt class="descname">snap_to_grid</tt>(<em>*args</em>, <em>**kwargs</em>)<a class="headerlink" href="#django.contrib.gis.db.models.GeoQuerySet.snap_to_grid" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Snap all points of the input geometry to the grid.  How the
+geometry is snapped to the grid depends on how many numeric
+(either float, integer, or long) arguments are given.</p>
+<table class="docutils">
+<colgroup>
+<col width="26%"></col>
+<col width="74%"></col>
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">Number of Arguments</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td>1</td>
+<td>A single size to snap bot the X and Y grids to.</td>
+</tr>
+<tr><td>2</td>
+<td>X and Y sizes to snap the grid to.</td>
+</tr>
+<tr><td>4</td>
+<td>X, Y sizes and the corresponding X, Y origins.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="s-transform">
+<span id="transform"></span><h4><tt class="docutils literal"><span class="pre">transform</span></tt><a class="headerlink" href="#transform" title="Permalink to this headline">¶</a></h4>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.contrib.gis.db.models.GeoQuerySet.transform"></a><dt id="django.contrib.gis.db.models.GeoQuerySet.transform">
+<tt class="descclassname">GeoQuerySet.</tt><tt class="descname">transform</tt>(<em>srid=4326</em>, <em>**kwargs</em>)<a class="headerlink" href="#django.contrib.gis.db.models.GeoQuerySet.transform" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p><em>Availability</em>: PostGIS, Oracle, SpatiaLite</p>
+<p>The <tt class="docutils literal"><span class="pre">transform</span></tt> method transforms the geometry field of a model to the spatial
+reference system specified by the <tt class="docutils literal"><span class="pre">srid</span></tt> parameter.  If no <tt class="docutils literal"><span class="pre">srid</span></tt> is given,
+then 4326 (WGS84) is used by default.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Unlike other <tt class="docutils literal"><span class="pre">GeoQuerySet</span></tt> methods, <tt class="docutils literal"><span class="pre">transform</span></tt> stores its output
+&quot;in-place&quot;.  In other words, no new attribute for the transformed
+geometry is placed on the models.</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">What spatial reference system an integer SRID corresponds to may depend on
+the spatial database used.  In other words, the SRID numbers used for Oracle
+are not necessarily the same as those used by PostGIS.</p>
+</div>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">qs</span> <span class="o">=</span> <span class="n">Zipcode</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span><span class="o">.</span><span class="n">transform</span><span class="p">()</span> <span class="c"># Transforms to WGS84</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">qs</span> <span class="o">=</span> <span class="n">Zipcode</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="mi">32140</span><span class="p">)</span> <span class="c"># Transforming to &quot;NAD83 / Texas South Central&quot;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">qs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">poly</span><span class="o">.</span><span class="n">srid</span>
+<span class="go">32140</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">qs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">poly</span>
+<span class="go">POLYGON ((234055.1698884720099159 4937796.9232223574072123 ...</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="s-translate">
+<span id="translate"></span><h4><tt class="docutils literal"><span class="pre">translate</span></tt><a class="headerlink" href="#translate" title="Permalink to this headline">¶</a></h4>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.contrib.gis.db.models.GeoQuerySet.translate"></a><dt id="django.contrib.gis.db.models.GeoQuerySet.translate">
+<tt class="descclassname">GeoQuerySet.</tt><tt class="descname">translate</tt>(<em>x</em>, <em>y</em>, <em>z=0.0</em>, <em>**kwargs</em>)<a class="headerlink" href="#django.contrib.gis.db.models.GeoQuerySet.translate" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p><em>Availability</em>: PostGIS, SpatiaLite</p>
+<p>Translates the geometry field to a new location using the given numeric
+parameters as offsets.</p>
+</div>
+</div>
+<div class="section" id="s-geometry-operations">
+<span id="geometry-operations"></span><h3>Geometry Operations<a class="headerlink" href="#geometry-operations" title="Permalink to this headline">¶</a></h3>
+<p><em>Availability</em>: PostGIS, Oracle, SpatiaLite</p>
+<p>The following methods all take a geometry as a parameter and attach a geometry
+to each element of the <tt class="docutils literal"><span class="pre">GeoQuerySet</span></tt> that is the result of the operation.</p>
+<div class="section" id="s-difference">
+<span id="difference"></span><h4><tt class="docutils literal"><span class="pre">difference</span></tt><a class="headerlink" href="#difference" title="Permalink to this headline">¶</a></h4>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.contrib.gis.db.models.GeoQuerySet.difference"></a><dt id="django.contrib.gis.db.models.GeoQuerySet.difference">
+<tt class="descclassname">GeoQuerySet.</tt><tt class="descname">difference</tt>(<em>geom</em>)<a class="headerlink" href="#django.contrib.gis.db.models.GeoQuerySet.difference" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns the spatial difference of the geographic field with the given
+geometry in a <tt class="docutils literal"><span class="pre">difference</span></tt> attribute on each element of the
+<tt class="docutils literal"><span class="pre">GeoQuerySet</span></tt>.</p>
+</div>
+<div class="section" id="s-intersection">
+<span id="intersection"></span><h4><tt class="docutils literal"><span class="pre">intersection</span></tt><a class="headerlink" href="#intersection" title="Permalink to this headline">¶</a></h4>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.contrib.gis.db.models.GeoQuerySet.intersection"></a><dt id="django.contrib.gis.db.models.GeoQuerySet.intersection">
+<tt class="descclassname">GeoQuerySet.</tt><tt class="descname">intersection</tt>(<em>geom</em>)<a class="headerlink" href="#django.contrib.gis.db.models.GeoQuerySet.intersection" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns the spatial intersection of the geographic field with the
+given geometry in an <tt class="docutils literal"><span class="pre">intersection</span></tt> attribute on each element of the
+<tt class="docutils literal"><span class="pre">GeoQuerySet</span></tt>.</p>
+</div>
+<div class="section" id="s-sym-difference">
+<span id="sym-difference"></span><h4><tt class="docutils literal"><span class="pre">sym_difference</span></tt><a class="headerlink" href="#sym-difference" title="Permalink to this headline">¶</a></h4>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.contrib.gis.db.models.GeoQuerySet.sym_difference"></a><dt id="django.contrib.gis.db.models.GeoQuerySet.sym_difference">
+<tt class="descclassname">GeoQuerySet.</tt><tt class="descname">sym_difference</tt>(<em>geom</em>)<a class="headerlink" href="#django.contrib.gis.db.models.GeoQuerySet.sym_difference" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns the symmetric difference of the geographic field with the
+given geometry in a <tt class="docutils literal"><span class="pre">sym_difference</span></tt> attribute on each element of the
+<tt class="docutils literal"><span class="pre">GeoQuerySet</span></tt>.</p>
+</div>
+<div class="section" id="s-union">
+<span id="union"></span><h4><tt class="docutils literal"><span class="pre">union</span></tt><a class="headerlink" href="#union" title="Permalink to this headline">¶</a></h4>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.contrib.gis.db.models.GeoQuerySet.union"></a><dt id="django.contrib.gis.db.models.GeoQuerySet.union">
+<tt class="descclassname">GeoQuerySet.</tt><tt class="descname">union</tt>(<em>geom</em>)<a class="headerlink" href="#django.contrib.gis.db.models.GeoQuerySet.union" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns the union of the geographic field with the given
+geometry in an <tt class="docutils literal"><span class="pre">union</span></tt> attribute on each element of the
+<tt class="docutils literal"><span class="pre">GeoQuerySet</span></tt>.</p>
+</div>
+</div>
+<div class="section" id="s-geometry-output">
+<span id="geometry-output"></span><h3>Geometry Output<a class="headerlink" href="#geometry-output" title="Permalink to this headline">¶</a></h3>
+<p>The following <tt class="docutils literal"><span class="pre">GeoQuerySet</span></tt> methods will return an attribute that has the value
+of the geometry field in each model converted to the requested output format.</p>
+<div class="section" id="s-geohash">
+<span id="geohash"></span><h4><tt class="docutils literal"><span class="pre">geohash</span></tt><a class="headerlink" href="#geohash" title="Permalink to this headline">¶</a></h4>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.contrib.gis.db.models.GeoQuerySet.geohash"></a><dt id="django.contrib.gis.db.models.GeoQuerySet.geohash">
+<tt class="descclassname">GeoQuerySet.</tt><tt class="descname">geohash</tt>(<em>preceision=20</em>, <em>**kwargs</em>)<a class="headerlink" href="#django.contrib.gis.db.models.GeoQuerySet.geohash" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<div class="versionadded">
+<span class="title">New in Django 1.2:</span> <a class="reference internal" href="../../../releases/1.2.html"><em>Please, see the release notes</em></a></div>
+<p>Attaches a <tt class="docutils literal"><span class="pre">geohash</span></tt> attribute to every model the queryset
+containing the <a class="reference external" href="http://geohash.org/">GeoHash</a> representation of the geometry.</p>
+</div>
+<div class="section" id="s-geojson">
+<span id="geojson"></span><h4><tt class="docutils literal"><span class="pre">geojson</span></tt><a class="headerlink" href="#geojson" title="Permalink to this headline">¶</a></h4>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.contrib.gis.db.models.GeoQuerySet.geojson"></a><dt id="django.contrib.gis.db.models.GeoQuerySet.geojson">
+<tt class="descclassname">GeoQuerySet.</tt><tt class="descname">geojson</tt>(<em>**kwargs</em>)<a class="headerlink" href="#django.contrib.gis.db.models.GeoQuerySet.geojson" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p><em>Availability</em>: PostGIS</p>
+<p>Attaches a <tt class="docutils literal"><span class="pre">geojson</span></tt> attribute to every model in the queryset that contains the
+<a class="reference external" href="http://geojson.org/">GeoJSON</a> representation of the geometry.</p>
+<table class="docutils">
+<colgroup>
+<col width="28%"></col>
+<col width="72%"></col>
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">Keyword Argument</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td><tt class="docutils literal"><span class="pre">precision</span></tt></td>
+<td>It may be used to specify the number of significant
+digits for the coordinates in the GeoJSON
+representation -- the default value is 8.</td>
+</tr>
+<tr><td><tt class="docutils literal"><span class="pre">crs</span></tt></td>
+<td>Set this to <tt class="xref docutils literal"><span class="pre">True</span></tt> if you want the coordinate
+reference system to be included in the returned
+GeoJSON.</td>
+</tr>
+<tr><td><tt class="docutils literal"><span class="pre">bbox</span></tt></td>
+<td>Set this to <tt class="xref docutils literal"><span class="pre">True</span></tt> if you want the bounding box
+to be included in the returned GeoJSON.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="s-gml">
+<span id="gml"></span><h4><tt class="docutils literal"><span class="pre">gml</span></tt><a class="headerlink" href="#gml" title="Permalink to this headline">¶</a></h4>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.contrib.gis.db.models.GeoQuerySet.gml"></a><dt id="django.contrib.gis.db.models.GeoQuerySet.gml">
+<tt class="descclassname">GeoQuerySet.</tt><tt class="descname">gml</tt>(<em>**kwargs</em>)<a class="headerlink" href="#django.contrib.gis.db.models.GeoQuerySet.gml" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p><em>Availability</em>: PostGIS, Oracle</p>
+<p>Attaches a <tt class="docutils literal"><span class="pre">gml</span></tt> attribute to every model in the queryset that contains the
+<a class="reference external" href="http://en.wikipedia.org/wiki/Geography_Markup_Language">Geographic Markup Language (GML)</a> representation of the geometry.</p>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">qs</span> <span class="o">=</span> <span class="n">Zipcode</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span><span class="o">.</span><span class="n">gml</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">qs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">gml</span>
+<span class="go">&lt;gml:Polygon srsName=&quot;EPSG:4326&quot;&gt;&lt;gml:OuterBoundaryIs&gt;-147.78711,70.245363 ...  -147.78711,70.245363&lt;/gml:OuterBoundaryIs&gt;&lt;/gml:Polygon&gt;</span>
+</pre></div>
+</div>
+<table class="docutils">
+<colgroup>
+<col width="28%"></col>
+<col width="72%"></col>
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">Keyword Argument</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td><tt class="docutils literal"><span class="pre">precision</span></tt></td>
+<td>This keyword is for PostGIS only.  It may be used
+to specify the number of significant digits for the
+coordinates in the GML representation -- the default
+value is 8.</td>
+</tr>
+<tr><td><tt class="docutils literal"><span class="pre">version</span></tt></td>
+<td>This keyword is for PostGIS only.  It may be used to
+specify the GML version used, and may only be values
+of 2 or 3.  The default value is 2.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="s-kml">
+<span id="kml"></span><h4><tt class="docutils literal"><span class="pre">kml</span></tt><a class="headerlink" href="#kml" title="Permalink to this headline">¶</a></h4>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.contrib.gis.db.models.GeoQuerySet.kml"></a><dt id="django.contrib.gis.db.models.GeoQuerySet.kml">
+<tt class="descclassname">GeoQuerySet.</tt><tt class="descname">kml</tt>(<em>**kwargs</em>)<a class="headerlink" href="#django.contrib.gis.db.models.GeoQuerySet.kml" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p><em>Availability</em>: PostGIS</p>
+<p>Attaches a <tt class="docutils literal"><span class="pre">kml</span></tt> attribute to every model in the queryset that contains the
+<a class="reference external" href="http://code.google.com/apis/kml/documentation/">Keyhole Markup Language (KML)</a> representation of the geometry fields. It
+should be noted that the contents of the KML are transformed to WGS84 if
+necessary.</p>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">qs</span> <span class="o">=</span> <span class="n">Zipcode</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span><span class="o">.</span><span class="n">kml</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">qs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">kml</span>
+<span class="go">&lt;Polygon&gt;&lt;outerBoundaryIs&gt;&lt;LinearRing&gt;&lt;coordinates&gt;-103.04135,36.217596,0 ... -103.04135,36.217596,0&lt;/coordinates&gt;&lt;/LinearRing&gt;&lt;/outerBoundaryIs&gt;&lt;/Polygon&gt;</span>
+</pre></div>
+</div>
+<table class="docutils">
+<colgroup>
+<col width="28%"></col>
+<col width="72%"></col>
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">Keyword Argument</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td><tt class="docutils literal"><span class="pre">precision</span></tt></td>
+<td>This keyword may be used to specify the number of
+significant digits for the coordinates in the KML
+representation -- the default value is 8.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="s-svg">
+<span id="svg"></span><h4><tt class="docutils literal"><span class="pre">svg</span></tt><a class="headerlink" href="#svg" title="Permalink to this headline">¶</a></h4>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.contrib.gis.db.models.GeoQuerySet.svg"></a><dt id="django.contrib.gis.db.models.GeoQuerySet.svg">
+<tt class="descclassname">GeoQuerySet.</tt><tt class="descname">svg</tt>(<em>**kwargs</em>)<a class="headerlink" href="#django.contrib.gis.db.models.GeoQuerySet.svg" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p><em>Availability</em>: PostGIS, SpatiaLite</p>
+<p>Attaches a <tt class="docutils literal"><span class="pre">svg</span></tt> attribute to every model in the queryset that contains
+the <a class="reference external" href="http://www.w3.org/Graphics/SVG/">Scalable Vector Graphics (SVG)</a> path data of the geometry fields.</p>
+<table class="docutils">
+<colgroup>
+<col width="28%"></col>
+<col width="72%"></col>
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">Keyword Argument</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td><tt class="docutils literal"><span class="pre">relative</span></tt></td>
+<td>If set to <tt class="xref docutils literal"><span class="pre">True</span></tt>, the path data will be implemented
+in terms of relative moves.  Defaults to <tt class="xref docutils literal"><span class="pre">False</span></tt>,
+meaning that absolute moves are used instead.</td>
+</tr>
+<tr><td><tt class="docutils literal"><span class="pre">precision</span></tt></td>
+<td>This keyword may be used to specify the number of
+significant digits for the coordinates in the SVG
+representation -- the default value is 8.</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="section" id="s-miscellaneous">
+<span id="miscellaneous"></span><h3>Miscellaneous<a class="headerlink" href="#miscellaneous" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="s-mem-size">
+<span id="mem-size"></span><h4><tt class="docutils literal"><span class="pre">mem_size</span></tt><a class="headerlink" href="#mem-size" title="Permalink to this headline">¶</a></h4>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.contrib.gis.db.models.GeoQuerySet.mem_size"></a><dt id="django.contrib.gis.db.models.GeoQuerySet.mem_size">
+<tt class="descclassname">GeoQuerySet.</tt><tt class="descname">mem_size</tt>(<em>**kwargs</em>)<a class="headerlink" href="#django.contrib.gis.db.models.GeoQuerySet.mem_size" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p><em>Availability</em>: PostGIS</p>
+<p>Returns the memory size (number of bytes) that the geometry field takes
+in a <tt class="docutils literal"><span class="pre">mem_size</span></tt> attribute  on each element of the <tt class="docutils literal"><span class="pre">GeoQuerySet</span></tt>.</p>
+</div>
+<div class="section" id="s-num-geom">
+<span id="num-geom"></span><h4><tt class="docutils literal"><span class="pre">num_geom</span></tt><a class="headerlink" href="#num-geom" title="Permalink to this headline">¶</a></h4>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.contrib.gis.db.models.GeoQuerySet.num_geom"></a><dt id="django.contrib.gis.db.models.GeoQuerySet.num_geom">
+<tt class="descclassname">GeoQuerySet.</tt><tt class="descname">num_geom</tt>(<em>**kwargs</em>)<a class="headerlink" href="#django.contrib.gis.db.models.GeoQuerySet.num_geom" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p><em>Availability</em>: PostGIS, Oracle, SpatiaLite</p>
+<p>Returns the number of geometries in a <tt class="docutils literal"><span class="pre">num_geom</span></tt> attribute on
+each element of the <tt class="docutils literal"><span class="pre">GeoQuerySet</span></tt> if the geometry field is a
+collection (e.g., a <tt class="docutils literal"><span class="pre">GEOMETRYCOLLECTION</span></tt> or <tt class="docutils literal"><span class="pre">MULTI*</span></tt> field);
+otherwise sets with <tt class="xref docutils literal"><span class="pre">None</span></tt>.</p>
+</div>
+<div class="section" id="s-num-points">
+<span id="num-points"></span><h4><tt class="docutils literal"><span class="pre">num_points</span></tt><a class="headerlink" href="#num-points" title="Permalink to this headline">¶</a></h4>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.contrib.gis.db.models.GeoQuerySet.num_points"></a><dt id="django.contrib.gis.db.models.GeoQuerySet.num_points">
+<tt class="descclassname">GeoQuerySet.</tt><tt class="descname">num_points</tt>(<em>**kwargs</em>)<a class="headerlink" href="#django.contrib.gis.db.models.GeoQuerySet.num_points" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p><em>Availability</em>: PostGIS, Oracle, SpatiaLite</p>
+<p>Returns the number of points in the first linestring in the
+geometry field in a <tt class="docutils literal"><span class="pre">num_points</span></tt> attribute on each element of
+the <tt class="docutils literal"><span class="pre">GeoQuerySet</span></tt>; otherwise sets with <tt class="xref docutils literal"><span class="pre">None</span></tt>.</p>
+</div>
+</div>
+</div>
+<div class="section" id="s-spatial-aggregates">
+<span id="spatial-aggregates"></span><h2>Spatial Aggregates<a class="headerlink" href="#spatial-aggregates" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="s-aggregate-methods">
+<span id="aggregate-methods"></span><h3>Aggregate Methods<a class="headerlink" href="#aggregate-methods" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="s-collect">
+<span id="collect"></span><h4><tt class="docutils literal"><span class="pre">collect</span></tt><a class="headerlink" href="#collect" title="Permalink to this headline">¶</a></h4>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.contrib.gis.db.models.GeoQuerySet.collect"></a><dt id="django.contrib.gis.db.models.GeoQuerySet.collect">
+<tt class="descclassname">GeoQuerySet.</tt><tt class="descname">collect</tt>(<em>**kwargs</em>)<a class="headerlink" href="#django.contrib.gis.db.models.GeoQuerySet.collect" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p><em>Availability</em>: PostGIS</p>
+<p>Returns a <tt class="docutils literal"><span class="pre">GEOMETRYCOLLECTION</span></tt> or a <tt class="docutils literal"><span class="pre">MULTI</span></tt> geometry object from the geometry
+column.  This is analagous to a simplified version of the <a class="reference internal" href="#django.contrib.gis.db.models.GeoQuerySet.unionagg" title="django.contrib.gis.db.models.GeoQuerySet.unionagg"><tt class="xref py py-meth docutils literal"><span class="pre">GeoQuerySet.unionagg()</span></tt></a> method,
+except it can be several orders of magnitude faster than peforming a union because
+it simply rolls up geometries into a collection or multi object, not caring about
+dissolving boundaries.</p>
+</div>
+<div class="section" id="s-extent">
+<span id="extent"></span><h4><tt class="docutils literal"><span class="pre">extent</span></tt><a class="headerlink" href="#extent" title="Permalink to this headline">¶</a></h4>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.contrib.gis.db.models.GeoQuerySet.extent"></a><dt id="django.contrib.gis.db.models.GeoQuerySet.extent">
+<tt class="descclassname">GeoQuerySet.</tt><tt class="descname">extent</tt>(<em>**kwargs</em>)<a class="headerlink" href="#django.contrib.gis.db.models.GeoQuerySet.extent" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p><em>Availability</em>: PostGIS, Oracle</p>
+<p>Returns the extent of the <tt class="docutils literal"><span class="pre">GeoQuerySet</span></tt> as a four-tuple, comprising the
+lower left coordinate and the upper right coordinate.</p>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">qs</span> <span class="o">=</span> <span class="n">City</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">name__in</span><span class="o">=</span><span class="p">(</span><span class="s">'Houston'</span><span class="p">,</span> <span class="s">'Dallas'</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">qs</span><span class="o">.</span><span class="n">extent</span><span class="p">()</span>
+<span class="go">(-96.8016128540039, 29.7633724212646, -95.3631439208984, 32.782058715820)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="s-extent3d">
+<span id="extent3d"></span><h4><tt class="docutils literal"><span class="pre">extent3d</span></tt><a class="headerlink" href="#extent3d" title="Permalink to this headline">¶</a></h4>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.contrib.gis.db.models.GeoQuerySet.extent3d"></a><dt id="django.contrib.gis.db.models.GeoQuerySet.extent3d">
+<tt class="descclassname">GeoQuerySet.</tt><tt class="descname">extent3d</tt>(<em>**kwargs</em>)<a class="headerlink" href="#django.contrib.gis.db.models.GeoQuerySet.extent3d" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<div class="versionadded">
+<span class="title">New in Django 1.2:</span> <a class="reference internal" href="../../../releases/1.2.html"><em>Please, see the release notes</em></a></div>
+<p><em>Availability</em>: PostGIS</p>
+<p>Returns the 3D extent of the <tt class="docutils literal"><span class="pre">GeoQuerySet</span></tt> as a six-tuple, comprising
+the lower left coordinate and upper right coordinate.</p>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">qs</span> <span class="o">=</span> <span class="n">City</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">name__in</span><span class="o">=</span><span class="p">(</span><span class="s">'Houston'</span><span class="p">,</span> <span class="s">'Dallas'</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">qs</span><span class="o">.</span><span class="n">extent3d</span><span class="p">()</span>
+<span class="go">(-96.8016128540039, 29.7633724212646, 0, -95.3631439208984, 32.782058715820, 0)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="s-make-line">
+<span id="make-line"></span><h4><tt class="docutils literal"><span class="pre">make_line</span></tt><a class="headerlink" href="#make-line" title="Permalink to this headline">¶</a></h4>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.contrib.gis.db.models.GeoQuerySet.make_line"></a><dt id="django.contrib.gis.db.models.GeoQuerySet.make_line">
+<tt class="descclassname">GeoQuerySet.</tt><tt class="descname">make_line</tt>(<em>**kwargs</em>)<a class="headerlink" href="#django.contrib.gis.db.models.GeoQuerySet.make_line" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p><em>Availability</em>: PostGIS</p>
+<p>Returns a <tt class="docutils literal"><span class="pre">LineString</span></tt> constructed from the point field geometries in the
+<tt class="docutils literal"><span class="pre">GeoQuerySet</span></tt>.  Currently, ordering the queryset has no effect.</p>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">City</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">name__in</span><span class="o">=</span><span class="p">(</span><span class="s">'Houston'</span><span class="p">,</span> <span class="s">'Dallas'</span><span class="p">))</span><span class="o">.</span><span class="n">make_line</span><span class="p">()</span>
+<span class="go">LINESTRING (-95.3631510000000020 29.7633739999999989, -96.8016109999999941 32.7820570000000018)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="s-unionagg">
+<span id="unionagg"></span><h4><tt class="docutils literal"><span class="pre">unionagg</span></tt><a class="headerlink" href="#unionagg" title="Permalink to this headline">¶</a></h4>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.contrib.gis.db.models.GeoQuerySet.unionagg"></a><dt id="django.contrib.gis.db.models.GeoQuerySet.unionagg">
+<tt class="descclassname">GeoQuerySet.</tt><tt class="descname">unionagg</tt>(<em>**kwargs</em>)<a class="headerlink" href="#django.contrib.gis.db.models.GeoQuerySet.unionagg" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p><em>Availability</em>: PostGIS, Oracle, SpatiaLite</p>
+<p>This method returns a <a class="reference internal" href="geos.html#django.contrib.gis.geos.GEOSGeometry" title="django.contrib.gis.geos.GEOSGeometry"><tt class="xref py py-class docutils literal"><span class="pre">GEOSGeometry</span></tt></a> object
+comprising the union of every geometry in the queryset.  Please note that
+use of <tt class="docutils literal"><span class="pre">unionagg</span></tt> is processor intensive and may take a significant amount
+of time on large querysets.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If the computation time for using this method is too expensive,
+consider using <a class="reference internal" href="#django.contrib.gis.db.models.GeoQuerySet.collect" title="django.contrib.gis.db.models.GeoQuerySet.collect"><tt class="xref py py-meth docutils literal"><span class="pre">GeoQuerySet.collect()</span></tt></a> instead.</p>
+</div>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">u</span> <span class="o">=</span> <span class="n">Zipcode</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">unionagg</span><span class="p">()</span> <span class="c"># This may take a long time.</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u</span> <span class="o">=</span> <span class="n">Zipcode</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">poly__within</span><span class="o">=</span><span class="n">bbox</span><span class="p">)</span><span class="o">.</span><span class="n">unionagg</span><span class="p">()</span> <span class="c"># A more sensible approach.</span>
+</pre></div>
+</div>
+<table class="docutils">
+<colgroup>
+<col width="28%"></col>
+<col width="72%"></col>
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">Keyword Argument</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td><tt class="docutils literal"><span class="pre">tolerance</span></tt></td>
+<td>This keyword is for Oracle only.  It is for the
+tolerance value used by the <tt class="docutils literal"><span class="pre">SDOAGGRTYPE</span></tt>
+procedure; the  <a class="reference external" href="http://download.oracle.com/docs/html/B14255_01/sdo_intro.htm#sthref150">Oracle documentation</a> has more
+details.</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="section" id="s-aggregate-functions">
+<span id="aggregate-functions"></span><h3>Aggregate Functions<a class="headerlink" href="#aggregate-functions" title="Permalink to this headline">¶</a></h3>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">django.contrib.gis.db.models</span> <span class="kn">import</span> <span class="n">Extent</span><span class="p">,</span> <span class="n">Union</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">WorldBorders</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">aggregate</span><span class="p">(</span><span class="n">Extent</span><span class="p">(</span><span class="s">'mpoly'</span><span class="p">),</span> <span class="n">Union</span><span class="p">(</span><span class="s">'mpoly'</span><span class="p">))</span>
+</pre></div>
+</div>
+<div class="section" id="s-id16">
+<span id="id16"></span><h4><tt class="docutils literal"><span class="pre">Collect</span></tt><a class="headerlink" href="#id16" title="Permalink to this headline">¶</a></h4>
+<dl class="class">
+<a name="//apple_ref/cpp/cl/django.contrib.gis.db.models.Collect"></a><dt id="django.contrib.gis.db.models.Collect">
+<em class="property">class </em><tt class="descname">Collect</tt>(<em>geo_field</em>)<a class="headerlink" href="#django.contrib.gis.db.models.Collect" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns the same as the <a class="reference internal" href="#django.contrib.gis.db.models.GeoQuerySet.collect" title="django.contrib.gis.db.models.GeoQuerySet.collect"><tt class="xref py py-meth docutils literal"><span class="pre">GeoQuerySet.collect()</span></tt></a> aggregate method.</p>
+</div>
+<div class="section" id="s-id17">
+<span id="id17"></span><h4><tt class="docutils literal"><span class="pre">Extent</span></tt><a class="headerlink" href="#id17" title="Permalink to this headline">¶</a></h4>
+<dl class="class">
+<a name="//apple_ref/cpp/cl/django.contrib.gis.db.models.Extent"></a><dt id="django.contrib.gis.db.models.Extent">
+<em class="property">class </em><tt class="descname">Extent</tt>(<em>geo_field</em>)<a class="headerlink" href="#django.contrib.gis.db.models.Extent" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns the same as the <a class="reference internal" href="#django.contrib.gis.db.models.GeoQuerySet.extent" title="django.contrib.gis.db.models.GeoQuerySet.extent"><tt class="xref py py-meth docutils literal"><span class="pre">GeoQuerySet.extent()</span></tt></a> aggregate method.</p>
+</div>
+<div class="section" id="s-id18">
+<span id="id18"></span><h4><tt class="docutils literal"><span class="pre">Extent3D</span></tt><a class="headerlink" href="#id18" title="Permalink to this headline">¶</a></h4>
+<dl class="class">
+<a name="//apple_ref/cpp/cl/django.contrib.gis.db.models.Extent3D"></a><dt id="django.contrib.gis.db.models.Extent3D">
+<em class="property">class </em><tt class="descname">Extent3D</tt>(<em>geo_field</em>)<a class="headerlink" href="#django.contrib.gis.db.models.Extent3D" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<div class="versionadded">
+<span class="title">New in Django 1.2:</span> <a class="reference internal" href="../../../releases/1.2.html"><em>Please, see the release notes</em></a></div>
+<p>Returns the same as the <a class="reference internal" href="#django.contrib.gis.db.models.GeoQuerySet.extent3d" title="django.contrib.gis.db.models.GeoQuerySet.extent3d"><tt class="xref py py-meth docutils literal"><span class="pre">GeoQuerySet.extent3d()</span></tt></a> aggregate method.</p>
+</div>
+<div class="section" id="s-makeline">
+<span id="makeline"></span><h4><tt class="docutils literal"><span class="pre">MakeLine</span></tt><a class="headerlink" href="#makeline" title="Permalink to this headline">¶</a></h4>
+<dl class="class">
+<a name="//apple_ref/cpp/cl/django.contrib.gis.db.models.MakeLine"></a><dt id="django.contrib.gis.db.models.MakeLine">
+<em class="property">class </em><tt class="descname">MakeLine</tt>(<em>geo_field</em>)<a class="headerlink" href="#django.contrib.gis.db.models.MakeLine" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns the same as the <a class="reference internal" href="#django.contrib.gis.db.models.GeoQuerySet.make_line" title="django.contrib.gis.db.models.GeoQuerySet.make_line"><tt class="xref py py-meth docutils literal"><span class="pre">GeoQuerySet.make_line()</span></tt></a> aggregate method.</p>
+</div>
+<div class="section" id="s-id19">
+<span id="id19"></span><h4><tt class="docutils literal"><span class="pre">Union</span></tt><a class="headerlink" href="#id19" title="Permalink to this headline">¶</a></h4>
+<dl class="class">
+<a name="//apple_ref/cpp/cl/django.contrib.gis.db.models.Union"></a><dt id="django.contrib.gis.db.models.Union">
+<em class="property">class </em><tt class="descname">Union</tt>(<em>geo_field</em>)<a class="headerlink" href="#django.contrib.gis.db.models.Union" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns the same as the <a class="reference internal" href="#django.contrib.gis.db.models.GeoQuerySet.union" title="django.contrib.gis.db.models.GeoQuerySet.union"><tt class="xref py py-meth docutils literal"><span class="pre">GeoQuerySet.union()</span></tt></a> aggregate method.</p>
+<p class="rubric">Footnotes</p>
+<table class="docutils footnote" frame="void" id="fnde9im" rules="none">
+<colgroup><col class="label"></col><col></col></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id5">[1]</a></td><td><em>See</em> <a class="reference external" href="http://www.opengis.org/docs/99-049.pdf">OpenGIS Simple Feature Specification For SQL</a>, at Ch. 2.1.13.2, p. 2-13 (The Dimensionally Extended Nine-Intersection Model).</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="fnsdorelate" rules="none">
+<colgroup><col class="label"></col><col></col></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id6">[2]</a></td><td><em>See</em> <a class="reference external" href="http://download.oracle.com/docs/cd/B19306_01/appdev.102/b14255/sdo_operat.htm#sthref845">SDO_RELATE documentation</a>, from Ch. 11 of the Oracle Spatial User's Guide and Manual.</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="fncovers" rules="none">
+<colgroup><col class="label"></col><col></col></colgroup>
+<tbody valign="top">
+<tr><td class="label">[3]</td><td><em>(<a class="fn-backref" href="#id3">1</a>, <a class="fn-backref" href="#id4">2</a>)</em> For an explanation of this routine, read <a class="reference external" href="http://lin-ear-th-inking.blogspot.com/2007/06/subtleties-of-ogc-covers-spatial.html">Quirks of the &quot;Contains&quot; Spatial Predicate</a> by Martin Davis (a PostGIS developer).</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="fncontainsproperly" rules="none">
+<colgroup><col class="label"></col><col></col></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id2">[4]</a></td><td>Refer to the PostGIS <tt class="docutils literal"><span class="pre">ST_ContainsProperly</span></tt> <a class="reference external" href="http://postgis.refractions.net/documentation/manual-1.4/ST_ContainsProperly.html">documentation</a> for more details.</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="yui-b" id="sidebar">
+<div class="sphinxsidebar">
+<div class="sphinxsidebarwrapper">
+<h3><a href="../../../contents.html">Table Of Contents</a></h3>
+<ul>
+<li><a class="reference internal" href="#">GeoQuerySet API Reference</a><ul>
+<li><a class="reference internal" href="#spatial-lookups">Spatial Lookups</a><ul>
+<li><a class="reference internal" href="#bbcontains">bbcontains</a></li>
+<li><a class="reference internal" href="#bboverlaps">bboverlaps</a></li>
+<li><a class="reference internal" href="#contained">contained</a></li>
+<li><a class="reference internal" href="#contains">contains</a></li>
+<li><a class="reference internal" href="#contains-properly">contains_properly</a></li>
+<li><a class="reference internal" href="#coveredby">coveredby</a></li>
+<li><a class="reference internal" href="#covers">covers</a></li>
+<li><a class="reference internal" href="#crosses">crosses</a></li>
+<li><a class="reference internal" href="#disjoint">disjoint</a></li>
+<li><a class="reference internal" href="#equals">equals</a></li>
+<li><a class="reference internal" href="#exact-same-as">exact, same_as</a></li>
+<li><a class="reference internal" href="#intersects">intersects</a></li>
+<li><a class="reference internal" href="#overlaps">overlaps</a></li>
+<li><a class="reference internal" href="#relate">relate</a><ul>
+<li><a class="reference internal" href="#postgis-spatialite">PostGIS &amp; SpatiaLite</a></li>
+<li><a class="reference internal" href="#oracle">Oracle</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#touches">touches</a></li>
+<li><a class="reference internal" href="#within">within</a></li>
+<li><a class="reference internal" href="#left">left</a></li>
+<li><a class="reference internal" href="#right">right</a></li>
+<li><a class="reference internal" href="#overlaps-left">overlaps_left</a></li>
+<li><a class="reference internal" href="#overlaps-right">overlaps_right</a></li>
+<li><a class="reference internal" href="#overlaps-above">overlaps_above</a></li>
+<li><a class="reference internal" href="#overlaps-below">overlaps_below</a></li>
+<li><a class="reference internal" href="#strictly-above">strictly_above</a></li>
+<li><a class="reference internal" href="#strictly-below">strictly_below</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#distance-lookups">Distance Lookups</a><ul>
+<li><a class="reference internal" href="#distance-gt">distance_gt</a></li>
+<li><a class="reference internal" href="#distance-gte">distance_gte</a></li>
+<li><a class="reference internal" href="#distance-lt">distance_lt</a></li>
+<li><a class="reference internal" href="#distance-lte">distance_lte</a></li>
+<li><a class="reference internal" href="#dwithin">dwithin</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#geoqueryset-methods"><tt class="docutils literal"><span class="pre">GeoQuerySet</span></tt> Methods</a><ul>
+<li><a class="reference internal" href="#measurement">Measurement</a><ul>
+<li><a class="reference internal" href="#area"><tt class="docutils literal"><span class="pre">area</span></tt></a></li>
+<li><a class="reference internal" href="#distance"><tt class="docutils literal"><span class="pre">distance</span></tt></a></li>
+<li><a class="reference internal" href="#length"><tt class="docutils literal"><span class="pre">length</span></tt></a></li>
+<li><a class="reference internal" href="#perimeter"><tt class="docutils literal"><span class="pre">perimeter</span></tt></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#geometry-relationships">Geometry Relationships</a><ul>
+<li><a class="reference internal" href="#centroid"><tt class="docutils literal"><span class="pre">centroid</span></tt></a></li>
+<li><a class="reference internal" href="#envelope"><tt class="docutils literal"><span class="pre">envelope</span></tt></a></li>
+<li><a class="reference internal" href="#point-on-surface"><tt class="docutils literal"><span class="pre">point_on_surface</span></tt></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#geometry-editors">Geometry Editors</a><ul>
+<li><a class="reference internal" href="#force-rhr"><tt class="docutils literal"><span class="pre">force_rhr</span></tt></a></li>
+<li><a class="reference internal" href="#reverse-geom"><tt class="docutils literal"><span class="pre">reverse_geom</span></tt></a></li>
+<li><a class="reference internal" href="#scale"><tt class="docutils literal"><span class="pre">scale</span></tt></a></li>
+<li><a class="reference internal" href="#snap-to-grid"><tt class="docutils literal"><span class="pre">snap_to_grid</span></tt></a></li>
+<li><a class="reference internal" href="#transform"><tt class="docutils literal"><span class="pre">transform</span></tt></a></li>
+<li><a class="reference internal" href="#translate"><tt class="docutils literal"><span class="pre">translate</span></tt></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#geometry-operations">Geometry Operations</a><ul>
+<li><a class="reference internal" href="#difference"><tt class="docutils literal"><span class="pre">difference</span></tt></a></li>
+<li><a class="reference internal" href="#intersection"><tt class="docutils literal"><span class="pre">intersection</span></tt></a></li>
+<li><a class="reference internal" href="#sym-difference"><tt class="docutils literal"><span class="pre">sym_difference</span></tt></a></li>
+<li><a class="reference internal" href="#union"><tt class="docutils literal"><span class="pre">union</span></tt></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#geometry-output">Geometry Output</a><ul>
+<li><a class="reference internal" href="#geohash"><tt class="docutils literal"><span class="pre">geohash</span></tt></a></li>
+<li><a class="reference internal" href="#geojson"><tt class="docutils literal"><span class="pre">geojson</span></tt></a></li>
+<li><a class="reference internal" href="#gml"><tt class="docutils literal"><span class="pre">gml</span></tt></a></li>
+<li><a class="reference internal" href="#kml"><tt class="docutils literal"><span class="pre">kml</span></tt></a></li>
+<li><a class="reference internal" href="#svg"><tt class="docutils literal"><span class="pre">svg</span></tt></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#miscellaneous">Miscellaneous</a><ul>
+<li><a class="reference internal" href="#mem-size"><tt class="docutils literal"><span class="pre">mem_size</span></tt></a></li>
+<li><a class="reference internal" href="#num-geom"><tt class="docutils literal"><span class="pre">num_geom</span></tt></a></li>
+<li><a class="reference internal" href="#num-points"><tt class="docutils literal"><span class="pre">num_points</span></tt></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#spatial-aggregates">Spatial Aggregates</a><ul>
+<li><a class="reference internal" href="#aggregate-methods">Aggregate Methods</a><ul>
+<li><a class="reference internal" href="#collect"><tt class="docutils literal"><span class="pre">collect</span></tt></a></li>
+<li><a class="reference internal" href="#extent"><tt class="docutils literal"><span class="pre">extent</span></tt></a></li>
+<li><a class="reference internal" href="#extent3d"><tt class="docutils literal"><span class="pre">extent3d</span></tt></a></li>
+<li><a class="reference internal" href="#make-line"><tt class="docutils literal"><span class="pre">make_line</span></tt></a></li>
+<li><a class="reference internal" href="#unionagg"><tt class="docutils literal"><span class="pre">unionagg</span></tt></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#aggregate-functions">Aggregate Functions</a><ul>
+<li><a class="reference internal" href="#id16"><tt class="docutils literal"><span class="pre">Collect</span></tt></a></li>
+<li><a class="reference internal" href="#id17"><tt class="docutils literal"><span class="pre">Extent</span></tt></a></li>
+<li><a class="reference internal" href="#id18"><tt class="docutils literal"><span class="pre">Extent3D</span></tt></a></li>
+<li><a class="reference internal" href="#makeline"><tt class="docutils literal"><span class="pre">MakeLine</span></tt></a></li>
+<li><a class="reference internal" href="#id19"><tt class="docutils literal"><span class="pre">Union</span></tt></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3>Browse</h3>
+<ul>
+<li>Prev: <a href="db-api.html">GeoDjango Database API</a></li>
+<li>Next: <a href="measure.html">Measurement Objects</a></li>
+</ul>
+<h3>You are here:</h3>
+<ul>
+<li>
+<a href="../../../index.html">Django v1.3.1 documentation</a>
+<ul><li><a href="../../index.html">API Reference</a>
+<ul><li><a href="../index.html"><tt class="docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal"><span class="pre">contrib</span></tt> packages</a>
+<ul><li><a href="index.html">GeoDjango</a>
+<ul><li>GeoQuerySet API Reference</li></ul>
+</li></ul></li></ul></li></ul>
+</li>
+</ul>
+<h3>This Page</h3>
+<ul class="this-page-menu">
+<li><a href="../../../_sources/ref/contrib/gis/geoquerysets.txt" rel="nofollow">Show Source</a></li>
+</ul>
+<div id="searchbox" style="display: none">
+<h3>Quick search</h3>
+<form action="../../../search.html" class="search" method="get">
+<input name="q" size="18" type="text"/>
+<input type="submit" value="Go"/>
+<input name="check_keywords" type="hidden" value="yes"/>
+<input name="area" type="hidden" value="default"/>
+</form>
+<p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+</div>
+</div>
+<h3>Last update:</h3>
+<p class="topless">Dec 06, 2011</p>
+</div>
+</div>
+<div id="ft">
+<div class="nav">
+    « <a href="db-api.html" title="GeoDjango Database API">previous</a> 
+     |
+    <a accesskey="U" href="../../index.html" title="API Reference">up</a>
+   |
+    <a href="measure.html" title="Measurement Objects">next</a> »</div>
+</div>
+</div>
+<div class="clearer"></div>
+</div>
+<div style="display:none;"><a name="#"></a><h3 class="tasks">TOC</h3><ul class="tooltip"><li class="tooltip"><a href="#">GeoQuerySet API Reference</a></li><li class="tooltip"><a href="#spatial-lookups">Spatial Lookups</a></li><li class="tooltip"><a href="#bbcontains">bbcontains</a></li><li class="tooltip"><a href="#bboverlaps">bboverlaps</a></li><li class="tooltip"><a href="#contained">contained</a></li><li class="tooltip"><a href="#contains">contains</a></li><li class="tooltip"><a href="#contains-properly">contains_properly</a></li><li class="tooltip"><a href="#coveredby">coveredby</a></li><li class="tooltip"><a href="#covers">covers</a></li><li class="tooltip"><a href="#crosses">crosses</a></li><li class="tooltip"><a href="#disjoint">disjoint</a></li><li class="tooltip"><a href="#equals">equals</a></li><li class="tooltip"><a href="#exact-same-as">exact, same_as</a></li><li class="tooltip"><a href="#intersects">intersects</a></li><li class="tooltip"><a href="#overlaps">overlaps</a></li><li class="tooltip"><a href="#relate">relate</a></li><li class="tooltip"><a href="#postgis-spatialite">PostGIS &amp; SpatiaLite</a></li><li class="tooltip"><a href="#oracle">Oracle</a></li><li class="tooltip"><a href="#touches">touches</a></li><li class="tooltip"><a href="#within">within</a></li><li class="tooltip"><a href="#left">left</a></li><li class="tooltip"><a href="#right">right</a></li><li class="tooltip"><a href="#overlaps-left">overlaps_left</a></li><li class="tooltip"><a href="#overlaps-right">overlaps_right</a></li><li class="tooltip"><a href="#overlaps-above">overlaps_above</a></li><li class="tooltip"><a href="#overlaps-below">overlaps_below</a></li><li class="tooltip"><a href="#strictly-above">strictly_above</a></li><li class="tooltip"><a href="#strictly-below">strictly_below</a></li><li class="tooltip"><a href="#distance-lookups">Distance Lookups</a></li><li class="tooltip"><a href="#distance-gt">distance_gt</a></li><li class="tooltip"><a href="#distance-gte">distance_gte</a></li><li class="tooltip"><a href="#distance-lt">distance_lt</a></li><li class="tooltip"><a href="#distance-lte">distance_lte</a></li><li class="tooltip"><a href="#dwithin">dwithin</a></li><li class="tooltip"><a href="#geoqueryset-methods">GeoQuerySet Methods</a></li><li class="tooltip"><a href="#measurement">Measurement</a></li><li class="tooltip"><a href="#area">area</a></li><li class="tooltip"><a href="#distance">distance</a></li><li class="tooltip"><a href="#length">length</a></li><li class="tooltip"><a href="#perimeter">perimeter</a></li><li class="tooltip"><a href="#geometry-relationships">Geometry Relationships</a></li><li class="tooltip"><a href="#centroid">centroid</a></li><li class="tooltip"><a href="#envelope">envelope</a></li><li class="tooltip"><a href="#point-on-surface">point_on_surface</a></li><li class="tooltip"><a href="#geometry-editors">Geometry Editors</a></li><li class="tooltip"><a href="#force-rhr">force_rhr</a></li><li class="tooltip"><a href="#reverse-geom">reverse_geom</a></li><li class="tooltip"><a href="#scale">scale</a></li><li class="tooltip"><a href="#snap-to-grid">snap_to_grid</a></li><li class="tooltip"><a href="#transform">transform</a></li><li class="tooltip"><a href="#translate">translate</a></li><li class="tooltip"><a href="#geometry-operations">Geometry Operations</a></li><li class="tooltip"><a href="#difference">difference</a></li><li class="tooltip"><a href="#intersection">intersection</a></li><li class="tooltip"><a href="#sym-difference">sym_difference</a></li><li class="tooltip"><a href="#union">union</a></li><li class="tooltip"><a href="#geometry-output">Geometry Output</a></li><li class="tooltip"><a href="#geohash">geohash</a></li><li class="tooltip"><a href="#geojson">geojson</a></li><li class="tooltip"><a href="#gml">gml</a></li><li class="tooltip"><a href="#kml">kml</a></li><li class="tooltip"><a href="#svg">svg</a></li><li class="tooltip"><a href="#miscellaneous">Miscellaneous</a></li><li class="tooltip"><a href="#mem-size">mem_size</a></li><li class="tooltip"><a href="#num-geom">num_geom</a></li><li class="tooltip"><a href="#num-points">num_points</a></li><li class="tooltip"><a href="#spatial-aggregates">Spatial Aggregates</a></li><li class="tooltip"><a href="#aggregate-methods">Aggregate Methods</a></li><li class="tooltip"><a href="#collect">collect</a></li><li class="tooltip"><a href="#extent">extent</a></li><li class="tooltip"><a href="#extent3d">extent3d</a></li><li class="tooltip"><a href="#make-line">make_line</a></li><li class="tooltip"><a href="#unionagg">unionagg</a></li><li class="tooltip"><a href="#aggregate-functions">Aggregate Functions</a></li><li class="tooltip"><a href="#id16">Collect</a></li><li class="tooltip"><a href="#id17">Extent</a></li><li class="tooltip"><a href="#id18">Extent3D</a></li><li class="tooltip"><a href="#makeline">MakeLine</a></li><li class="tooltip"><a href="#id19">Union</a></li></ul></div></body>
+</html>

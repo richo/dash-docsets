@@ -1,0 +1,287 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Deploying GeoDjango &mdash; Django v1.3.1 documentation</title>
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '1.3.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="Django v1.3.1 documentation" href="../../../index.html" />
+    <link rel="up" title="GeoDjango" href="index.html" />
+    <link rel="next" title="django.contrib.humanize" href="../humanize.html" />
+    <link rel="prev" title="Testing GeoDjango Apps" href="testing.html" />
+ 
+<script type="text/javascript" src="../../../templatebuiltins.js"></script>
+<script type="text/javascript">
+(function($) {
+    if (!django_template_builtins) {
+       // templatebuiltins.js missing, do nothing.
+       return;
+    }
+    $(document).ready(function() {
+        // Hyperlink Django template tags and filters
+        var base = "../../templates/builtins.html";
+        if (base == "#") {
+            // Special case for builtins.html itself
+            base = "";
+        }
+        // Tags are keywords, class '.k'
+        $("div.highlight\\-html\\+django span.k").each(function(i, elem) {
+             var tagname = $(elem).text();
+             if ($.inArray(tagname, django_template_builtins.ttags) != -1) {
+                 var fragment = tagname.replace(/_/, '-');
+                 $(elem).html("<a href='" + base + "#" + fragment + "'>" + tagname + "</a>");
+             }
+        });
+        // Filters are functions, class '.nf'
+        $("div.highlight\\-html\\+django span.nf").each(function(i, elem) {
+             var filtername = $(elem).text();
+             if ($.inArray(filtername, django_template_builtins.tfilters) != -1) {
+                 var fragment = filtername.replace(/_/, '-');
+                 $(elem).html("<a href='" + base + "#" + fragment + "'>" + filtername + "</a>");
+             }
+        });
+    });
+})(jQuery);
+</script>
+
+  </head>
+  <body>
+
+    <div class="document">
+  <div id="custom-doc" class="yui-t6">
+    <div id="hd">
+      <h1><a href="../../../index.html">Django v1.3.1 documentation</a></h1>
+      <div id="global-nav">
+        <a title="Home page" href="../../../index.html">Home</a>  |
+        <a title="Table of contents" href="../../../contents.html">Table of contents</a>  |
+        <a title="Global index" href="../../../genindex.html">Index</a>  |
+        <a title="Module index" href="../../../py-modindex.html">Modules</a>
+      </div>
+      <div class="nav">
+    &laquo; <a href="testing.html" title="Testing GeoDjango Apps">previous</a> 
+     |
+    <a href="../../index.html" title="API Reference" accesskey="U">up</a>
+   |
+    <a href="../humanize.html" title="django.contrib.humanize">next</a> &raquo;</div>
+    </div>
+    
+    <div id="bd">
+      <div id="yui-main">
+        <div class="yui-b">
+          <div class="yui-g" id="ref-contrib-gis-deployment">
+            
+  <div class="section" id="s-deploying-geodjango">
+<span id="deploying-geodjango"></span><h1>Deploying GeoDjango<a class="headerlink" href="#deploying-geodjango" title="Permalink to this headline">¶</a></h1>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">GeoDjango uses the GDAL geospatial library which is
+not thread safe at this time.  Thus, it is <em>highly</em> recommended
+to not use threading when deploying &#8211; in other words, use a
+an appropriate configuration of Apache or the prefork method
+when using FastCGI through another Web server.</p>
+</div>
+<div class="section" id="s-apache">
+<span id="apache"></span><h2>Apache<a class="headerlink" href="#apache" title="Permalink to this headline">¶</a></h2>
+<p>In this section there are some example <tt class="docutils literal"><span class="pre">VirtualHost</span></tt> directives for
+when deploying using either <tt class="docutils literal"><span class="pre">mod_python</span></tt> or <tt class="docutils literal"><span class="pre">mod_wsgi</span></tt>.  At this
+time, we recommend <tt class="docutils literal"><span class="pre">mod_wsgi</span></tt>, as it is now officially recommended
+way to deploy Django applications with Apache.  Moreover, if
+<tt class="docutils literal"><span class="pre">mod_python</span></tt> is used, then a prefork version of Apache must also be
+used.  As long as <tt class="docutils literal"><span class="pre">mod_wsgi</span></tt> is configured correctly, it does not
+matter whether the version of Apache is prefork or worker.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The <tt class="docutils literal"><span class="pre">Alias</span></tt> and <tt class="docutils literal"><span class="pre">Directory</span></tt> configurations in the examples
+below use an example path to a system-wide installation folder of Django.
+Substitute in an appropriate location, if necessary, as it may be
+different than the path on your system.</p>
+</div>
+<div class="section" id="s-mod-wsgi">
+<span id="mod-wsgi"></span><h3><tt class="docutils literal"><span class="pre">mod_wsgi</span></tt><a class="headerlink" href="#mod-wsgi" title="Permalink to this headline">¶</a></h3>
+<p>Example:</p>
+<div class="highlight-python"><pre>&lt;VirtualHost *:80&gt;
+  WSGIDaemonProcess geodjango user=geo group=geo processes=5 threads=1
+  WSGIProcessGroup geodjango
+  WSGIScriptAlias / /home/geo/geodjango/world.wsgi
+
+  Alias /media/ "/usr/lib/python2.5/site-packages/django/contrib/admin/media/"
+  &lt;Directory "/usr/lib/python2.5/site-packages/django/contrib/admin/media/"&gt;
+    Order allow,deny
+    Options Indexes
+    Allow from all
+    IndexOptions FancyIndexing
+  &lt;/Directory&gt;
+
+&lt;/VirtualHost&gt;</pre>
+</div>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">If the <tt class="docutils literal"><span class="pre">WSGIDaemonProcess</span></tt> attribute <tt class="docutils literal"><span class="pre">threads</span></tt> is not set to <tt class="docutils literal"><span class="pre">1</span></tt>, then
+Apache may crash when running your GeoDjango application.  Increase the
+number of <tt class="docutils literal"><span class="pre">processes</span></tt> instead.</p>
+</div>
+<p>For more information, please consult Django's
+<a class="reference internal" href="../../../howto/deployment/modwsgi.html"><em>mod_wsgi documentation</em></a>.</p>
+</div>
+<div class="section" id="s-mod-python">
+<span id="mod-python"></span><h3><tt class="docutils literal"><span class="pre">mod_python</span></tt><a class="headerlink" href="#mod-python" title="Permalink to this headline">¶</a></h3>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">Support for mod_python will be deprecated in a future release of Django. If
+you are configuring a new deployment, you are strongly encouraged to
+consider using <a class="reference internal" href="../../../howto/deployment/modwsgi.html"><em>mod_wsgi</em></a> or any of the
+other <a class="reference internal" href="../../../howto/deployment/index.html"><em>supported backends</em></a>.</p>
+</div>
+<p>Example:</p>
+<div class="highlight-python"><pre>&lt;VirtualHost *:80&gt;
+
+  &lt;Location "/"&gt;
+    SetHandler mod_python
+    PythonHandler django.core.handlers.modpython
+    SetEnv DJANGO_SETTINGS_MODULE world.settings
+    PythonDebug On
+    PythonPath "['/var/www/apps'] + sys.path"
+  &lt;/Location&gt;
+
+  Alias /media/ "/usr/lib/python2.5/site-packages/django/contrib/admin/media/"
+  &lt;Location "/media"&gt;
+    SetHandler None
+  &lt;/Location&gt;
+
+&lt;/VirtualHost&gt;</pre>
+</div>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">When using <tt class="docutils literal"><span class="pre">mod_python</span></tt> you <em>must</em> be using a prefork version of Apache, or
+else your GeoDjango application may crash Apache.</p>
+</div>
+<p>For more information, please consult Django's
+<a class="reference internal" href="../../../howto/deployment/modpython.html"><em>mod_python documentation</em></a>.</p>
+</div>
+</div>
+<div class="section" id="s-lighttpd">
+<span id="lighttpd"></span><h2>Lighttpd<a class="headerlink" href="#lighttpd" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="s-fastcgi">
+<span id="fastcgi"></span><h3>FastCGI<a class="headerlink" href="#fastcgi" title="Permalink to this headline">¶</a></h3>
+</div>
+</div>
+<div class="section" id="s-nginx">
+<span id="nginx"></span><h2>Nginx<a class="headerlink" href="#nginx" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="s-id1">
+<span id="id1"></span><h3>FastCGI<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+</div>
+</div>
+</div>
+
+
+          </div>         
+        </div>
+      </div>
+      
+        
+          <div class="yui-b" id="sidebar">
+            
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../../contents.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Deploying GeoDjango</a><ul>
+<li><a class="reference internal" href="#apache">Apache</a><ul>
+<li><a class="reference internal" href="#mod-wsgi"><tt class="docutils literal"><span class="pre">mod_wsgi</span></tt></a></li>
+<li><a class="reference internal" href="#mod-python"><tt class="docutils literal"><span class="pre">mod_python</span></tt></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#lighttpd">Lighttpd</a><ul>
+<li><a class="reference internal" href="#fastcgi">FastCGI</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#nginx">Nginx</a><ul>
+<li><a class="reference internal" href="#id1">FastCGI</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h3>Browse</h3>
+  <ul>
+    
+      <li>Prev: <a href="testing.html">Testing GeoDjango Apps</a></li>
+    
+    
+      <li>Next: <a href="../humanize.html">django.contrib.humanize</a></li>
+    
+  </ul>
+  <h3>You are here:</h3>
+  <ul>
+      <li>
+        <a href="../../../index.html">Django v1.3.1 documentation</a>
+        
+          <ul><li><a href="../../index.html">API Reference</a>
+        
+          <ul><li><a href="../index.html"><tt class="docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal"><span class="pre">contrib</span></tt> packages</a>
+        
+          <ul><li><a href="index.html">GeoDjango</a>
+        
+        <ul><li>Deploying GeoDjango</li></ul>
+        </li></ul></li></ul></li></ul>
+      </li>
+  </ul>  
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../../_sources/ref/contrib/gis/deployment.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+              <h3>Last update:</h3>
+              <p class="topless">Dec 06, 2011</p>
+          </div> 
+        
+      
+    </div>
+    
+    <div id="ft">
+      <div class="nav">
+    &laquo; <a href="testing.html" title="Testing GeoDjango Apps">previous</a> 
+     |
+    <a href="../../index.html" title="API Reference" accesskey="U">up</a>
+   |
+    <a href="../humanize.html" title="django.contrib.humanize">next</a> &raquo;</div>
+    </div>
+  </div>
+
+      <div class="clearer"></div>
+    </div>
+  </body>
+</html>

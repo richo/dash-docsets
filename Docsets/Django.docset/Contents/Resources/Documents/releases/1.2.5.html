@@ -1,0 +1,279 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Django 1.2.5 release notes &mdash; Django v1.3.1 documentation</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.3.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Django v1.3.1 documentation" href="../index.html" />
+    <link rel="up" title="Release notes" href="index.html" />
+    <link rel="next" title="Django 1.2.4 release notes" href="1.2.4.html" />
+    <link rel="prev" title="Django 1.2.6 release notes" href="1.2.6.html" />
+ 
+<script type="text/javascript" src="../templatebuiltins.js"></script>
+<script type="text/javascript">
+(function($) {
+    if (!django_template_builtins) {
+       // templatebuiltins.js missing, do nothing.
+       return;
+    }
+    $(document).ready(function() {
+        // Hyperlink Django template tags and filters
+        var base = "../ref/templates/builtins.html";
+        if (base == "#") {
+            // Special case for builtins.html itself
+            base = "";
+        }
+        // Tags are keywords, class '.k'
+        $("div.highlight\\-html\\+django span.k").each(function(i, elem) {
+             var tagname = $(elem).text();
+             if ($.inArray(tagname, django_template_builtins.ttags) != -1) {
+                 var fragment = tagname.replace(/_/, '-');
+                 $(elem).html("<a href='" + base + "#" + fragment + "'>" + tagname + "</a>");
+             }
+        });
+        // Filters are functions, class '.nf'
+        $("div.highlight\\-html\\+django span.nf").each(function(i, elem) {
+             var filtername = $(elem).text();
+             if ($.inArray(filtername, django_template_builtins.tfilters) != -1) {
+                 var fragment = filtername.replace(/_/, '-');
+                 $(elem).html("<a href='" + base + "#" + fragment + "'>" + filtername + "</a>");
+             }
+        });
+    });
+})(jQuery);
+</script>
+
+  </head>
+  <body>
+
+    <div class="document">
+  <div id="custom-doc" class="yui-t6">
+    <div id="hd">
+      <h1><a href="../index.html">Django v1.3.1 documentation</a></h1>
+      <div id="global-nav">
+        <a title="Home page" href="../index.html">Home</a>  |
+        <a title="Table of contents" href="../contents.html">Table of contents</a>  |
+        <a title="Global index" href="../genindex.html">Index</a>  |
+        <a title="Module index" href="../py-modindex.html">Modules</a>
+      </div>
+      <div class="nav">
+    &laquo; <a href="1.2.6.html" title="Django 1.2.6 release notes">previous</a> 
+     |
+    <a href="index.html" title="Release notes" accesskey="U">up</a>
+   |
+    <a href="1.2.4.html" title="Django 1.2.4 release notes">next</a> &raquo;</div>
+    </div>
+    
+    <div id="bd">
+      <div id="yui-main">
+        <div class="yui-b">
+          <div class="yui-g" id="releases-1.2.5">
+            
+  <div class="section" id="s-django-1-2-5-release-notes">
+<span id="django-1-2-5-release-notes"></span><h1>Django 1.2.5 release notes<a class="headerlink" href="#django-1-2-5-release-notes" title="Permalink to this headline">¶</a></h1>
+<p>Welcome to Django 1.2.5!</p>
+<p>This is the fifth &#8220;bugfix&#8221; release in the Django 1.2 series,
+improving the stability and performance of the Django 1.2 codebase.</p>
+<p>With four exceptions, Django 1.2.5 maintains backwards compatibility
+with Django 1.2.4. It also contains a number of fixes and other
+improvements. Django 1.2.5 is a recommended upgrade for any
+development or deployment currently using or targeting Django 1.2.</p>
+<p>For full details on the new features, backwards incompatibilities, and
+deprecated features in the 1.2 branch, see the <a class="reference internal" href="1.2.html"><em>Django 1.2 release notes</em></a>.</p>
+<div class="section" id="s-backwards-incompatible-changes">
+<span id="backwards-incompatible-changes"></span><h2>Backwards incompatible changes<a class="headerlink" href="#backwards-incompatible-changes" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="s-csrf-exception-for-ajax-requests">
+<span id="csrf-exception-for-ajax-requests"></span><h3>CSRF exception for AJAX requests<a class="headerlink" href="#csrf-exception-for-ajax-requests" title="Permalink to this headline">¶</a></h3>
+<p>Django includes a CSRF-protection mechanism, which makes use of a
+token inserted into outgoing forms. Middleware then checks for the
+token&#8217;s presence on form submission, and validates it.</p>
+<p>Prior to Django 1.2.5, our CSRF protection made an exception for AJAX
+requests, on the following basis:</p>
+<blockquote>
+<ul class="simple">
+<li>Many AJAX toolkits add an X-Requested-With header when using
+XMLHttpRequest.</li>
+<li>Browsers have strict same-origin policies regarding
+XMLHttpRequest.</li>
+<li>In the context of a browser, the only way that a custom header
+of this nature can be added is with XMLHttpRequest.</li>
+</ul>
+</blockquote>
+<p>Therefore, for ease of use, we did not apply CSRF checks to requests
+that appeared to be AJAX on the basis of the X-Requested-With header.
+The Ruby on Rails web framework had a similar exemption.</p>
+<p>Recently, engineers at Google made members of the Ruby on Rails
+development team aware of a combination of browser plugins and
+redirects which can allow an attacker to provide custom HTTP headers
+on a request to any website. This can allow a forged request to appear
+to be an AJAX request, thereby defeating CSRF protection which trusts
+the same-origin nature of AJAX requests.</p>
+<p>Michael Koziarski of the Rails team brought this to our attention, and
+we were able to produce a proof-of-concept demonstrating the same
+vulnerability in Django&#8217;s CSRF handling.</p>
+<p>To remedy this, Django will now apply full CSRF validation to all
+requests, regardless of apparent AJAX origin. This is technically
+backwards-incompatible, but the security risks have been judged to
+outweigh the compatibility concerns in this case.</p>
+<p>Additionally, Django will now accept the CSRF token in the custom HTTP
+header X-CSRFTOKEN, as well as in the form submission itself, for ease
+of use with popular JavaScript toolkits which allow insertion of
+custom headers into all AJAX requests.</p>
+<p>Please see the <a class="reference internal" href="../ref/contrib/csrf.html#csrf-ajax"><em>CSRF docs for example jQuery code</em></a>
+that demonstrates this technique, ensuring that you are looking at the
+documentation for your version of Django, as the exact code necessary
+is different for some older versions of Django.</p>
+</div>
+<div class="section" id="s-filefield-no-longer-deletes-files">
+<span id="filefield-no-longer-deletes-files"></span><h3>FileField no longer deletes files<a class="headerlink" href="#filefield-no-longer-deletes-files" title="Permalink to this headline">¶</a></h3>
+<p>In earlier Django versions, when a model instance containing a
+<a class="reference internal" href="../ref/models/fields.html#django.db.models.FileField" title="django.db.models.FileField"><tt class="xref py py-class docutils literal"><span class="pre">FileField</span></tt></a> was deleted,
+<a class="reference internal" href="../ref/models/fields.html#django.db.models.FileField" title="django.db.models.FileField"><tt class="xref py py-class docutils literal"><span class="pre">FileField</span></tt></a> took it upon itself to also delete the
+file from the backend storage. This opened the door to several potentially
+serious data-loss scenarios, including rolled-back transactions and fields on
+different models referencing the same file. In Django 1.2.5,
+<a class="reference internal" href="../ref/models/fields.html#django.db.models.FileField" title="django.db.models.FileField"><tt class="xref py py-class docutils literal"><span class="pre">FileField</span></tt></a> will never delete files from the backend
+storage. If you need cleanup of orphaned files, you&#8217;ll need to handle it
+yourself (for instance, with a custom management command that can be run
+manually or scheduled to run periodically via e.g. cron).</p>
+</div>
+<div class="section" id="s-use-of-custom-sql-to-load-initial-data-in-tests">
+<span id="use-of-custom-sql-to-load-initial-data-in-tests"></span><h3>Use of custom SQL to load initial data in tests<a class="headerlink" href="#use-of-custom-sql-to-load-initial-data-in-tests" title="Permalink to this headline">¶</a></h3>
+<p>Django provides a custom SQL hooks as a way to inject hand-crafted SQL
+into the database synchronization process. One of the possible uses
+for this custom SQL is to insert data into your database. If your
+custom SQL contains <tt class="docutils literal"><span class="pre">INSERT</span></tt> statements, those insertions will be
+performed every time your database is synchronized. This includes the
+synchronization of any test databases that are created when you run a
+test suite.</p>
+<p>However, in the process of testing the Django 1.3, it was discovered
+that this feature has never completely worked as advertised. When
+using database backends that don&#8217;t support transactions, or when using
+a TransactionTestCase, data that has been inserted using custom SQL
+will not be visible during the testing process.</p>
+<p>Unfortunately, there was no way to rectify this problem without
+introducing a backwards incompatibility. Rather than leave
+SQL-inserted initial data in an uncertain state, Django now enforces
+the policy that data inserted by custom SQL will <em>not</em> be visible
+during testing.</p>
+<p>This change only affects the testing process. You can still use custom
+SQL to load data into your production database as part of the syncdb
+process. If you require data to exist during test conditions, you
+should either insert it using <a class="reference internal" href="../topics/testing.html#topics-testing-fixtures"><em>test fixtures</em></a>, or using the <tt class="docutils literal"><span class="pre">setUp()</span></tt> method of your
+test case.</p>
+</div>
+<div class="section" id="s-modeladmin-lookup-allowed-signature-changed">
+<span id="modeladmin-lookup-allowed-signature-changed"></span><h3>ModelAdmin.lookup_allowed signature changed<a class="headerlink" href="#modeladmin-lookup-allowed-signature-changed" title="Permalink to this headline">¶</a></h3>
+<p>Django 1.2.4 introduced a method <tt class="docutils literal"><span class="pre">lookup_allowed</span></tt> on <tt class="docutils literal"><span class="pre">ModelAdmin</span></tt>, to cope
+with a security issue (changeset <a class="reference external" href="http://code.djangoproject.com/changeset/15033">[15033]</a>). Although this method was
+never documented, it seems some people have overridden <tt class="docutils literal"><span class="pre">lookup_allowed</span></tt>,
+especially to cope with regressions introduced by that changeset. While the
+method is still undocumented and not marked as stable, it may be helpful to know
+that the signature of this function has changed.</p>
+</div>
+</div>
+</div>
+
+
+          </div>         
+        </div>
+      </div>
+      
+        
+          <div class="yui-b" id="sidebar">
+            
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../contents.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Django 1.2.5 release notes</a><ul>
+<li><a class="reference internal" href="#backwards-incompatible-changes">Backwards incompatible changes</a><ul>
+<li><a class="reference internal" href="#csrf-exception-for-ajax-requests">CSRF exception for AJAX requests</a></li>
+<li><a class="reference internal" href="#filefield-no-longer-deletes-files">FileField no longer deletes files</a></li>
+<li><a class="reference internal" href="#use-of-custom-sql-to-load-initial-data-in-tests">Use of custom SQL to load initial data in tests</a></li>
+<li><a class="reference internal" href="#modeladmin-lookup-allowed-signature-changed">ModelAdmin.lookup_allowed signature changed</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h3>Browse</h3>
+  <ul>
+    
+      <li>Prev: <a href="1.2.6.html">Django 1.2.6 release notes</a></li>
+    
+    
+      <li>Next: <a href="1.2.4.html">Django 1.2.4 release notes</a></li>
+    
+  </ul>
+  <h3>You are here:</h3>
+  <ul>
+      <li>
+        <a href="../index.html">Django v1.3.1 documentation</a>
+        
+          <ul><li><a href="index.html">Release notes</a>
+        
+        <ul><li>Django 1.2.5 release notes</li></ul>
+        </li></ul>
+      </li>
+  </ul>  
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/releases/1.2.5.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+              <h3>Last update:</h3>
+              <p class="topless">Dec 06, 2011</p>
+          </div> 
+        
+      
+    </div>
+    
+    <div id="ft">
+      <div class="nav">
+    &laquo; <a href="1.2.6.html" title="Django 1.2.6 release notes">previous</a> 
+     |
+    <a href="index.html" title="Release notes" accesskey="U">up</a>
+   |
+    <a href="1.2.4.html" title="Django 1.2.4 release notes">next</a> &raquo;</div>
+    </div>
+  </div>
+
+      <div class="clearer"></div>
+    </div>
+  </body>
+</html>

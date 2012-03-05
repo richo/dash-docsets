@@ -1,0 +1,391 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<title>Generic comment moderation — Django v1.3.1 documentation</title>
+<link href="../../../_static/default.css" rel="stylesheet" type="text/css"/>
+<link href="../../../_static/pygments.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '1.3.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+<script src="../../../_static/jquery.js" type="text/javascript"></script>
+<script src="../../../_static/underscore.js" type="text/javascript"></script>
+<script src="../../../_static/doctools.js" type="text/javascript"></script>
+<link href="../../../index.html" rel="top" title="Django v1.3.1 documentation"/>
+<link href="index.html" rel="up" title="Django’s comments framework"/>
+<link href="example.html" rel="next" title="Example of using the in-built comments app"/>
+<link href="forms.html" rel="prev" title="Comment form classes"/>
+<script src="../../../templatebuiltins.js" type="text/javascript"></script>
+<script type="text/javascript">
+(function($) {
+    if (!django_template_builtins) {
+       // templatebuiltins.js missing, do nothing.
+       return;
+    }
+    $(document).ready(function() {
+        // Hyperlink Django template tags and filters
+        var base = "../../templates/builtins.html";
+        if (base == "#") {
+            // Special case for builtins.html itself
+            base = "";
+        }
+        // Tags are keywords, class '.k'
+        $("div.highlight\\-html\\+django span.k").each(function(i, elem) {
+             var tagname = $(elem).text();
+             if ($.inArray(tagname, django_template_builtins.ttags) != -1) {
+                 var fragment = tagname.replace(/_/, '-');
+                 $(elem).html("&lt;a href='" + base + "#" + fragment + "'&gt;" + tagname + "");
+             }
+        });
+        // Filters are functions, class '.nf'
+        $("div.highlight\\-html\\+django span.nf").each(function(i, elem) {
+             var filtername = $(elem).text();
+             if ($.inArray(filtername, django_template_builtins.tfilters) != -1) {
+                 var fragment = filtername.replace(/_/, '-');
+                 $(elem).html("<a href='" + base + "#" + fragment + "'>" + filtername + "</a>");
+             }
+        });
+    });
+})(jQuery);
+</script>
+</head>
+<body>
+<div class="document">
+<div class="yui-t6" id="custom-doc">
+<div id="hd">
+<h1><a href="../../../index.html">Django v1.3.1 documentation</a></h1>
+<div id="global-nav">
+<a href="../../../index.html" title="Home page">Home</a>  |
+        <a href="../../../contents.html" title="Table of contents">Table of contents</a>  |
+        <a href="../../../genindex.html" title="Global index">Index</a>  |
+        <a href="../../../py-modindex.html" title="Module index">Modules</a>
+</div>
+<div class="nav">
+    « <a href="forms.html" title="Comment form classes">previous</a> 
+     |
+    <a accesskey="U" href="../../index.html" title="API Reference">up</a>
+   |
+    <a href="example.html" title="Example of using the in-built comments app">next</a> »</div>
+</div>
+<div id="bd">
+<div id="yui-main">
+<div class="yui-b">
+<div class="yui-g" id="ref-contrib-comments-moderation">
+<div class="section" id="s-module-django.contrib.comments.moderation">
+<span id="s-generic-comment-moderation"></span><span id="module-django.contrib.comments.moderation"></span><span id="generic-comment-moderation"></span><h1>Generic comment moderation<a class="headerlink" href="#module-django.contrib.comments.moderation" title="Permalink to this headline">¶</a></h1>
+<p>Django’s bundled comments application is extremely useful on its own,
+but the amount of comment spam circulating on the Web today
+essentially makes it necessary to have some sort of automatic
+moderation system in place for any application which makes use of
+comments. To make this easier to handle in a consistent fashion,
+<tt class="docutils literal"><span class="pre">django.contrib.comments.moderation</span></tt> provides a generic, extensible
+comment-moderation system which can be applied to any model or set of
+models which want to make use of Django’s comment system.</p>
+<div class="section" id="s-overview">
+<span id="overview"></span><h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
+<p>The entire system is contained within <tt class="docutils literal"><span class="pre">django.contrib.comments.moderation</span></tt>,
+and uses a two-step process to enable moderation for any given model:</p>
+<ol class="arabic simple">
+<li>A subclass of <a class="reference internal" href="#django.contrib.comments.moderation.CommentModerator" title="django.contrib.comments.moderation.CommentModerator"><tt class="xref py py-class docutils literal"><span class="pre">CommentModerator</span></tt></a>
+is defined which specifies the moderation options the model wants to
+enable.</li>
+<li>The model is registered with the moderation system, passing in the
+model class and the class which specifies its moderation options.</li>
+</ol>
+<p>A simple example is the best illustration of this. Suppose we have the
+following model, which would represent entries in a Weblog:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">django.db</span> <span class="kn">import</span> <span class="n">models</span>
+
+<span class="k">class</span> <span class="nc">Entry</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">title</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">maxlength</span><span class="o">=</span><span class="mi">250</span><span class="p">)</span>
+    <span class="n">body</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">TextField</span><span class="p">()</span>
+    <span class="n">pub_date</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">DateTimeField</span><span class="p">()</span>
+    <span class="n">enable_comments</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">BooleanField</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Now, suppose that we want the following steps to be applied whenever a
+new comment is posted on an <tt class="docutils literal"><span class="pre">Entry</span></tt>:</p>
+<ol class="arabic simple">
+<li>If the <tt class="docutils literal"><span class="pre">Entry</span></tt>'s <tt class="docutils literal"><span class="pre">enable_comments</span></tt> field is <tt class="xref docutils literal"><span class="pre">False</span></tt>, the
+comment will simply be disallowed (i.e., immediately deleted).</li>
+<li>If the <tt class="docutils literal"><span class="pre">enable_comments</span></tt> field is <tt class="xref docutils literal"><span class="pre">True</span></tt>, the comment will be
+allowed to save.</li>
+<li>Once the comment is saved, an email should be sent to site staff
+notifying them of the new comment.</li>
+</ol>
+<p>Accomplishing this is fairly straightforward and requires very little
+code:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">django.contrib.comments.moderation</span> <span class="kn">import</span> <span class="n">CommentModerator</span><span class="p">,</span> <span class="n">moderator</span>
+
+<span class="k">class</span> <span class="nc">EntryModerator</span><span class="p">(</span><span class="n">CommentModerator</span><span class="p">):</span>
+    <span class="n">email_notification</span> <span class="o">=</span> <span class="bp">True</span>
+    <span class="n">enable_field</span> <span class="o">=</span> <span class="s">'enable_comments'</span>
+
+<span class="n">moderator</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">Entry</span><span class="p">,</span> <span class="n">EntryModerator</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The <a class="reference internal" href="#django.contrib.comments.moderation.CommentModerator" title="django.contrib.comments.moderation.CommentModerator"><tt class="xref py py-class docutils literal"><span class="pre">CommentModerator</span></tt></a> class pre-defines a number of useful moderation
+options which subclasses can enable or disable as desired, and <tt class="docutils literal"><span class="pre">moderator</span></tt>
+knows how to work with them to determine whether to allow a comment, whether
+to moderate a comment which will be allowed to post, and whether to email
+notifications of new comments.</p>
+<div class="section" id="s-built-in-moderation-options">
+<span id="built-in-moderation-options"></span><h3>Built-in moderation options<a class="headerlink" href="#built-in-moderation-options" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<a name="//apple_ref/cpp/cl/django.contrib.comments.moderation.CommentModerator"></a><dt id="django.contrib.comments.moderation.CommentModerator">
+<em class="property">class </em><tt class="descname">CommentModerator</tt><a class="headerlink" href="#django.contrib.comments.moderation.CommentModerator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Most common comment-moderation needs can be handled by subclassing
+<a class="reference internal" href="#django.contrib.comments.moderation.CommentModerator" title="django.contrib.comments.moderation.CommentModerator"><tt class="xref py py-class docutils literal"><span class="pre">CommentModerator</span></tt></a> and
+changing the values of pre-defined attributes; the full range of built-in
+options is as follows.</p>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.comments.moderation.CommentModerator.auto_close_field"></a><dt id="django.contrib.comments.moderation.CommentModerator.auto_close_field">
+<tt class="descname">auto_close_field</tt><a class="headerlink" href="#django.contrib.comments.moderation.CommentModerator.auto_close_field" title="Permalink to this definition">¶</a></dt>
+<dd><p>If this is set to the name of a
+<tt class="xref py py-class docutils literal"><span class="pre">DateField</span></tt> or
+<tt class="xref py py-class docutils literal"><span class="pre">DateTimeField</span></tt> on the model for which
+comments are being moderated, new comments for objects of that model
+will be disallowed (immediately deleted) when a certain number of days
+have passed after the date specified in that field. Must be
+used in conjunction with <a class="reference internal" href="#django.contrib.comments.moderation.CommentModerator.close_after" title="django.contrib.comments.moderation.CommentModerator.close_after"><tt class="xref py py-attr docutils literal"><span class="pre">close_after</span></tt></a>, which specifies the
+number of days past which comments should be
+disallowed. Default value is <tt class="xref docutils literal"><span class="pre">None</span></tt>.</p>
+</dd></dl>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.comments.moderation.CommentModerator.auto_moderate_field"></a><dt id="django.contrib.comments.moderation.CommentModerator.auto_moderate_field">
+<tt class="descname">auto_moderate_field</tt><a class="headerlink" href="#django.contrib.comments.moderation.CommentModerator.auto_moderate_field" title="Permalink to this definition">¶</a></dt>
+<dd><p>Like <a class="reference internal" href="#django.contrib.comments.moderation.CommentModerator.auto_close_field" title="django.contrib.comments.moderation.CommentModerator.auto_close_field"><tt class="xref py py-attr docutils literal"><span class="pre">auto_close_field</span></tt></a>, but instead of outright deleting
+new comments when the requisite number of days have elapsed,
+it will simply set the <tt class="docutils literal"><span class="pre">is_public</span></tt> field of new comments to
+<tt class="xref docutils literal"><span class="pre">False</span></tt> before saving them. Must be used in conjunction with
+<a class="reference internal" href="#django.contrib.comments.moderation.CommentModerator.moderate_after" title="django.contrib.comments.moderation.CommentModerator.moderate_after"><tt class="xref py py-attr docutils literal"><span class="pre">moderate_after</span></tt></a>, which specifies the number of days past
+which comments should be moderated. Default value is <tt class="xref docutils literal"><span class="pre">None</span></tt>.</p>
+</dd></dl>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.comments.moderation.CommentModerator.close_after"></a><dt id="django.contrib.comments.moderation.CommentModerator.close_after">
+<tt class="descname">close_after</tt><a class="headerlink" href="#django.contrib.comments.moderation.CommentModerator.close_after" title="Permalink to this definition">¶</a></dt>
+<dd><p>If <a class="reference internal" href="#django.contrib.comments.moderation.CommentModerator.auto_close_field" title="django.contrib.comments.moderation.CommentModerator.auto_close_field"><tt class="xref py py-attr docutils literal"><span class="pre">auto_close_field</span></tt></a> is used, this must specify the number
+of days past the value of the field specified by
+<a class="reference internal" href="#django.contrib.comments.moderation.CommentModerator.auto_close_field" title="django.contrib.comments.moderation.CommentModerator.auto_close_field"><tt class="xref py py-attr docutils literal"><span class="pre">auto_close_field</span></tt></a> after which new comments for an object
+should be disallowed. Allowed values are <tt class="xref docutils literal"><span class="pre">None</span></tt>, 0 (which disallows
+comments immediately), or any positive integer. Default value is
+<tt class="xref docutils literal"><span class="pre">None</span></tt>.</p>
+</dd></dl>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.comments.moderation.CommentModerator.email_notification"></a><dt id="django.contrib.comments.moderation.CommentModerator.email_notification">
+<tt class="descname">email_notification</tt><a class="headerlink" href="#django.contrib.comments.moderation.CommentModerator.email_notification" title="Permalink to this definition">¶</a></dt>
+<dd><p>If <tt class="xref docutils literal"><span class="pre">True</span></tt>, any new comment on an object of this model which
+survives moderation (i.e., is not deleted) will generate an
+email to site staff. Default value is <tt class="xref docutils literal"><span class="pre">False</span></tt>.</p>
+</dd></dl>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.comments.moderation.CommentModerator.enable_field"></a><dt id="django.contrib.comments.moderation.CommentModerator.enable_field">
+<tt class="descname">enable_field</tt><a class="headerlink" href="#django.contrib.comments.moderation.CommentModerator.enable_field" title="Permalink to this definition">¶</a></dt>
+<dd><p>If this is set to the name of a
+<tt class="xref py py-class docutils literal"><span class="pre">BooleanField</span></tt> on the model
+for which comments are being moderated, new comments on
+objects of that model will be disallowed (immediately deleted)
+whenever the value of that field is <tt class="xref docutils literal"><span class="pre">False</span></tt> on the object
+the comment would be attached to. Default value is <tt class="xref docutils literal"><span class="pre">None</span></tt>.</p>
+</dd></dl>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.comments.moderation.CommentModerator.moderate_after"></a><dt id="django.contrib.comments.moderation.CommentModerator.moderate_after">
+<tt class="descname">moderate_after</tt><a class="headerlink" href="#django.contrib.comments.moderation.CommentModerator.moderate_after" title="Permalink to this definition">¶</a></dt>
+<dd><p>If <a class="reference internal" href="#django.contrib.comments.moderation.CommentModerator.auto_moderate_field" title="django.contrib.comments.moderation.CommentModerator.auto_moderate_field"><tt class="xref py py-attr docutils literal"><span class="pre">auto_moderate_field</span></tt></a> is used, this must specify the number
+of days past the value of the field specified by
+<a class="reference internal" href="#django.contrib.comments.moderation.CommentModerator.auto_moderate_field" title="django.contrib.comments.moderation.CommentModerator.auto_moderate_field"><tt class="xref py py-attr docutils literal"><span class="pre">auto_moderate_field</span></tt></a> after which new comments for an object
+should be marked non-public. Allowed values are <tt class="xref docutils literal"><span class="pre">None</span></tt>, 0 (which
+moderates comments immediately), or any positive integer. Default
+value is <tt class="xref docutils literal"><span class="pre">None</span></tt>.</p>
+</dd></dl>
+</dd></dl>
+<p>Simply subclassing <a class="reference internal" href="#django.contrib.comments.moderation.CommentModerator" title="django.contrib.comments.moderation.CommentModerator"><tt class="xref py py-class docutils literal"><span class="pre">CommentModerator</span></tt></a> and changing the values of these
+options will automatically enable the various moderation methods for any
+models registered using the subclass.</p>
+<div class="versionchanged">
+<span class="title">Changed in Django 1.3:</span> <a class="reference internal" href="../../../releases/1.3.html"><em>Please, see the release notes</em></a></div>
+<p><tt class="docutils literal"><span class="pre">moderate_after</span></tt> and <tt class="docutils literal"><span class="pre">close_after</span></tt> now accept 0 as a valid value.</p>
+</div>
+<div class="section" id="s-adding-custom-moderation-methods">
+<span id="adding-custom-moderation-methods"></span><h3>Adding custom moderation methods<a class="headerlink" href="#adding-custom-moderation-methods" title="Permalink to this headline">¶</a></h3>
+<p>For situations where the built-in options listed above are not
+sufficient, subclasses of <a class="reference internal" href="#django.contrib.comments.moderation.CommentModerator" title="django.contrib.comments.moderation.CommentModerator"><tt class="xref py py-class docutils literal"><span class="pre">CommentModerator</span></tt></a> can also override
+the methods which actually perform the moderation, and apply any logic
+they desire.  <a class="reference internal" href="#django.contrib.comments.moderation.CommentModerator" title="django.contrib.comments.moderation.CommentModerator"><tt class="xref py py-class docutils literal"><span class="pre">CommentModerator</span></tt></a> defines three methods which
+determine how moderation will take place; each method will be called
+by the moderation system and passed two arguments: <tt class="docutils literal"><span class="pre">comment</span></tt>, which
+is the new comment being posted, <tt class="docutils literal"><span class="pre">content_object</span></tt>, which is the
+object the comment will be attached to, and <tt class="docutils literal"><span class="pre">request</span></tt>, which is the
+<a class="reference internal" href="../../request-response.html#django.http.HttpRequest" title="django.http.HttpRequest"><tt class="xref py py-class docutils literal"><span class="pre">HttpRequest</span></tt></a> in which the comment is being submitted:</p>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.contrib.comments.moderation.CommentModerator.allow"></a><dt id="django.contrib.comments.moderation.CommentModerator.allow">
+<tt class="descclassname">CommentModerator.</tt><tt class="descname">allow</tt>(<em>comment</em>, <em>content_object</em>, <em>request</em>)<a class="headerlink" href="#django.contrib.comments.moderation.CommentModerator.allow" title="Permalink to this definition">¶</a></dt>
+<dd><p>Should return <tt class="xref docutils literal"><span class="pre">True</span></tt> if the comment should be allowed to
+post on the content object, and <tt class="xref docutils literal"><span class="pre">False</span></tt> otherwise (in which
+case the comment will be immediately deleted).</p>
+</dd></dl>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.contrib.comments.moderation.CommentModerator.email"></a><dt id="django.contrib.comments.moderation.CommentModerator.email">
+<tt class="descclassname">CommentModerator.</tt><tt class="descname">email</tt>(<em>comment</em>, <em>content_object</em>, <em>request</em>)<a class="headerlink" href="#django.contrib.comments.moderation.CommentModerator.email" title="Permalink to this definition">¶</a></dt>
+<dd><p>If email notification of the new comment should be sent to
+site staff or moderators, this method is responsible for
+sending the email.</p>
+</dd></dl>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.contrib.comments.moderation.CommentModerator.moderate"></a><dt id="django.contrib.comments.moderation.CommentModerator.moderate">
+<tt class="descclassname">CommentModerator.</tt><tt class="descname">moderate</tt>(<em>comment</em>, <em>content_object</em>, <em>request</em>)<a class="headerlink" href="#django.contrib.comments.moderation.CommentModerator.moderate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Should return <tt class="xref docutils literal"><span class="pre">True</span></tt> if the comment should be moderated (in
+which case its <tt class="docutils literal"><span class="pre">is_public</span></tt> field will be set to <tt class="xref docutils literal"><span class="pre">False</span></tt>
+before saving), and <tt class="xref docutils literal"><span class="pre">False</span></tt> otherwise (in which case the
+<tt class="docutils literal"><span class="pre">is_public</span></tt> field will not be changed).</p>
+</dd></dl>
+</div>
+<div class="section" id="s-registering-models-for-moderation">
+<span id="registering-models-for-moderation"></span><h3>Registering models for moderation<a class="headerlink" href="#registering-models-for-moderation" title="Permalink to this headline">¶</a></h3>
+<p>The moderation system, represented by
+<tt class="docutils literal"><span class="pre">django.contrib.comments.moderation.moderator</span></tt> is an instance of the class
+<a class="reference internal" href="#django.contrib.comments.moderation.Moderator" title="django.contrib.comments.moderation.Moderator"><tt class="xref py py-class docutils literal"><span class="pre">Moderator</span></tt></a>, which allows registration and &quot;unregistration&quot; of models
+via two methods:</p>
+<dl class="function">
+<a name="//apple_ref/cpp/func/django.contrib.comments.moderation.moderator.register"></a><dt id="django.contrib.comments.moderation.moderator.register">
+<tt class="descclassname">moderator.</tt><tt class="descname">register</tt>(<em>model_or_iterable</em>, <em>moderation_class</em>)<a class="headerlink" href="#django.contrib.comments.moderation.moderator.register" title="Permalink to this definition">¶</a></dt>
+<dd><p>Takes two arguments: the first should be either a model class
+or list of model classes, and the second should be a subclass
+of <tt class="docutils literal"><span class="pre">CommentModerator</span></tt>, and register the model or models to
+be moderated using the options defined in the
+<tt class="docutils literal"><span class="pre">CommentModerator</span></tt> subclass. If any of the models are
+already registered for moderation, the exception
+<tt class="xref py py-exc docutils literal"><span class="pre">AlreadyModerated</span></tt> will be raised.</p>
+</dd></dl>
+<dl class="function">
+<a name="//apple_ref/cpp/func/django.contrib.comments.moderation.moderator.unregister"></a><dt id="django.contrib.comments.moderation.moderator.unregister">
+<tt class="descclassname">moderator.</tt><tt class="descname">unregister</tt>(<em>model_or_iterable</em>)<a class="headerlink" href="#django.contrib.comments.moderation.moderator.unregister" title="Permalink to this definition">¶</a></dt>
+<dd><p>Takes one argument: a model class or list of model classes,
+and removes the model or models from the set of models which
+are being moderated. If any of the models are not currently
+being moderated, the exception
+<tt class="xref py py-exc docutils literal"><span class="pre">NotModerated</span></tt> will be raised.</p>
+</dd></dl>
+</div>
+<div class="section" id="s-customizing-the-moderation-system">
+<span id="customizing-the-moderation-system"></span><h3>Customizing the moderation system<a class="headerlink" href="#customizing-the-moderation-system" title="Permalink to this headline">¶</a></h3>
+<p>Most use cases will work easily with simple subclassing of
+<a class="reference internal" href="#django.contrib.comments.moderation.CommentModerator" title="django.contrib.comments.moderation.CommentModerator"><tt class="xref py py-class docutils literal"><span class="pre">CommentModerator</span></tt></a> and registration with the provided
+<a class="reference internal" href="#django.contrib.comments.moderation.Moderator" title="django.contrib.comments.moderation.Moderator"><tt class="xref py py-class docutils literal"><span class="pre">Moderator</span></tt></a> instance, but customization of global moderation behavior
+can be achieved by subclassing <a class="reference internal" href="#django.contrib.comments.moderation.Moderator" title="django.contrib.comments.moderation.Moderator"><tt class="xref py py-class docutils literal"><span class="pre">Moderator</span></tt></a> and instead registering
+models with an instance of the subclass.</p>
+<dl class="class">
+<a name="//apple_ref/cpp/cl/django.contrib.comments.moderation.Moderator"></a><dt id="django.contrib.comments.moderation.Moderator">
+<em class="property">class </em><tt class="descname">Moderator</tt><a class="headerlink" href="#django.contrib.comments.moderation.Moderator" title="Permalink to this definition">¶</a></dt>
+<dd><p>In addition to the <tt class="xref py py-meth docutils literal"><span class="pre">Moderator.register()</span></tt> and
+<tt class="xref py py-meth docutils literal"><span class="pre">Moderator.unregister()</span></tt> methods detailed above, the following methods
+on <a class="reference internal" href="#django.contrib.comments.moderation.Moderator" title="django.contrib.comments.moderation.Moderator"><tt class="xref py py-class docutils literal"><span class="pre">Moderator</span></tt></a> can be overridden to achieve customized behavior:</p>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.contrib.comments.moderation.Moderator.connect"></a><dt id="django.contrib.comments.moderation.Moderator.connect">
+<tt class="descname">connect</tt>()<a class="headerlink" href="#django.contrib.comments.moderation.Moderator.connect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determines how moderation is set up globally. The base
+implementation in
+<a class="reference internal" href="#django.contrib.comments.moderation.Moderator" title="django.contrib.comments.moderation.Moderator"><tt class="xref py py-class docutils literal"><span class="pre">Moderator</span></tt></a> does this by
+attaching listeners to the <a class="reference internal" href="signals.html#django.contrib.comments.signals.comment_will_be_posted" title="django.contrib.comments.signals.comment_will_be_posted"><tt class="xref py py-data docutils literal"><span class="pre">comment_will_be_posted</span></tt></a>
+and <a class="reference internal" href="signals.html#django.contrib.comments.signals.comment_was_posted" title="django.contrib.comments.signals.comment_was_posted"><tt class="xref py py-data docutils literal"><span class="pre">comment_was_posted</span></tt></a> signals from the
+comment models.</p>
+</dd></dl>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.contrib.comments.moderation.Moderator.pre_save_moderation"></a><dt id="django.contrib.comments.moderation.Moderator.pre_save_moderation">
+<tt class="descname">pre_save_moderation</tt>(<em>sender</em>, <em>comment</em>, <em>request</em>, <em>**kwargs</em>)<a class="headerlink" href="#django.contrib.comments.moderation.Moderator.pre_save_moderation" title="Permalink to this definition">¶</a></dt>
+<dd><p>In the base implementation, applies all pre-save moderation
+steps (such as determining whether the comment needs to be
+deleted, or whether it needs to be marked as non-public or
+generate an email).</p>
+</dd></dl>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.contrib.comments.moderation.Moderator.post_save_moderation"></a><dt id="django.contrib.comments.moderation.Moderator.post_save_moderation">
+<tt class="descname">post_save_moderation</tt>(<em>sender</em>, <em>comment</em>, <em>request</em>, <em>**kwargs</em>)<a class="headerlink" href="#django.contrib.comments.moderation.Moderator.post_save_moderation" title="Permalink to this definition">¶</a></dt>
+<dd><p>In the base implementation, applies all post-save moderation
+steps (currently this consists entirely of deleting comments
+which were disallowed).</p>
+</dd></dl>
+</dd></dl>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="yui-b" id="sidebar">
+<div class="sphinxsidebar">
+<div class="sphinxsidebarwrapper">
+<h3><a href="../../../contents.html">Table Of Contents</a></h3>
+<ul>
+<li><a class="reference internal" href="#">Generic comment moderation</a><ul>
+<li><a class="reference internal" href="#overview">Overview</a><ul>
+<li><a class="reference internal" href="#built-in-moderation-options">Built-in moderation options</a></li>
+<li><a class="reference internal" href="#adding-custom-moderation-methods">Adding custom moderation methods</a></li>
+<li><a class="reference internal" href="#registering-models-for-moderation">Registering models for moderation</a></li>
+<li><a class="reference internal" href="#customizing-the-moderation-system">Customizing the moderation system</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3>Browse</h3>
+<ul>
+<li>Prev: <a href="forms.html">Comment form classes</a></li>
+<li>Next: <a href="example.html">Example of using the in-built comments app</a></li>
+</ul>
+<h3>You are here:</h3>
+<ul>
+<li>
+<a href="../../../index.html">Django v1.3.1 documentation</a>
+<ul><li><a href="../../index.html">API Reference</a>
+<ul><li><a href="../index.html"><tt class="docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal"><span class="pre">contrib</span></tt> packages</a>
+<ul><li><a href="index.html">Django’s comments framework</a>
+<ul><li>Generic comment moderation</li></ul>
+</li></ul></li></ul></li></ul>
+</li>
+</ul>
+<h3>This Page</h3>
+<ul class="this-page-menu">
+<li><a href="../../../_sources/ref/contrib/comments/moderation.txt" rel="nofollow">Show Source</a></li>
+</ul>
+<div id="searchbox" style="display: none">
+<h3>Quick search</h3>
+<form action="../../../search.html" class="search" method="get">
+<input name="q" size="18" type="text"/>
+<input type="submit" value="Go"/>
+<input name="check_keywords" type="hidden" value="yes"/>
+<input name="area" type="hidden" value="default"/>
+</form>
+<p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+</div>
+</div>
+<h3>Last update:</h3>
+<p class="topless">Dec 06, 2011</p>
+</div>
+</div>
+<div id="ft">
+<div class="nav">
+    « <a href="forms.html" title="Comment form classes">previous</a> 
+     |
+    <a accesskey="U" href="../../index.html" title="API Reference">up</a>
+   |
+    <a href="example.html" title="Example of using the in-built comments app">next</a> »</div>
+</div>
+</div>
+<div class="clearer"></div>
+</div>
+<div style="display:none;"><a name="#"></a><h3 class="tasks">TOC</h3><ul class="tooltip"><li class="tooltip"><a href="#">Generic comment moderation</a></li><li class="tooltip"><a href="#overview">Overview</a></li><li class="tooltip"><a href="#built-in-moderation-options">Built-in moderation options</a></li><li class="tooltip"><a href="#adding-custom-moderation-methods">Adding custom moderation methods</a></li><li class="tooltip"><a href="#registering-models-for-moderation">Registering models for moderation</a></li><li class="tooltip"><a href="#customizing-the-moderation-system">Customizing the moderation system</a></li></ul></div></body>
+</html>

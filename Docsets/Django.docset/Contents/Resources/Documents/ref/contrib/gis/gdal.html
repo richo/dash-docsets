@@ -1,0 +1,1458 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<title>GDAL API — Django v1.3.1 documentation</title>
+<link href="../../../_static/default.css" rel="stylesheet" type="text/css"/>
+<link href="../../../_static/pygments.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '1.3.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+<script src="../../../_static/jquery.js" type="text/javascript"></script>
+<script src="../../../_static/underscore.js" type="text/javascript"></script>
+<script src="../../../_static/doctools.js" type="text/javascript"></script>
+<link href="../../../index.html" rel="top" title="Django v1.3.1 documentation"/>
+<link href="index.html" rel="up" title="GeoDjango"/>
+<link href="utils.html" rel="next" title="GeoDjango Utilities"/>
+<link href="geos.html" rel="prev" title="GEOS API"/>
+<script src="../../../templatebuiltins.js" type="text/javascript"></script>
+<script type="text/javascript">
+(function($) {
+    if (!django_template_builtins) {
+       // templatebuiltins.js missing, do nothing.
+       return;
+    }
+    $(document).ready(function() {
+        // Hyperlink Django template tags and filters
+        var base = "../../templates/builtins.html";
+        if (base == "#") {
+            // Special case for builtins.html itself
+            base = "";
+        }
+        // Tags are keywords, class '.k'
+        $("div.highlight\\-html\\+django span.k").each(function(i, elem) {
+             var tagname = $(elem).text();
+             if ($.inArray(tagname, django_template_builtins.ttags) != -1) {
+                 var fragment = tagname.replace(/_/, '-');
+                 $(elem).html("&lt;a href='" + base + "#" + fragment + "'&gt;" + tagname + "");
+             }
+        });
+        // Filters are functions, class '.nf'
+        $("div.highlight\\-html\\+django span.nf").each(function(i, elem) {
+             var filtername = $(elem).text();
+             if ($.inArray(filtername, django_template_builtins.tfilters) != -1) {
+                 var fragment = filtername.replace(/_/, '-');
+                 $(elem).html("<a href='" + base + "#" + fragment + "'>" + filtername + "</a>");
+             }
+        });
+    });
+})(jQuery);
+</script>
+</head>
+<body>
+<div class="document">
+<div class="yui-t6" id="custom-doc">
+<div id="hd">
+<h1><a href="../../../index.html">Django v1.3.1 documentation</a></h1>
+<div id="global-nav">
+<a href="../../../index.html" title="Home page">Home</a>  |
+        <a href="../../../contents.html" title="Table of contents">Table of contents</a>  |
+        <a href="../../../genindex.html" title="Global index">Index</a>  |
+        <a href="../../../py-modindex.html" title="Module index">Modules</a>
+</div>
+<div class="nav">
+    « <a href="geos.html" title="GEOS API">previous</a> 
+     |
+    <a accesskey="U" href="../../index.html" title="API Reference">up</a>
+   |
+    <a href="utils.html" title="GeoDjango Utilities">next</a> »</div>
+</div>
+<div id="bd">
+<div id="yui-main">
+<div class="yui-b">
+<div class="yui-g" id="ref-contrib-gis-gdal">
+<div class="section" id="s-module-django.contrib.gis.gdal">
+<span id="s-gdal-api"></span><span id="s-ref-gdal"></span><span id="module-django.contrib.gis.gdal"></span><span id="gdal-api"></span><span id="ref-gdal"></span><h1>GDAL API<a class="headerlink" href="#module-django.contrib.gis.gdal" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference external" href="http://www.gdal.org/">GDAL</a> stands for <strong>G</strong>eospatial <strong>D</strong>ata <strong>A</strong>bstraction <strong>L</strong>ibrary,
+and is a veritable “swiss army knife” of GIS data functionality.  A subset
+of GDAL is the <a class="reference external" href="http://www.gdal.org/ogr/">OGR</a> Simple Features Library, which specializes
+in reading and writing vector geographic data in a variety of standard
+formats.</p>
+<p>GeoDjango provides a high-level Python interface for some of the
+capabilities of OGR, including the reading and coordinate transformation
+of vector spatial data.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Although the module is named <tt class="docutils literal"><span class="pre">gdal</span></tt>, GeoDjango only supports
+some of the capabilities of OGR.  Thus, none of GDAL’s features
+with respect to raster (image) data are supported at this time.</p>
+</div>
+<div class="section" id="s-overview">
+<span id="overview"></span><h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="s-sample-data">
+<span id="sample-data"></span><h3>Sample Data<a class="headerlink" href="#sample-data" title="Permalink to this headline">¶</a></h3>
+<p>The GDAL/OGR tools described here are designed to help you read in
+your geospatial data, in order for most of them to be useful you have
+to have some data to work with.  If you’re starting out and don’t yet
+have any data of your own to use, GeoDjango comes with a number of
+simple data sets that you can use for testing.  This snippet will
+determine where these sample files are installed on your computer:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">os</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">django.contrib.gis</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">GIS_PATH</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">django</span><span class="o">.</span><span class="n">contrib</span><span class="o">.</span><span class="n">gis</span><span class="o">.</span><span class="n">__file__</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">CITIES_PATH</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">GIS_PATH</span><span class="p">,</span> <span class="s">'tests/data/cities/cities.shp'</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="s-vector-data-source-objects">
+<span id="vector-data-source-objects"></span><h2>Vector Data Source Objects<a class="headerlink" href="#vector-data-source-objects" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="s-datasource">
+<span id="datasource"></span><h3><tt class="docutils literal"><span class="pre">DataSource</span></tt><a class="headerlink" href="#datasource" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference internal" href="#django.contrib.gis.gdal.DataSource" title="django.contrib.gis.gdal.DataSource"><tt class="xref py py-class docutils literal"><span class="pre">DataSource</span></tt></a> is a wrapper for the OGR data source object that
+supports reading data from a variety of OGR-supported geospatial file
+formats and data sources using a simple, consistent interface.  Each
+data source is represented by a <a class="reference internal" href="#django.contrib.gis.gdal.DataSource" title="django.contrib.gis.gdal.DataSource"><tt class="xref py py-class docutils literal"><span class="pre">DataSource</span></tt></a> object which contains
+one or more layers of data.  Each layer, represented by a <a class="reference internal" href="#django.contrib.gis.gdal.Layer" title="django.contrib.gis.gdal.Layer"><tt class="xref py py-class docutils literal"><span class="pre">Layer</span></tt></a>
+object, contains some number of geographic features (<a class="reference internal" href="#django.contrib.gis.gdal.Feature" title="django.contrib.gis.gdal.Feature"><tt class="xref py py-class docutils literal"><span class="pre">Feature</span></tt></a>),
+information about the type of features contained in that layer (e.g.
+points, polygons, etc.), as well as the names and types of any
+additional fields (<a class="reference internal" href="#django.contrib.gis.gdal.Field" title="django.contrib.gis.gdal.Field"><tt class="xref py py-class docutils literal"><span class="pre">Field</span></tt></a>) of data that may be associated with
+each feature in that layer.</p>
+<dl class="class">
+<a name="//apple_ref/cpp/cl/django.contrib.gis.gdal.DataSource"></a><dt id="django.contrib.gis.gdal.DataSource">
+<em class="property">class </em><tt class="descname">DataSource</tt>(<em>ds_input</em>)<a class="headerlink" href="#django.contrib.gis.gdal.DataSource" title="Permalink to this definition">¶</a></dt>
+<dd><p>The constructor for <tt class="docutils literal"><span class="pre">DataSource</span></tt> just a single parameter: the path of
+the file you want to read.  However, OGR
+also supports a variety of more complex data sources, including
+databases, that may be accessed by passing a special name string instead
+of a path.  For more information, see the <a class="reference external" href="http://www.gdal.org/ogr/ogr_formats.html">OGR Vector Formats</a>
+documentation.  The <a class="reference internal" href="#django.contrib.gis.gdal.DataSource.name" title="django.contrib.gis.gdal.DataSource.name"><tt class="xref py py-attr docutils literal"><span class="pre">name</span></tt></a> property of a <tt class="docutils literal"><span class="pre">DataSource</span></tt>
+instance gives the OGR name of the underlying data source that it is
+using.</p>
+<p>Once you've created your <tt class="docutils literal"><span class="pre">DataSource</span></tt>, you can find out how many
+layers of data it contains by accessing the <a class="reference internal" href="#django.contrib.gis.gdal.DataSource.layer_count" title="django.contrib.gis.gdal.DataSource.layer_count"><tt class="xref py py-attr docutils literal"><span class="pre">layer_count</span></tt></a> property,
+or (equivalently) by using the <tt class="docutils literal"><span class="pre">len()</span></tt> function.  For information on
+accessing the layers of data themselves, see the next section:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">django.contrib.gis.gdal</span> <span class="kn">import</span> <span class="n">DataSource</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ds</span> <span class="o">=</span> <span class="n">DataSource</span><span class="p">(</span><span class="n">CITIES_PATH</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ds</span><span class="o">.</span><span class="n">name</span>                         <span class="c"># The exact filename may be different on your computer</span>
+<span class="go">'/usr/local/lib/python2.6/site-packages/django/contrib/gis/tests/data/cities/cities.shp'</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ds</span><span class="o">.</span><span class="n">layer_count</span>                  <span class="c"># This file only contains one layer</span>
+<span class="go">1</span>
+</pre></div>
+</div>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.DataSource.layer_count"></a><dt id="django.contrib.gis.gdal.DataSource.layer_count">
+<tt class="descname">layer_count</tt><a class="headerlink" href="#django.contrib.gis.gdal.DataSource.layer_count" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns the number of layers in the data source.</p>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.DataSource.name"></a><dt id="django.contrib.gis.gdal.DataSource.name">
+<tt class="descname">name</tt><a class="headerlink" href="#django.contrib.gis.gdal.DataSource.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns the name of the data source.</p>
+</dd></dl>
+</div>
+<div class="section" id="s-layer">
+<span id="layer"></span><h3><tt class="docutils literal"><span class="pre">Layer</span></tt><a class="headerlink" href="#layer" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<a name="//apple_ref/cpp/cl/django.contrib.gis.gdal.Layer"></a><dt id="django.contrib.gis.gdal.Layer">
+<em class="property">class </em><tt class="descname">Layer</tt><a class="headerlink" href="#django.contrib.gis.gdal.Layer" title="Permalink to this definition">¶</a></dt>
+<dd><p><tt class="docutils literal"><span class="pre">Layer</span></tt> is a wrapper for a layer of data in a <tt class="docutils literal"><span class="pre">DataSource</span></tt> object.
+You never create a <tt class="docutils literal"><span class="pre">Layer</span></tt> object directly.  Instead, you retrieve
+them from a <a class="reference internal" href="#django.contrib.gis.gdal.DataSource" title="django.contrib.gis.gdal.DataSource"><tt class="xref py py-class docutils literal"><span class="pre">DataSource</span></tt></a> object, which is essentially a standard
+Python container of <tt class="docutils literal"><span class="pre">Layer</span></tt> objects.  For example, you can access a
+specific layer by its index (e.g. <tt class="docutils literal"><span class="pre">ds[0]</span></tt> to access the first
+layer), or you can iterate over all the layers in the container in a
+<tt class="docutils literal"><span class="pre">for</span></tt> loop.  The <tt class="docutils literal"><span class="pre">Layer</span></tt> itself acts as a container for geometric
+features.</p>
+<p>Typically, all the features in a given layer have the same geometry type.
+The <a class="reference internal" href="#django.contrib.gis.gdal.Layer.geom_type" title="django.contrib.gis.gdal.Layer.geom_type"><tt class="xref py py-attr docutils literal"><span class="pre">geom_type</span></tt></a> property of a layer is an <a class="reference internal" href="#django.contrib.gis.gdal.OGRGeomType" title="django.contrib.gis.gdal.OGRGeomType"><tt class="xref py py-class docutils literal"><span class="pre">OGRGeomType</span></tt></a>
+that identifies the feature type.  We can use it to print out some basic
+information about each layer in a <a class="reference internal" href="#django.contrib.gis.gdal.DataSource" title="django.contrib.gis.gdal.DataSource"><tt class="xref py py-class docutils literal"><span class="pre">DataSource</span></tt></a>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="n">ds</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="k">print</span> <span class="s">'Layer &quot;</span><span class="si">%s</span><span class="s">&quot;: </span><span class="si">%i</span><span class="s"> </span><span class="si">%s</span><span class="s">s'</span> <span class="o">%</span> <span class="p">(</span><span class="n">layer</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">layer</span><span class="p">),</span> <span class="n">layer</span><span class="o">.</span><span class="n">geom_type</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+<span class="gp">...</span>
+<span class="go">Layer &quot;cities&quot;: 3 Points</span>
+</pre></div>
+</div>
+<p>The example output is from the cities data source, loaded above, which
+evidently contains one layer, called <tt class="docutils literal"><span class="pre">&quot;cities&quot;</span></tt>, which contains three
+point features.  For simplicity, the examples below assume that you've
+stored that layer in the variable <tt class="docutils literal"><span class="pre">layer</span></tt>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">layer</span> <span class="o">=</span> <span class="n">ds</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+</pre></div>
+</div>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.Layer.name"></a><dt id="django.contrib.gis.gdal.Layer.name">
+<tt class="descname">name</tt><a class="headerlink" href="#django.contrib.gis.gdal.Layer.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns the name of this layer in the data source.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">layer</span><span class="o">.</span><span class="n">name</span>
+<span class="go">'cities'</span>
+</pre></div>
+</div>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.Layer.num_feat"></a><dt id="django.contrib.gis.gdal.Layer.num_feat">
+<tt class="descname">num_feat</tt><a class="headerlink" href="#django.contrib.gis.gdal.Layer.num_feat" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns the number of features in the layer.  Same as <tt class="docutils literal"><span class="pre">len(layer)</span></tt>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">layer</span><span class="o">.</span><span class="n">num_feat</span>
+<span class="go">3</span>
+</pre></div>
+</div>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.Layer.geom_type"></a><dt id="django.contrib.gis.gdal.Layer.geom_type">
+<tt class="descname">geom_type</tt><a class="headerlink" href="#django.contrib.gis.gdal.Layer.geom_type" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns the geometry type of the layer, as an <a class="reference internal" href="#django.contrib.gis.gdal.OGRGeomType" title="django.contrib.gis.gdal.OGRGeomType"><tt class="xref py py-class docutils literal"><span class="pre">OGRGeomType</span></tt></a>
+object:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">layer</span><span class="o">.</span><span class="n">geom_type</span><span class="o">.</span><span class="n">name</span>
+<span class="go">'Point'</span>
+</pre></div>
+</div>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.Layer.num_fields"></a><dt id="django.contrib.gis.gdal.Layer.num_fields">
+<tt class="descname">num_fields</tt><a class="headerlink" href="#django.contrib.gis.gdal.Layer.num_fields" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns the number of fields in the layer, i.e the number of fields of
+data associated with each feature in the layer:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">layer</span><span class="o">.</span><span class="n">num_fields</span>
+<span class="go">4</span>
+</pre></div>
+</div>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.Layer.fields"></a><dt id="django.contrib.gis.gdal.Layer.fields">
+<tt class="descname">fields</tt><a class="headerlink" href="#django.contrib.gis.gdal.Layer.fields" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns a list of the names of each of the fields in this layer:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">layer</span><span class="o">.</span><span class="n">fields</span>
+<span class="go">['Name', 'Population', 'Density', 'Created']</span>
+</pre></div>
+</div>
+<p>Returns a list of the data types of each of the fields in this layer.
+These are subclasses of <tt class="docutils literal"><span class="pre">Field</span></tt>, discussed below:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="n">ft</span><span class="o">.</span><span class="n">__name__</span> <span class="k">for</span> <span class="n">ft</span> <span class="ow">in</span> <span class="n">layer</span><span class="o">.</span><span class="n">field_types</span><span class="p">]</span>
+<span class="go">['OFTString', 'OFTReal', 'OFTReal', 'OFTDate']</span>
+</pre></div>
+</div>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.Layer.field_widths"></a><dt id="django.contrib.gis.gdal.Layer.field_widths">
+<tt class="descname">field_widths</tt><a class="headerlink" href="#django.contrib.gis.gdal.Layer.field_widths" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns a list of the maximum field widths for each of the fields in
+this layer:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">layer</span><span class="o">.</span><span class="n">field_widths</span>
+<span class="go">[80, 11, 24, 10]</span>
+</pre></div>
+</div>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.Layer.field_precisions"></a><dt id="django.contrib.gis.gdal.Layer.field_precisions">
+<tt class="descname">field_precisions</tt><a class="headerlink" href="#django.contrib.gis.gdal.Layer.field_precisions" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns a list of the numeric precisions for each of the fields in
+this layer.  This is meaningless (and set to zero) for non-numeric
+fields:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">layer</span><span class="o">.</span><span class="n">field_precisions</span>
+<span class="go">[0, 0, 15, 0]</span>
+</pre></div>
+</div>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.Layer.extent"></a><dt id="django.contrib.gis.gdal.Layer.extent">
+<tt class="descname">extent</tt><a class="headerlink" href="#django.contrib.gis.gdal.Layer.extent" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns the spatial extent of this layer, as an <a class="reference internal" href="#django.contrib.gis.gdal.Envelope" title="django.contrib.gis.gdal.Envelope"><tt class="xref py py-class docutils literal"><span class="pre">Envelope</span></tt></a>
+object:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">layer</span><span class="o">.</span><span class="n">extent</span><span class="o">.</span><span class="n">tuple</span>
+<span class="go">(-104.609252, 29.763374, -95.23506, 38.971823)</span>
+</pre></div>
+</div>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.Layer.srs"></a><dt id="django.contrib.gis.gdal.Layer.srs">
+<tt class="descname">srs</tt><a class="headerlink" href="#django.contrib.gis.gdal.Layer.srs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Property that returns the <a class="reference internal" href="#django.contrib.gis.gdal.SpatialReference" title="django.contrib.gis.gdal.SpatialReference"><tt class="xref py py-class docutils literal"><span class="pre">SpatialReference</span></tt></a> associated
+with this layer:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">layer</span><span class="o">.</span><span class="n">srs</span>
+<span class="go">GEOGCS[&quot;GCS_WGS_1984&quot;,</span>
+<span class="go">    DATUM[&quot;WGS_1984&quot;,</span>
+<span class="go">        SPHEROID[&quot;WGS_1984&quot;,6378137,298.257223563]],</span>
+<span class="go">    PRIMEM[&quot;Greenwich&quot;,0],</span>
+<span class="go">    UNIT[&quot;Degree&quot;,0.017453292519943295]]</span>
+</pre></div>
+</div>
+<p>If the <a class="reference internal" href="#django.contrib.gis.gdal.Layer" title="django.contrib.gis.gdal.Layer"><tt class="xref py py-class docutils literal"><span class="pre">Layer</span></tt></a> has no spatial reference information associated
+with it, <tt class="xref docutils literal"><span class="pre">None</span></tt> is returned.</p>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.Layer.spatial_filter"></a><dt id="django.contrib.gis.gdal.Layer.spatial_filter">
+<tt class="descname">spatial_filter</tt><a class="headerlink" href="#django.contrib.gis.gdal.Layer.spatial_filter" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<div class="versionadded">
+<span class="title">New in Django 1.2:</span> <a class="reference internal" href="../../../releases/1.2.html"><em>Please, see the release notes</em></a></div>
+<p>Property that may be used to retrieve or set a spatial filter for this
+layer.  A spatial filter can only be set with an <a class="reference internal" href="#django.contrib.gis.gdal.OGRGeometry" title="django.contrib.gis.gdal.OGRGeometry"><tt class="xref py py-class docutils literal"><span class="pre">OGRGeometry</span></tt></a>
+instance, a 4-tuple extent, or <tt class="xref docutils literal"><span class="pre">None</span></tt>.  When set with something
+other than <tt class="xref docutils literal"><span class="pre">None</span></tt>, only features that intersect the filter will be
+returned when iterating over the layer:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">layer</span><span class="o">.</span><span class="n">spatial_filter</span>
+<span class="go">None</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="nb">len</span><span class="p">(</span><span class="n">layer</span><span class="p">)</span>
+<span class="go">3</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="n">feat</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">'Name'</span><span class="p">)</span> <span class="k">for</span> <span class="n">feat</span> <span class="ow">in</span> <span class="n">layer</span><span class="p">]</span>
+<span class="go">['Pueblo', 'Lawrence', 'Houston']</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ks_extent</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mf">102.051</span><span class="p">,</span> <span class="mf">36.99</span><span class="p">,</span> <span class="o">-</span><span class="mf">94.59</span><span class="p">,</span> <span class="mf">40.00</span><span class="p">)</span> <span class="c"># Extent for state of Kansas</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">layer</span><span class="o">.</span><span class="n">spatial_filter</span> <span class="o">=</span> <span class="n">ks_extent</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">layer</span><span class="p">)</span>
+<span class="go">1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="n">feat</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">'Name'</span><span class="p">)</span> <span class="k">for</span> <span class="n">feat</span> <span class="ow">in</span> <span class="n">layer</span><span class="p">]</span>
+<span class="go">['Lawrence']</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">layer</span><span class="o">.</span><span class="n">spatial_filter</span> <span class="o">=</span> <span class="bp">None</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">layer</span><span class="p">)</span>
+<span class="go">3</span>
+</pre></div>
+</div>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.contrib.gis.gdal.Layer.get_fields"></a><dt id="django.contrib.gis.gdal.Layer.get_fields">
+<tt class="descname">get_fields</tt>()<a class="headerlink" href="#django.contrib.gis.gdal.Layer.get_fields" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>A method that returns a list of the values of a given field for each
+feature in the layer:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">layer</span><span class="o">.</span><span class="n">get_fields</span><span class="p">(</span><span class="s">'Name'</span><span class="p">)</span>
+<span class="go">['Pueblo', 'Lawrence', 'Houston']</span>
+</pre></div>
+</div>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.contrib.gis.gdal.Layer.get_geoms"></a><dt id="django.contrib.gis.gdal.Layer.get_geoms">
+<tt class="descname">get_geoms</tt>(<span class="optional">[</span><em>geos=False</em><span class="optional">]</span>)<a class="headerlink" href="#django.contrib.gis.gdal.Layer.get_geoms" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>A method that returns a list containing the geometry of each feature
+in the layer.  If the optional argument <tt class="docutils literal"><span class="pre">geos</span></tt> is set to <tt class="xref docutils literal"><span class="pre">True</span></tt>
+then the geometries are converted to <a class="reference internal" href="geos.html#django.contrib.gis.geos.GEOSGeometry" title="django.contrib.gis.geos.GEOSGeometry"><tt class="xref py py-class docutils literal"><span class="pre">GEOSGeometry</span></tt></a>
+objects. Otherwise, they are returned as <a class="reference internal" href="#django.contrib.gis.gdal.OGRGeometry" title="django.contrib.gis.gdal.OGRGeometry"><tt class="xref py py-class docutils literal"><span class="pre">OGRGeometry</span></tt></a> objects:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="n">pt</span><span class="o">.</span><span class="n">tuple</span> <span class="k">for</span> <span class="n">pt</span> <span class="ow">in</span> <span class="n">layer</span><span class="o">.</span><span class="n">get_geoms</span><span class="p">()]</span>
+<span class="go">[(-104.609252, 38.255001), (-95.23506, 38.971823), (-95.363151, 29.763374)]</span>
+</pre></div>
+</div>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.contrib.gis.gdal.Layer.test_capability"></a><dt id="django.contrib.gis.gdal.Layer.test_capability">
+<tt class="descname">test_capability</tt>(<em>capability</em>)<a class="headerlink" href="#django.contrib.gis.gdal.Layer.test_capability" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns a boolean indicating whether this layer supports the
+given capability (a string).  Examples of valid capability strings
+include: <tt class="docutils literal"><span class="pre">'RandomRead'</span></tt>, <tt class="docutils literal"><span class="pre">'SequentialWrite'</span></tt>, <tt class="docutils literal"><span class="pre">'RandomWrite'</span></tt>,
+<tt class="docutils literal"><span class="pre">'FastSpatialFilter'</span></tt>, <tt class="docutils literal"><span class="pre">'FastFeatureCount'</span></tt>, <tt class="docutils literal"><span class="pre">'FastGetExtent'</span></tt>,
+<tt class="docutils literal"><span class="pre">'CreateField'</span></tt>, <tt class="docutils literal"><span class="pre">'Transactions'</span></tt>, <tt class="docutils literal"><span class="pre">'DeleteFeature'</span></tt>, and
+<tt class="docutils literal"><span class="pre">'FastSetNextByIndex'</span></tt>.</p>
+</dd></dl>
+</div>
+<div class="section" id="s-feature">
+<span id="feature"></span><h3><tt class="docutils literal"><span class="pre">Feature</span></tt><a class="headerlink" href="#feature" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<a name="//apple_ref/cpp/cl/django.contrib.gis.gdal.Feature"></a><dt id="django.contrib.gis.gdal.Feature">
+<em class="property">class </em><tt class="descname">Feature</tt><a class="headerlink" href="#django.contrib.gis.gdal.Feature" title="Permalink to this definition">¶</a></dt>
+<dd><p><tt class="docutils literal"><span class="pre">Feature</span></tt> wraps an OGR feature.  You never create a <tt class="docutils literal"><span class="pre">Feature</span></tt>
+object directly.  Instead, you retrieve them from a <a class="reference internal" href="#django.contrib.gis.gdal.Layer" title="django.contrib.gis.gdal.Layer"><tt class="xref py py-class docutils literal"><span class="pre">Layer</span></tt></a> object.
+Each feature consists of a geometry and a set of fields containing
+additional properties.  The geometry of a field is accessible via its
+<tt class="docutils literal"><span class="pre">geom</span></tt> property, which returns an <a class="reference internal" href="#django.contrib.gis.gdal.OGRGeometry" title="django.contrib.gis.gdal.OGRGeometry"><tt class="xref py py-class docutils literal"><span class="pre">OGRGeometry</span></tt></a> object.  A <tt class="docutils literal"><span class="pre">Feature</span></tt>
+behaves like a standard Python container for its fields, which it returns as
+<a class="reference internal" href="#django.contrib.gis.gdal.Field" title="django.contrib.gis.gdal.Field"><tt class="xref py py-class docutils literal"><span class="pre">Field</span></tt></a> objects: you can access a field directly by its index or name,
+or you can iterate over a feature's fields, e.g. in a <tt class="docutils literal"><span class="pre">for</span></tt> loop.</p>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.Feature.geom"></a><dt id="django.contrib.gis.gdal.Feature.geom">
+<tt class="descname">geom</tt><a class="headerlink" href="#django.contrib.gis.gdal.Feature.geom" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns the geometry for this feature, as an <tt class="docutils literal"><span class="pre">OGRGeometry</span></tt> object:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">city</span><span class="o">.</span><span class="n">geom</span><span class="o">.</span><span class="n">tuple</span>
+<span class="go">(-104.609252, 38.255001)</span>
+</pre></div>
+</div>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.Feature.get"></a><dt id="django.contrib.gis.gdal.Feature.get">
+<tt class="descname">get</tt><a class="headerlink" href="#django.contrib.gis.gdal.Feature.get" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>A method that returns the value of the given field (specified by name)
+for this feature, <strong>not</strong> a <tt class="docutils literal"><span class="pre">Field</span></tt> wrapper object:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">city</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">'Population'</span><span class="p">)</span>
+<span class="go">102121</span>
+</pre></div>
+</div>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.Feature.geom_type"></a><dt id="django.contrib.gis.gdal.Feature.geom_type">
+<tt class="descname">geom_type</tt><a class="headerlink" href="#django.contrib.gis.gdal.Feature.geom_type" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns the type of geometry for this feature, as an <a class="reference internal" href="#django.contrib.gis.gdal.OGRGeomType" title="django.contrib.gis.gdal.OGRGeomType"><tt class="xref py py-class docutils literal"><span class="pre">OGRGeomType</span></tt></a>
+object.  This will be the same for all features in a given layer, and
+is equivalent to the <a class="reference internal" href="#django.contrib.gis.gdal.Layer.geom_type" title="django.contrib.gis.gdal.Layer.geom_type"><tt class="xref py py-attr docutils literal"><span class="pre">Layer.geom_type</span></tt></a> property of the
+<tt class="xref py py-class docutils literal"><span class="pre">Layer`</span></tt> object the feature came from.</p>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.Feature.num_fields"></a><dt id="django.contrib.gis.gdal.Feature.num_fields">
+<tt class="descname">num_fields</tt><a class="headerlink" href="#django.contrib.gis.gdal.Feature.num_fields" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns the number of fields of data associated with the feature.
+This will be the same for all features in a given layer, and is
+equivalent to the <a class="reference internal" href="#django.contrib.gis.gdal.Layer.num_fields" title="django.contrib.gis.gdal.Layer.num_fields"><tt class="xref py py-attr docutils literal"><span class="pre">Layer.num_fields</span></tt></a> property of the
+<a class="reference internal" href="#django.contrib.gis.gdal.Layer" title="django.contrib.gis.gdal.Layer"><tt class="xref py py-class docutils literal"><span class="pre">Layer</span></tt></a> object the feature came from.</p>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.Feature.fields"></a><dt id="django.contrib.gis.gdal.Feature.fields">
+<tt class="descname">fields</tt><a class="headerlink" href="#django.contrib.gis.gdal.Feature.fields" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns a list of the names of the fields of data associated with the
+feature.  This will be the same for all features in a given layer, and
+is equivalent to the <a class="reference internal" href="#django.contrib.gis.gdal.Layer.fields" title="django.contrib.gis.gdal.Layer.fields"><tt class="xref py py-attr docutils literal"><span class="pre">Layer.fields</span></tt></a> property of the <a class="reference internal" href="#django.contrib.gis.gdal.Layer" title="django.contrib.gis.gdal.Layer"><tt class="xref py py-class docutils literal"><span class="pre">Layer</span></tt></a>
+object the feature came from.</p>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.Feature.fid"></a><dt id="django.contrib.gis.gdal.Feature.fid">
+<tt class="descname">fid</tt><a class="headerlink" href="#django.contrib.gis.gdal.Feature.fid" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns the feature identifier within the layer:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">city</span><span class="o">.</span><span class="n">fid</span>
+<span class="go">0</span>
+</pre></div>
+</div>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.Feature.layer_name"></a><dt id="django.contrib.gis.gdal.Feature.layer_name">
+<tt class="descname">layer_name</tt><a class="headerlink" href="#django.contrib.gis.gdal.Feature.layer_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns the name of the <a class="reference internal" href="#django.contrib.gis.gdal.Layer" title="django.contrib.gis.gdal.Layer"><tt class="xref py py-class docutils literal"><span class="pre">Layer</span></tt></a> that the feature came from.
+This will be the same for all features in a given layer:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">city</span><span class="o">.</span><span class="n">layer_name</span>
+<span class="go">'cities'</span>
+</pre></div>
+</div>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.Feature.index"></a><dt id="django.contrib.gis.gdal.Feature.index">
+<tt class="descname">index</tt><a class="headerlink" href="#django.contrib.gis.gdal.Feature.index" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>A method that returns the index of the given field name.  This will be
+the same for all features in a given layer:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">city</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s">'Population'</span><span class="p">)</span>
+<span class="go">1</span>
+</pre></div>
+</div>
+</dd></dl>
+</div>
+<div class="section" id="s-field">
+<span id="field"></span><h3><tt class="docutils literal"><span class="pre">Field</span></tt><a class="headerlink" href="#field" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<a name="//apple_ref/cpp/cl/django.contrib.gis.gdal.Field"></a><dt id="django.contrib.gis.gdal.Field">
+<em class="property">class </em><tt class="descname">Field</tt><a class="headerlink" href="#django.contrib.gis.gdal.Field" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.Field.name"></a><dt id="django.contrib.gis.gdal.Field.name">
+<tt class="descname">name</tt><a class="headerlink" href="#django.contrib.gis.gdal.Field.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns the name of this field:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">city</span><span class="p">[</span><span class="s">'Name'</span><span class="p">]</span><span class="o">.</span><span class="n">name</span>
+<span class="go">'Name'</span>
+</pre></div>
+</div>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.Field.type"></a><dt id="django.contrib.gis.gdal.Field.type">
+<tt class="descname">type</tt><a class="headerlink" href="#django.contrib.gis.gdal.Field.type" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns the OGR type of this field, as an integer.  The
+<tt class="docutils literal"><span class="pre">FIELD_CLASSES</span></tt> dictionary maps these values onto
+subclasses of <tt class="docutils literal"><span class="pre">Field</span></tt>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">city</span><span class="p">[</span><span class="s">'Density'</span><span class="p">]</span><span class="o">.</span><span class="n">type</span>
+<span class="go">2</span>
+</pre></div>
+</div>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.Field.type_name"></a><dt id="django.contrib.gis.gdal.Field.type_name">
+<tt class="descname">type_name</tt><a class="headerlink" href="#django.contrib.gis.gdal.Field.type_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns a string with the name of the data type of this field:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">city</span><span class="p">[</span><span class="s">'Name'</span><span class="p">]</span><span class="o">.</span><span class="n">type_name</span>
+<span class="go">'String'</span>
+</pre></div>
+</div>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.Field.value"></a><dt id="django.contrib.gis.gdal.Field.value">
+<tt class="descname">value</tt><a class="headerlink" href="#django.contrib.gis.gdal.Field.value" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns the value of this field.  The <tt class="docutils literal"><span class="pre">Field</span></tt> class itself
+returns the value as a string, but each subclass returns the
+value in the most appropriate form:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">city</span><span class="p">[</span><span class="s">'Population'</span><span class="p">]</span><span class="o">.</span><span class="n">value</span>
+<span class="go">102121</span>
+</pre></div>
+</div>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.Field.width"></a><dt id="django.contrib.gis.gdal.Field.width">
+<tt class="descname">width</tt><a class="headerlink" href="#django.contrib.gis.gdal.Field.width" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns the width of this field:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">city</span><span class="p">[</span><span class="s">'Name'</span><span class="p">]</span><span class="o">.</span><span class="n">width</span>
+<span class="go">80</span>
+</pre></div>
+</div>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.Field.precision"></a><dt id="django.contrib.gis.gdal.Field.precision">
+<tt class="descname">precision</tt><a class="headerlink" href="#django.contrib.gis.gdal.Field.precision" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns the numeric precision of this field.  This is meaningless (and
+set to zero) for non-numeric fields:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">city</span><span class="p">[</span><span class="s">'Density'</span><span class="p">]</span><span class="o">.</span><span class="n">precision</span>
+<span class="go">15</span>
+</pre></div>
+</div>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.contrib.gis.gdal.Field.as_double"></a><dt id="django.contrib.gis.gdal.Field.as_double">
+<tt class="descname">as_double</tt>()<a class="headerlink" href="#django.contrib.gis.gdal.Field.as_double" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns the value of the field as a double (float):</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">city</span><span class="p">[</span><span class="s">'Density'</span><span class="p">]</span><span class="o">.</span><span class="n">as_double</span><span class="p">()</span>
+<span class="go">874.7</span>
+</pre></div>
+</div>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.contrib.gis.gdal.Field.as_int"></a><dt id="django.contrib.gis.gdal.Field.as_int">
+<tt class="descname">as_int</tt>()<a class="headerlink" href="#django.contrib.gis.gdal.Field.as_int" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns the value of the field as an integer:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">city</span><span class="p">[</span><span class="s">'Population'</span><span class="p">]</span><span class="o">.</span><span class="n">as_int</span><span class="p">()</span>
+<span class="go">102121</span>
+</pre></div>
+</div>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.contrib.gis.gdal.Field.as_string"></a><dt id="django.contrib.gis.gdal.Field.as_string">
+<tt class="descname">as_string</tt>()<a class="headerlink" href="#django.contrib.gis.gdal.Field.as_string" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns the value of the field as a string:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">city</span><span class="p">[</span><span class="s">'Name'</span><span class="p">]</span><span class="o">.</span><span class="n">as_string</span><span class="p">()</span>
+<span class="go">'Pueblo'</span>
+</pre></div>
+</div>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.contrib.gis.gdal.Field.as_datetime"></a><dt id="django.contrib.gis.gdal.Field.as_datetime">
+<tt class="descname">as_datetime</tt>()<a class="headerlink" href="#django.contrib.gis.gdal.Field.as_datetime" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns the value of the field as a tuple of date and time components:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">city</span><span class="p">[</span><span class="s">'Created'</span><span class="p">]</span><span class="o">.</span><span class="n">as_datetime</span><span class="p">()</span>
+<span class="go">(c_long(1999), c_long(5), c_long(23), c_long(0), c_long(0), c_long(0), c_long(0))</span>
+</pre></div>
+</div>
+</dd></dl>
+</div>
+<div class="section" id="s-driver">
+<span id="driver"></span><h3><tt class="docutils literal"><span class="pre">Driver</span></tt><a class="headerlink" href="#driver" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<a name="//apple_ref/cpp/cl/django.contrib.gis.gdal.Driver"></a><dt id="django.contrib.gis.gdal.Driver">
+<em class="property">class </em><tt class="descname">Driver</tt>(<em>dr_input</em>)<a class="headerlink" href="#django.contrib.gis.gdal.Driver" title="Permalink to this definition">¶</a></dt>
+<dd><p>The <tt class="docutils literal"><span class="pre">Driver</span></tt> class is used internally to wrap an OGR <a class="reference internal" href="#django.contrib.gis.gdal.DataSource" title="django.contrib.gis.gdal.DataSource"><tt class="xref py py-class docutils literal"><span class="pre">DataSource</span></tt></a> driver.</p>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.Driver.driver_count"></a><dt id="django.contrib.gis.gdal.Driver.driver_count">
+<tt class="descname">driver_count</tt><a class="headerlink" href="#django.contrib.gis.gdal.Driver.driver_count" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns the number of OGR vector drivers currently registered.</p>
+</dd></dl>
+</div>
+</div>
+<div class="section" id="s-ogr-geometries">
+<span id="ogr-geometries"></span><h2>OGR Geometries<a class="headerlink" href="#ogr-geometries" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="s-ogrgeometry">
+<span id="ogrgeometry"></span><h3><tt class="docutils literal"><span class="pre">OGRGeometry</span></tt><a class="headerlink" href="#ogrgeometry" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference internal" href="#django.contrib.gis.gdal.OGRGeometry" title="django.contrib.gis.gdal.OGRGeometry"><tt class="xref py py-class docutils literal"><span class="pre">OGRGeometry</span></tt></a> objects share similar functionality with
+<a class="reference internal" href="geos.html#django.contrib.gis.geos.GEOSGeometry" title="django.contrib.gis.geos.GEOSGeometry"><tt class="xref py py-class docutils literal"><span class="pre">GEOSGeometry</span></tt></a> objects, and are thin
+wrappers around OGR's internal geometry representation.  Thus,
+they allow for more efficient access to data when using <a class="reference internal" href="#django.contrib.gis.gdal.DataSource" title="django.contrib.gis.gdal.DataSource"><tt class="xref py py-class docutils literal"><span class="pre">DataSource</span></tt></a>.
+Unlike its GEOS counterpart, <a class="reference internal" href="#django.contrib.gis.gdal.OGRGeometry" title="django.contrib.gis.gdal.OGRGeometry"><tt class="xref py py-class docutils literal"><span class="pre">OGRGeometry</span></tt></a> supports spatial reference
+systems and coordinate transformation:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">django.contrib.gis.gdal</span> <span class="kn">import</span> <span class="n">OGRGeometry</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">polygon</span> <span class="o">=</span> <span class="n">OGRGeometry</span><span class="p">(</span><span class="s">'POLYGON((0 0, 5 0, 5 5, 0 5))'</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="class">
+<a name="//apple_ref/cpp/cl/django.contrib.gis.gdal.OGRGeometry"></a><dt id="django.contrib.gis.gdal.OGRGeometry">
+<em class="property">class </em><tt class="descname">OGRGeometry</tt>(<em>geom_input</em><span class="optional">[</span>, <em>srs=None</em><span class="optional">]</span>)<a class="headerlink" href="#django.contrib.gis.gdal.OGRGeometry" title="Permalink to this definition">¶</a></dt>
+<dd><p>This object is a wrapper for the <a class="reference external" href="http://www.gdal.org/ogr/classOGRGeometry.html">OGR Geometry</a> class.
+These objects are instantiated directly from the given <tt class="docutils literal"><span class="pre">geom_input</span></tt>
+parameter, which may be a string containing WKT or HEX, a <tt class="docutils literal"><span class="pre">buffer</span></tt>
+containing WKB data, or an <a class="reference internal" href="#django.contrib.gis.gdal.OGRGeomType" title="django.contrib.gis.gdal.OGRGeomType"><tt class="xref py py-class docutils literal"><span class="pre">OGRGeomType</span></tt></a> object. These objects
+are also returned from the <a class="reference internal" href="#django.contrib.gis.gdal.Feature.geom" title="django.contrib.gis.gdal.Feature.geom"><tt class="xref py py-class docutils literal"><span class="pre">Feature.geom</span></tt></a> attribute, when
+reading vector data from <a class="reference internal" href="#django.contrib.gis.gdal.Layer" title="django.contrib.gis.gdal.Layer"><tt class="xref py py-class docutils literal"><span class="pre">Layer</span></tt></a> (which is in turn a part of
+a <a class="reference internal" href="#django.contrib.gis.gdal.DataSource" title="django.contrib.gis.gdal.DataSource"><tt class="xref py py-class docutils literal"><span class="pre">DataSource</span></tt></a>).</p>
+<dl class="classmethod">
+<a name="//apple_ref/cpp/clm/django.contrib.gis.gdal.OGRGeometry.from_bbox"></a><dt id="django.contrib.gis.gdal.OGRGeometry.from_bbox">
+<em class="property">classmethod </em><tt class="descname">from_bbox</tt>(<em>bbox</em>)<a class="headerlink" href="#django.contrib.gis.gdal.OGRGeometry.from_bbox" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Constructs a <a class="reference internal" href="#django.contrib.gis.gdal.Polygon" title="django.contrib.gis.gdal.Polygon"><tt class="xref py py-class docutils literal"><span class="pre">Polygon</span></tt></a> from the given bounding-box (a 4-tuple).</p>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.contrib.gis.gdal.OGRGeometry.__len__"></a><dt id="django.contrib.gis.gdal.OGRGeometry.__len__">
+<tt class="descname">__len__</tt>()<a class="headerlink" href="#django.contrib.gis.gdal.OGRGeometry.__len__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns the number of points in a <a class="reference internal" href="#django.contrib.gis.gdal.LineString" title="django.contrib.gis.gdal.LineString"><tt class="xref py py-class docutils literal"><span class="pre">LineString</span></tt></a>, the
+number of rings in a <a class="reference internal" href="#django.contrib.gis.gdal.Polygon" title="django.contrib.gis.gdal.Polygon"><tt class="xref py py-class docutils literal"><span class="pre">Polygon</span></tt></a>, or the number of geometries in a
+<a class="reference internal" href="#django.contrib.gis.gdal.GeometryCollection" title="django.contrib.gis.gdal.GeometryCollection"><tt class="xref py py-class docutils literal"><span class="pre">GeometryCollection</span></tt></a>. Not applicable to other geometry types.</p>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.contrib.gis.gdal.OGRGeometry.__iter__"></a><dt id="django.contrib.gis.gdal.OGRGeometry.__iter__">
+<tt class="descname">__iter__</tt>()<a class="headerlink" href="#django.contrib.gis.gdal.OGRGeometry.__iter__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Iterates over the points in a <a class="reference internal" href="#django.contrib.gis.gdal.LineString" title="django.contrib.gis.gdal.LineString"><tt class="xref py py-class docutils literal"><span class="pre">LineString</span></tt></a>, the rings in a
+<a class="reference internal" href="#django.contrib.gis.gdal.Polygon" title="django.contrib.gis.gdal.Polygon"><tt class="xref py py-class docutils literal"><span class="pre">Polygon</span></tt></a>, or the geometries in a <a class="reference internal" href="#django.contrib.gis.gdal.GeometryCollection" title="django.contrib.gis.gdal.GeometryCollection"><tt class="xref py py-class docutils literal"><span class="pre">GeometryCollection</span></tt></a>.
+Not applicable to other geometry types.</p>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.contrib.gis.gdal.OGRGeometry.__getitem__"></a><dt id="django.contrib.gis.gdal.OGRGeometry.__getitem__">
+<tt class="descname">__getitem__</tt>()<a class="headerlink" href="#django.contrib.gis.gdal.OGRGeometry.__getitem__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns the point at the specified index for a <a class="reference internal" href="#django.contrib.gis.gdal.LineString" title="django.contrib.gis.gdal.LineString"><tt class="xref py py-class docutils literal"><span class="pre">LineString</span></tt></a>, the
+interior ring at the specified index for a <a class="reference internal" href="#django.contrib.gis.gdal.Polygon" title="django.contrib.gis.gdal.Polygon"><tt class="xref py py-class docutils literal"><span class="pre">Polygon</span></tt></a>, or the geometry
+at the specified index in a <a class="reference internal" href="#django.contrib.gis.gdal.GeometryCollection" title="django.contrib.gis.gdal.GeometryCollection"><tt class="xref py py-class docutils literal"><span class="pre">GeometryCollection</span></tt></a>.  Not applicable to
+other geometry types.</p>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.OGRGeometry.dimension"></a><dt id="django.contrib.gis.gdal.OGRGeometry.dimension">
+<tt class="descname">dimension</tt><a class="headerlink" href="#django.contrib.gis.gdal.OGRGeometry.dimension" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns the number of coordinated dimensions of the geometry, i.e. 0
+for points, 1 for lines, and so forth:</p>
+<div class="highlight-python"><pre>&gt;&gt; polygon.dimension
+2</pre>
+</div>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.OGRGeometry.coord_dim"></a><dt id="django.contrib.gis.gdal.OGRGeometry.coord_dim">
+<tt class="descname">coord_dim</tt><a class="headerlink" href="#django.contrib.gis.gdal.OGRGeometry.coord_dim" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<div class="versionchanged">
+<span class="title">Changed in Django 1.2:</span> <a class="reference internal" href="../../../releases/1.2.html"><em>Please, see the release notes</em></a></div>
+<p>Returns or sets the coordinate dimension of this geometry.  For
+example, the value would be 2 for two-dimensional geometries.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Setting this property is only available in versions 1.2 and above.</p>
+</div>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.OGRGeometry.geom_count"></a><dt id="django.contrib.gis.gdal.OGRGeometry.geom_count">
+<tt class="descname">geom_count</tt><a class="headerlink" href="#django.contrib.gis.gdal.OGRGeometry.geom_count" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns the number of elements in this geometry:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">polygon</span><span class="o">.</span><span class="n">geom_count</span>
+<span class="go">1</span>
+</pre></div>
+</div>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.OGRGeometry.point_count"></a><dt id="django.contrib.gis.gdal.OGRGeometry.point_count">
+<tt class="descname">point_count</tt><a class="headerlink" href="#django.contrib.gis.gdal.OGRGeometry.point_count" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns the number of points used to describe this geometry:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">polygon</span><span class="o">.</span><span class="n">point_count</span>
+<span class="go">4</span>
+</pre></div>
+</div>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.OGRGeometry.num_points"></a><dt id="django.contrib.gis.gdal.OGRGeometry.num_points">
+<tt class="descname">num_points</tt><a class="headerlink" href="#django.contrib.gis.gdal.OGRGeometry.num_points" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Alias for <a class="reference internal" href="#django.contrib.gis.gdal.OGRGeometry.point_count" title="django.contrib.gis.gdal.OGRGeometry.point_count"><tt class="xref py py-attr docutils literal"><span class="pre">point_count</span></tt></a>.</p>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.OGRGeometry.num_coords"></a><dt id="django.contrib.gis.gdal.OGRGeometry.num_coords">
+<tt class="descname">num_coords</tt><a class="headerlink" href="#django.contrib.gis.gdal.OGRGeometry.num_coords" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Alias for <a class="reference internal" href="#django.contrib.gis.gdal.OGRGeometry.point_count" title="django.contrib.gis.gdal.OGRGeometry.point_count"><tt class="xref py py-attr docutils literal"><span class="pre">point_count</span></tt></a>.</p>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.OGRGeometry.geom_type"></a><dt id="django.contrib.gis.gdal.OGRGeometry.geom_type">
+<tt class="descname">geom_type</tt><a class="headerlink" href="#django.contrib.gis.gdal.OGRGeometry.geom_type" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns the type of this geometry, as an <a class="reference internal" href="#django.contrib.gis.gdal.OGRGeomType" title="django.contrib.gis.gdal.OGRGeomType"><tt class="xref py py-class docutils literal"><span class="pre">OGRGeomType</span></tt></a> object.</p>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.OGRGeometry.geom_name"></a><dt id="django.contrib.gis.gdal.OGRGeometry.geom_name">
+<tt class="descname">geom_name</tt><a class="headerlink" href="#django.contrib.gis.gdal.OGRGeometry.geom_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns the name of the type of this geometry:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">polygon</span><span class="o">.</span><span class="n">geom_name</span>
+<span class="go">'POLYGON'</span>
+</pre></div>
+</div>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.OGRGeometry.area"></a><dt id="django.contrib.gis.gdal.OGRGeometry.area">
+<tt class="descname">area</tt><a class="headerlink" href="#django.contrib.gis.gdal.OGRGeometry.area" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns the area of this geometry, or 0 for geometries that do not
+contain an area:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">polygon</span><span class="o">.</span><span class="n">area</span>
+<span class="go">25.0</span>
+</pre></div>
+</div>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.OGRGeometry.envelope"></a><dt id="django.contrib.gis.gdal.OGRGeometry.envelope">
+<tt class="descname">envelope</tt><a class="headerlink" href="#django.contrib.gis.gdal.OGRGeometry.envelope" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns the envelope of this geometry, as an <a class="reference internal" href="#django.contrib.gis.gdal.Envelope" title="django.contrib.gis.gdal.Envelope"><tt class="xref py py-class docutils literal"><span class="pre">Envelope</span></tt></a> object.</p>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.OGRGeometry.extent"></a><dt id="django.contrib.gis.gdal.OGRGeometry.extent">
+<tt class="descname">extent</tt><a class="headerlink" href="#django.contrib.gis.gdal.OGRGeometry.extent" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns the envelope of this geometry as a 4-tuple, instead of as an
+<a class="reference internal" href="#django.contrib.gis.gdal.Envelope" title="django.contrib.gis.gdal.Envelope"><tt class="xref py py-class docutils literal"><span class="pre">Envelope</span></tt></a> object:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">point</span><span class="o">.</span><span class="n">extent</span>
+<span class="go">(0.0, 0.0, 5.0, 5.0)</span>
+</pre></div>
+</div>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.OGRGeometry.srs"></a><dt id="django.contrib.gis.gdal.OGRGeometry.srs">
+<tt class="descname">srs</tt><a class="headerlink" href="#django.contrib.gis.gdal.OGRGeometry.srs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>This property controls the spatial reference for this geometry, or
+<tt class="xref docutils literal"><span class="pre">None</span></tt> if no spatial reference system has been assigned to it.
+If assigned, accessing this property returns a <a class="reference internal" href="#django.contrib.gis.gdal.SpatialReference" title="django.contrib.gis.gdal.SpatialReference"><tt class="xref py py-class docutils literal"><span class="pre">SpatialReference</span></tt></a>
+object.  It may be set with another <a class="reference internal" href="#django.contrib.gis.gdal.SpatialReference" title="django.contrib.gis.gdal.SpatialReference"><tt class="xref py py-class docutils literal"><span class="pre">SpatialReference</span></tt></a> object,
+or any input that <a class="reference internal" href="#django.contrib.gis.gdal.SpatialReference" title="django.contrib.gis.gdal.SpatialReference"><tt class="xref py py-class docutils literal"><span class="pre">SpatialReference</span></tt></a> accepts. Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">city</span><span class="o">.</span><span class="n">geom</span><span class="o">.</span><span class="n">srs</span><span class="o">.</span><span class="n">name</span>
+<span class="go">'GCS_WGS_1984'</span>
+</pre></div>
+</div>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.OGRGeometry.srid"></a><dt id="django.contrib.gis.gdal.OGRGeometry.srid">
+<tt class="descname">srid</tt><a class="headerlink" href="#django.contrib.gis.gdal.OGRGeometry.srid" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns or sets the spatial reference identifier corresponding to
+<a class="reference internal" href="#django.contrib.gis.gdal.SpatialReference" title="django.contrib.gis.gdal.SpatialReference"><tt class="xref py py-class docutils literal"><span class="pre">SpatialReference</span></tt></a> of this geometry.  Returns <tt class="xref docutils literal"><span class="pre">None</span></tt> if
+there is no spatial reference information associated with this
+geometry, or if an SRID cannot be determined.</p>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.OGRGeometry.geos"></a><dt id="django.contrib.gis.gdal.OGRGeometry.geos">
+<tt class="descname">geos</tt><a class="headerlink" href="#django.contrib.gis.gdal.OGRGeometry.geos" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns a <a class="reference internal" href="geos.html#django.contrib.gis.geos.GEOSGeometry" title="django.contrib.gis.geos.GEOSGeometry"><tt class="xref py py-class docutils literal"><span class="pre">GEOSGeometry</span></tt></a> object
+corresponding to this geometry.</p>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.OGRGeometry.gml"></a><dt id="django.contrib.gis.gdal.OGRGeometry.gml">
+<tt class="descname">gml</tt><a class="headerlink" href="#django.contrib.gis.gdal.OGRGeometry.gml" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns a string representation of this geometry in GML format:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">OGRGeometry</span><span class="p">(</span><span class="s">'POINT(1 2)'</span><span class="p">)</span><span class="o">.</span><span class="n">gml</span>
+<span class="go">'&lt;gml:Point&gt;&lt;gml:coordinates&gt;1,2&lt;/gml:coordinates&gt;&lt;/gml:Point&gt;'</span>
+</pre></div>
+</div>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.OGRGeometry.hex"></a><dt id="django.contrib.gis.gdal.OGRGeometry.hex">
+<tt class="descname">hex</tt><a class="headerlink" href="#django.contrib.gis.gdal.OGRGeometry.hex" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns a string representation of this geometry in HEX WKB format:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">OGRGeometry</span><span class="p">(</span><span class="s">'POINT(1 2)'</span><span class="p">)</span><span class="o">.</span><span class="n">hex</span>
+<span class="go">'0101000000000000000000F03F0000000000000040'</span>
+</pre></div>
+</div>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.OGRGeometry.json"></a><dt id="django.contrib.gis.gdal.OGRGeometry.json">
+<tt class="descname">json</tt><a class="headerlink" href="#django.contrib.gis.gdal.OGRGeometry.json" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns a string representation of this geometry in JSON format:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">OGRGeometry</span><span class="p">(</span><span class="s">'POINT(1 2)'</span><span class="p">)</span><span class="o">.</span><span class="n">json</span>
+<span class="go">'{ &quot;type&quot;: &quot;Point&quot;, &quot;coordinates&quot;: [ 1.000000, 2.000000 ] }'</span>
+</pre></div>
+</div>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.OGRGeometry.kml"></a><dt id="django.contrib.gis.gdal.OGRGeometry.kml">
+<tt class="descname">kml</tt><a class="headerlink" href="#django.contrib.gis.gdal.OGRGeometry.kml" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns a string representation of this geometry in KML format.</p>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.OGRGeometry.wkb_size"></a><dt id="django.contrib.gis.gdal.OGRGeometry.wkb_size">
+<tt class="descname">wkb_size</tt><a class="headerlink" href="#django.contrib.gis.gdal.OGRGeometry.wkb_size" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns the size of the WKB buffer needed to hold a WKB representation
+of this geometry:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">OGRGeometry</span><span class="p">(</span><span class="s">'POINT(1 2)'</span><span class="p">)</span><span class="o">.</span><span class="n">wkb_size</span>
+<span class="go">21</span>
+</pre></div>
+</div>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.OGRGeometry.wkb"></a><dt id="django.contrib.gis.gdal.OGRGeometry.wkb">
+<tt class="descname">wkb</tt><a class="headerlink" href="#django.contrib.gis.gdal.OGRGeometry.wkb" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns a <tt class="docutils literal"><span class="pre">buffer</span></tt> containing a WKB representation of this geometry.</p>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.OGRGeometry.wkt"></a><dt id="django.contrib.gis.gdal.OGRGeometry.wkt">
+<tt class="descname">wkt</tt><a class="headerlink" href="#django.contrib.gis.gdal.OGRGeometry.wkt" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns a string representation of this geometry in WKT format.</p>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.OGRGeometry.ewkt"></a><dt id="django.contrib.gis.gdal.OGRGeometry.ewkt">
+<tt class="descname">ewkt</tt><a class="headerlink" href="#django.contrib.gis.gdal.OGRGeometry.ewkt" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<div class="versionadded">
+<span class="title">New in Django 1.2:</span> <a class="reference internal" href="../../../releases/1.2.html"><em>Please, see the release notes</em></a></div>
+<p>Returns the EWKT representation of this geometry.</p>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.contrib.gis.gdal.OGRGeometry.clone"></a><dt id="django.contrib.gis.gdal.OGRGeometry.clone">
+<tt class="descname">clone</tt>()<a class="headerlink" href="#django.contrib.gis.gdal.OGRGeometry.clone" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns a new <a class="reference internal" href="#django.contrib.gis.gdal.OGRGeometry" title="django.contrib.gis.gdal.OGRGeometry"><tt class="xref py py-class docutils literal"><span class="pre">OGRGeometry</span></tt></a> clone of this geometry object.</p>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.contrib.gis.gdal.OGRGeometry.close_rings"></a><dt id="django.contrib.gis.gdal.OGRGeometry.close_rings">
+<tt class="descname">close_rings</tt>()<a class="headerlink" href="#django.contrib.gis.gdal.OGRGeometry.close_rings" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>If there are any rings within this geometry that have not been closed,
+this routine will do so by adding the starting point to the end:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">triangle</span> <span class="o">=</span> <span class="n">OGRGeometry</span><span class="p">(</span><span class="s">'LINEARRING (0 0,0 1,1 0)'</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">triangle</span><span class="o">.</span><span class="n">close_rings</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">triangle</span><span class="o">.</span><span class="n">wkt</span>
+<span class="go">'LINEARRING (0 0,0 1,1 0,0 0)'</span>
+</pre></div>
+</div>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.contrib.gis.gdal.OGRGeometry.transform"></a><dt id="django.contrib.gis.gdal.OGRGeometry.transform">
+<tt class="descname">transform</tt>(<em>coord_trans</em>, <em>clone=False</em>)<a class="headerlink" href="#django.contrib.gis.gdal.OGRGeometry.transform" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Transforms this geometry to a different spatial reference system.  May
+take a <a class="reference internal" href="#django.contrib.gis.gdal.CoordTransform" title="django.contrib.gis.gdal.CoordTransform"><tt class="xref py py-class docutils literal"><span class="pre">CoordTransform</span></tt></a> object, a <a class="reference internal" href="#django.contrib.gis.gdal.SpatialReference" title="django.contrib.gis.gdal.SpatialReference"><tt class="xref py py-class docutils literal"><span class="pre">SpatialReference</span></tt></a> object,
+or any other input accepted by <a class="reference internal" href="#django.contrib.gis.gdal.SpatialReference" title="django.contrib.gis.gdal.SpatialReference"><tt class="xref py py-class docutils literal"><span class="pre">SpatialReference</span></tt></a> (including
+spatial reference WKT and PROJ.4 strings, or an integer SRID).
+By default nothing is returned and the geometry is transformed in-place.
+However, if the <cite>clone</cite> keyword is set to <tt class="xref docutils literal"><span class="pre">True</span></tt> then a transformed clone
+of this geometry is returned instead.</p>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.contrib.gis.gdal.OGRGeometry.intersects"></a><dt id="django.contrib.gis.gdal.OGRGeometry.intersects">
+<tt class="descname">intersects</tt>(<em>other</em>)<a class="headerlink" href="#django.contrib.gis.gdal.OGRGeometry.intersects" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns <tt class="xref docutils literal"><span class="pre">True</span></tt> if this geometry intersects the other, otherwise returns
+<tt class="xref docutils literal"><span class="pre">False</span></tt>.</p>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.contrib.gis.gdal.OGRGeometry.equals"></a><dt id="django.contrib.gis.gdal.OGRGeometry.equals">
+<tt class="descname">equals</tt>(<em>other</em>)<a class="headerlink" href="#django.contrib.gis.gdal.OGRGeometry.equals" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns <tt class="xref docutils literal"><span class="pre">True</span></tt> if this geometry is equivalent to the other, otherwise returns
+<tt class="xref docutils literal"><span class="pre">False</span></tt>.</p>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.contrib.gis.gdal.OGRGeometry.disjoint"></a><dt id="django.contrib.gis.gdal.OGRGeometry.disjoint">
+<tt class="descname">disjoint</tt>(<em>other</em>)<a class="headerlink" href="#django.contrib.gis.gdal.OGRGeometry.disjoint" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns <tt class="xref docutils literal"><span class="pre">True</span></tt> if this geometry is spatially disjoint to (i.e. does
+not intersect) the other, otherwise returns <tt class="xref docutils literal"><span class="pre">False</span></tt>.</p>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.contrib.gis.gdal.OGRGeometry.touches"></a><dt id="django.contrib.gis.gdal.OGRGeometry.touches">
+<tt class="descname">touches</tt>(<em>other</em>)<a class="headerlink" href="#django.contrib.gis.gdal.OGRGeometry.touches" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns <tt class="xref docutils literal"><span class="pre">True</span></tt> if this geometry touches the other, otherwise returns
+<tt class="xref docutils literal"><span class="pre">False</span></tt>.</p>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.contrib.gis.gdal.OGRGeometry.crosses"></a><dt id="django.contrib.gis.gdal.OGRGeometry.crosses">
+<tt class="descname">crosses</tt>(<em>other</em>)<a class="headerlink" href="#django.contrib.gis.gdal.OGRGeometry.crosses" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns <tt class="xref docutils literal"><span class="pre">True</span></tt> if this geometry crosses the other, otherwise returns
+<tt class="xref docutils literal"><span class="pre">False</span></tt>.</p>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.contrib.gis.gdal.OGRGeometry.within"></a><dt id="django.contrib.gis.gdal.OGRGeometry.within">
+<tt class="descname">within</tt>(<em>other</em>)<a class="headerlink" href="#django.contrib.gis.gdal.OGRGeometry.within" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns <tt class="xref docutils literal"><span class="pre">True</span></tt> if this geometry is contained within the other, otherwise returns
+<tt class="xref docutils literal"><span class="pre">False</span></tt>.</p>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.contrib.gis.gdal.OGRGeometry.contains"></a><dt id="django.contrib.gis.gdal.OGRGeometry.contains">
+<tt class="descname">contains</tt>(<em>other</em>)<a class="headerlink" href="#django.contrib.gis.gdal.OGRGeometry.contains" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns <tt class="xref docutils literal"><span class="pre">True</span></tt> if this geometry contains the other, otherwise returns
+<tt class="xref docutils literal"><span class="pre">False</span></tt>.</p>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.contrib.gis.gdal.OGRGeometry.overlaps"></a><dt id="django.contrib.gis.gdal.OGRGeometry.overlaps">
+<tt class="descname">overlaps</tt>(<em>other</em>)<a class="headerlink" href="#django.contrib.gis.gdal.OGRGeometry.overlaps" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns <tt class="xref docutils literal"><span class="pre">True</span></tt> if this geometry overlaps the other, otherwise returns
+<tt class="xref docutils literal"><span class="pre">False</span></tt>.</p>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.contrib.gis.gdal.OGRGeometry.boundary"></a><dt id="django.contrib.gis.gdal.OGRGeometry.boundary">
+<tt class="descname">boundary</tt>()<a class="headerlink" href="#django.contrib.gis.gdal.OGRGeometry.boundary" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>The boundary of this geometry, as a new <a class="reference internal" href="#django.contrib.gis.gdal.OGRGeometry" title="django.contrib.gis.gdal.OGRGeometry"><tt class="xref py py-class docutils literal"><span class="pre">OGRGeometry</span></tt></a> object.</p>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.OGRGeometry.convex_hull"></a><dt id="django.contrib.gis.gdal.OGRGeometry.convex_hull">
+<tt class="descname">convex_hull</tt><a class="headerlink" href="#django.contrib.gis.gdal.OGRGeometry.convex_hull" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>The smallest convex polygon that contains this geometry, as a new
+<a class="reference internal" href="#django.contrib.gis.gdal.OGRGeometry" title="django.contrib.gis.gdal.OGRGeometry"><tt class="xref py py-class docutils literal"><span class="pre">OGRGeometry</span></tt></a> object.</p>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.contrib.gis.gdal.OGRGeometry.difference"></a><dt id="django.contrib.gis.gdal.OGRGeometry.difference">
+<tt class="descname">difference</tt>()<a class="headerlink" href="#django.contrib.gis.gdal.OGRGeometry.difference" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns the region consisting of the difference of this geometry and
+the other, as a new <a class="reference internal" href="#django.contrib.gis.gdal.OGRGeometry" title="django.contrib.gis.gdal.OGRGeometry"><tt class="xref py py-class docutils literal"><span class="pre">OGRGeometry</span></tt></a> object.</p>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.contrib.gis.gdal.OGRGeometry.intersection"></a><dt id="django.contrib.gis.gdal.OGRGeometry.intersection">
+<tt class="descname">intersection</tt>()<a class="headerlink" href="#django.contrib.gis.gdal.OGRGeometry.intersection" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns the region consisting of the intersection of this geometry and
+the other, as a new <a class="reference internal" href="#django.contrib.gis.gdal.OGRGeometry" title="django.contrib.gis.gdal.OGRGeometry"><tt class="xref py py-class docutils literal"><span class="pre">OGRGeometry</span></tt></a> object.</p>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.contrib.gis.gdal.OGRGeometry.sym_difference"></a><dt id="django.contrib.gis.gdal.OGRGeometry.sym_difference">
+<tt class="descname">sym_difference</tt>()<a class="headerlink" href="#django.contrib.gis.gdal.OGRGeometry.sym_difference" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns the region consisting of the symmetric difference of this
+geometry and the other, as a new <a class="reference internal" href="#django.contrib.gis.gdal.OGRGeometry" title="django.contrib.gis.gdal.OGRGeometry"><tt class="xref py py-class docutils literal"><span class="pre">OGRGeometry</span></tt></a> object.</p>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.contrib.gis.gdal.OGRGeometry.union"></a><dt id="django.contrib.gis.gdal.OGRGeometry.union">
+<tt class="descname">union</tt>()<a class="headerlink" href="#django.contrib.gis.gdal.OGRGeometry.union" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns the region consisting of the union of this geometry and
+the other, as a new <a class="reference internal" href="#django.contrib.gis.gdal.OGRGeometry" title="django.contrib.gis.gdal.OGRGeometry"><tt class="xref py py-class docutils literal"><span class="pre">OGRGeometry</span></tt></a> object.</p>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.OGRGeometry.tuple"></a><dt id="django.contrib.gis.gdal.OGRGeometry.tuple">
+<tt class="descname">tuple</tt><a class="headerlink" href="#django.contrib.gis.gdal.OGRGeometry.tuple" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns the coordinates of a point geometry as a tuple, the
+coordinates of a line geometry as a tuple of tuples, and so forth:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">OGRGeometry</span><span class="p">(</span><span class="s">'POINT (1 2)'</span><span class="p">)</span><span class="o">.</span><span class="n">tuple</span>
+<span class="go">(1.0, 2.0)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">OGRGeometry</span><span class="p">(</span><span class="s">'LINESTRING (1 2,3 4)'</span><span class="p">)</span><span class="o">.</span><span class="n">tuple</span>
+<span class="go">((1.0, 2.0), (3.0, 4.0))</span>
+</pre></div>
+</div>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.OGRGeometry.coords"></a><dt id="django.contrib.gis.gdal.OGRGeometry.coords">
+<tt class="descname">coords</tt><a class="headerlink" href="#django.contrib.gis.gdal.OGRGeometry.coords" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>An alias for <a class="reference internal" href="#django.contrib.gis.gdal.OGRGeometry.tuple" title="django.contrib.gis.gdal.OGRGeometry.tuple"><tt class="xref py py-attr docutils literal"><span class="pre">tuple</span></tt></a>.</p>
+</dd></dl>
+<dl class="class">
+<a name="//apple_ref/cpp/cl/django.contrib.gis.gdal.Point"></a><dt id="django.contrib.gis.gdal.Point">
+<em class="property">class </em><tt class="descname">Point</tt><a class="headerlink" href="#django.contrib.gis.gdal.Point" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.Point.x"></a><dt id="django.contrib.gis.gdal.Point.x">
+<tt class="descname">x</tt><a class="headerlink" href="#django.contrib.gis.gdal.Point.x" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns the X coordinate of this point:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">OGRGeometry</span><span class="p">(</span><span class="s">'POINT (1 2)'</span><span class="p">)</span><span class="o">.</span><span class="n">x</span>
+<span class="go">1.0</span>
+</pre></div>
+</div>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.Point.y"></a><dt id="django.contrib.gis.gdal.Point.y">
+<tt class="descname">y</tt><a class="headerlink" href="#django.contrib.gis.gdal.Point.y" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns the Y coordinate of this point:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">OGRGeometry</span><span class="p">(</span><span class="s">'POINT (1 2)'</span><span class="p">)</span><span class="o">.</span><span class="n">y</span>
+<span class="go">2.0</span>
+</pre></div>
+</div>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.Point.z"></a><dt id="django.contrib.gis.gdal.Point.z">
+<tt class="descname">z</tt><a class="headerlink" href="#django.contrib.gis.gdal.Point.z" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns the Z coordinate of this point, or <tt class="xref docutils literal"><span class="pre">None</span></tt> if the
+the point does not have a Z coordinate:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">OGRGeometry</span><span class="p">(</span><span class="s">'POINT (1 2 3)'</span><span class="p">)</span><span class="o">.</span><span class="n">z</span>
+<span class="go">3.0</span>
+</pre></div>
+</div>
+</dd></dl>
+<dl class="class">
+<a name="//apple_ref/cpp/cl/django.contrib.gis.gdal.LineString"></a><dt id="django.contrib.gis.gdal.LineString">
+<em class="property">class </em><tt class="descname">LineString</tt><a class="headerlink" href="#django.contrib.gis.gdal.LineString" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.LineString.x"></a><dt id="django.contrib.gis.gdal.LineString.x">
+<tt class="descname">x</tt><a class="headerlink" href="#django.contrib.gis.gdal.LineString.x" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns a list of X coordinates in this line:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">OGRGeometry</span><span class="p">(</span><span class="s">'LINESTRING (1 2,3 4)'</span><span class="p">)</span><span class="o">.</span><span class="n">x</span>
+<span class="go">[1.0, 3.0]</span>
+</pre></div>
+</div>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.LineString.y"></a><dt id="django.contrib.gis.gdal.LineString.y">
+<tt class="descname">y</tt><a class="headerlink" href="#django.contrib.gis.gdal.LineString.y" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns a list of Y coordinates in this line:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">OGRGeometry</span><span class="p">(</span><span class="s">'LINESTRING (1 2,3 4)'</span><span class="p">)</span><span class="o">.</span><span class="n">y</span>
+<span class="go">[2.0, 4.0]</span>
+</pre></div>
+</div>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.LineString.z"></a><dt id="django.contrib.gis.gdal.LineString.z">
+<tt class="descname">z</tt><a class="headerlink" href="#django.contrib.gis.gdal.LineString.z" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns a list of Z coordinates in this line, or <tt class="xref docutils literal"><span class="pre">None</span></tt> if the
+line does not have Z coordinates:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">OGRGeometry</span><span class="p">(</span><span class="s">'LINESTRING (1 2 3,4 5 6)'</span><span class="p">)</span><span class="o">.</span><span class="n">z</span>
+<span class="go">[3.0, 6.0]</span>
+</pre></div>
+</div>
+</dd></dl>
+<dl class="class">
+<a name="//apple_ref/cpp/cl/django.contrib.gis.gdal.Polygon"></a><dt id="django.contrib.gis.gdal.Polygon">
+<em class="property">class </em><tt class="descname">Polygon</tt><a class="headerlink" href="#django.contrib.gis.gdal.Polygon" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.Polygon.shell"></a><dt id="django.contrib.gis.gdal.Polygon.shell">
+<tt class="descname">shell</tt><a class="headerlink" href="#django.contrib.gis.gdal.Polygon.shell" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns the shell or exterior ring of this polygon, as a <tt class="docutils literal"><span class="pre">LinearRing</span></tt>
+geometry.</p>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.Polygon.exterior_ring"></a><dt id="django.contrib.gis.gdal.Polygon.exterior_ring">
+<tt class="descname">exterior_ring</tt><a class="headerlink" href="#django.contrib.gis.gdal.Polygon.exterior_ring" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>An alias for <a class="reference internal" href="#django.contrib.gis.gdal.Polygon.shell" title="django.contrib.gis.gdal.Polygon.shell"><tt class="xref py py-attr docutils literal"><span class="pre">shell</span></tt></a>.</p>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.Polygon.centroid"></a><dt id="django.contrib.gis.gdal.Polygon.centroid">
+<tt class="descname">centroid</tt><a class="headerlink" href="#django.contrib.gis.gdal.Polygon.centroid" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns a <a class="reference internal" href="#django.contrib.gis.gdal.Point" title="django.contrib.gis.gdal.Point"><tt class="xref py py-class docutils literal"><span class="pre">Point</span></tt></a> representing the centroid of this polygon.</p>
+</dd></dl>
+<dl class="class">
+<a name="//apple_ref/cpp/cl/django.contrib.gis.gdal.GeometryCollection"></a><dt id="django.contrib.gis.gdal.GeometryCollection">
+<em class="property">class </em><tt class="descname">GeometryCollection</tt><a class="headerlink" href="#django.contrib.gis.gdal.GeometryCollection" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<a name="//apple_ref/cpp/clm/django.contrib.gis.gdal.GeometryCollection.add"></a><dt id="django.contrib.gis.gdal.GeometryCollection.add">
+<tt class="descname">add</tt>(<em>geom</em>)<a class="headerlink" href="#django.contrib.gis.gdal.GeometryCollection.add" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Adds a geometry to this geometry collection.  Not applicable to other
+geometry types.</p>
+</dd></dl>
+</div>
+<div class="section" id="s-ogrgeomtype">
+<span id="ogrgeomtype"></span><h3><tt class="docutils literal"><span class="pre">OGRGeomType</span></tt><a class="headerlink" href="#ogrgeomtype" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<a name="//apple_ref/cpp/cl/django.contrib.gis.gdal.OGRGeomType"></a><dt id="django.contrib.gis.gdal.OGRGeomType">
+<em class="property">class </em><tt class="descname">OGRGeomType</tt>(<em>type_input</em>)<a class="headerlink" href="#django.contrib.gis.gdal.OGRGeomType" title="Permalink to this definition">¶</a></dt>
+<dd><p>This class allows for the representation of an OGR geometry type
+in any of several ways:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">django.contrib.gis.gdal</span> <span class="kn">import</span> <span class="n">OGRGeomType</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">gt1</span> <span class="o">=</span> <span class="n">OGRGeomType</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>             <span class="c"># Using an integer for the type</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">gt2</span> <span class="o">=</span> <span class="n">OGRGeomType</span><span class="p">(</span><span class="s">'Polygon'</span><span class="p">)</span>     <span class="c"># Using a string</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">gt3</span> <span class="o">=</span> <span class="n">OGRGeomType</span><span class="p">(</span><span class="s">'POLYGON'</span><span class="p">)</span>     <span class="c"># It's case-insensitive</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">gt1</span> <span class="o">==</span> <span class="mi">3</span><span class="p">,</span> <span class="n">gt1</span> <span class="o">==</span> <span class="s">'Polygon'</span> <span class="c"># Equivalence works w/non-OGRGeomType objects</span>
+<span class="go">True True</span>
+</pre></div>
+</div>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.OGRGeomType.name"></a><dt id="django.contrib.gis.gdal.OGRGeomType.name">
+<tt class="descname">name</tt><a class="headerlink" href="#django.contrib.gis.gdal.OGRGeomType.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns a short-hand string form of the OGR Geometry type:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">gt1</span><span class="o">.</span><span class="n">name</span>
+<span class="go">'Polygon'</span>
+</pre></div>
+</div>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.OGRGeomType.num"></a><dt id="django.contrib.gis.gdal.OGRGeomType.num">
+<tt class="descname">num</tt><a class="headerlink" href="#django.contrib.gis.gdal.OGRGeomType.num" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns the number corresponding to the OGR geometry type:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">gt1</span><span class="o">.</span><span class="n">num</span>
+<span class="go">3</span>
+</pre></div>
+</div>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.OGRGeomType.django"></a><dt id="django.contrib.gis.gdal.OGRGeomType.django">
+<tt class="descname">django</tt><a class="headerlink" href="#django.contrib.gis.gdal.OGRGeomType.django" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns the Django field type (a subclass of GeometryField) to use for
+storing this OGR type, or <tt class="xref docutils literal"><span class="pre">None</span></tt> if there is no appropriate Django
+type:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">gt1</span><span class="o">.</span><span class="n">django</span>
+<span class="go">'PolygonField'</span>
+</pre></div>
+</div>
+</dd></dl>
+</div>
+<div class="section" id="s-envelope">
+<span id="envelope"></span><h3><tt class="docutils literal"><span class="pre">Envelope</span></tt><a class="headerlink" href="#envelope" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<a name="//apple_ref/cpp/cl/django.contrib.gis.gdal.Envelope"></a><dt id="django.contrib.gis.gdal.Envelope">
+<em class="property">class </em><tt class="descname">Envelope</tt>(<em>*args</em>)<a class="headerlink" href="#django.contrib.gis.gdal.Envelope" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represents an OGR Envelope structure that contains the
+minimum and maximum X, Y coordinates for a rectangle bounding box.
+The naming of the variables is compatible with the OGR Envelope
+C structure.</p>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.Envelope.min_x"></a><dt id="django.contrib.gis.gdal.Envelope.min_x">
+<tt class="descname">min_x</tt><a class="headerlink" href="#django.contrib.gis.gdal.Envelope.min_x" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>The value of the minimum X coordinate.</p>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.Envelope.min_y"></a><dt id="django.contrib.gis.gdal.Envelope.min_y">
+<tt class="descname">min_y</tt><a class="headerlink" href="#django.contrib.gis.gdal.Envelope.min_y" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>The value of the maximum X coordinate.</p>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.Envelope.max_x"></a><dt id="django.contrib.gis.gdal.Envelope.max_x">
+<tt class="descname">max_x</tt><a class="headerlink" href="#django.contrib.gis.gdal.Envelope.max_x" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>The value of the minimum Y coordinate.</p>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.Envelope.max_y"></a><dt id="django.contrib.gis.gdal.Envelope.max_y">
+<tt class="descname">max_y</tt><a class="headerlink" href="#django.contrib.gis.gdal.Envelope.max_y" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>The value of the maximum Y coordinate.</p>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.Envelope.ur"></a><dt id="django.contrib.gis.gdal.Envelope.ur">
+<tt class="descname">ur</tt><a class="headerlink" href="#django.contrib.gis.gdal.Envelope.ur" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>The upper-right coordinate, as a tuple.</p>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.Envelope.ll"></a><dt id="django.contrib.gis.gdal.Envelope.ll">
+<tt class="descname">ll</tt><a class="headerlink" href="#django.contrib.gis.gdal.Envelope.ll" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>The lower-left coordinate, as a tuple.</p>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.Envelope.tuple"></a><dt id="django.contrib.gis.gdal.Envelope.tuple">
+<tt class="descname">tuple</tt><a class="headerlink" href="#django.contrib.gis.gdal.Envelope.tuple" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>A tuple representing the envelope.</p>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.Envelope.wkt"></a><dt id="django.contrib.gis.gdal.Envelope.wkt">
+<tt class="descname">wkt</tt><a class="headerlink" href="#django.contrib.gis.gdal.Envelope.wkt" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>A string representing this envelope as a polygon in WKT format.</p>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.contrib.gis.gdal.Envelope.expand_to_include"></a><dt id="django.contrib.gis.gdal.Envelope.expand_to_include">
+<tt class="descname">expand_to_include</tt>(<em>self</em>, <em>*args</em>)<a class="headerlink" href="#django.contrib.gis.gdal.Envelope.expand_to_include" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+</dd></dl>
+</div>
+</div>
+<div class="section" id="s-coordinate-system-objects">
+<span id="coordinate-system-objects"></span><h2>Coordinate System Objects<a class="headerlink" href="#coordinate-system-objects" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="s-spatialreference">
+<span id="spatialreference"></span><h3><tt class="docutils literal"><span class="pre">SpatialReference</span></tt><a class="headerlink" href="#spatialreference" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<a name="//apple_ref/cpp/cl/django.contrib.gis.gdal.SpatialReference"></a><dt id="django.contrib.gis.gdal.SpatialReference">
+<em class="property">class </em><tt class="descname">SpatialReference</tt>(<em>srs_input</em>)<a class="headerlink" href="#django.contrib.gis.gdal.SpatialReference" title="Permalink to this definition">¶</a></dt>
+<dd><p>Spatial reference objects are initialized on the given <tt class="docutils literal"><span class="pre">srs_input</span></tt>,
+which may be one of the following:</p>
+<ul class="simple">
+<li>OGC Well Known Text (WKT) (a string)</li>
+<li>EPSG code (integer or string)</li>
+<li>PROJ.4 string</li>
+<li>A shorthand string for well-known standards (<tt class="docutils literal"><span class="pre">'WGS84'</span></tt>, <tt class="docutils literal"><span class="pre">'WGS72'</span></tt>, <tt class="docutils literal"><span class="pre">'NAD27'</span></tt>, <tt class="docutils literal"><span class="pre">'NAD83'</span></tt>)</li>
+</ul>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">wgs84</span> <span class="o">=</span> <span class="n">SpatialReference</span><span class="p">(</span><span class="s">'WGS84'</span><span class="p">)</span> <span class="c"># shorthand string</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">wgs84</span> <span class="o">=</span> <span class="n">SpatialReference</span><span class="p">(</span><span class="mi">4326</span><span class="p">)</span> <span class="c"># EPSG code</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">wgs84</span> <span class="o">=</span> <span class="n">SpatialReference</span><span class="p">(</span><span class="s">'EPSG:4326'</span><span class="p">)</span> <span class="c"># EPSG string</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">proj4</span> <span class="o">=</span> <span class="s">'+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs '</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">wgs84</span> <span class="o">=</span> <span class="n">SpatialReference</span><span class="p">(</span><span class="n">proj4</span><span class="p">)</span> <span class="c"># PROJ.4 string</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">wgs84</span> <span class="o">=</span> <span class="n">SpatialReference</span><span class="p">(</span><span class="s">&quot;&quot;&quot;GEOGCS[&quot;WGS 84&quot;,</span>
+<span class="go">DATUM[&quot;WGS_1984&quot;,</span>
+<span class="go">     SPHEROID[&quot;WGS 84&quot;,6378137,298.257223563,</span>
+<span class="go">         AUTHORITY[&quot;EPSG&quot;,&quot;7030&quot;]],</span>
+<span class="go">     AUTHORITY[&quot;EPSG&quot;,&quot;6326&quot;]],</span>
+<span class="go"> PRIMEM[&quot;Greenwich&quot;,0,</span>
+<span class="go">     AUTHORITY[&quot;EPSG&quot;,&quot;8901&quot;]],</span>
+<span class="go"> UNIT[&quot;degree&quot;,0.01745329251994328,</span>
+<span class="go">     AUTHORITY[&quot;EPSG&quot;,&quot;9122&quot;]],</span>
+<span class="go"> AUTHORITY[&quot;EPSG&quot;,&quot;4326&quot;]]&quot;&quot;&quot;) # OGC WKT</span>
+</pre></div>
+</div>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.contrib.gis.gdal.SpatialReference.__getitem__"></a><dt id="django.contrib.gis.gdal.SpatialReference.__getitem__">
+<tt class="descname">__getitem__</tt>(<em>target</em>)<a class="headerlink" href="#django.contrib.gis.gdal.SpatialReference.__getitem__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns the value of the given string attribute node, <tt class="xref docutils literal"><span class="pre">None</span></tt> if the node
+doesn't exist.  Can also take a tuple as a parameter, (target, child),
+where child is the index of the attribute in the WKT.  For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">wkt</span> <span class="o">=</span> <span class="s">'GEOGCS[&quot;WGS 84&quot;, DATUM[&quot;WGS_1984, ... AUTHORITY[&quot;EPSG&quot;,&quot;4326&quot;]]'</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">srs</span> <span class="o">=</span> <span class="n">SpatialReference</span><span class="p">(</span><span class="n">wkt</span><span class="p">)</span> <span class="c"># could also use 'WGS84', or 4326</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">srs</span><span class="p">[</span><span class="s">'GEOGCS'</span><span class="p">]</span>
+<span class="go">WGS 84</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">srs</span><span class="p">[</span><span class="s">'DATUM'</span><span class="p">]</span>
+<span class="go">WGS_1984</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">srs</span><span class="p">[</span><span class="s">'AUTHORITY'</span><span class="p">]</span>
+<span class="go">EPSG</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">srs</span><span class="p">[</span><span class="s">'AUTHORITY'</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="c"># The authority value</span>
+<span class="go">4326</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">srs</span><span class="p">[</span><span class="s">'TOWGS84'</span><span class="p">,</span> <span class="mi">4</span><span class="p">]</span> <span class="c"># the fourth value in this wkt</span>
+<span class="go">0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">srs</span><span class="p">[</span><span class="s">'UNIT|AUTHORITY'</span><span class="p">]</span> <span class="c"># For the units authority, have to use the pipe symbole.</span>
+<span class="go">EPSG</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">srs</span><span class="p">[</span><span class="s">'UNIT|AUTHORITY'</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="c"># The authority value for the untis</span>
+<span class="go">9122</span>
+</pre></div>
+</div>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.contrib.gis.gdal.SpatialReference.attr_value"></a><dt id="django.contrib.gis.gdal.SpatialReference.attr_value">
+<tt class="descname">attr_value</tt>(<em>target</em>, <em>index=0</em>)<a class="headerlink" href="#django.contrib.gis.gdal.SpatialReference.attr_value" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>The attribute value for the given target node (e.g. <tt class="docutils literal"><span class="pre">'PROJCS'</span></tt>).
+The index keyword specifies an index of the child node to return.</p>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.contrib.gis.gdal.SpatialReference.auth_name"></a><dt id="django.contrib.gis.gdal.SpatialReference.auth_name">
+<tt class="descname">auth_name</tt>(<em>target</em>)<a class="headerlink" href="#django.contrib.gis.gdal.SpatialReference.auth_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns the authority name for the given string target node.</p>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.contrib.gis.gdal.SpatialReference.auth_code"></a><dt id="django.contrib.gis.gdal.SpatialReference.auth_code">
+<tt class="descname">auth_code</tt>(<em>target</em>)<a class="headerlink" href="#django.contrib.gis.gdal.SpatialReference.auth_code" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns the authority code for the given string target node.</p>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.contrib.gis.gdal.SpatialReference.clone"></a><dt id="django.contrib.gis.gdal.SpatialReference.clone">
+<tt class="descname">clone</tt>()<a class="headerlink" href="#django.contrib.gis.gdal.SpatialReference.clone" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns a clone of this spatial reference object.</p>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.contrib.gis.gdal.SpatialReference.identify_epsg"></a><dt id="django.contrib.gis.gdal.SpatialReference.identify_epsg">
+<tt class="descname">identify_epsg</tt>()<a class="headerlink" href="#django.contrib.gis.gdal.SpatialReference.identify_epsg" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>This method inspects the WKT of this SpatialReference, and will
+add EPSG authority nodes where an EPSG identifier is applicable.</p>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.contrib.gis.gdal.SpatialReference.from_esri"></a><dt id="django.contrib.gis.gdal.SpatialReference.from_esri">
+<tt class="descname">from_esri</tt>()<a class="headerlink" href="#django.contrib.gis.gdal.SpatialReference.from_esri" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Morphs this SpatialReference from ESRI's format to EPSG</p>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.contrib.gis.gdal.SpatialReference.to_esri"></a><dt id="django.contrib.gis.gdal.SpatialReference.to_esri">
+<tt class="descname">to_esri</tt>()<a class="headerlink" href="#django.contrib.gis.gdal.SpatialReference.to_esri" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Morphs this SpatialReference to ESRI's format.</p>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.contrib.gis.gdal.SpatialReference.validate"></a><dt id="django.contrib.gis.gdal.SpatialReference.validate">
+<tt class="descname">validate</tt>()<a class="headerlink" href="#django.contrib.gis.gdal.SpatialReference.validate" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Checks to see if the given spatial reference is valid, if not
+an exception will be raised.</p>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.contrib.gis.gdal.SpatialReference.import_epsg"></a><dt id="django.contrib.gis.gdal.SpatialReference.import_epsg">
+<tt class="descname">import_epsg</tt>(<em>epsg</em>)<a class="headerlink" href="#django.contrib.gis.gdal.SpatialReference.import_epsg" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Import spatial reference from EPSG code.</p>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.contrib.gis.gdal.SpatialReference.import_proj"></a><dt id="django.contrib.gis.gdal.SpatialReference.import_proj">
+<tt class="descname">import_proj</tt>(<em>proj</em>)<a class="headerlink" href="#django.contrib.gis.gdal.SpatialReference.import_proj" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Import spatial reference from PROJ.4 string.</p>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.contrib.gis.gdal.SpatialReference.import_user_input"></a><dt id="django.contrib.gis.gdal.SpatialReference.import_user_input">
+<tt class="descname">import_user_input</tt>(<em>user_input</em>)<a class="headerlink" href="#django.contrib.gis.gdal.SpatialReference.import_user_input" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.contrib.gis.gdal.SpatialReference.import_wkt"></a><dt id="django.contrib.gis.gdal.SpatialReference.import_wkt">
+<tt class="descname">import_wkt</tt>(<em>wkt</em>)<a class="headerlink" href="#django.contrib.gis.gdal.SpatialReference.import_wkt" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Import spatial reference from WKT.</p>
+<dl class="method">
+<a name="//apple_ref/cpp/clm/django.contrib.gis.gdal.SpatialReference.import_xml"></a><dt id="django.contrib.gis.gdal.SpatialReference.import_xml">
+<tt class="descname">import_xml</tt>(<em>xml</em>)<a class="headerlink" href="#django.contrib.gis.gdal.SpatialReference.import_xml" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Import spatial reference from XML.</p>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.SpatialReference.name"></a><dt id="django.contrib.gis.gdal.SpatialReference.name">
+<tt class="descname">name</tt><a class="headerlink" href="#django.contrib.gis.gdal.SpatialReference.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns the name of this Spatial Reference.</p>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.SpatialReference.srid"></a><dt id="django.contrib.gis.gdal.SpatialReference.srid">
+<tt class="descname">srid</tt><a class="headerlink" href="#django.contrib.gis.gdal.SpatialReference.srid" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns the SRID of top-level authority, or <tt class="xref docutils literal"><span class="pre">None</span></tt> if undefined.</p>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.SpatialReference.linear_name"></a><dt id="django.contrib.gis.gdal.SpatialReference.linear_name">
+<tt class="descname">linear_name</tt><a class="headerlink" href="#django.contrib.gis.gdal.SpatialReference.linear_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns the name of the linear units.</p>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.SpatialReference.linear_units"></a><dt id="django.contrib.gis.gdal.SpatialReference.linear_units">
+<tt class="descname">linear_units</tt><a class="headerlink" href="#django.contrib.gis.gdal.SpatialReference.linear_units" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns the value of the linear units.</p>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.SpatialReference.angular_name"></a><dt id="django.contrib.gis.gdal.SpatialReference.angular_name">
+<tt class="descname">angular_name</tt><a class="headerlink" href="#django.contrib.gis.gdal.SpatialReference.angular_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns the name of the angular units.&quot;</p>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.SpatialReference.angular_units"></a><dt id="django.contrib.gis.gdal.SpatialReference.angular_units">
+<tt class="descname">angular_units</tt><a class="headerlink" href="#django.contrib.gis.gdal.SpatialReference.angular_units" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns the value of the angular units.</p>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.SpatialReference.units"></a><dt id="django.contrib.gis.gdal.SpatialReference.units">
+<tt class="descname">units</tt><a class="headerlink" href="#django.contrib.gis.gdal.SpatialReference.units" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns a 2-tuple of the units value and the units name,
+and will automatically determines whether to return the linear
+or angular units.</p>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.SpatialReference.ellisoid"></a><dt id="django.contrib.gis.gdal.SpatialReference.ellisoid">
+<tt class="descname">ellisoid</tt><a class="headerlink" href="#django.contrib.gis.gdal.SpatialReference.ellisoid" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns a tuple of the ellipsoid parameters for this spatial
+reference: (semimajor axis, semiminor axis, and inverse flattening)</p>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.SpatialReference.semi_major"></a><dt id="django.contrib.gis.gdal.SpatialReference.semi_major">
+<tt class="descname">semi_major</tt><a class="headerlink" href="#django.contrib.gis.gdal.SpatialReference.semi_major" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns the semi major axis of the ellipsoid for this spatial reference.</p>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.SpatialReference.semi_minor"></a><dt id="django.contrib.gis.gdal.SpatialReference.semi_minor">
+<tt class="descname">semi_minor</tt><a class="headerlink" href="#django.contrib.gis.gdal.SpatialReference.semi_minor" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns the semi minor axis of the ellipsoid for this spatial reference.</p>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.SpatialReference.inverse_flattening"></a><dt id="django.contrib.gis.gdal.SpatialReference.inverse_flattening">
+<tt class="descname">inverse_flattening</tt><a class="headerlink" href="#django.contrib.gis.gdal.SpatialReference.inverse_flattening" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns the inverse flattening of the ellipsoid for this spatial reference.</p>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.SpatialReference.geographic"></a><dt id="django.contrib.gis.gdal.SpatialReference.geographic">
+<tt class="descname">geographic</tt><a class="headerlink" href="#django.contrib.gis.gdal.SpatialReference.geographic" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns <tt class="xref docutils literal"><span class="pre">True</span></tt> if this spatial reference is geographic
+(root node is <tt class="docutils literal"><span class="pre">GEOGCS</span></tt>).</p>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.SpatialReference.local"></a><dt id="django.contrib.gis.gdal.SpatialReference.local">
+<tt class="descname">local</tt><a class="headerlink" href="#django.contrib.gis.gdal.SpatialReference.local" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns <tt class="xref docutils literal"><span class="pre">True</span></tt> if this spatial reference is local
+(root node is <tt class="docutils literal"><span class="pre">LOCAL_CS</span></tt>).</p>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.SpatialReference.projected"></a><dt id="django.contrib.gis.gdal.SpatialReference.projected">
+<tt class="descname">projected</tt><a class="headerlink" href="#django.contrib.gis.gdal.SpatialReference.projected" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns <tt class="xref docutils literal"><span class="pre">True</span></tt> if this spatial reference is a projected coordinate
+system (root node is <tt class="docutils literal"><span class="pre">PROJCS</span></tt>).</p>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.SpatialReference.wkt"></a><dt id="django.contrib.gis.gdal.SpatialReference.wkt">
+<tt class="descname">wkt</tt><a class="headerlink" href="#django.contrib.gis.gdal.SpatialReference.wkt" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns the WKT representation of this spatial reference.</p>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.SpatialReference.pretty_wkt"></a><dt id="django.contrib.gis.gdal.SpatialReference.pretty_wkt">
+<tt class="descname">pretty_wkt</tt><a class="headerlink" href="#django.contrib.gis.gdal.SpatialReference.pretty_wkt" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns the 'pretty' representation of the WKT.</p>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.SpatialReference.proj"></a><dt id="django.contrib.gis.gdal.SpatialReference.proj">
+<tt class="descname">proj</tt><a class="headerlink" href="#django.contrib.gis.gdal.SpatialReference.proj" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns the PROJ.4 representation for this spatial reference.</p>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.SpatialReference.proj4"></a><dt id="django.contrib.gis.gdal.SpatialReference.proj4">
+<tt class="descname">proj4</tt><a class="headerlink" href="#django.contrib.gis.gdal.SpatialReference.proj4" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Alias for <a class="reference internal" href="#django.contrib.gis.gdal.SpatialReference.proj" title="django.contrib.gis.gdal.SpatialReference.proj"><tt class="xref py py-attr docutils literal"><span class="pre">SpatialReference.proj</span></tt></a>.</p>
+<dl class="attribute">
+<a name="//apple_ref/cpp/instp/django.contrib.gis.gdal.SpatialReference.xml"></a><dt id="django.contrib.gis.gdal.SpatialReference.xml">
+<tt class="descname">xml</tt><a class="headerlink" href="#django.contrib.gis.gdal.SpatialReference.xml" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Returns the XML representation of this spatial reference.</p>
+</dd></dl>
+</div>
+<div class="section" id="s-coordtransform">
+<span id="coordtransform"></span><h3><tt class="docutils literal"><span class="pre">CoordTransform</span></tt><a class="headerlink" href="#coordtransform" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<a name="//apple_ref/cpp/cl/django.contrib.gis.gdal.CoordTransform"></a><dt id="django.contrib.gis.gdal.CoordTransform">
+<em class="property">class </em><tt class="descname">CoordTransform</tt>(<em>source</em>, <em>target</em>)<a class="headerlink" href="#django.contrib.gis.gdal.CoordTransform" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<p>Represents a coordinate system transform.  It is initialized with two
+<a class="reference internal" href="#django.contrib.gis.gdal.SpatialReference" title="django.contrib.gis.gdal.SpatialReference"><tt class="xref py py-class docutils literal"><span class="pre">SpatialReference</span></tt></a>, representing the source and target coordinate
+systems, respectively.  These objects should be used when performing
+the same coordinate transformation repeatedly on different geometries:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">ct</span> <span class="o">=</span> <span class="n">CoordTransform</span><span class="p">(</span><span class="n">SpatialReference</span><span class="p">(</span><span class="s">'WGS84'</span><span class="p">),</span> <span class="n">SpatialReference</span><span class="p">(</span><span class="s">'NAD83'</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">feat</span> <span class="ow">in</span> <span class="n">layer</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="n">geom</span> <span class="o">=</span> <span class="n">feat</span><span class="o">.</span><span class="n">geom</span> <span class="c"># getting clone of feature geometry</span>
+<span class="gp">... </span>    <span class="n">geom</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">ct</span><span class="p">)</span> <span class="c"># transforming</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="s-settings">
+<span id="settings"></span><h2>Settings<a class="headerlink" href="#settings" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="s-gdal-library-path">
+<span id="s-std:setting-GDAL_LIBRARY_PATH"></span><span id="gdal-library-path"></span><span id="std:setting-GDAL_LIBRARY_PATH"></span><h3>GDAL_LIBRARY_PATH<a class="headerlink" href="#gdal-library-path" title="Permalink to this headline">¶</a></h3>
+<p>A string specifying the location of the GDAL library.  Typically,
+this setting is only used if the GDAL library is in a non-standard
+location (e.g., <tt class="docutils literal"><span class="pre">/home/john/lib/libgdal.so</span></tt>).</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="yui-b" id="sidebar">
+<div class="sphinxsidebar">
+<div class="sphinxsidebarwrapper">
+<h3><a href="../../../contents.html">Table Of Contents</a></h3>
+<ul>
+<li><a class="reference internal" href="#">GDAL API</a><ul>
+<li><a class="reference internal" href="#overview">Overview</a><ul>
+<li><a class="reference internal" href="#sample-data">Sample Data</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#vector-data-source-objects">Vector Data Source Objects</a><ul>
+<li><a class="reference internal" href="#datasource"><tt class="docutils literal"><span class="pre">DataSource</span></tt></a></li>
+<li><a class="reference internal" href="#layer"><tt class="docutils literal"><span class="pre">Layer</span></tt></a></li>
+<li><a class="reference internal" href="#feature"><tt class="docutils literal"><span class="pre">Feature</span></tt></a></li>
+<li><a class="reference internal" href="#field"><tt class="docutils literal"><span class="pre">Field</span></tt></a></li>
+<li><a class="reference internal" href="#driver"><tt class="docutils literal"><span class="pre">Driver</span></tt></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ogr-geometries">OGR Geometries</a><ul>
+<li><a class="reference internal" href="#ogrgeometry"><tt class="docutils literal"><span class="pre">OGRGeometry</span></tt></a></li>
+<li><a class="reference internal" href="#ogrgeomtype"><tt class="docutils literal"><span class="pre">OGRGeomType</span></tt></a></li>
+<li><a class="reference internal" href="#envelope"><tt class="docutils literal"><span class="pre">Envelope</span></tt></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#coordinate-system-objects">Coordinate System Objects</a><ul>
+<li><a class="reference internal" href="#spatialreference"><tt class="docutils literal"><span class="pre">SpatialReference</span></tt></a></li>
+<li><a class="reference internal" href="#coordtransform"><tt class="docutils literal"><span class="pre">CoordTransform</span></tt></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#settings">Settings</a><ul>
+<li><a class="reference internal" href="#gdal-library-path">GDAL_LIBRARY_PATH</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3>Browse</h3>
+<ul>
+<li>Prev: <a href="geos.html">GEOS API</a></li>
+<li>Next: <a href="utils.html">GeoDjango Utilities</a></li>
+</ul>
+<h3>You are here:</h3>
+<ul>
+<li>
+<a href="../../../index.html">Django v1.3.1 documentation</a>
+<ul><li><a href="../../index.html">API Reference</a>
+<ul><li><a href="../index.html"><tt class="docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal"><span class="pre">contrib</span></tt> packages</a>
+<ul><li><a href="index.html">GeoDjango</a>
+<ul><li>GDAL API</li></ul>
+</li></ul></li></ul></li></ul>
+</li>
+</ul>
+<h3>This Page</h3>
+<ul class="this-page-menu">
+<li><a href="../../../_sources/ref/contrib/gis/gdal.txt" rel="nofollow">Show Source</a></li>
+</ul>
+<div id="searchbox" style="display: none">
+<h3>Quick search</h3>
+<form action="../../../search.html" class="search" method="get">
+<input name="q" size="18" type="text"/>
+<input type="submit" value="Go"/>
+<input name="check_keywords" type="hidden" value="yes"/>
+<input name="area" type="hidden" value="default"/>
+</form>
+<p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+</div>
+</div>
+<h3>Last update:</h3>
+<p class="topless">Dec 06, 2011</p>
+</div>
+</div>
+<div id="ft">
+<div class="nav">
+    « <a href="geos.html" title="GEOS API">previous</a> 
+     |
+    <a accesskey="U" href="../../index.html" title="API Reference">up</a>
+   |
+    <a href="utils.html" title="GeoDjango Utilities">next</a> »</div>
+</div>
+</div>
+<div class="clearer"></div>
+</div>
+<div style="display:none;"><a name="#"></a><h3 class="tasks">TOC</h3><ul class="tooltip"><li class="tooltip"><a href="#">GDAL API</a></li><li class="tooltip"><a href="#overview">Overview</a></li><li class="tooltip"><a href="#sample-data">Sample Data</a></li><li class="tooltip"><a href="#vector-data-source-objects">Vector Data Source Objects</a></li><li class="tooltip"><a href="#datasource">DataSource</a></li><li class="tooltip"><a href="#layer">Layer</a></li><li class="tooltip"><a href="#feature">Feature</a></li><li class="tooltip"><a href="#field">Field</a></li><li class="tooltip"><a href="#driver">Driver</a></li><li class="tooltip"><a href="#ogr-geometries">OGR Geometries</a></li><li class="tooltip"><a href="#ogrgeometry">OGRGeometry</a></li><li class="tooltip"><a href="#ogrgeomtype">OGRGeomType</a></li><li class="tooltip"><a href="#envelope">Envelope</a></li><li class="tooltip"><a href="#coordinate-system-objects">Coordinate System Objects</a></li><li class="tooltip"><a href="#spatialreference">SpatialReference</a></li><li class="tooltip"><a href="#coordtransform">CoordTransform</a></li><li class="tooltip"><a href="#settings">Settings</a></li><li class="tooltip"><a href="#gdal-library-path">GDAL_LIBRARY_PATH</a></li></ul></div></body>
+</html>

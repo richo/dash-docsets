@@ -1,0 +1,334 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<title>Customizing the comments framework — Django v1.3.1 documentation</title>
+<link href="../../../_static/default.css" rel="stylesheet" type="text/css"/>
+<link href="../../../_static/pygments.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '1.3.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+<script src="../../../_static/jquery.js" type="text/javascript"></script>
+<script src="../../../_static/underscore.js" type="text/javascript"></script>
+<script src="../../../_static/doctools.js" type="text/javascript"></script>
+<link href="../../../index.html" rel="top" title="Django v1.3.1 documentation"/>
+<link href="index.html" rel="up" title="Django’s comments framework"/>
+<link href="forms.html" rel="next" title="Comment form classes"/>
+<link href="upgrade.html" rel="prev" title="Upgrading from Django’s previous comment system"/>
+<script src="../../../templatebuiltins.js" type="text/javascript"></script>
+<script type="text/javascript">
+(function($) {
+    if (!django_template_builtins) {
+       // templatebuiltins.js missing, do nothing.
+       return;
+    }
+    $(document).ready(function() {
+        // Hyperlink Django template tags and filters
+        var base = "../../templates/builtins.html";
+        if (base == "#") {
+            // Special case for builtins.html itself
+            base = "";
+        }
+        // Tags are keywords, class '.k'
+        $("div.highlight\\-html\\+django span.k").each(function(i, elem) {
+             var tagname = $(elem).text();
+             if ($.inArray(tagname, django_template_builtins.ttags) != -1) {
+                 var fragment = tagname.replace(/_/, '-');
+                 $(elem).html("&lt;a href='" + base + "#" + fragment + "'&gt;" + tagname + "");
+             }
+        });
+        // Filters are functions, class '.nf'
+        $("div.highlight\\-html\\+django span.nf").each(function(i, elem) {
+             var filtername = $(elem).text();
+             if ($.inArray(filtername, django_template_builtins.tfilters) != -1) {
+                 var fragment = filtername.replace(/_/, '-');
+                 $(elem).html("<a href='" + base + "#" + fragment + "'>" + filtername + "</a>");
+             }
+        });
+    });
+})(jQuery);
+</script>
+</head>
+<body>
+<div class="document">
+<div class="yui-t6" id="custom-doc">
+<div id="hd">
+<h1><a href="../../../index.html">Django v1.3.1 documentation</a></h1>
+<div id="global-nav">
+<a href="../../../index.html" title="Home page">Home</a>  |
+        <a href="../../../contents.html" title="Table of contents">Table of contents</a>  |
+        <a href="../../../genindex.html" title="Global index">Index</a>  |
+        <a href="../../../py-modindex.html" title="Module index">Modules</a>
+</div>
+<div class="nav">
+    « <a href="upgrade.html" title="Upgrading from Django&#8217;s previous comment system">previous</a> 
+     |
+    <a accesskey="U" href="../../index.html" title="API Reference">up</a>
+   |
+    <a href="forms.html" title="Comment form classes">next</a> »</div>
+</div>
+<div id="bd">
+<div id="yui-main">
+<div class="yui-b">
+<div class="yui-g" id="ref-contrib-comments-custom">
+<div class="section" id="s-customizing-the-comments-framework">
+<span id="customizing-the-comments-framework"></span><h1>Customizing the comments framework<a class="headerlink" href="#customizing-the-comments-framework" title="Permalink to this headline">¶</a></h1>
+<p>If the built-in comment framework doesn’t quite fit your needs, you can extend
+the comment app’s behavior to add custom data and logic. The comments framework
+lets you extend the built-in comment model, the built-in comment form, and the
+various comment views.</p>
+<p>The <a class="reference internal" href="settings.html#std:setting-COMMENTS_APP"><tt class="xref std std-setting docutils literal"><span class="pre">COMMENTS_APP</span></tt></a> setting is where this customization begins. Set
+<a class="reference internal" href="settings.html#std:setting-COMMENTS_APP"><tt class="xref std std-setting docutils literal"><span class="pre">COMMENTS_APP</span></tt></a> to the name of the app you’d like to use to provide
+custom behavior. You’ll use the same syntax as you’d use for
+<a class="reference internal" href="../../settings.html#std:setting-INSTALLED_APPS"><tt class="xref std std-setting docutils literal"><span class="pre">INSTALLED_APPS</span></tt></a>, and the app given must also be in the
+<a class="reference internal" href="../../settings.html#std:setting-INSTALLED_APPS"><tt class="xref std std-setting docutils literal"><span class="pre">INSTALLED_APPS</span></tt></a> list.</p>
+<p>For example, if you wanted to use an app named <tt class="docutils literal"><span class="pre">my_comment_app</span></tt>, your
+settings file would contain:</p>
+<div class="highlight-python"><pre>INSTALLED_APPS = [
+    ...
+    'my_comment_app',
+    ...
+]
+
+COMMENTS_APP = 'my_comment_app'</pre>
+</div>
+<p>The app named in <a class="reference internal" href="settings.html#std:setting-COMMENTS_APP"><tt class="xref std std-setting docutils literal"><span class="pre">COMMENTS_APP</span></tt></a> provides its custom behavior by
+defining some module-level functions in the app's <tt class="docutils literal"><span class="pre">__init__.py</span></tt>. The
+<a class="reference internal" href="#custom-comment-app-api"><em>complete list of these functions</em></a> can be found
+below, but first let's look at a quick example.</p>
+<div class="section" id="s-an-example-custom-comments-app">
+<span id="an-example-custom-comments-app"></span><h2>An example custom comments app<a class="headerlink" href="#an-example-custom-comments-app" title="Permalink to this headline">¶</a></h2>
+<p>One of the most common types of customization is modifying the set of fields
+provided on the built-in comment model. For example, some sites that allow
+comments want the commentator to provide a title for their comment; the built-in
+comment model has no field for that title.</p>
+<p>To make this kind of customization, we'll need to do three things:</p>
+<blockquote>
+<ol class="arabic simple">
+<li>Create a custom comment <a class="reference internal" href="../../models/instances.html#django.db.models.Model" title="django.db.models.Model"><tt class="xref py py-class docutils literal"><span class="pre">Model</span></tt></a> that adds on the
+&quot;title&quot; field.</li>
+<li>Create a custom comment <a class="reference internal" href="../../forms/api.html#django.forms.Form" title="django.forms.Form"><tt class="xref py py-class docutils literal"><span class="pre">Form</span></tt></a> that also adds this
+&quot;title&quot; field.</li>
+<li>Inform Django of these objects by defining a few functions in a
+custom <a class="reference internal" href="settings.html#std:setting-COMMENTS_APP"><tt class="xref std std-setting docutils literal"><span class="pre">COMMENTS_APP</span></tt></a>.</li>
+</ol>
+</blockquote>
+<p>So, carrying on the example above, we're dealing with a typical app structure in
+the <tt class="docutils literal"><span class="pre">my_custom_app</span></tt> directory:</p>
+<div class="highlight-python"><pre>my_custom_app/
+    __init__.py
+    models.py
+    forms.py</pre>
+</div>
+<p>In the <tt class="docutils literal"><span class="pre">models.py</span></tt> we'll define a <tt class="docutils literal"><span class="pre">CommentWithTitle</span></tt> model:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">django.db</span> <span class="kn">import</span> <span class="n">models</span>
+<span class="kn">from</span> <span class="nn">django.contrib.comments.models</span> <span class="kn">import</span> <span class="n">Comment</span>
+
+<span class="k">class</span> <span class="nc">CommentWithTitle</span><span class="p">(</span><span class="n">Comment</span><span class="p">):</span>
+    <span class="n">title</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Most custom comment models will subclass the <tt class="xref py py-class docutils literal"><span class="pre">Comment</span></tt> model. However,
+if you want to substantially remove or change the fields available in the
+<tt class="xref py py-class docutils literal"><span class="pre">Comment</span></tt> model, but don't want to rewrite the templates, you could
+try subclassing from <tt class="xref py py-class docutils literal"><span class="pre">BaseCommentAbstractModel</span></tt>.</p>
+<p>Next, we'll define a custom comment form in <tt class="docutils literal"><span class="pre">forms.py</span></tt>. This is a little more
+tricky: we have to both create a form and override
+<tt class="xref py py-meth docutils literal"><span class="pre">CommentForm.get_comment_model()</span></tt> and
+<tt class="xref py py-meth docutils literal"><span class="pre">CommentForm.get_comment_create_data()</span></tt> to return deal with our custom title
+field:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">django</span> <span class="kn">import</span> <span class="n">forms</span>
+<span class="kn">from</span> <span class="nn">django.contrib.comments.forms</span> <span class="kn">import</span> <span class="n">CommentForm</span>
+<span class="kn">from</span> <span class="nn">my_comment_app.models</span> <span class="kn">import</span> <span class="n">CommentWithTitle</span>
+
+<span class="k">class</span> <span class="nc">CommentFormWithTitle</span><span class="p">(</span><span class="n">CommentForm</span><span class="p">):</span>
+    <span class="n">title</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">get_comment_model</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c"># Use our custom comment model instead of the built-in one.</span>
+        <span class="k">return</span> <span class="n">CommentWithTitle</span>
+
+    <span class="k">def</span> <span class="nf">get_comment_create_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c"># Use the data of the superclass, and add in the title field</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">CommentFormWithTitle</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_comment_create_data</span><span class="p">()</span>
+        <span class="n">data</span><span class="p">[</span><span class="s">'title'</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cleaned_data</span><span class="p">[</span><span class="s">'title'</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">data</span>
+</pre></div>
+</div>
+<p>Django provides a couple of &quot;helper&quot; classes to make writing certain types of
+custom comment forms easier; see <a class="reference internal" href="forms.html#module-django.contrib.comments.forms" title="django.contrib.comments.forms: Forms for dealing with the built-in comment model."><tt class="xref py py-mod docutils literal"><span class="pre">django.contrib.comments.forms</span></tt></a> for
+more.</p>
+<p>Finally, we'll define a couple of methods in <tt class="docutils literal"><span class="pre">my_custom_app/__init__.py</span></tt> to
+point Django at these classes we've created:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">my_comments_app.models</span> <span class="kn">import</span> <span class="n">CommentWithTitle</span>
+<span class="kn">from</span> <span class="nn">my_comments_app.forms</span> <span class="kn">import</span> <span class="n">CommentFormWithTitle</span>
+
+<span class="k">def</span> <span class="nf">get_model</span><span class="p">():</span>
+    <span class="k">return</span> <span class="n">CommentWithTitle</span>
+
+<span class="k">def</span> <span class="nf">get_form</span><span class="p">():</span>
+    <span class="k">return</span> <span class="n">CommentFormWithTitle</span>
+</pre></div>
+</div>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p>Be careful not to create cyclic imports in your custom comments app.
+If you feel your comment configuration isn't being used as defined --
+for example, if your comment moderation policy isn't being applied --
+you may have a cyclic import problem.</p>
+<p class="last">If you are having unexplained problems with comments behavior, check
+if your custom comments application imports (even indirectly)
+any module that itself imports Django's comments module.</p>
+</div>
+<p>The above process should take care of most common situations. For more
+advanced usage, there are additional methods you can define. Those are
+explained in the next section.</p>
+</div>
+<div class="section" id="s-custom-comment-app-api">
+<span id="s-id1"></span><span id="custom-comment-app-api"></span><span id="id1"></span><h2>Custom comment app API<a class="headerlink" href="#custom-comment-app-api" title="Permalink to this headline">¶</a></h2>
+<p>The <a class="reference internal" href="index.html#module-django.contrib.comments" title="django.contrib.comments: Django's comment framework"><tt class="xref py py-mod docutils literal"><span class="pre">django.contrib.comments</span></tt></a> app defines the following methods; any
+custom comment app must define at least one of them. All are optional,
+however.</p>
+<dl class="function">
+<a name="//apple_ref/cpp/func/django.contrib.comments.get_model"></a><dt id="django.contrib.comments.get_model">
+<tt class="descname">get_model</tt>()<a class="headerlink" href="#django.contrib.comments.get_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the <a class="reference internal" href="../../models/instances.html#django.db.models.Model" title="django.db.models.Model"><tt class="xref py py-class docutils literal"><span class="pre">Model</span></tt></a> class to use for comments. This
+model should inherit from
+<tt class="xref py py-class docutils literal"><span class="pre">django.contrib.comments.models.BaseCommentAbstractModel</span></tt>, which
+defines necessary core fields.</p>
+<p>The default implementation returns
+<a class="reference internal" href="models.html#django.contrib.comments.models.Comment" title="django.contrib.comments.models.Comment"><tt class="xref py py-class docutils literal"><span class="pre">django.contrib.comments.models.Comment</span></tt></a>.</p>
+</dd></dl>
+<dl class="function">
+<a name="//apple_ref/cpp/func/django.contrib.comments.get_form"></a><dt id="django.contrib.comments.get_form">
+<tt class="descname">get_form</tt>()<a class="headerlink" href="#django.contrib.comments.get_form" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the <a class="reference internal" href="../../forms/api.html#django.forms.Form" title="django.forms.Form"><tt class="xref py py-class docutils literal"><span class="pre">Form</span></tt></a> class you want to use for
+creating, validating, and saving your comment model.  Your custom
+comment form should accept an additional first argument,
+<tt class="docutils literal"><span class="pre">target_object</span></tt>, which is the object the comment will be
+attached to.</p>
+<p>The default implementation returns
+<a class="reference internal" href="forms.html#django.contrib.comments.forms.CommentForm" title="django.contrib.comments.forms.CommentForm"><tt class="xref py py-class docutils literal"><span class="pre">django.contrib.comments.forms.CommentForm</span></tt></a>.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The default comment form also includes a number of unobtrusive
+spam-prevention features (see
+<a class="reference internal" href="index.html#notes-on-the-comment-form"><em>Notes on the comment form</em></a>).  If replacing it with your
+own form, you may want to look at the source code for the
+built-in form and consider incorporating similar features.</p>
+</div>
+</dd></dl>
+<dl class="function">
+<a name="//apple_ref/cpp/func/django.contrib.comments.get_form_target"></a><dt id="django.contrib.comments.get_form_target">
+<tt class="descname">get_form_target</tt>()<a class="headerlink" href="#django.contrib.comments.get_form_target" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the URL for POSTing comments. This will be the <tt class="docutils literal"><span class="pre">&lt;form</span> <span class="pre">action&gt;</span></tt>
+attribute when rendering your comment form.</p>
+<p>The default implementation returns a reverse-resolved URL pointing
+to the <tt class="xref py py-func docutils literal"><span class="pre">post_comment()</span></tt> view.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If you provide a custom comment model and/or form, but you
+want to use the default <tt class="xref py py-func docutils literal"><span class="pre">post_comment()</span></tt> view, you will
+need to be aware that it requires the model and form to have
+certain additional attributes and methods: see the
+<tt class="xref py py-func docutils literal"><span class="pre">post_comment()</span></tt> view documentation for details.</p>
+</div>
+</dd></dl>
+<dl class="function">
+<a name="//apple_ref/cpp/func/django.contrib.comments.get_flag_url"></a><dt id="django.contrib.comments.get_flag_url">
+<tt class="descname">get_flag_url</tt>()<a class="headerlink" href="#django.contrib.comments.get_flag_url" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the URL for the &quot;flag this comment&quot; view.</p>
+<p>The default implementation returns a reverse-resolved URL pointing
+to the <tt class="xref py py-func docutils literal"><span class="pre">django.contrib.comments.views.moderation.flag()</span></tt> view.</p>
+</dd></dl>
+<dl class="function">
+<a name="//apple_ref/cpp/func/django.contrib.comments.get_delete_url"></a><dt id="django.contrib.comments.get_delete_url">
+<tt class="descname">get_delete_url</tt>()<a class="headerlink" href="#django.contrib.comments.get_delete_url" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the URL for the &quot;delete this comment&quot; view.</p>
+<p>The default implementation returns a reverse-resolved URL pointing
+to the <tt class="xref py py-func docutils literal"><span class="pre">django.contrib.comments.views.moderation.delete()</span></tt> view.</p>
+</dd></dl>
+<dl class="function">
+<a name="//apple_ref/cpp/func/django.contrib.comments.get_approve_url"></a><dt id="django.contrib.comments.get_approve_url">
+<tt class="descname">get_approve_url</tt>()<a class="headerlink" href="#django.contrib.comments.get_approve_url" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the URL for the &quot;approve this comment from moderation&quot; view.</p>
+<p>The default implementation returns a reverse-resolved URL pointing
+to the <tt class="xref py py-func docutils literal"><span class="pre">django.contrib.comments.views.moderation.approve()</span></tt> view.</p>
+</dd></dl>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="yui-b" id="sidebar">
+<div class="sphinxsidebar">
+<div class="sphinxsidebarwrapper">
+<h3><a href="../../../contents.html">Table Of Contents</a></h3>
+<ul>
+<li><a class="reference internal" href="#">Customizing the comments framework</a><ul>
+<li><a class="reference internal" href="#an-example-custom-comments-app">An example custom comments app</a></li>
+<li><a class="reference internal" href="#custom-comment-app-api">Custom comment app API</a></li>
+</ul>
+</li>
+</ul>
+<h3>Browse</h3>
+<ul>
+<li>Prev: <a href="upgrade.html">Upgrading from Django’s previous comment system</a></li>
+<li>Next: <a href="forms.html">Comment form classes</a></li>
+</ul>
+<h3>You are here:</h3>
+<ul>
+<li>
+<a href="../../../index.html">Django v1.3.1 documentation</a>
+<ul><li><a href="../../index.html">API Reference</a>
+<ul><li><a href="../index.html"><tt class="docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal"><span class="pre">contrib</span></tt> packages</a>
+<ul><li><a href="index.html">Django’s comments framework</a>
+<ul><li>Customizing the comments framework</li></ul>
+</li></ul></li></ul></li></ul>
+</li>
+</ul>
+<h3>This Page</h3>
+<ul class="this-page-menu">
+<li><a href="../../../_sources/ref/contrib/comments/custom.txt" rel="nofollow">Show Source</a></li>
+</ul>
+<div id="searchbox" style="display: none">
+<h3>Quick search</h3>
+<form action="../../../search.html" class="search" method="get">
+<input name="q" size="18" type="text"/>
+<input type="submit" value="Go"/>
+<input name="check_keywords" type="hidden" value="yes"/>
+<input name="area" type="hidden" value="default"/>
+</form>
+<p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+</div>
+</div>
+<h3>Last update:</h3>
+<p class="topless">Dec 06, 2011</p>
+</div>
+</div>
+<div id="ft">
+<div class="nav">
+    « <a href="upgrade.html" title="Upgrading from Django&#8217;s previous comment system">previous</a> 
+     |
+    <a accesskey="U" href="../../index.html" title="API Reference">up</a>
+   |
+    <a href="forms.html" title="Comment form classes">next</a> »</div>
+</div>
+</div>
+<div class="clearer"></div>
+</div>
+<div style="display:none;"><a name="#"></a><h3 class="tasks">TOC</h3><ul class="tooltip"><li class="tooltip"><a href="#">Customizing the comments framework</a></li><li class="tooltip"><a href="#an-example-custom-comments-app">An example custom comments app</a></li><li class="tooltip"><a href="#custom-comment-app-api">Custom comment app API</a></li></ul></div></body>
+</html>

@@ -1,0 +1,292 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>How to use Django with Apache and mod_wsgi &mdash; Django v1.3.1 documentation</title>
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '1.3.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="Django v1.3.1 documentation" href="../../index.html" />
+    <link rel="up" title="Deploying Django" href="index.html" />
+    <link rel="next" title="How to use Django with FastCGI, SCGI, or AJP" href="fastcgi.html" />
+    <link rel="prev" title="Deploying Django" href="index.html" />
+ 
+<script type="text/javascript" src="../../templatebuiltins.js"></script>
+<script type="text/javascript">
+(function($) {
+    if (!django_template_builtins) {
+       // templatebuiltins.js missing, do nothing.
+       return;
+    }
+    $(document).ready(function() {
+        // Hyperlink Django template tags and filters
+        var base = "../../ref/templates/builtins.html";
+        if (base == "#") {
+            // Special case for builtins.html itself
+            base = "";
+        }
+        // Tags are keywords, class '.k'
+        $("div.highlight\\-html\\+django span.k").each(function(i, elem) {
+             var tagname = $(elem).text();
+             if ($.inArray(tagname, django_template_builtins.ttags) != -1) {
+                 var fragment = tagname.replace(/_/, '-');
+                 $(elem).html("<a href='" + base + "#" + fragment + "'>" + tagname + "</a>");
+             }
+        });
+        // Filters are functions, class '.nf'
+        $("div.highlight\\-html\\+django span.nf").each(function(i, elem) {
+             var filtername = $(elem).text();
+             if ($.inArray(filtername, django_template_builtins.tfilters) != -1) {
+                 var fragment = filtername.replace(/_/, '-');
+                 $(elem).html("<a href='" + base + "#" + fragment + "'>" + filtername + "</a>");
+             }
+        });
+    });
+})(jQuery);
+</script>
+
+  </head>
+  <body>
+
+    <div class="document">
+  <div id="custom-doc" class="yui-t6">
+    <div id="hd">
+      <h1><a href="../../index.html">Django v1.3.1 documentation</a></h1>
+      <div id="global-nav">
+        <a title="Home page" href="../../index.html">Home</a>  |
+        <a title="Table of contents" href="../../contents.html">Table of contents</a>  |
+        <a title="Global index" href="../../genindex.html">Index</a>  |
+        <a title="Module index" href="../../py-modindex.html">Modules</a>
+      </div>
+      <div class="nav">
+    &laquo; <a href="index.html" title="Deploying Django">previous</a> 
+     |
+    <a href="../index.html" title="&amp;#8220;How-to&amp;#8221; guides" accesskey="U">up</a>
+   |
+    <a href="fastcgi.html" title="How to use Django with FastCGI, SCGI, or AJP">next</a> &raquo;</div>
+    </div>
+    
+    <div id="bd">
+      <div id="yui-main">
+        <div class="yui-b">
+          <div class="yui-g" id="howto-deployment-modwsgi">
+            
+  <div class="section" id="s-how-to-use-django-with-apache-and-mod-wsgi">
+<span id="how-to-use-django-with-apache-and-mod-wsgi"></span><h1>How to use Django with Apache and mod_wsgi<a class="headerlink" href="#how-to-use-django-with-apache-and-mod-wsgi" title="Permalink to this headline">¶</a></h1>
+<p>Deploying Django with <a class="reference external" href="http://httpd.apache.org/">Apache</a> and <a class="reference external" href="http://code.google.com/p/modwsgi/">mod_wsgi</a> is the recommended way to get
+Django into production.</p>
+<p>mod_wsgi is an Apache module which can be used to host any Python application
+which supports the <a class="reference external" href="http://www.python.org/dev/peps/pep-0333/">Python WSGI interface</a>, including Django. Django will work
+with any version of Apache which supports mod_wsgi.</p>
+<p>The <a class="reference external" href="http://code.google.com/p/modwsgi/">official mod_wsgi documentation</a> is fantastic; it&#8217;s your source for all
+the details about how to use mod_wsgi. You&#8217;ll probably want to start with the
+<a class="reference external" href="http://code.google.com/p/modwsgi/wiki/InstallationInstructions">installation and configuration documentation</a>.</p>
+<div class="section" id="s-basic-configuration">
+<span id="basic-configuration"></span><h2>Basic configuration<a class="headerlink" href="#basic-configuration" title="Permalink to this headline">¶</a></h2>
+<p>Once you&#8217;ve got mod_wsgi installed and activated, edit your <tt class="docutils literal"><span class="pre">httpd.conf</span></tt> file
+and add:</p>
+<div class="highlight-python"><pre>WSGIScriptAlias / /path/to/mysite/apache/django.wsgi</pre>
+</div>
+<p>The first bit above is the url you want to be serving your application at (<tt class="docutils literal"><span class="pre">/</span></tt>
+indicates the root url), and the second is the location of a &quot;WSGI file&quot; -- see
+below -- on your system, usually inside of your project. This tells Apache
+to serve any request below the given URL using the WSGI application defined by that file.</p>
+<p>Next we'll need to actually create this WSGI application, so create the file
+mentioned in the second part of <tt class="docutils literal"><span class="pre">WSGIScriptAlias</span></tt> and add:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+
+<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s">&#39;DJANGO_SETTINGS_MODULE&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;mysite.settings&#39;</span>
+
+<span class="kn">import</span> <span class="nn">django.core.handlers.wsgi</span>
+<span class="n">application</span> <span class="o">=</span> <span class="n">django</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">handlers</span><span class="o">.</span><span class="n">wsgi</span><span class="o">.</span><span class="n">WSGIHandler</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>If your project is not on your <tt class="docutils literal"><span class="pre">PYTHONPATH</span></tt> by default you can add:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">path</span> <span class="o">=</span> <span class="s">&#39;/path/to/mysite&#39;</span>
+<span class="k">if</span> <span class="n">path</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="p">:</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>just below the <tt class="docutils literal"><span class="pre">import</span> <span class="pre">sys</span></tt> line to place your project on the path. Remember to
+replace 'mysite.settings' with your correct settings file, and '/path/to/mysite'
+with your own project's location.</p>
+</div>
+<div class="section" id="s-serving-files">
+<span id="s-id1"></span><span id="serving-files"></span><span id="id1"></span><h2>Serving files<a class="headerlink" href="#serving-files" title="Permalink to this headline">¶</a></h2>
+<p>Django doesn't serve files itself; it leaves that job to whichever Web
+server you choose.</p>
+<p>We recommend using a separate Web server -- i.e., one that's not also running
+Django -- for serving media. Here are some good choices:</p>
+<blockquote>
+<ul class="simple">
+<li><a class="reference external" href="http://www.lighttpd.net/">lighttpd</a></li>
+<li><a class="reference external" href="http://wiki.nginx.org/Main">Nginx</a></li>
+<li><a class="reference external" href="http://en.wikipedia.org/wiki/TUX_web_server">TUX</a></li>
+<li>A stripped-down version of <a class="reference external" href="http://httpd.apache.org/">Apache</a></li>
+<li><a class="reference external" href="http://www.cherokee-project.com/">Cherokee</a></li>
+</ul>
+</blockquote>
+<p>If, however, you have no option but to serve media files on the same Apache
+<tt class="docutils literal"><span class="pre">VirtualHost</span></tt> as Django, you can set up Apache to serve some URLs as
+static media, and others using the mod_wsgi interface to Django.</p>
+<p>This example sets up Django at the site root, but explicitly serves
+<tt class="docutils literal"><span class="pre">robots.txt</span></tt>, <tt class="docutils literal"><span class="pre">favicon.ico</span></tt>, any CSS file, and anything in the
+<tt class="docutils literal"><span class="pre">/static/</span></tt> and <tt class="docutils literal"><span class="pre">/media/</span></tt> URL space as a static file. All other URLs
+will be served using mod_wsgi:</p>
+<div class="highlight-python"><pre>Alias /robots.txt /usr/local/wsgi/static/robots.txt
+Alias /favicon.ico /usr/local/wsgi/static/favicon.ico
+
+AliasMatch ^/([^/]*\.css) /usr/local/wsgi/static/styles/$1
+
+Alias /media/ /usr/local/wsgi/media/
+Alias /static/ /usr/local/wsgi/static/
+
+&lt;Directory /usr/local/wsgi/static&gt;
+Order deny,allow
+Allow from all
+&lt;/Directory&gt;
+
+&lt;Directory /usr/local/wsgi/media&gt;
+Order deny,allow
+Allow from all
+&lt;/Directory&gt;
+
+WSGIScriptAlias / /usr/local/wsgi/scripts/django.wsgi
+
+&lt;Directory /usr/local/wsgi/scripts&gt;
+Order allow,deny
+Allow from all
+&lt;/Directory&gt;</pre>
+</div>
+</div>
+<div class="section" id="s-serving-the-admin-files">
+<span id="s-id3"></span><span id="serving-the-admin-files"></span><span id="id3"></span><h2>Serving the admin files<a class="headerlink" href="#serving-the-admin-files" title="Permalink to this headline">¶</a></h2>
+<p>Note that the Django development server automagically serves the static files
+of the admin app, but this is not the case when you use any other server
+arrangement. You're responsible for setting up Apache, or whichever media
+server you're using, to serve the admin files.</p>
+<p>The admin files live in (<tt class="file docutils literal"><span class="pre">django/contrib/admin/media/admin</span></tt>) of the
+Django distribution.</p>
+<p>We <strong>strongly</strong> recommend using <a class="reference internal" href="../../ref/contrib/staticfiles.html#module-django.contrib.staticfiles" title="django.contrib.staticfiles: An app for handling static files."><tt class="xref py py-mod docutils literal"><span class="pre">django.contrib.staticfiles</span></tt></a> to handle the
+admin files (this means using the <a class="reference internal" href="../../ref/contrib/staticfiles.html#django-admin-collectstatic"><tt class="xref std std-djadmin docutils literal"><span class="pre">collectstatic</span></tt></a> management command
+to collect the static files in <a class="reference internal" href="../../ref/settings.html#std:setting-STATIC_ROOT"><tt class="xref std std-setting docutils literal"><span class="pre">STATIC_ROOT</span></tt></a>, and then configuring
+your webserver to serve <a class="reference internal" href="../../ref/settings.html#std:setting-STATIC_ROOT"><tt class="xref std std-setting docutils literal"><span class="pre">STATIC_ROOT</span></tt></a> at <a class="reference internal" href="../../ref/settings.html#std:setting-STATIC_URL"><tt class="xref std std-setting docutils literal"><span class="pre">STATIC_URL</span></tt></a>), but
+here are two other approaches:</p>
+<blockquote>
+<ol class="arabic simple">
+<li>Create a symbolic link to the admin static files from within your
+document root.</li>
+<li>Or, copy the admin static files so that they live within your Apache
+document root.</li>
+</ol>
+</blockquote>
+</div>
+<div class="section" id="s-details">
+<span id="details"></span><h2>Details<a class="headerlink" href="#details" title="Permalink to this headline">¶</a></h2>
+<p>For more details, see the <a class="reference external" href="http://code.google.com/p/modwsgi/wiki/IntegrationWithDjango">mod_wsgi documentation on Django integration</a>,
+which explains the above in more detail, and walks through all the various
+options you've got when deploying under mod_wsgi.</p>
+</div>
+</div>
+
+
+          </div>         
+        </div>
+      </div>
+      
+        
+          <div class="yui-b" id="sidebar">
+            
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../contents.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">How to use Django with Apache and mod_wsgi</a><ul>
+<li><a class="reference internal" href="#basic-configuration">Basic configuration</a></li>
+<li><a class="reference internal" href="#serving-files">Serving files</a></li>
+<li><a class="reference internal" href="#serving-the-admin-files">Serving the admin files</a></li>
+<li><a class="reference internal" href="#details">Details</a></li>
+</ul>
+</li>
+</ul>
+
+  <h3>Browse</h3>
+  <ul>
+    
+      <li>Prev: <a href="index.html">Deploying Django</a></li>
+    
+    
+      <li>Next: <a href="fastcgi.html">How to use Django with FastCGI, SCGI, or AJP</a></li>
+    
+  </ul>
+  <h3>You are here:</h3>
+  <ul>
+      <li>
+        <a href="../../index.html">Django v1.3.1 documentation</a>
+        
+          <ul><li><a href="../index.html">&#8220;How-to&#8221; guides</a>
+        
+          <ul><li><a href="index.html">Deploying Django</a>
+        
+        <ul><li>How to use Django with Apache and mod_wsgi</li></ul>
+        </li></ul></li></ul>
+      </li>
+  </ul>  
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/howto/deployment/modwsgi.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+              <h3>Last update:</h3>
+              <p class="topless">Jan 04, 2012</p>
+          </div> 
+        
+      
+    </div>
+    
+    <div id="ft">
+      <div class="nav">
+    &laquo; <a href="index.html" title="Deploying Django">previous</a> 
+     |
+    <a href="../index.html" title="&amp;#8220;How-to&amp;#8221; guides" accesskey="U">up</a>
+   |
+    <a href="fastcgi.html" title="How to use Django with FastCGI, SCGI, or AJP">next</a> &raquo;</div>
+    </div>
+  </div>
+
+      <div class="clearer"></div>
+    </div>
+  </body>
+</html>

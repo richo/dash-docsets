@@ -1,0 +1,633 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Cross Site Request Forgery protection &mdash; Django v1.3.1 documentation</title>
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '1.3.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="Django v1.3.1 documentation" href="../../index.html" />
+    <link rel="up" title="contrib packages" href="index.html" />
+    <link rel="next" title="Databrowse" href="databrowse.html" />
+    <link rel="prev" title="The contenttypes framework" href="contenttypes.html" />
+ 
+<script type="text/javascript" src="../../templatebuiltins.js"></script>
+<script type="text/javascript">
+(function($) {
+    if (!django_template_builtins) {
+       // templatebuiltins.js missing, do nothing.
+       return;
+    }
+    $(document).ready(function() {
+        // Hyperlink Django template tags and filters
+        var base = "../templates/builtins.html";
+        if (base == "#") {
+            // Special case for builtins.html itself
+            base = "";
+        }
+        // Tags are keywords, class '.k'
+        $("div.highlight\\-html\\+django span.k").each(function(i, elem) {
+             var tagname = $(elem).text();
+             if ($.inArray(tagname, django_template_builtins.ttags) != -1) {
+                 var fragment = tagname.replace(/_/, '-');
+                 $(elem).html("<a href='" + base + "#" + fragment + "'>" + tagname + "</a>");
+             }
+        });
+        // Filters are functions, class '.nf'
+        $("div.highlight\\-html\\+django span.nf").each(function(i, elem) {
+             var filtername = $(elem).text();
+             if ($.inArray(filtername, django_template_builtins.tfilters) != -1) {
+                 var fragment = filtername.replace(/_/, '-');
+                 $(elem).html("<a href='" + base + "#" + fragment + "'>" + filtername + "</a>");
+             }
+        });
+    });
+})(jQuery);
+</script>
+
+  </head>
+  <body>
+
+    <div class="document">
+  <div id="custom-doc" class="yui-t6">
+    <div id="hd">
+      <h1><a href="../../index.html">Django v1.3.1 documentation</a></h1>
+      <div id="global-nav">
+        <a title="Home page" href="../../index.html">Home</a>  |
+        <a title="Table of contents" href="../../contents.html">Table of contents</a>  |
+        <a title="Global index" href="../../genindex.html">Index</a>  |
+        <a title="Module index" href="../../py-modindex.html">Modules</a>
+      </div>
+      <div class="nav">
+    &laquo; <a href="contenttypes.html" title="The contenttypes framework">previous</a> 
+     |
+    <a href="../index.html" title="API Reference" accesskey="U">up</a>
+   |
+    <a href="databrowse.html" title="Databrowse">next</a> &raquo;</div>
+    </div>
+    
+    <div id="bd">
+      <div id="yui-main">
+        <div class="yui-b">
+          <div class="yui-g" id="ref-contrib-csrf">
+            
+  <div class="section" id="s-module-django.middleware.csrf">
+<span id="s-cross-site-request-forgery-protection"></span><span id="module-django.middleware.csrf"></span><span id="cross-site-request-forgery-protection"></span><h1>Cross Site Request Forgery protection<a class="headerlink" href="#module-django.middleware.csrf" title="Permalink to this headline">¶</a></h1>
+<p>The CSRF middleware and template tag provides easy-to-use protection against
+<a class="reference external" href="http://www.squarefree.com/securitytips/web-developers.html#CSRF">Cross Site Request Forgeries</a>.  This type of attack occurs when a malicious
+Web site contains a link, a form button or some javascript that is intended to
+perform some action on your Web site, using the credentials of a logged-in user
+who visits the malicious site in their browser.  A related type of attack,
+&#8216;login CSRF&#8217;, where an attacking site tricks a user&#8217;s browser into logging into
+a site with someone else&#8217;s credentials, is also covered.</p>
+<p>The first defense against CSRF attacks is to ensure that GET requests are
+side-effect free.  POST requests can then be protected by following the steps
+below.</p>
+<div class="versionadded">
+<span class="title">New in Django 1.2:</span> The &#8216;contrib&#8217; apps, including the admin, use the functionality described
+here. Because it is security related, a few things have been added to core
+functionality to allow this to happen without any required upgrade steps.</div>
+<div class="section" id="s-how-to-use-it">
+<span id="how-to-use-it"></span><h2>How to use it<a class="headerlink" href="#how-to-use-it" title="Permalink to this headline">¶</a></h2>
+<div class="versionchanged">
+<span class="title">Changed in Django 1.2:</span> The template tag functionality (the recommended way to use this) was added
+in version 1.2. The previous method (still available) is described under
+<a class="reference internal" href="#legacy-method">Legacy method</a>.</div>
+<p>To enable CSRF protection for your views, follow these steps:</p>
+<blockquote>
+<ol class="arabic">
+<li><p class="first">Add the middleware
+<tt class="docutils literal"><span class="pre">'django.middleware.csrf.CsrfViewMiddleware'</span></tt> to your list of
+middleware classes, <a class="reference internal" href="../settings.html#std:setting-MIDDLEWARE_CLASSES"><tt class="xref std std-setting docutils literal"><span class="pre">MIDDLEWARE_CLASSES</span></tt></a>.  (It should come
+before <tt class="docutils literal"><span class="pre">CsrfResponseMiddleware</span></tt> if that is being used, and before any
+view middleware that assume that CSRF attacks have been dealt with.)</p>
+<p>Alternatively, you can use the decorator
+<tt class="docutils literal"><span class="pre">django.views.decorators.csrf.csrf_protect</span></tt> on particular views you
+want to protect (see below).</p>
+</li>
+<li><p class="first">In any template that uses a POST form, use the <a class="reference internal" href="../templates/builtins.html#std:templatetag-csrf_token"><tt class="xref std std-ttag docutils literal"><span class="pre">csrf_token</span></tt></a> tag inside
+the <tt class="docutils literal"><span class="pre">&lt;form&gt;</span></tt> element if the form is for an internal URL, e.g.:</p>
+<div class="highlight-python"><pre>&lt;form action="" method="post"&gt;{% csrf_token %}</pre>
+</div>
+<p>This should not be done for POST forms that target external URLs, since
+that would cause the CSRF token to be leaked, leading to a vulnerability.</p>
+</li>
+<li><p class="first">In the corresponding view functions, ensure that the
+<tt class="docutils literal"><span class="pre">'django.core.context_processors.csrf'</span></tt> context processor is
+being used. Usually, this can be done in one of two ways:</p>
+<ol class="arabic">
+<li><p class="first">Use RequestContext, which always uses
+<tt class="docutils literal"><span class="pre">'django.core.context_processors.csrf'</span></tt> (no matter what your
+TEMPLATE_CONTEXT_PROCESSORS setting).  If you are using
+generic views or contrib apps, you are covered already, since these
+apps use RequestContext throughout.</p>
+</li>
+<li><p class="first">Manually import and use the processor to generate the CSRF token and
+add it to the template context. e.g.:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">django.core.context_processors</span> <span class="kn">import</span> <span class="n">csrf</span>
+<span class="kn">from</span> <span class="nn">django.shortcuts</span> <span class="kn">import</span> <span class="n">render_to_response</span>
+
+<span class="k">def</span> <span class="nf">my_view</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">c</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">csrf</span><span class="p">(</span><span class="n">request</span><span class="p">))</span>
+    <span class="c"># ... view code here</span>
+    <span class="k">return</span> <span class="n">render_to_response</span><span class="p">(</span><span class="s">&quot;a_template.html&quot;</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>You may want to write your own <tt class="docutils literal"><span class="pre">render_to_response</span></tt> wrapper that
+takes care of this step for you.</p>
+</li>
+</ol>
+</li>
+</ol>
+</blockquote>
+<p>The utility script <tt class="docutils literal"><span class="pre">extras/csrf_migration_helper.py</span></tt> can help to automate the
+finding of code and templates that may need to be upgraded.  It contains full
+help on how to use it.</p>
+<div class="section" id="s-ajax">
+<span id="s-csrf-ajax"></span><span id="ajax"></span><span id="csrf-ajax"></span><h3>AJAX<a class="headerlink" href="#ajax" title="Permalink to this headline">¶</a></h3>
+<p>While the above method can be used for AJAX POST requests, it has some
+inconveniences: you have to remember to pass the CSRF token in as POST data with
+every POST request. For this reason, there is an alternative method: on each
+XMLHttpRequest, set a custom <cite>X-CSRFToken</cite> header to the value of the CSRF
+token. This is often easier, because many javascript frameworks provide hooks
+that allow headers to be set on every request. In jQuery, you can use the
+<tt class="docutils literal"><span class="pre">ajaxSend</span></tt> event as follows:</p>
+<div class="highlight-javascript"><div class="highlight"><pre><span class="nx">$</span><span class="p">(</span><span class="nb">document</span><span class="p">).</span><span class="nx">ajaxSend</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">event</span><span class="p">,</span> <span class="nx">xhr</span><span class="p">,</span> <span class="nx">settings</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">function</span> <span class="nx">getCookie</span><span class="p">(</span><span class="nx">name</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kd">var</span> <span class="nx">cookieValue</span> <span class="o">=</span> <span class="kc">null</span><span class="p">;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nb">document</span><span class="p">.</span><span class="nx">cookie</span> <span class="o">&amp;&amp;</span> <span class="nb">document</span><span class="p">.</span><span class="nx">cookie</span> <span class="o">!=</span> <span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="p">{</span>
+            <span class="kd">var</span> <span class="nx">cookies</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">cookie</span><span class="p">.</span><span class="nx">split</span><span class="p">(</span><span class="s1">&#39;;&#39;</span><span class="p">);</span>
+            <span class="k">for</span> <span class="p">(</span><span class="kd">var</span> <span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="nx">cookies</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+                <span class="kd">var</span> <span class="nx">cookie</span> <span class="o">=</span> <span class="nx">jQuery</span><span class="p">.</span><span class="nx">trim</span><span class="p">(</span><span class="nx">cookies</span><span class="p">[</span><span class="nx">i</span><span class="p">]);</span>
+                <span class="c1">// Does this cookie string begin with the name we want?</span>
+                <span class="k">if</span> <span class="p">(</span><span class="nx">cookie</span><span class="p">.</span><span class="nx">substring</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nx">name</span><span class="p">.</span><span class="nx">length</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">==</span> <span class="p">(</span><span class="nx">name</span> <span class="o">+</span> <span class="s1">&#39;=&#39;</span><span class="p">))</span> <span class="p">{</span>
+                    <span class="nx">cookieValue</span> <span class="o">=</span> <span class="nb">decodeURIComponent</span><span class="p">(</span><span class="nx">cookie</span><span class="p">.</span><span class="nx">substring</span><span class="p">(</span><span class="nx">name</span><span class="p">.</span><span class="nx">length</span> <span class="o">+</span> <span class="mi">1</span><span class="p">));</span>
+                    <span class="k">break</span><span class="p">;</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="nx">cookieValue</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="kd">function</span> <span class="nx">sameOrigin</span><span class="p">(</span><span class="nx">url</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// url could be relative or scheme relative or absolute</span>
+        <span class="kd">var</span> <span class="nx">host</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">location</span><span class="p">.</span><span class="nx">host</span><span class="p">;</span> <span class="c1">// host + port</span>
+        <span class="kd">var</span> <span class="nx">protocol</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">location</span><span class="p">.</span><span class="nx">protocol</span><span class="p">;</span>
+        <span class="kd">var</span> <span class="nx">sr_origin</span> <span class="o">=</span> <span class="s1">&#39;//&#39;</span> <span class="o">+</span> <span class="nx">host</span><span class="p">;</span>
+        <span class="kd">var</span> <span class="nx">origin</span> <span class="o">=</span> <span class="nx">protocol</span> <span class="o">+</span> <span class="nx">sr_origin</span><span class="p">;</span>
+        <span class="c1">// Allow absolute or scheme relative URLs to same origin</span>
+        <span class="k">return</span> <span class="p">(</span><span class="nx">url</span> <span class="o">==</span> <span class="nx">origin</span> <span class="o">||</span> <span class="nx">url</span><span class="p">.</span><span class="nx">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nx">origin</span><span class="p">.</span><span class="nx">length</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">==</span> <span class="nx">origin</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span><span class="p">)</span> <span class="o">||</span>
+            <span class="p">(</span><span class="nx">url</span> <span class="o">==</span> <span class="nx">sr_origin</span> <span class="o">||</span> <span class="nx">url</span><span class="p">.</span><span class="nx">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nx">sr_origin</span><span class="p">.</span><span class="nx">length</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">==</span> <span class="nx">sr_origin</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span><span class="p">)</span> <span class="o">||</span>
+            <span class="c1">// or any other URL that isn&#39;t scheme relative or absolute i.e relative.</span>
+            <span class="o">!</span><span class="p">(</span><span class="sr">/^(\/\/|http:|https:).*/</span><span class="p">.</span><span class="nx">test</span><span class="p">(</span><span class="nx">url</span><span class="p">));</span>
+    <span class="p">}</span>
+    <span class="kd">function</span> <span class="nx">safeMethod</span><span class="p">(</span><span class="nx">method</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="p">(</span><span class="sr">/^(GET|HEAD|OPTIONS|TRACE)$/</span><span class="p">.</span><span class="nx">test</span><span class="p">(</span><span class="nx">method</span><span class="p">));</span>
+    <span class="p">}</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">safeMethod</span><span class="p">(</span><span class="nx">settings</span><span class="p">.</span><span class="nx">type</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="nx">sameOrigin</span><span class="p">(</span><span class="nx">settings</span><span class="p">.</span><span class="nx">url</span><span class="p">))</span> <span class="p">{</span>
+        <span class="nx">xhr</span><span class="p">.</span><span class="nx">setRequestHeader</span><span class="p">(</span><span class="s2">&quot;X-CSRFToken&quot;</span><span class="p">,</span> <span class="nx">getCookie</span><span class="p">(</span><span class="s1">&#39;csrftoken&#39;</span><span class="p">));</span>
+    <span class="p">}</span>
+<span class="p">});</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Due to a bug introduced in jQuery 1.5, the example above will not work
+correctly on that version. Make sure you are running at least jQuery 1.5.1.</p>
+</div>
+<p>Adding this to a javascript file that is included on your site will ensure that
+AJAX POST requests that are made via jQuery will not be caught by the CSRF
+protection.</p>
+</div>
+<div class="section" id="s-the-decorator-method">
+<span id="the-decorator-method"></span><h3>The decorator method<a class="headerlink" href="#the-decorator-method" title="Permalink to this headline">¶</a></h3>
+<p>Rather than adding <tt class="docutils literal"><span class="pre">CsrfViewMiddleware</span></tt> as a blanket protection, you can use
+the <tt class="docutils literal"><span class="pre">csrf_protect</span></tt> decorator, which has exactly the same functionality, on
+particular views that need the protection.  It must be used <strong>both</strong> on views
+that insert the CSRF token in the output, and on those that accept the POST form
+data. (These are often the same view function, but not always).  It is used like
+this:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">django.views.decorators.csrf</span> <span class="kn">import</span> <span class="n">csrf_protect</span>
+<span class="kn">from</span> <span class="nn">django.template</span> <span class="kn">import</span> <span class="n">RequestContext</span>
+
+<span class="nd">@csrf_protect</span>
+<span class="k">def</span> <span class="nf">my_view</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="c"># ...</span>
+    <span class="k">return</span> <span class="n">render_to_response</span><span class="p">(</span><span class="s">&quot;a_template.html&quot;</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span>
+                               <span class="n">context_instance</span><span class="o">=</span><span class="n">RequestContext</span><span class="p">(</span><span class="n">request</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>Use of the decorator is <strong>not recommended</strong> by itself, since if you forget to
+use it, you will have a security hole.  The 'belt and braces' strategy of using
+both is fine, and will incur minimal overhead.</p>
+</div>
+<div class="section" id="s-legacy-method">
+<span id="legacy-method"></span><h3>Legacy method<a class="headerlink" href="#legacy-method" title="Permalink to this headline">¶</a></h3>
+<p>In Django 1.1, the template tag did not exist.  Instead, a post-processing
+middleware that re-wrote POST forms to include the CSRF token was used.  If you
+are upgrading a site from version 1.1 or earlier, please read this section and
+the <a class="reference internal" href="#upgrading-notes">Upgrading notes</a> below.  The post-processing middleware is still available
+as <tt class="docutils literal"><span class="pre">CsrfResponseMiddleware</span></tt>, and it can be used by following these steps:</p>
+<blockquote>
+<ol class="arabic">
+<li><p class="first">Follow step 1 above to install <tt class="docutils literal"><span class="pre">CsrfViewMiddleware</span></tt>.</p>
+</li>
+<li><p class="first">Add <tt class="docutils literal"><span class="pre">'django.middleware.csrf.CsrfResponseMiddleware'</span></tt> to your
+<a class="reference internal" href="../settings.html#std:setting-MIDDLEWARE_CLASSES"><tt class="xref std std-setting docutils literal"><span class="pre">MIDDLEWARE_CLASSES</span></tt></a> setting.</p>
+<p><tt class="docutils literal"><span class="pre">CsrfResponseMiddleware</span></tt> needs to process the response before things
+like compression or setting ofETags happen to the response, so it must
+come after <tt class="docutils literal"><span class="pre">GZipMiddleware</span></tt>, <tt class="docutils literal"><span class="pre">CommonMiddleware</span></tt> and
+<tt class="docutils literal"><span class="pre">ConditionalGetMiddleware</span></tt> in the list. It also must come after
+<tt class="docutils literal"><span class="pre">CsrfViewMiddleware</span></tt>.</p>
+</li>
+</ol>
+</blockquote>
+<p>Use of the <tt class="docutils literal"><span class="pre">CsrfResponseMiddleware</span></tt> is not recommended because of the
+performance hit it imposes, and because of a potential security problem (see
+below).  It can be used as an interim measure until applications have been
+updated to use the <a class="reference internal" href="../templates/builtins.html#std:templatetag-csrf_token"><tt class="xref std std-ttag docutils literal"><span class="pre">csrf_token</span></tt></a> tag.  It is deprecated and will be
+removed in Django 1.4.</p>
+<p>Django 1.1 and earlier provided a single <tt class="docutils literal"><span class="pre">CsrfMiddleware</span></tt> class.  This is also
+still available for backwards compatibility.  It combines the functions of the
+two middleware.</p>
+<p>Note also that previous versions of these classes depended on the sessions
+framework, but this dependency has now been removed, with backward compatibility
+support so that upgrading will not produce any issues.</p>
+<div class="section" id="s-security-of-legacy-method">
+<span id="security-of-legacy-method"></span><h4>Security of legacy method<a class="headerlink" href="#security-of-legacy-method" title="Permalink to this headline">¶</a></h4>
+<p>The post-processing <tt class="docutils literal"><span class="pre">CsrfResponseMiddleware</span></tt> adds the CSRF token to all POST
+forms (unless the view has been decorated with <tt class="docutils literal"><span class="pre">csrf_response_exempt</span></tt>).  If
+the POST form has an external untrusted site as its target, rather than an
+internal page, that site will be sent the CSRF token when the form is submitted.
+Armed with this leaked information, that site will then be able to successfully
+launch a CSRF attack on your site against that user.  The
+<tt class="docutils literal"><span class="pre">&#64;csrf_response_exempt</span></tt> decorator can be used to fix this, but only if the
+page doesn't also contain internal forms that require the token.</p>
+</div>
+</div>
+<div class="section" id="s-upgrading-notes">
+<span id="s-ref-csrf-upgrading-notes"></span><span id="upgrading-notes"></span><span id="ref-csrf-upgrading-notes"></span><h3>Upgrading notes<a class="headerlink" href="#upgrading-notes" title="Permalink to this headline">¶</a></h3>
+<p>When upgrading to version 1.2 or later, you may have applications that rely on
+the old post-processing functionality for CSRF protection, or you may not have
+enabled any CSRF protection.  This section outlines the steps necessary for a
+smooth upgrade, without having to fix all the applications to use the new
+template tag method immediately.</p>
+<p>First of all, the location of the middleware and related functions have
+changed.  There are backwards compatible stub files so that old imports will
+continue to work for now, but they are deprecated and will be removed in Django
+1.4.  The following changes have been made:</p>
+<blockquote>
+<ul class="simple">
+<li>Middleware have been moved to <tt class="docutils literal"><span class="pre">django.middleware.csrf</span></tt></li>
+<li>Decorators have been moved to <tt class="docutils literal"><span class="pre">django.views.decorators.csrf</span></tt></li>
+</ul>
+</blockquote>
+<table class="docutils">
+<colgroup>
+<col width="52%" />
+<col width="48%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">Old</th>
+<th class="head">New</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td>django.contrib.csrf.middleware.CsrfMiddleware</td>
+<td>django.middleware.csrf.CsrfMiddleware</td>
+</tr>
+<tr><td>django.contrib.csrf.middleware.CsrfViewMiddleware</td>
+<td>django.middleware.csrf.CsrfViewMiddleware</td>
+</tr>
+<tr><td>django.contrib.csrf.middleware.CsrfResponseMiddleware</td>
+<td>django.middleware.csrf.CsrfResponseMiddleware</td>
+</tr>
+<tr><td>django.contrib.csrf.middleware.csrf_exempt</td>
+<td>django.views.decorators.csrf.csrf_exempt</td>
+</tr>
+<tr><td>django.contrib.csrf.middleware.csrf_view_exempt</td>
+<td>django.views.decorators.csrf.csrf_view_exempt</td>
+</tr>
+<tr><td>django.contrib.csrf.middleware.csrf_response_exempt</td>
+<td>django.views.decorators.csrf.csrf_response_exempt</td>
+</tr>
+</tbody>
+</table>
+<p>You should update any imports, and also the paths in your
+<a class="reference internal" href="../settings.html#std:setting-MIDDLEWARE_CLASSES"><tt class="xref std std-setting docutils literal"><span class="pre">MIDDLEWARE_CLASSES</span></tt></a>.</p>
+<p>If you have <tt class="docutils literal"><span class="pre">CsrfMiddleware</span></tt> in your <a class="reference internal" href="../settings.html#std:setting-MIDDLEWARE_CLASSES"><tt class="xref std std-setting docutils literal"><span class="pre">MIDDLEWARE_CLASSES</span></tt></a>, you will now
+have a working installation with CSRF protection.  It is recommended at this
+point that you replace <tt class="docutils literal"><span class="pre">CsrfMiddleware</span></tt> with its two components,
+<tt class="docutils literal"><span class="pre">CsrfViewMiddleware</span></tt> and <tt class="docutils literal"><span class="pre">CsrfResponseMiddleware</span></tt> (in that order).</p>
+<p>If you do not have any of the middleware in your <a class="reference internal" href="../settings.html#std:setting-MIDDLEWARE_CLASSES"><tt class="xref std std-setting docutils literal"><span class="pre">MIDDLEWARE_CLASSES</span></tt></a>,
+you will have a working installation but without any CSRF protection for your
+views (just as you had before). It is strongly recommended to install
+<tt class="docutils literal"><span class="pre">CsrfViewMiddleware</span></tt> and <tt class="docutils literal"><span class="pre">CsrfResponseMiddleware</span></tt>, as described above.</p>
+<p>Note that contrib apps, such as the admin, have been updated to use the
+<tt class="docutils literal"><span class="pre">csrf_protect</span></tt> decorator, so that they are secured even if you do not add the
+<tt class="docutils literal"><span class="pre">CsrfViewMiddleware</span></tt> to your settings.  However, if you have supplied
+customised templates to any of the view functions of contrib apps (whether
+explicitly via a keyword argument, or by overriding built-in templates), <strong>you
+MUST update them</strong> to include the <a class="reference internal" href="../templates/builtins.html#std:templatetag-csrf_token"><tt class="xref std std-ttag docutils literal"><span class="pre">csrf_token</span></tt></a> template tag as described
+above, or they will stop working.  (If you cannot update these templates for
+some reason, you will be forced to use <tt class="docutils literal"><span class="pre">CsrfResponseMiddleware</span></tt> for these
+views to continue working).</p>
+<p>Note also, if you are using the comments app, and you are not going to add
+<tt class="docutils literal"><span class="pre">CsrfViewMiddleware</span></tt> to your settings (not recommended), you will need to add
+the <tt class="docutils literal"><span class="pre">csrf_protect</span></tt> decorator to any views that include the comment forms and
+target the comment views (usually using the <a class="reference internal" href="comments/index.html#std:templatetag-comment_form_target"><tt class="xref std std-ttag docutils literal"><span class="pre">comment_form_target</span></tt></a> template
+tag).</p>
+<p>Assuming you have followed the above, all views in your Django site will now be
+protected by the <tt class="docutils literal"><span class="pre">CsrfViewMiddleware</span></tt>.  Contrib apps meet the requirements
+imposed by the <tt class="docutils literal"><span class="pre">CsrfViewMiddleware</span></tt> using the template tag, and other
+applications in your project will meet its requirements by virtue of the
+<tt class="docutils literal"><span class="pre">CsrfResponseMiddleware</span></tt>.</p>
+<p>The next step is to update all your applications to use the template tag, as
+described in <a class="reference internal" href="#how-to-use-it">How to use it</a>, steps 2-3.  This can be done as soon as is
+practical. Any applications that are updated will now require Django 1.1.2 or
+later, since they will use the CSRF template tag which was not available in
+earlier versions. (The template tag in 1.1.2 is actually a no-op that exists
+solely to ease the transition to 1.2 — it allows apps to be created that have
+CSRF protection under 1.2 without requiring users of the apps to upgrade to the
+Django 1.2.X series).</p>
+<p>The utility script <tt class="docutils literal"><span class="pre">extras/csrf_migration_helper.py</span></tt> can help to automate the
+finding of code and templates that may need to be upgraded.  It contains full
+help on how to use it.</p>
+<p>Finally, once all applications are upgraded, <tt class="docutils literal"><span class="pre">CsrfResponseMiddleware</span></tt> can be
+removed from your settings.</p>
+<p>While <tt class="docutils literal"><span class="pre">CsrfResponseMiddleware</span></tt> is still in use, the <tt class="docutils literal"><span class="pre">csrf_response_exempt</span></tt>
+decorator, described in <a class="reference internal" href="#exceptions">Exceptions</a>, may be useful.  The post-processing
+middleware imposes a performance hit and a potential vulnerability, and any
+views that have been upgraded to use the new template tag method no longer need
+it.</p>
+</div>
+<div class="section" id="s-exceptions">
+<span id="exceptions"></span><h3>Exceptions<a class="headerlink" href="#exceptions" title="Permalink to this headline">¶</a></h3>
+<div class="versionchanged">
+<span class="title">Changed in Django 1.2:</span> Import paths for the decorators below were changed.</div>
+<p>To manually exclude a view function from being handled by either of the two CSRF
+middleware, you can use the <tt class="docutils literal"><span class="pre">csrf_exempt</span></tt> decorator, found in the
+<tt class="docutils literal"><span class="pre">django.views.decorators.csrf</span></tt> module. For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">django.views.decorators.csrf</span> <span class="kn">import</span> <span class="n">csrf_exempt</span>
+
+<span class="nd">@csrf_exempt</span>
+<span class="k">def</span> <span class="nf">my_view</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">HttpResponse</span><span class="p">(</span><span class="s">&#39;Hello world&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Like the middleware, the <tt class="docutils literal"><span class="pre">csrf_exempt</span></tt> decorator is composed of two parts: a
+<tt class="docutils literal"><span class="pre">csrf_view_exempt</span></tt> decorator and a <tt class="docutils literal"><span class="pre">csrf_response_exempt</span></tt> decorator, found
+in the same module.  These disable the view protection mechanism
+(<tt class="docutils literal"><span class="pre">CsrfViewMiddleware</span></tt>) and the response post-processing
+(<tt class="docutils literal"><span class="pre">CsrfResponseMiddleware</span></tt>) respectively.  They can be used individually if
+required.</p>
+</div>
+<div class="section" id="s-subdomains">
+<span id="subdomains"></span><h3>Subdomains<a class="headerlink" href="#subdomains" title="Permalink to this headline">¶</a></h3>
+<p>By default, CSRF cookies are specific to the subdomain they are set for.  This
+means that a form served from one subdomain (e.g. server1.example.com) will not
+be able to have a target on another subdomain (e.g. server2.example.com).  This
+restriction can be removed by setting <a class="reference internal" href="../settings.html#std:setting-CSRF_COOKIE_DOMAIN"><tt class="xref std std-setting docutils literal"><span class="pre">CSRF_COOKIE_DOMAIN</span></tt></a> to be
+something like <tt class="docutils literal"><span class="pre">&quot;.example.com&quot;</span></tt>.</p>
+<p>Please note that, with or without use of this setting, this CSRF protection
+mechanism is not safe against cross-subdomain attacks -- see <a class="reference internal" href="#limitations">Limitations</a>.</p>
+</div>
+</div>
+<div class="section" id="s-rejected-requests">
+<span id="rejected-requests"></span><h2>Rejected requests<a class="headerlink" href="#rejected-requests" title="Permalink to this headline">¶</a></h2>
+<p>By default, a '403 Forbidden' response is sent to the user if an incoming
+request fails the checks performed by <tt class="docutils literal"><span class="pre">CsrfViewMiddleware</span></tt>.  This should
+usually only be seen when there is a genuine Cross Site Request Forgery, or
+when, due to a programming error, the CSRF token has not been included with a
+POST form.</p>
+<p>No logging is done, and the error message is not very friendly, so you may want
+to provide your own page for handling this condition.  To do this, simply set
+the <a class="reference internal" href="../settings.html#std:setting-CSRF_FAILURE_VIEW"><tt class="xref std std-setting docutils literal"><span class="pre">CSRF_FAILURE_VIEW</span></tt></a> setting to a dotted path to your own view
+function, which should have the following signature:</p>
+<div class="highlight-python"><pre>def csrf_failure(request, reason="")</pre>
+</div>
+<p>where <tt class="docutils literal"><span class="pre">reason</span></tt> is a short message (intended for developers or logging, not for
+end users) indicating the reason the request was rejected.</p>
+</div>
+<div class="section" id="s-how-it-works">
+<span id="how-it-works"></span><h2>How it works<a class="headerlink" href="#how-it-works" title="Permalink to this headline">¶</a></h2>
+<p>The CSRF protection is based on the following things:</p>
+<ol class="arabic">
+<li><p class="first">A CSRF cookie that is set to a random value (a session independent nonce, as
+it is called), which other sites will not have access to.</p>
+<p>This cookie is set by <tt class="docutils literal"><span class="pre">CsrfViewMiddleware</span></tt>.  It is meant to be permanent,
+but since there is no way to set a cookie that never expires, it is sent with
+every response that has called <tt class="docutils literal"><span class="pre">django.middleware.csrf.get_token()</span></tt>
+(the function used internally to retrieve the CSRF token).</p>
+</li>
+<li><p class="first">A hidden form field with the name 'csrfmiddlewaretoken' present in all
+outgoing POST forms.  The value of this field is the value of the CSRF
+cookie.</p>
+<p>This part is done by the template tag (and with the legacy method, it is done
+by <tt class="docutils literal"><span class="pre">CsrfResponseMiddleware</span></tt>).</p>
+</li>
+<li><p class="first">For all incoming POST requests, a CSRF cookie must be present, and the
+'csrfmiddlewaretoken' field must be present and correct. If it isn't, the
+user will get a 403 error.</p>
+<p>This check is done by <tt class="docutils literal"><span class="pre">CsrfViewMiddleware</span></tt>.</p>
+</li>
+<li><p class="first">In addition, for HTTPS requests, strict referer checking is done by
+<tt class="docutils literal"><span class="pre">CsrfViewMiddleware</span></tt>.  This is necessary to address a Man-In-The-Middle
+attack that is possible under HTTPS when using a session independent nonce,
+due to the fact that HTTP 'Set-Cookie' headers are (unfortunately) accepted
+by clients that are talking to a site under HTTPS.  (Referer checking is not
+done for HTTP requests because the presence of the Referer header is not
+reliable enough under HTTP.)</p>
+</li>
+</ol>
+<p>This ensures that only forms that have originated from your Web site can be used
+to POST data back.</p>
+<p>It deliberately only targets HTTP POST requests (and the corresponding POST
+forms). GET requests ought never to have any potentially dangerous side effects
+(see <a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html">9.1.1 Safe Methods, HTTP 1.1, RFC 2616</a>), and so a CSRF attack with a GET
+request ought to be harmless.</p>
+<p><tt class="docutils literal"><span class="pre">CsrfResponseMiddleware</span></tt> checks the Content-Type before modifying the
+response, and only pages that are served as 'text/html' or
+'application/xml+xhtml' are modified.</p>
+</div>
+<div class="section" id="s-caching">
+<span id="caching"></span><h2>Caching<a class="headerlink" href="#caching" title="Permalink to this headline">¶</a></h2>
+<p>If the <a class="reference internal" href="../templates/builtins.html#std:templatetag-csrf_token"><tt class="xref std std-ttag docutils literal"><span class="pre">csrf_token</span></tt></a> template tag is used by a template (or the <tt class="docutils literal"><span class="pre">get_token</span></tt>
+function is called some other way), <tt class="docutils literal"><span class="pre">CsrfViewMiddleware</span></tt> will add a cookie and
+a <tt class="docutils literal"><span class="pre">Vary:</span> <span class="pre">Cookie</span></tt> header to the response.  Similarly,
+<tt class="docutils literal"><span class="pre">CsrfResponseMiddleware</span></tt> will send the <tt class="docutils literal"><span class="pre">Vary:</span> <span class="pre">Cookie</span></tt> header if it inserted
+a token.  This means that these middleware will play well with the cache
+middleware if it is used as instructed (<tt class="docutils literal"><span class="pre">UpdateCacheMiddleware</span></tt> goes before
+all other middleware).</p>
+<p>However, if you use cache decorators on individual views, the CSRF middleware
+will not yet have been able to set the Vary header or the CSRF cookie, and the
+response will be cached without either one. In this case, on any views that
+will require a CSRF token to be inserted you should use the
+<tt class="xref py py-func docutils literal"><span class="pre">django.views.decorators.csrf.csrf_protect()</span></tt> decorator first:</p>
+<div class="highlight-python"><pre>from django.views.decorators.cache import cache_page
+from django.views.decorators.csrf import csrf_protect
+
+@cache_page(60 * 15)
+@csrf_protect
+def my_view(request):
+    # ...</pre>
+</div>
+</div>
+<div class="section" id="s-testing">
+<span id="testing"></span><h2>Testing<a class="headerlink" href="#testing" title="Permalink to this headline">¶</a></h2>
+<p>The <tt class="docutils literal"><span class="pre">CsrfViewMiddleware</span></tt> will usually be a big hindrance to testing view
+functions, due to the need for the CSRF token which must be sent with every POST
+request.  For this reason, Django's HTTP client for tests has been modified to
+set a flag on requests which relaxes the middleware and the <tt class="docutils literal"><span class="pre">csrf_protect</span></tt>
+decorator so that they no longer rejects requests.  In every other respect
+(e.g. sending cookies etc.), they behave the same.</p>
+<p>If, for some reason, you <em>want</em> the test client to perform CSRF
+checks, you can create an instance of the test client that enforces
+CSRF checks:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">django.test</span> <span class="kn">import</span> <span class="n">Client</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">csrf_client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="n">enforce_csrf_checks</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="s-limitations">
+<span id="limitations"></span><h2>Limitations<a class="headerlink" href="#limitations" title="Permalink to this headline">¶</a></h2>
+<p>Subdomains within a site will be able to set cookies on the client for the whole
+domain.  By setting the cookie and using a corresponding token, subdomains will
+be able to circumvent the CSRF protection.  The only way to avoid this is to
+ensure that subdomains are controlled by trusted users (or, are at least unable
+to set cookies).  Note that even without CSRF, there are other vulnerabilities,
+such as session fixation, that make giving subdomains to untrusted parties a bad
+idea, and these vulnerabilities cannot easily be fixed with current browsers.</p>
+<p>If you are using <tt class="docutils literal"><span class="pre">CsrfResponseMiddleware</span></tt> and your app creates HTML pages and
+forms in some unusual way, (e.g.  it sends fragments of HTML in JavaScript
+document.write statements) you might bypass the filter that adds the hidden
+field to the form, in which case form submission will always fail.  You should
+use the template tag or <tt class="xref py py-meth docutils literal"><span class="pre">django.middleware.csrf.get_token()</span></tt> to get
+the CSRF token and ensure it is included when your form is submitted.</p>
+</div>
+<div class="section" id="s-contrib-and-reusable-apps">
+<span id="contrib-and-reusable-apps"></span><h2>Contrib and reusable apps<a class="headerlink" href="#contrib-and-reusable-apps" title="Permalink to this headline">¶</a></h2>
+<p>Because it is possible for the developer to turn off the <tt class="docutils literal"><span class="pre">CsrfViewMiddleware</span></tt>,
+all relevant views in contrib apps use the <tt class="docutils literal"><span class="pre">csrf_protect</span></tt> decorator to ensure
+the security of these applications against CSRF.  It is recommended that the
+developers of other reusable apps that want the same guarantees also use the
+<tt class="docutils literal"><span class="pre">csrf_protect</span></tt> decorator on their views.</p>
+</div>
+</div>
+
+
+          </div>         
+        </div>
+      </div>
+      
+        
+          <div class="yui-b" id="sidebar">
+            
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../contents.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Cross Site Request Forgery protection</a><ul>
+<li><a class="reference internal" href="#how-to-use-it">How to use it</a><ul>
+<li><a class="reference internal" href="#ajax">AJAX</a></li>
+<li><a class="reference internal" href="#the-decorator-method">The decorator method</a></li>
+<li><a class="reference internal" href="#legacy-method">Legacy method</a><ul>
+<li><a class="reference internal" href="#security-of-legacy-method">Security of legacy method</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#upgrading-notes">Upgrading notes</a></li>
+<li><a class="reference internal" href="#exceptions">Exceptions</a></li>
+<li><a class="reference internal" href="#subdomains">Subdomains</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#rejected-requests">Rejected requests</a></li>
+<li><a class="reference internal" href="#how-it-works">How it works</a></li>
+<li><a class="reference internal" href="#caching">Caching</a></li>
+<li><a class="reference internal" href="#testing">Testing</a></li>
+<li><a class="reference internal" href="#limitations">Limitations</a></li>
+<li><a class="reference internal" href="#contrib-and-reusable-apps">Contrib and reusable apps</a></li>
+</ul>
+</li>
+</ul>
+
+  <h3>Browse</h3>
+  <ul>
+    
+      <li>Prev: <a href="contenttypes.html">The contenttypes framework</a></li>
+    
+    
+      <li>Next: <a href="databrowse.html">Databrowse</a></li>
+    
+  </ul>
+  <h3>You are here:</h3>
+  <ul>
+      <li>
+        <a href="../../index.html">Django v1.3.1 documentation</a>
+        
+          <ul><li><a href="../index.html">API Reference</a>
+        
+          <ul><li><a href="index.html"><tt class="docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal"><span class="pre">contrib</span></tt> packages</a>
+        
+        <ul><li>Cross Site Request Forgery protection</li></ul>
+        </li></ul></li></ul>
+      </li>
+  </ul>  
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/ref/contrib/csrf.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+              <h3>Last update:</h3>
+              <p class="topless">Dec 06, 2011</p>
+          </div> 
+        
+      
+    </div>
+    
+    <div id="ft">
+      <div class="nav">
+    &laquo; <a href="contenttypes.html" title="The contenttypes framework">previous</a> 
+     |
+    <a href="../index.html" title="API Reference" accesskey="U">up</a>
+   |
+    <a href="databrowse.html" title="Databrowse">next</a> &raquo;</div>
+    </div>
+  </div>
+
+      <div class="clearer"></div>
+    </div>
+  </body>
+</html>
