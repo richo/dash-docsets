@@ -144,7 +144,277 @@
   </p>
  </div>
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="87550""></a>
+  <div class="note">
+   <strong class="user">robertb</strong>
+   <a href="#87550" class="date">10-Dec-2008 12:54</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+You should not use pg_pconnect - it's broken. It will work but it doesn't really pool, and it's behaviour is unpredictable. It will only make you rise the max_connections parameter in postgresql.conf file until you run out of resources (which will slow your database down).<br />
+<br />
+If you have many concurrent connections to your database, you should use the PostgreSQL connection pooler PgBouncer (developed by the Skype-team). When using pgbouncer, make sure you use pg_connect and NOT pg_pconnect. Also, make sure you close your connections with pg_close.<br />
+<br />
+* PGBouncer homepage:<br />
+<a href="http://developer.skype.com/SkypeGarage/DbProjects/PgBouncer" rel="nofollow" target="_blank">http://developer.skype.com/SkypeGarage/DbProjects/PgBouncer</a><br />
+<br />
+* PostgreSQL pooling article by Last.fm:<br />
+<a href="http://www.last.fm/user/Russ/journal/2008/02/21" rel="nofollow" target="_blank">http://www.last.fm/user/Russ/journal/2008/02/21</a><br />
+/zd_postgres_connection_pools:_pgpool_vs._pgbouncer</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="78796""></a>
+  <div class="note">
+   <strong class="user">ts at dev dot websafe dot pl</strong>
+   <a href="#78796" class="date">28-Oct-2007 02:22</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+<span class="default">&lt;?php<br />
+</span><span class="comment">//<br />
+// Using pg_pconnect in a class.<br />
+//<br />
+// Why this? Because the manual says:<br />
+//<br />
+//&nbsp;&nbsp; If a second call is made to pg_pconnect() with the same<br />
+//&nbsp;&nbsp; connection_string as an existing connection, the existing <br />
+//&nbsp;&nbsp; connection will be returned unless you pass <br />
+//&nbsp;&nbsp; PGSQL_CONNECT_FORCE_NEW as connect_type.<br />
+//<br />
+// This is not always true.<br />
+//<br />
+/**<br />
+&nbsp;* MyClassA creates a postgresql connection using pg_pconnect <br />
+&nbsp;* and stores the resulting resource id to $this-&gt;conn <br />
+&nbsp;*/<br />
+</span><span class="keyword">class </span><span class="default">MyClassA<br />
+</span><span class="keyword">{<br />
+&nbsp;&nbsp;&nbsp; function </span><span class="default">__construct</span><span class="keyword">(</span><span class="default">$connection_string</span><span class="keyword">)<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">conn </span><span class="keyword">= <br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">pg_pconnect</span><span class="keyword">(</span><span class="default">$connection_string</span><span class="keyword">) <br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; or die(</span><span class="string">'Wrong CONN_STRING'</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+}<br />
+<br />
+</span><span class="comment">//<br />
+// Showing current php.ini settings to be sure<br />
+// that persistent connections s&nbsp; are allowed. <br />
+// -1 means 'unlimited'<br />
+//<br />
+</span><span class="keyword">echo </span><span class="string">'&lt;br&gt;pgsql.allow_persistent: ' </span><span class="keyword">. </span><span class="default">ini_get</span><span class="keyword">(</span><span class="string">'pgsql.allow_persistent'</span><span class="keyword">);<br />
+echo </span><span class="string">'&lt;br&gt;pgsql.max_persistent: ' </span><span class="keyword">. </span><span class="default">ini_get</span><span class="keyword">(</span><span class="string">'pgsql.max_persistent'</span><span class="keyword">);<br />
+echo </span><span class="string">'&lt;br&gt;pgsql.max_links: ' </span><span class="keyword">. </span><span class="default">ini_get</span><span class="keyword">(</span><span class="string">'pgsql.max_links'</span><span class="keyword">);<br />
+echo </span><span class="string">'&lt;br&gt;&lt;br&gt;'</span><span class="keyword">;<br />
+<br />
+</span><span class="comment">// setting one custom connection string for all objects<br />
+// (modify $connection_string to fit your needs)<br />
+</span><span class="default">$connection_string </span><span class="keyword">=<br />
+&nbsp;&nbsp;&nbsp; </span><span class="string">'host=localhost port=5432' </span><span class="keyword">.<br />
+&nbsp;&nbsp;&nbsp; </span><span class="string">' dbname=test user=test password=test'</span><span class="keyword">;<br />
+<br />
+</span><span class="comment">//&nbsp; <br />
+// Creating 10 MyClassA objects using the same $connection_string<br />
+//<br />
+</span><span class="default">$objArr </span><span class="keyword">= Array();<br />
+for (</span><span class="default">$i </span><span class="keyword">= </span><span class="default">0</span><span class="keyword">; </span><span class="default">$i </span><span class="keyword">&lt; </span><span class="default">10</span><span class="keyword">; </span><span class="default">$i</span><span class="keyword">++) <br />
+{<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$objArr</span><span class="keyword">[] = new </span><span class="default">MyClassA</span><span class="keyword">(</span><span class="default">$connection_string</span><span class="keyword">);<br />
+}<br />
+<br />
+</span><span class="comment">//<br />
+// Human readable result:<br />
+//<br />
+</span><span class="keyword">foreach(</span><span class="default">$objArr </span><span class="keyword">as </span><span class="default">$id </span><span class="keyword">=&gt; </span><span class="default">$object</span><span class="keyword">)<br />
+{<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">printf</span><span class="keyword">(<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="string">'%s: Object %s: using db %s&lt;br&gt;'</span><span class="keyword">,<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">get_class</span><span class="keyword">(</span><span class="default">$object</span><span class="keyword">), </span><span class="default">$id</span><span class="keyword">, </span><span class="default">$object</span><span class="keyword">-&gt;</span><span class="default">conn<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">);<br />
+}<br />
+<br />
+</span><span class="comment">/* ------------------------------------------------------------- */<br />
+// The result<br />
+// pgsql.allow_persistent: 1<br />
+// pgsql.max_persistent: -1<br />
+// pgsql.max_links: -1<br />
+// <br />
+// MyClassA: Object 0: using db Resource id #2<br />
+// MyClassA: Object 1: using db Resource id #3<br />
+// MyClassA: Object 2: using db Resource id #4<br />
+// MyClassA: Object 3: using db Resource id #5<br />
+// MyClassA: Object 4: using db Resource id #6<br />
+// MyClassA: Object 5: using db Resource id #7<br />
+// MyClassA: Object 6: using db Resource id #8<br />
+// MyClassA: Object 7: using db Resource id #9<br />
+// MyClassA: Object 8: using db Resource id #10<br />
+// MyClassA: Object 9: using db Resource id #11<br />
+// <br />
+/* ------------------------------------------------------------- */<br />
+//<br />
+// Each MyClassA object will use its _own_ database Resource id<br />
+//<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="78476""></a>
+  <div class="note">
+   <strong class="user">Dennis Fogg</strong>
+   <a href="#78476" class="date">13-Oct-2007 01:27</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+As of Aug 2007, some suggestions from the postgresql forums<br />
+on pg_pconnect(), faster postgres connections, and connection pooling:<br />
+<br />
+Summary: <br />
+<a href="http://archives.postgresql.org/pgsql-general/2007-08/msg01406.php" rel="nofollow" target="_blank">http://archives.postgresql.org/pgsql-general/2007-08/msg01406.php</a><br />
+<br />
+Good details: <a href="http://archives.postgresql.org/pgsql-general/2007-08/msg00660.php" rel="nofollow" target="_blank">http://archives.postgresql.org/pgsql-general/2007-08/msg00660.php</a><br />
+Also: <a href="http://archives.postgresql.org/pgsql-general/2007-08/msg01489.php" rel="nofollow" target="_blank">http://archives.postgresql.org/pgsql-general/2007-08/msg01489.php</a></span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="36332""></a>
+  <div class="note">
+   <strong class="user">info at karl-philipp dot de</strong>
+   <a href="#36332" class="date">06-Oct-2003 04:05</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+A contribution to the transaction issue raised by "garrett at bgb dot cc".<br />
+<br />
+In a German book about PostgreSQL in connection with PHP (Cornelia Boenigk, PostgreSQL - Grundlagen, Praxis, Anwendungsentwicklung mit PHP) one can read in chapter 19.3 about persistent connections:<br />
+If the page processing aborts and the transaction is not finished yet, the next script using the same persistent connection will be considered as the continuation of the transaction. In particular a lock of a table will persist. The explanation is as follows: After the abort of the script no COMMIT or ROLLBACK was sent to the db server.<br />
+<br />
+The author describes a hint to avoid the scenario above:<br />
+You can create a function for resolving transactions and locks erroneously not closed. For invoking the function after execution of a script it has to be registered with the function register_shutdown_function():<br />
+<br />
+&nbsp;<a href="http://de2.php.net/manual/en/function.register-shutdown-function.php" rel="nofollow" target="_blank">http://de2.php.net/manual/en/function.register-shutdown-function.php</a></span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="29013""></a>
+  <div class="note">
+   <strong class="user">Spiros Ioannou</strong>
+   <a href="#29013" class="date">30-Jan-2003 05:40</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Instead of reducing MaxClients in apache you may try to<br />
+reduce pgsql.max_links in php to at least the number of<br />
+postmasters. It should work and leave<br />
+you with more available httpds for static html pages.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="20309""></a>
+  <div class="note">
+   <strong class="user">raggaflo at libertysurf dot fr</strong>
+   <a href="#20309" class="date">29-Mar-2002 08:03</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Be careful when using Apache/PHP dynamic module/PostgreSQL :<br />
+in httpd.conf (Apache conf) default MaxClients is 150, whereas default PG's max_connections is 32 which is much fewer than 150. You have to set max_connections to at least MaxClients (and pg's shared_buffers to 2*max_connections at least) to avoid PG's errors with pg_pconnect like : "Sorry, too many clients already connected"</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="19758""></a>
+  <div class="note">
+   <strong class="user">etsysx dot i dot hate dot spam at teleline dot es</strong>
+   <a href="#19758" class="date">10-Mar-2002 01:56</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+To setup a high availability server with apache as a static module and postgreSQL, change httpd.conf and set MaxClients to less than max postgreSQL simultaneous connections (like 32 or 64).<br />
+This way pg_pconnect will allways return a valid handle under heavy traffic or under a request flow attack without wasting resources and without connection problems.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="18898""></a>
+  <div class="note">
+   <strong class="user">garrett at bgb dot cc</strong>
+   <a href="#18898" class="date">08-Feb-2002 04:39</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+If a transaction is in progress when page processing ends, is it aborted before the connection placed bak in the pool? Or is the connection added "as is"?<br />
+<br />
+It would seem that the correct thing to do is to always 'ABORT' before adding to the pool. <br />
+<br />
+As a note, this would be a good time to check and see if the connection is still open before readding it. Thus allowing closed connections to be cleaned up over time, instead of hanging around for ever as they do now.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="9957""></a>
+  <div class="note">
+   <strong class="user">herve at elma dot fr</strong>
+   <a href="#9957" class="date">04-Dec-2000 06:14</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+For resetting an apache web server and in same time the persistent connections you may use :<br />
+./apachectl graceful</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="5689""></a>
+  <div class="note">
+   <strong class="user">dmitri at graphictype dot com</strong>
+   <a href="#5689" class="date">10-May-2000 04:12</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+How to reset persistent connections:<br />
+<br />
+killall -USR1 httpd</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="4754""></a>
+  <div class="note">
+   <strong class="user">tumor at iris dot kkt dot bme dot hu</strong>
+   <a href="#4754" class="date">30-Mar-2000 05:39</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Well, pg_pconnect is ALMOST identical to pg_Connect. The difference is that when you make something nasty with the PSQL server (like reseting it) then pg_pConnect still tryes to use the previous connection. This creates some nice broken_pipe errors (and maybe some more). I do not know that resetting the http server would help it, I think it would. As pg_connect creates a new connection every time (that is why it is \"so slow\") this error does not occurs with it. Really this is not a bug, but perphaps you could do something with it, and it may help some people working with recently changing pg security settings... Good bug hunting...</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="function.pg-parameter-status.html">pg_parameter_status</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.pg-ping.html">pg_ping</a></div>
  <div class="up"><a href="ref.pgsql.html">PostgreSQL Functions</a></div>

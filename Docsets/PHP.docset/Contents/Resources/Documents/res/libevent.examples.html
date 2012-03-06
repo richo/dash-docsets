@@ -39,6 +39,72 @@
   </div>
  </p>
 </div>
+<div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="99127""></a>
+  <div class="note">
+   <strong class="user">Alexis</strong>
+   <a href="#99127" class="date">29-Jul-2010 05:23</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Server example:<br />
+<span class="default">&lt;?php<br />
+$socket </span><span class="keyword">= </span><span class="default">stream_socket_server </span><span class="keyword">(</span><span class="string">'tcp://0.0.0.0:2000'</span><span class="keyword">, </span><span class="default">$errno</span><span class="keyword">, </span><span class="default">$errstr</span><span class="keyword">);<br />
+</span><span class="default">stream_set_blocking</span><span class="keyword">(</span><span class="default">$socket</span><span class="keyword">, </span><span class="default">0</span><span class="keyword">);<br />
+</span><span class="default">$base </span><span class="keyword">= </span><span class="default">event_base_new</span><span class="keyword">();<br />
+</span><span class="default">$event </span><span class="keyword">= </span><span class="default">event_new</span><span class="keyword">();<br />
+</span><span class="default">event_set</span><span class="keyword">(</span><span class="default">$event</span><span class="keyword">, </span><span class="default">$socket</span><span class="keyword">, </span><span class="default">EV_READ </span><span class="keyword">| </span><span class="default">EV_PERSIST</span><span class="keyword">, </span><span class="string">'ev_accept'</span><span class="keyword">, </span><span class="default">$base</span><span class="keyword">);<br />
+</span><span class="default">event_base_set</span><span class="keyword">(</span><span class="default">$event</span><span class="keyword">, </span><span class="default">$base</span><span class="keyword">);<br />
+</span><span class="default">event_add</span><span class="keyword">(</span><span class="default">$event</span><span class="keyword">);<br />
+</span><span class="default">event_base_loop</span><span class="keyword">(</span><span class="default">$base</span><span class="keyword">);<br />
+<br />
+</span><span class="default">$GLOBALS</span><span class="keyword">[</span><span class="string">'connections'</span><span class="keyword">] = array();<br />
+</span><span class="default">$GLOBALS</span><span class="keyword">[</span><span class="string">'buffers'</span><span class="keyword">] = array();<br />
+<br />
+function </span><span class="default">ev_accept</span><span class="keyword">(</span><span class="default">$socket</span><span class="keyword">, </span><span class="default">$flag</span><span class="keyword">, </span><span class="default">$base</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; static </span><span class="default">$id </span><span class="keyword">= </span><span class="default">0</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$connection </span><span class="keyword">= </span><span class="default">stream_socket_accept</span><span class="keyword">(</span><span class="default">$socket</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">stream_set_blocking</span><span class="keyword">(</span><span class="default">$connection</span><span class="keyword">, </span><span class="default">0</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$id </span><span class="keyword">+= </span><span class="default">1</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$buffer </span><span class="keyword">= </span><span class="default">event_buffer_new</span><span class="keyword">(</span><span class="default">$connection</span><span class="keyword">, </span><span class="string">'ev_read'</span><span class="keyword">, </span><span class="default">NULL</span><span class="keyword">, </span><span class="string">'ev_error'</span><span class="keyword">, </span><span class="default">$id</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">event_buffer_base_set</span><span class="keyword">(</span><span class="default">$buffer</span><span class="keyword">, </span><span class="default">$base</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">event_buffer_timeout_set</span><span class="keyword">(</span><span class="default">$buffer</span><span class="keyword">, </span><span class="default">30</span><span class="keyword">, </span><span class="default">30</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">event_buffer_watermark_set</span><span class="keyword">(</span><span class="default">$buffer</span><span class="keyword">, </span><span class="default">EV_READ</span><span class="keyword">, </span><span class="default">0</span><span class="keyword">, </span><span class="default">0xffffff</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">event_buffer_priority_set</span><span class="keyword">(</span><span class="default">$buffer</span><span class="keyword">, </span><span class="default">10</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">event_buffer_enable</span><span class="keyword">(</span><span class="default">$buffer</span><span class="keyword">, </span><span class="default">EV_READ </span><span class="keyword">| </span><span class="default">EV_PERSIST</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// we need to save both buffer and connection outside<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$GLOBALS</span><span class="keyword">[</span><span class="string">'connections'</span><span class="keyword">][</span><span class="default">$id</span><span class="keyword">] = </span><span class="default">$connection</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$GLOBALS</span><span class="keyword">[</span><span class="string">'buffers'</span><span class="keyword">][</span><span class="default">$id</span><span class="keyword">] = </span><span class="default">$buffer</span><span class="keyword">;<br />
+}<br />
+<br />
+function </span><span class="default">ev_error</span><span class="keyword">(</span><span class="default">$buffer</span><span class="keyword">, </span><span class="default">$error</span><span class="keyword">, </span><span class="default">$id</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">event_buffer_disable</span><span class="keyword">(</span><span class="default">$GLOBALS</span><span class="keyword">[</span><span class="string">'buffers'</span><span class="keyword">][</span><span class="default">$id</span><span class="keyword">], </span><span class="default">EV_READ </span><span class="keyword">| </span><span class="default">EV_WRITE</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">event_buffer_free</span><span class="keyword">(</span><span class="default">$GLOBALS</span><span class="keyword">[</span><span class="string">'buffers'</span><span class="keyword">][</span><span class="default">$id</span><span class="keyword">]);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">fclose</span><span class="keyword">(</span><span class="default">$GLOBALS</span><span class="keyword">[</span><span class="string">'connections'</span><span class="keyword">][</span><span class="default">$id</span><span class="keyword">]);<br />
+&nbsp;&nbsp;&nbsp; unset(</span><span class="default">$GLOBALS</span><span class="keyword">[</span><span class="string">'buffers'</span><span class="keyword">][</span><span class="default">$id</span><span class="keyword">], </span><span class="default">$GLOBALS</span><span class="keyword">[</span><span class="string">'connections'</span><span class="keyword">][</span><span class="default">$id</span><span class="keyword">]);<br />
+}<br />
+<br />
+function </span><span class="default">ev_read</span><span class="keyword">(</span><span class="default">$buffer</span><span class="keyword">, </span><span class="default">$id</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; while (</span><span class="default">$read </span><span class="keyword">= </span><span class="default">event_buffer_read</span><span class="keyword">(</span><span class="default">$buffer</span><span class="keyword">, </span><span class="default">256</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">var_dump</span><span class="keyword">(</span><span class="default">$read</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+}<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
 <hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="libevent.constants.html">Predefined Constants</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="ref.libevent.html">Libevent Functions</a></div>

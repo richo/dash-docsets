@@ -171,7 +171,143 @@ currently not documented; only its argument list is available.
  </div>
 
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="104438""></a>
+  <div class="note">
+   <strong class="user">biohazard dot ge at gmail dot com</strong>
+   <a href="#104438" class="date">15-Jun-2011 06:48</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Many users give up with handilng problem when openssl command line tool cant decrypt php openssl encrypted file which is encrypted with openssl_encrypt function.<br />
+<br />
+For example how beginner is encrypting data:<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+$string </span><span class="keyword">= </span><span class="string">'It works ? Or not it works ?'</span><span class="keyword">;<br />
+</span><span class="default">$pass </span><span class="keyword">= </span><span class="string">'1234'</span><span class="keyword">;<br />
+</span><span class="default">$method </span><span class="keyword">= </span><span class="string">'aes128'</span><span class="keyword">;<br />
+<br />
+</span><span class="default">file_put_contents </span><span class="keyword">(</span><span class="string">'./file.encrypted'</span><span class="keyword">, </span><span class="default">openssl_encrypt </span><span class="keyword">(</span><span class="default">$string</span><span class="keyword">, </span><span class="default">$method</span><span class="keyword">, </span><span class="default">$pass</span><span class="keyword">));<br />
+<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+And then how beginner is trying to decrypt data from command line:<br />
+<br />
+# openssl enc -aes-128-cbc -d -in file.encrypted -pass pass:123<br />
+<br />
+Or even if he/she determinates that openssl_encrypt output was base64 and tries:<br />
+<br />
+# openssl enc -aes-128-cbc -d -in file.encrypted -base64 -pass pass:123<br />
+<br />
+Or even if he determinates that base64 encoded file is represented in one line and tries:<br />
+<br />
+# openssl enc -aes-128-cbc -d -in file.encrypted -base64 -A -pass pass:123<br />
+<br />
+Or even if he determinates that IV is needed and adds some string iv as encryption function`s fourth parameter and than adds hex representation of iv as parameter in openssl command line :<br />
+<br />
+# openssl enc -aes-128-cbc -d -in file.encrypted -base64 -pass pass:123 -iv -iv 31323334353637383132333435363738<br />
+<br />
+Or even if he determinates that aes-128 password must be 128 bits there fore 16 bytes and sets $pass = '1234567812345678' and tries:<br />
+<br />
+# openssl enc -aes-128-cbc -d -in file.encrypted -base64 -pass pass:1234567812345678 -iv -iv 31323334353637383132333435363738<br />
+<br />
+All these troubles will have no result in any case.<br />
+<br />
+BECAUSE THE PASSWORD PARAMETER DOCUMENTED HERE IS NOT THE PASSWORD.<br />
+<br />
+It means that the password parameter of the function is not the same string used as [-pass pass:] parameter with openssl cmd tool for file encryption decryption.<br />
+<br />
+IT IS THE KEY !<br />
+<br />
+And now how to correctly encrypt data with php openssl_encrypt and how to correctly decrypt it from openssl command line tool.<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">function </span><span class="default">strtohex</span><span class="keyword">(</span><span class="default">$x</span><span class="keyword">) <br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$s</span><span class="keyword">=</span><span class="string">''</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; foreach (</span><span class="default">str_split</span><span class="keyword">(</span><span class="default">$x</span><span class="keyword">) as </span><span class="default">$c</span><span class="keyword">) </span><span class="default">$s</span><span class="keyword">.=</span><span class="default">sprintf</span><span class="keyword">(</span><span class="string">"%02X"</span><span class="keyword">,</span><span class="default">ord</span><span class="keyword">(</span><span class="default">$c</span><span class="keyword">));<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return(</span><span class="default">$s</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; } <br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$source </span><span class="keyword">= </span><span class="string">'It works !'</span><span class="keyword">;<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$iv </span><span class="keyword">= </span><span class="string">"1234567812345678"</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$pass </span><span class="keyword">= </span><span class="string">'1234567812345678'</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$method </span><span class="keyword">= </span><span class="string">'aes-128-cbc'</span><span class="keyword">;<br />
+<br />
+&nbsp;&nbsp;&nbsp; echo </span><span class="string">"\niv in hex to use: "</span><span class="keyword">.</span><span class="default">strtohex </span><span class="keyword">(</span><span class="default">$iv</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; echo </span><span class="string">"\nkey in hex to use: "</span><span class="keyword">.</span><span class="default">strtohex </span><span class="keyword">(</span><span class="default">$pass</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; echo </span><span class="string">"\n"</span><span class="keyword">;<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">file_put_contents </span><span class="keyword">(</span><span class="string">'./file.encrypted'</span><span class="keyword">,</span><span class="default">openssl_encrypt </span><span class="keyword">(</span><span class="default">$source</span><span class="keyword">, </span><span class="default">$method</span><span class="keyword">, </span><span class="default">$pass</span><span class="keyword">, </span><span class="default">true</span><span class="keyword">, </span><span class="default">$iv</span><span class="keyword">));<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$exec </span><span class="keyword">= </span><span class="string">"openssl enc -"</span><span class="keyword">.</span><span class="default">$method</span><span class="keyword">.</span><span class="string">" -d -in file.encrypted -nosalt -nopad -K "</span><span class="keyword">.</span><span class="default">strtohex</span><span class="keyword">(</span><span class="default">$pass</span><span class="keyword">).</span><span class="string">" -iv "</span><span class="keyword">.</span><span class="default">strtohex</span><span class="keyword">(</span><span class="default">$iv</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp;&nbsp; echo </span><span class="string">'executing: '</span><span class="keyword">.</span><span class="default">$exec</span><span class="keyword">.</span><span class="string">"\n\n"</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; echo </span><span class="default">exec </span><span class="keyword">(</span><span class="default">$exec</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; echo </span><span class="string">"\n"</span><span class="keyword">;<br />
+<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+IV and Key parameteres passed to openssl command line must be in hex representation of string.<br />
+<br />
+The correct command for decrypting is:<br />
+<br />
+# openssl enc -aes-128-cbc -d -in file.encrypted -nosalt -nopad -K 31323334353637383132333435363738 -iv 31323334353637383132333435363738<br />
+<br />
+As it has no salt has no padding and by setting functions third parameter we have no more base64 encoded file to decode. The command will echo that it works...<br />
+<br />
+: /</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="99188""></a>
+  <div class="note">
+   <strong class="user">public at grik dot net</strong>
+   <a href="#99188" class="date">01-Aug-2010 05:25</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+In 5.3.3 they added a new parameter, string $iv (initialization vector)<br />
+Real parameters are:<br />
+string openssl_encrypt ( string $data , string $method , string $password, bool $raw_output = false, string $iv )<br />
+<br />
+If $iv is missing, a warning is issued: "Using an empty Initialization Vector (iv) is potentially insecure and not recommended".<br />
+<br />
+If $iv is too short, another warning: <br />
+"IV passed is only 3 bytes long, cipher expects an IV of precisely 8 bytes, padding with \0"<br />
+<br />
+same IV should be used in openssl_decrypt()</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="95306""></a>
+  <div class="note">
+   <strong class="user">public at grik dot net</strong>
+   <a href="#95306" class="date">25-Dec-2009 09:54</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+The list of methods for this function can be obtained with openssl_get_cipher_methods();<br />
+The password can be encrypted with the openssl_private/public_encrypt()</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="function.openssl-digest.html">openssl_digest</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.openssl-error-string.html">openssl_error_string</a></div>
  <div class="up"><a href="ref.openssl.html">OpenSSL Functions</a></div>

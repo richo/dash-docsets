@@ -151,7 +151,264 @@
   </p>
  </div>
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="89330""></a>
+  <div class="note">
+   <strong class="user">koms at koms dot ru</strong>
+   <a href="#89330" class="date">03-Mar-2009 11:18</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+The way to order the nodes in XML-files by an attribute (desc or asc):<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="comment">// open the XML-file<br />
+</span><span class="default">$xml </span><span class="keyword">= </span><span class="default">domxml_open_file</span><span class="keyword">(</span><span class="string">"our_file.xml"</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">// get the root element<br />
+</span><span class="default">$root </span><span class="keyword">= </span><span class="default">$xml</span><span class="keyword">-&gt;</span><span class="default">document_element</span><span class="keyword">(); <br />
+</span><span class="comment">// get the list of the nodes<br />
+</span><span class="default">$nodes </span><span class="keyword">= </span><span class="default">$root</span><span class="keyword">-&gt;</span><span class="default">child_nodes</span><span class="keyword">(); <br />
+<br />
+</span><span class="comment">// create the array 'messages' of the nodes<br />
+</span><span class="keyword">foreach(</span><span class="default">$nodes </span><span class="keyword">as </span><span class="default">$node</span><span class="keyword">)<br />
+{<br />
+&nbsp;if (</span><span class="default">$node</span><span class="keyword">-&gt;</span><span class="default">node_name</span><span class="keyword">() == </span><span class="string">'photo'</span><span class="keyword">)<br />
+&nbsp;{<br />
+&nbsp;&nbsp; &nbsp; </span><span class="default">$currentMessage</span><span class="keyword">[</span><span class="string">'thumbnail'</span><span class="keyword">] = </span><span class="default">$node</span><span class="keyword">-&gt;</span><span class="default">get_attribute</span><span class="keyword">(</span><span class="string">'thumbnail'</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; </span><span class="default">$currentMessage</span><span class="keyword">[</span><span class="string">'filename'</span><span class="keyword">] = </span><span class="default">$node</span><span class="keyword">-&gt;</span><span class="default">get_attribute</span><span class="keyword">(</span><span class="string">'filename'</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; </span><span class="default">$currentMessage</span><span class="keyword">[</span><span class="string">'idnum'</span><span class="keyword">] = </span><span class="default">$picnum</span><span class="keyword">[</span><span class="default">md5</span><span class="keyword">(</span><span class="default">$node</span><span class="keyword">-&gt;</span><span class="default">get_attribute</span><span class="keyword">(</span><span class="string">'filename'</span><span class="keyword">))];<br />
+&nbsp;&nbsp; &nbsp; </span><span class="default">$messages</span><span class="keyword">[] = </span><span class="default">$currentMessage</span><span class="keyword">;<br />
+&nbsp;}<br />
+}<br />
+<br />
+</span><span class="comment">// sort all the nodes by idnum (asc/desc is "1: -1" or "-1: 1")<br />
+</span><span class="default">$compare_func </span><span class="keyword">= </span><span class="default">create_function</span><span class="keyword">(</span><span class="string">'$a, $b'</span><span class="keyword">, </span><span class="string">'return ($a[\'idnum\']==$b[\'idnum\'])? 0: (($a[\'idnum\']&gt;$b[\'idnum\'])? 1: -1);'</span><span class="keyword">);<br />
+</span><span class="default">usort</span><span class="keyword">(</span><span class="default">$messages</span><span class="keyword">, </span><span class="default">$compare_func</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">// create the new XML-data<br />
+</span><span class="default">$doc </span><span class="keyword">= </span><span class="default">domxml_new_doc</span><span class="keyword">(</span><span class="string">"1.0"</span><span class="keyword">);<br />
+</span><span class="default">$root </span><span class="keyword">= </span><span class="default">$doc</span><span class="keyword">-&gt;</span><span class="default">create_element</span><span class="keyword">(</span><span class="string">"photos"</span><span class="keyword">);<br />
+</span><span class="default">$root </span><span class="keyword">= </span><span class="default">$doc</span><span class="keyword">-&gt;</span><span class="default">append_child</span><span class="keyword">(</span><span class="default">$root</span><span class="keyword">);<br />
+for(</span><span class="default">$ee</span><span class="keyword">=</span><span class="default">0</span><span class="keyword">;</span><span class="default">$ee</span><span class="keyword">&lt;</span><span class="default">count</span><span class="keyword">(</span><span class="default">$messages</span><span class="keyword">);</span><span class="default">$ee</span><span class="keyword">++)<br />
+{<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$msgNode </span><span class="keyword">= </span><span class="default">$root</span><span class="keyword">-&gt;</span><span class="default">new_child</span><span class="keyword">(</span><span class="string">'photo'</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; foreach(</span><span class="default">$messages</span><span class="keyword">[</span><span class="default">$ee</span><span class="keyword">] as </span><span class="default">$description </span><span class="keyword">=&gt; </span><span class="default">$result</span><span class="keyword">)<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$msgNode</span><span class="keyword">-&gt;</span><span class="default">set_attribute</span><span class="keyword">(</span><span class="default">$description</span><span class="keyword">,</span><span class="default">$result</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+}<br />
+<br />
+</span><span class="comment">// write down the XML-file<br />
+</span><span class="default">$text </span><span class="keyword">= </span><span class="default">$doc</span><span class="keyword">-&gt;</span><span class="default">dump_mem</span><span class="keyword">(</span><span class="default">true</span><span class="keyword">);<br />
+</span><span class="default">$fp </span><span class="keyword">= </span><span class="default">fopen</span><span class="keyword">(</span><span class="string">"our_file.xml"</span><span class="keyword">,</span><span class="string">"w"</span><span class="keyword">);<br />
+</span><span class="default">fwrite</span><span class="keyword">(</span><span class="default">$fp</span><span class="keyword">,</span><span class="default">$text</span><span class="keyword">);<br />
+</span><span class="default">fclose</span><span class="keyword">(</span><span class="default">$fp</span><span class="keyword">);<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="66226""></a>
+  <div class="note">
+   <strong class="user">A-Wing (info at a-wing dot co dot uk)</strong>
+   <a href="#66226" class="date">16-May-2006 11:23</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+A very useful undocumented feature if you are opening hundreds of xml docs (my script processes 20,000) is DomDocument-&gt;free.<br />
+This clears the allocated the memory used by the xml file which is not done automatically by just opening a new file on the same variable.<br />
+<br />
+Example:<br />
+<br />
+&lt;?<br />
+$dir="/path/to/xml/files/";<br />
+if ($dh = opendir($dir)) {<br />
+&nbsp;&nbsp;&nbsp; while (($file = readdir($dh)) !== false) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if(is_file($dir.$file))<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; echo $file . "\\n";<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $dom=domxml_open_file($dir.$file);<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; #...<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; #You xml processor here<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; #...<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $dom-&gt;free();<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; closedir($dh);<br />
+}<br />
+<br />
+?&gt;</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="60172""></a>
+  <div class="note">
+   <strong class="user">noyanoya at tin dot it</strong>
+   <a href="#60172" class="date">28-Dec-2005 09:47</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+another way to resolve path's problem is to use&nbsp; realpath() function<br />
+for example:<br />
+<br />
+<span class="default">&lt;?php<br />
+$file</span><span class="keyword">=</span><span class="default">$_REQUEST</span><span class="keyword">[</span><span class="string">'file'</span><span class="keyword">];<br />
+</span><span class="default">$xmlPath </span><span class="keyword">= </span><span class="default">realpath</span><span class="keyword">(</span><span class="string">"../xml/"</span><span class="keyword">);<br />
+</span><span class="default">$fileXML </span><span class="keyword">=</span><span class="string">"</span><span class="default">$file</span><span class="string">"</span><span class="keyword">;<br />
+&nbsp; if(!</span><span class="default">$dom </span><span class="keyword">= </span><span class="default">domxml_open_file</span><span class="keyword">(</span><span class="default">$xmlPath</span><span class="keyword">.</span><span class="string">"/"</span><span class="keyword">.</span><span class="default">$fileXML</span><span class="keyword">)) {<br />
+&nbsp;&nbsp;&nbsp; echo </span><span class="string">"error opening the file"</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; exit;<br />
+}<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+N.B. you have to put the final slash ( / ) beetween path and file name!</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="51095""></a>
+  <div class="note">
+   <strong class="user">php at gungfu [dot] de</strong>
+   <a href="#51095" class="date">19-Mar-2005 08:13</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+For me, on Windows XP, the solution with&nbsp; file_get_contents works, the one with domxml_open_file does not. It seems the latter caches the loaded file. Quite confusing.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="49991""></a>
+  <div class="note">
+   <strong class="user">contact at richardleggett dot co dot uk</strong>
+   <a href="#49991" class="date">14-Feb-2005 02:00</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+If you want to work on both Windows and Linux, I found appending the following to the front of your file path works:<br />
+<br />
+$xmlPath = dirname(__FILE__) . "/";<br />
+$xmlDOM = domxml_open_file($xmlPath . "file.xml");<br />
+<br />
+(rather than the "\\" in a previous post on this page which only works on Windows).<br />
+<br />
+This should get around the I/O errors.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="37009""></a>
+  <div class="note">
+   <strong class="user">info at sgonda dot de</strong>
+   <a href="#37009" class="date">30-Oct-2003 01:02</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+You can load your own DTD's within your XML Doc like this:<br />
+<br />
+<span class="default">&lt;?php<br />
+$domxml </span><span class="keyword">= </span><span class="default">domxml_open_file</span><span class="keyword">(</span><span class="string">'test.xml'</span><span class="keyword">,</span><span class="default">DOMXML_LOAD_VALIDATING</span><span class="keyword">,</span><span class="default">$error</span><span class="keyword">);<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+I hope this helps....<br />
+<br />
+The DocumentType Definition (must/have) to be in the Doc root of your Server...</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="33073""></a>
+  <div class="note">
+   <strong class="user">kevin at ieqdev dot com</strong>
+   <a href="#33073" class="date">15-Jun-2003 04:30</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+If you're working on a windows machine and don't want to use full paths , just use...<br />
+<br />
+$showfile = file_get_contents($path . "/" . $fileName);<br />
+<br />
+if(!$domDoc = domxml_open_mem($showfile)) {<br />
+&nbsp;&nbsp;&nbsp; echo "Couldn't load xml...";&nbsp; &nbsp; <br />
+&nbsp;&nbsp;&nbsp; exit;<br />
+}<br />
+<br />
+Because file_get_contents() can use relative paths on Win, it keeps your code more portable...<br />
+<br />
+twist</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="29760""></a>
+  <div class="note">
+   <strong class="user">et at wkv dot at</strong>
+   <a href="#29760" class="date">24-Feb-2003 08:49</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+domxml documentation is a moving target, for 4.2.3 a working example is:<br />
+<br />
+&lt;?<br />
+$xmlpath = dirname(__FILE__) . "\\";<br />
+$xmldoc = domxml_open_file( $xmlpath . "test.xml");<br />
+$xsldoc = domxml_xslt_stylesheet_file ( $xmlpath . "test.xsl");<br />
+$result = $xsldoc-&gt;process($xmldoc);<br />
+print $result-&gt;dump_mem();<br />
+?&gt;<br />
+<br />
+RTFS is a working method in this case (lucky guesses work also from time tor time) :-)</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="29247""></a>
+  <div class="note">
+   <strong class="user">andrew at boxuk dot com</strong>
+   <a href="#29247" class="date">07-Feb-2003 05:32</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Using PHP 4.2.3 and Win2K.<br />
+<br />
+The XML file needs to be referenced using the full filesystem path name, even if its in the same directory.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="21098""></a>
+  <div class="note">
+   <strong class="user">rudolfnospam at redshift dot co dot no dot spam dot za</strong>
+   <a href="#21098" class="date">29-Apr-2002 06:12</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Using PHP 4.1.2, Win2K, IIS.<br />
+I found that if the path to the XML source file is too long then the file isn't picked up. I haven't tested it to see how long the path can be or whether this is still an issue in PHP 4.2</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="function.domxml-new-doc.html">domxml_new_doc</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.domxml-open-mem.html">domxml_open_mem</a></div>
  <div class="up"><a href="ref.domxml.html">DOM XML (PHP 4) Functions</a></div>

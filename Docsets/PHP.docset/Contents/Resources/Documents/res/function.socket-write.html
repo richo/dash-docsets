@@ -133,7 +133,205 @@
  </div>
 
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="102249""></a>
+  <div class="note">
+   <strong class="user">jean at briskula dot si</strong>
+   <a href="#102249" class="date">03-Feb-2011 03:00</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Some clients (Flash's XMLSocket for example) won't fire a read event until a new line is recieved.<br />
+<br />
+<span class="default">&lt;?php<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">/*<br />
+&nbsp;&nbsp; &nbsp; * Write to a socket<br />
+&nbsp;&nbsp; &nbsp; * add a newline and null character at the end<br />
+&nbsp;&nbsp; &nbsp; * some clients don't read until new line is recieved<br />
+&nbsp;&nbsp; &nbsp; *<br />
+&nbsp;&nbsp; &nbsp; * try to send the rest of the data if it gets truncated<br />
+&nbsp;&nbsp; &nbsp; */<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">function </span><span class="default">write</span><span class="keyword">(&amp;</span><span class="default">$sock</span><span class="keyword">,</span><span class="default">$msg</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$msg </span><span class="keyword">= </span><span class="string">"</span><span class="default">$msg</span><span class="string">\n\0"</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$length </span><span class="keyword">= </span><span class="default">strlen</span><span class="keyword">(</span><span class="default">$msg</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; while(</span><span class="default">true</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$sent </span><span class="keyword">= </span><span class="default">socket_write</span><span class="keyword">(</span><span class="default">$sock</span><span class="keyword">,</span><span class="default">$msg</span><span class="keyword">,</span><span class="default">$length</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if(</span><span class="default">$sent </span><span class="keyword">=== </span><span class="default">false</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">false</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if(</span><span class="default">$sent </span><span class="keyword">&lt; </span><span class="default">$length</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$msg </span><span class="keyword">= </span><span class="default">substr</span><span class="keyword">(</span><span class="default">$msg</span><span class="keyword">, </span><span class="default">$sent</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$length </span><span class="keyword">-= </span><span class="default">$sent</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; print(</span><span class="string">"Message truncated: Resending: </span><span class="default">$msg</span><span class="string">"</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; } else {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">true</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">false</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="101492""></a>
+  <div class="note">
+   <strong class="user">revelable at hotmail dot com</strong>
+   <a href="#101492" class="date">20-Dec-2010 05:08</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Here we have the same function to write a socket but with improved performance.<br />
+<br />
+If the messager are not larger, they will be written entirely with a single socket_write() call. And is not needed to call the substr() function for the first bucle.<br />
+<br />
+<span class="default">&lt;?php<br />
+$st</span><span class="keyword">=</span><span class="string">"Message to sent"</span><span class="keyword">;<br />
+</span><span class="default">$length </span><span class="keyword">= </span><span class="default">strlen</span><span class="keyword">(</span><span class="default">$st</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; while (</span><span class="default">true</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$sent </span><span class="keyword">= </span><span class="default">socket_write</span><span class="keyword">(</span><span class="default">$socket</span><span class="keyword">, </span><span class="default">$st</span><span class="keyword">, </span><span class="default">$length</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if (</span><span class="default">$sent </span><span class="keyword">=== </span><span class="default">false</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; break;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// Check if the entire message has been sented<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">if (</span><span class="default">$sent </span><span class="keyword">&lt; </span><span class="default">$length</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// If not sent the entire message.<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; // Get the part of the message that has not yet been sented as message<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$st </span><span class="keyword">= </span><span class="default">substr</span><span class="keyword">(</span><span class="default">$st</span><span class="keyword">, </span><span class="default">$sent</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// Get the length of the not sented part<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$length </span><span class="keyword">-= </span><span class="default">$sent</span><span class="keyword">;<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; } else {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; break;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; }<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="88921""></a>
+  <div class="note">
+   <strong class="user">slyv at poczta dot onet dot pl</strong>
+   <a href="#88921" class="date">13-Feb-2009 02:16</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+"socket_write() does not necessarily write all bytes from the given buffer."<br />
+So I wrote the following code to correctly write message to the socket<br />
+<br />
+<span class="default">&lt;?php<br />
+$message</span><span class="keyword">=</span><span class="string">"Message to sent"</span><span class="keyword">;<br />
+</span><span class="default">$len </span><span class="keyword">= </span><span class="default">strlen</span><span class="keyword">(</span><span class="default">$message</span><span class="keyword">);<br />
+</span><span class="default">$offset </span><span class="keyword">= </span><span class="default">0</span><span class="keyword">;<br />
+while (</span><span class="default">$offset </span><span class="keyword">&lt; </span><span class="default">$len</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$sent </span><span class="keyword">= </span><span class="default">socket_write</span><span class="keyword">(</span><span class="default">$socket</span><span class="keyword">, </span><span class="default">substr</span><span class="keyword">(</span><span class="default">$message</span><span class="keyword">, </span><span class="default">$offset</span><span class="keyword">), </span><span class="default">$len</span><span class="keyword">-</span><span class="default">$offset</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; if (</span><span class="default">$sent </span><span class="keyword">=== </span><span class="default">false</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// Error occurred, break the while loop<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">break;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$offset </span><span class="keyword">+= </span><span class="default">$sent</span><span class="keyword">;<br />
+}<br />
+if (</span><span class="default">$offset </span><span class="keyword">&lt; </span><span class="default">$len</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$errorcode </span><span class="keyword">= </span><span class="default">socket_last_error</span><span class="keyword">();<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$errormsg </span><span class="keyword">= </span><span class="default">socket_strerror</span><span class="keyword">(</span><span class="default">$errorcode</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; echo </span><span class="string">"SENDING ERROR: </span><span class="default">$errormsg</span><span class="string">"</span><span class="keyword">;<br />
+} else {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// Data sent ok<br />
+</span><span class="keyword">}<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="85339""></a>
+  <div class="note">
+   <strong class="user">masterwaster at gmail dot com</strong>
+   <a href="#85339" class="date">26-Aug-2008 11:42</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Hi,<br />
+if you got same problems like i have<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">@</span><span class="default">socket_write</span><span class="keyword">(</span><span class="default">$xd</span><span class="keyword">, </span><span class="string">"Good Bye!\n\r"</span><span class="keyword">);<br />
+@</span><span class="default">socket_shutdown</span><span class="keyword">(</span><span class="default">$xd</span><span class="keyword">, </span><span class="default">2</span><span class="keyword">);<br />
+@</span><span class="default">socket_close</span><span class="keyword">(</span><span class="default">$xd</span><span class="keyword">);<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+wont'tx send "Good Bye!\n\r" to the opened socket.<br />
+<br />
+but if you put a<br />
+usleep or something like echo "";<br />
+between write and shutdown its working.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="69114""></a>
+  <div class="note">
+   <strong class="user">webmaster at you-are-infected dot com</strong>
+   <a href="#69114" class="date">23-Aug-2006 10:27</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+If you connect to a Server in a way like you do with telnet or some similar protokoll you may have problems with sending data to the server. I found out that at some servers there is a different between:<br />
+<br />
+<span class="default">&lt;?php<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; socket_write </span><span class="keyword">(</span><span class="default">$my_socket</span><span class="keyword">, </span><span class="default">$line</span><span class="keyword">, </span><span class="default">strlen </span><span class="keyword">(</span><span class="default">$line</span><span class="keyword">));<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">socket_write </span><span class="keyword">(</span><span class="default">$my_socket</span><span class="keyword">, </span><span class="string">"\r\n"</span><span class="keyword">, </span><span class="default">strlen </span><span class="keyword">(</span><span class="string">"\r\n"</span><span class="keyword">));<br />
+&nbsp;&nbsp;&nbsp; <br />
+</span><span class="default">?&gt;<br />
+</span>witch worked at least, and <br />
+<span class="default">&lt;?php<br />
+&nbsp;&nbsp;&nbsp; socket_write </span><span class="keyword">(</span><span class="default">$my_socket</span><span class="keyword">, </span><span class="default">$line</span><span class="keyword">.</span><span class="string">"\r\n"</span><span class="keyword">, </span><span class="default">strlen </span><span class="keyword">(</span><span class="default">$line</span><span class="keyword">.</span><span class="string">"\r\n"</span><span class="keyword">));<br />
+</span><span class="default">?&gt;<br />
+</span>wich made the server stop sending any data.<br />
+<br />
+I hope this helps to save a lot of time. I needed about two days to find out, that this was the problem ;)</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="24516""></a>
+  <div class="note">
+   <strong class="user">gtk at linux dot online dot no</strong>
+   <a href="#24516" class="date">20-Aug-2002 04:43</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+from <a href="http://www.manualy.sk/sock-faq/unix-socket-faq-2.html" rel="nofollow" target="_blank">http://www.manualy.sk/sock-faq/unix-socket-faq-2.html</a><br />
+read() is equivalent to recv() with a flags parameter of 0. Other values for the flags parameter change the behaviour of recv(). Similarly, write() is equivalent to send() with flags == 0.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="function.socket-strerror.html">socket_strerror</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="book.ssh2.html">SSH2</a></div>
  <div class="up"><a href="ref.sockets.html">Socket Functions</a></div>

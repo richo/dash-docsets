@@ -150,7 +150,507 @@
  </div>
 
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="103828""></a>
+  <div class="note">
+   <strong class="user">Jamie Savard</strong>
+   <a href="#103828" class="date">05-May-2011 06:59</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+If you're using Google or other OpenDNS type name servers as resolvers with this function and popular DNSBL's, such as Spamhaus.org, the checks will fail.&nbsp; All tests we've performed seem to indicate that Google's OpenDNS drops DNSBL lookups.<br />
+<br />
+For details:&nbsp; <a href="http://www.spamhaus.org/faq/answers.lasso?section=DNSBL%20Usage#261" rel="nofollow" target="_blank">http://www.spamhaus.org/faq/answers.lasso?section=DNSBL%20Usage#261</a><br />
+<br />
+This is most likely intentional since DNSBL lookups would increase the DNS load quite a bit.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="92243""></a>
+  <div class="note">
+   <strong class="user">Anonymous</strong>
+   <a href="#92243" class="date">15-Jul-2009 09:07</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+It appears that if you're checking DNS records for a host that uses a Round-Robin DNS technique for load distribution, then you cannot use this function with the "type" parameter set to "ANY".<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+</span><span class="comment">//This will not work<br />
+</span><span class="keyword">if(</span><span class="default">checkdnsrr</span><span class="keyword">(</span><span class="string">"round-robin-example.com"</span><span class="keyword">),</span><span class="string">"ALL"</span><span class="keyword">)){<br />
+&nbsp;&nbsp; &nbsp; return </span><span class="default">true</span><span class="keyword">;<br />
+}else{<br />
+&nbsp;&nbsp; &nbsp; return </span><span class="default">false</span><span class="keyword">;<br />
+}<br />
+<br />
+</span><span class="comment">//But every value other than "ANY" will work<br />
+</span><span class="keyword">if(</span><span class="default">checkdnsrr</span><span class="keyword">(</span><span class="string">"round-robin-example.com"</span><span class="keyword">),</span><span class="string">"A"</span><span class="keyword">)){<br />
+&nbsp;&nbsp; &nbsp; return </span><span class="default">true</span><span class="keyword">;<br />
+}else{<br />
+&nbsp;&nbsp; &nbsp; return </span><span class="default">false</span><span class="keyword">;<br />
+}<br />
+<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="75158""></a>
+  <div class="note">
+   <strong class="user">developer at sysco dot ch</strong>
+   <a href="#75158" class="date">15-May-2007 09:05</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Here is a simple and fully compatible implementation of checkdnsrr() for Windows.<br />
+<br />
+If you include these lines at the beginning of your code, you do not need to change anything else in the code in order to work!<br />
+<br />
+if(!function_exists('checkdnsrr'))<br />
+{<br />
+&nbsp;&nbsp;&nbsp; function checkdnsrr($hostName, $recType = '') <br />
+&nbsp;&nbsp;&nbsp; { <br />
+&nbsp;&nbsp; &nbsp; if(!empty($hostName)) { <br />
+&nbsp;&nbsp; &nbsp; &nbsp; if( $recType == '' ) $recType = "MX"; <br />
+&nbsp;&nbsp; &nbsp; &nbsp; exec("nslookup -type=$recType $hostName", $result); <br />
+&nbsp;&nbsp; &nbsp; &nbsp; // check each line to find the one that starts with the host <br />
+&nbsp;&nbsp; &nbsp; &nbsp; // name. If it exists then the function succeeded. <br />
+&nbsp;&nbsp; &nbsp; &nbsp; foreach ($result as $line) { <br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; if(eregi("^$hostName",$line)) { <br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; return true; <br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; } <br />
+&nbsp;&nbsp; &nbsp; &nbsp; } <br />
+&nbsp;&nbsp; &nbsp; &nbsp; // otherwise there was no mail handler for the domain <br />
+&nbsp;&nbsp; &nbsp; &nbsp; return false; <br />
+&nbsp;&nbsp; &nbsp; } <br />
+&nbsp;&nbsp; &nbsp; return false;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+}</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="74809""></a>
+  <div class="note">
+   <strong class="user">reportingsjr at gmail dot com</strong>
+   <a href="#74809" class="date">27-Apr-2007 06:05</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Here is a modification to the note below:<br />
+&nbsp;&nbsp;&nbsp; function check_email($email) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if(preg_match('/^\w[-.\w]*@(\w[-._\w]*\.[a-zA-Z]{2,}.*)$/', $email, $matches))<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if(function_exists('checkdnsrr'))<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if(checkdnsrr($matches[1] . '.', 'MX')) return true;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if(checkdnsrr($matches[1] . '.', 'A')) return true;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }else{<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if(!empty($hostName))<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if( $recType == '' ) $recType = "MX";<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; exec("nslookup -type=$recType $hostName", $result);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; foreach ($result as $line)<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if(eregi("^$hostName",$line))<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; return true;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; return false;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; return false;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return false;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+This makes it compatible with windows and will make sure it actually checks the domain.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="72297""></a>
+  <div class="note">
+   <strong class="user">Check DNSBL - WIN also</strong>
+   <a href="#72297" class="date">11-Jan-2007 04:41</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+<span class="default">&lt;?php<br />
+</span><span class="comment">/*<br />
+* Check DNSBL - WIN also - DD<br />
+*/<br />
+</span><span class="keyword">function </span><span class="default">blacklisted</span><span class="keyword">(</span><span class="default">$ip</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$dnsbl_lists </span><span class="keyword">= array(</span><span class="string">"bl.spamcop.net"</span><span class="keyword">, </span><span class="string">"list.dsbl.org"</span><span class="keyword">, </span><span class="string">"sbl.spamhaus.org"</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; if (</span><span class="default">$ip </span><span class="keyword">&amp;&amp; </span><span class="default">preg_match</span><span class="keyword">(</span><span class="string">'/^([0-9]{1, 3})\.([0-9]{1, 3})\.([0-9]{1, 3})\.([0-9]{1, 3})/'</span><span class="keyword">, </span><span class="default">$ip</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$reverse_ip </span><span class="keyword">= </span><span class="default">implode</span><span class="keyword">(</span><span class="string">"."</span><span class="keyword">, </span><span class="default">array_reverse</span><span class="keyword">(</span><span class="default">explode</span><span class="keyword">(</span><span class="string">"."</span><span class="keyword">, </span><span class="default">$ip</span><span class="keyword">))); <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$on_win </span><span class="keyword">= </span><span class="default">substr</span><span class="keyword">(</span><span class="default">PHP_OS</span><span class="keyword">, </span><span class="default">0</span><span class="keyword">, </span><span class="default">3</span><span class="keyword">) == </span><span class="string">"WIN" </span><span class="keyword">? </span><span class="default">1 </span><span class="keyword">: </span><span class="default">0</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; foreach (</span><span class="default">$dnsbl_lists </span><span class="keyword">as </span><span class="default">$dnsbl_list</span><span class="keyword">){<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if (</span><span class="default">function_exists</span><span class="keyword">(</span><span class="string">"checkdnsrr"</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if (</span><span class="default">checkdnsrr</span><span class="keyword">(</span><span class="default">$reverse_ip </span><span class="keyword">. </span><span class="string">"." </span><span class="keyword">. </span><span class="default">$dnsbl_list </span><span class="keyword">. </span><span class="string">"."</span><span class="keyword">, </span><span class="string">"A"</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">$reverse_ip </span><span class="keyword">. </span><span class="string">"." </span><span class="keyword">. </span><span class="default">$dnsbl_list</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; } <br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; } else if (</span><span class="default">$on_win </span><span class="keyword">== </span><span class="default">1</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$lookup </span><span class="keyword">= </span><span class="string">""</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; @</span><span class="default">exec</span><span class="keyword">(</span><span class="string">"nslookup -type=A " </span><span class="keyword">. </span><span class="default">$reverse_ip </span><span class="keyword">. </span><span class="string">"." </span><span class="keyword">. </span><span class="default">$dnsbl_list </span><span class="keyword">. </span><span class="string">"."</span><span class="keyword">, </span><span class="default">$lookup</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; foreach (</span><span class="default">$lookup </span><span class="keyword">as </span><span class="default">$line</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if (</span><span class="default">strstr</span><span class="keyword">(</span><span class="default">$line</span><span class="keyword">, </span><span class="default">$dnsbl_list</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">$reverse_ip </span><span class="keyword">. </span><span class="string">"." </span><span class="keyword">. </span><span class="default">$dnsbl_list</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; } <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">false</span><span class="keyword">;<br />
+}<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="71686""></a>
+  <div class="note">
+   
+   <a href="#71686" class="date">11-Dec-2006 04:06</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+<span class="default">&lt;?php<br />
+</span><span class="keyword">function </span><span class="default">check_dnsbl</span><span class="keyword">(</span><span class="default">$ip</span><span class="keyword">)<br />
+{<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$dnsbl_check</span><span class="keyword">=array(</span><span class="string">"bl.spamcop.net"</span><span class="keyword">,</span><span class="string">"list.dsbl.org"</span><span class="keyword">,<br />
+</span><span class="string">"sbl.spamhaus.org"</span><span class="keyword">,</span><span class="string">'xbl.spamhaus.org'</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; if(</span><span class="default">$ip</span><span class="keyword">){<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$rip</span><span class="keyword">=</span><span class="default">implode</span><span class="keyword">(</span><span class="string">'.'</span><span class="keyword">,</span><span class="default">array_reverse</span><span class="keyword">(</span><span class="default">explode</span><span class="keyword">(</span><span class="string">"."</span><span class="keyword">,</span><span class="default">$ip</span><span class="keyword">))); <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; foreach(</span><span class="default">$dnsbl_check </span><span class="keyword">as </span><span class="default">$val</span><span class="keyword">){<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if(</span><span class="default">checkdnsrr</span><span class="keyword">(</span><span class="default">$rip</span><span class="keyword">.</span><span class="string">'.'</span><span class="keyword">.</span><span class="default">$val</span><span class="keyword">.</span><span class="string">'.'</span><span class="keyword">,</span><span class="string">'A'</span><span class="keyword">))<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">$rip</span><span class="keyword">.</span><span class="string">'.'</span><span class="keyword">.</span><span class="default">$val</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">false</span><span class="keyword">;<br />
+}<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="61220""></a>
+  <div class="note">
+   <strong class="user">satmd</strong>
+   <a href="#61220" class="date">28-Jan-2006 08:29</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+fox dot 69 at gmx dot net: I wonder where you got this code from. I have written this piece of code half a year ago and released it WITH a copyright header that is missing now! Anyways... this code is to be considered licenced "as-is", however it'd be nice to keep the authors note (This is something about reputation, you see?). Thanks.<br />
+<br />
+(Much) more recent version of it:<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">function </span><span class="default">is_blacklisted</span><span class="keyword">(</span><span class="default">$ip</span><span class="keyword">) {<br />
+&nbsp;&nbsp; </span><span class="comment">// written by satmd, do what you want with it, but keep the author please<br />
+&nbsp;&nbsp; </span><span class="default">$result</span><span class="keyword">=Array();<br />
+&nbsp;&nbsp; </span><span class="default">$dnsbl_check</span><span class="keyword">=array(</span><span class="string">"bl.spamcop.net"</span><span class="keyword">,<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span class="string">"list.dsbl.org"</span><span class="keyword">,<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span class="string">"sbl.spamhaus.org"</span><span class="keyword">);<br />
+&nbsp;&nbsp; if (</span><span class="default">$ip</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; </span><span class="default">$quads</span><span class="keyword">=</span><span class="default">explode</span><span class="keyword">(</span><span class="string">"."</span><span class="keyword">,</span><span class="default">$ip</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; </span><span class="default">$rip</span><span class="keyword">=</span><span class="default">$quads</span><span class="keyword">[</span><span class="default">3</span><span class="keyword">].</span><span class="string">"."</span><span class="keyword">.</span><span class="default">$quads</span><span class="keyword">[</span><span class="default">2</span><span class="keyword">].</span><span class="string">"."</span><span class="keyword">.</span><span class="default">$quads</span><span class="keyword">[</span><span class="default">1</span><span class="keyword">].</span><span class="string">"."</span><span class="keyword">.</span><span class="default">$quads</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">];<br />
+&nbsp;&nbsp; &nbsp; &nbsp; for (</span><span class="default">$i</span><span class="keyword">=</span><span class="default">0</span><span class="keyword">; </span><span class="default">$i</span><span class="keyword">&lt;</span><span class="default">count</span><span class="keyword">(</span><span class="default">$dnsbl_check</span><span class="keyword">); </span><span class="default">$i</span><span class="keyword">++) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; if (</span><span class="default">checkdnsrr</span><span class="keyword">(</span><span class="default">$rip</span><span class="keyword">.</span><span class="string">"."</span><span class="keyword">.</span><span class="default">$dnsbl_check</span><span class="keyword">[</span><span class="default">$i</span><span class="keyword">].</span><span class="string">"."</span><span class="keyword">,</span><span class="string">"A"</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$result</span><span class="keyword">[]=Array(</span><span class="default">$dnsbl_check</span><span class="keyword">[</span><span class="default">$i</span><span class="keyword">],</span><span class="default">$rip</span><span class="keyword">.</span><span class="string">"."</span><span class="keyword">.</span><span class="default">$dnsbl_check</span><span class="keyword">[</span><span class="default">$i</span><span class="keyword">]);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; }<br />
+&nbsp;&nbsp; &nbsp;&nbsp; return </span><span class="default">$result</span><span class="keyword">;<br />
+&nbsp;&nbsp; }<br />
+}<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+Beware that this code's signature differs from the original! I also removed osirusoft as its results are not useful anyways (false positives!). Please make sure that you have nscd or a caching dns server running as this code is prone to (d)dos! Only use it in places where it is necessary (when data is to be modified), e.g. the script processing uploads/posts/replies in a blog.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="55933""></a>
+  <div class="note">
+   <strong class="user">tabascopete78 at yahoo dot com</strong>
+   <a href="#55933" class="date">18-Aug-2005 12:30</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I was using file_get_contents on a set of URLs. Some of them URLs were invalid (the structure of it was ok but the DNS hosts couldn't resolve them) and I kept getting an annoying warning that I wanted to handle correctly. I wanted to check the DNS somehow but the existing check dns function in php doesn't have one for windows and the one a person supplied here does not work 100% of the time. (The reg exp is wrong.)<br />
+<br />
+Instead use gethostbyname to try to resolve a host. This won't throw any warnings, you just need to check the output and it's all handled gracefully. You'll get the same warnings with fopen and fsockopen. <br />
+<br />
+The only minor drawback is that on invalid hosts it takes a couple seconds to figure it out.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="53953""></a>
+  <div class="note">
+   <strong class="user">Plasma</strong>
+   <a href="#53953" class="date">18-Jun-2005 01:43</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+In response to fox dot 69 at gmx dot net's dnsbl function:<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">function </span><span class="default">is_blacklisted</span><span class="keyword">(</span><span class="default">$ip</span><span class="keyword">) {<br />
+&nbsp;&nbsp; </span><span class="default">$dnsbl_check</span><span class="keyword">=array(</span><span class="string">"bl.spamcop.net"</span><span class="keyword">,<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span class="string">"relays.osirusoft.com"</span><span class="keyword">,<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span class="string">"list.dsbl.org"</span><span class="keyword">,<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span class="string">"sbl.spamhaus.org"</span><span class="keyword">);<br />
+&nbsp;&nbsp; if (</span><span class="default">$ip</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; </span><span class="default">$quads</span><span class="keyword">=</span><span class="default">explode</span><span class="keyword">(</span><span class="string">"."</span><span class="keyword">,</span><span class="default">$ip</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; </span><span class="default">$rip</span><span class="keyword">=</span><span class="default">$quads</span><span class="keyword">[</span><span class="default">3</span><span class="keyword">].</span><span class="string">"."</span><span class="keyword">.</span><span class="default">$quads</span><span class="keyword">[</span><span class="default">2</span><span class="keyword">].</span><span class="string">"."</span><span class="keyword">.</span><span class="default">$quads</span><span class="keyword">[</span><span class="default">1</span><span class="keyword">].</span><span class="string">"."</span><span class="keyword">.</span><span class="default">$quads</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">];<br />
+&nbsp;&nbsp; &nbsp; &nbsp; for (</span><span class="default">$i</span><span class="keyword">=</span><span class="default">0</span><span class="keyword">; </span><span class="default">$i</span><span class="keyword">&lt;</span><span class="default">count</span><span class="keyword">(</span><span class="default">$dnsbl_check</span><span class="keyword">); </span><span class="default">$i</span><span class="keyword">++) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; if (</span><span class="default">checkdnsrr</span><span class="keyword">(</span><span class="default">$rip</span><span class="keyword">.</span><span class="string">"."</span><span class="keyword">.</span><span class="default">$dnsbl_check</span><span class="keyword">[</span><span class="default">$i</span><span class="keyword">] . </span><span class="string">'.'</span><span class="keyword">,</span><span class="string">"A"</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span class="default">$listed</span><span class="keyword">.=</span><span class="default">$dnsbl_check</span><span class="keyword">[</span><span class="default">$i</span><span class="keyword">].</span><span class="string">" "</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; if (</span><span class="default">$listed</span><span class="keyword">) { return </span><span class="default">$listed</span><span class="keyword">; } else { return </span><span class="default">FALSE</span><span class="keyword">; }<br />
+&nbsp;&nbsp; }<br />
+}<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+Add a . after the $dnsbl_check[$i] so that it returns a valid response, I found this was not working (always returned the A record) when I didnt specify the . at the end:<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; if (checkdnsrr($rip.".".$dnsbl_check[$i] . '.',"A")) {</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="49737""></a>
+  <div class="note">
+   <strong class="user">Sven</strong>
+   <a href="#49737" class="date">07-Feb-2005 05:46</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Note to Patrick's regular expression (from 14-Dec-2004):<br />
+<br />
+Don't use it as it will not recognize every valid email address, because valid domain names do not pass the regex.<br />
+<br />
+For example: test--domain.com is a perfectly valid domain, but won't be recognized as such.<br />
+<br />
+If you have to use a regular expression as a first filter, then either use the complete complex form based on RFC2822, or stick to the most basic regex like this:<br />
+<br />
+".+@.+\..+."<br />
+<br />
+Explanation: The username in front of the @ can include every known character in the world - it has to be escaped somehow, but dealing with this is a mess.<br />
+<br />
+The shortest possible domain name is 1 character long, not 2 or 3 (although many registries impose such arbitrary rules on domain names). Try www.x.org if you don't believe this. :)<br />
+<br />
+Only the top level domain consists of at least 2 characters (country code tld), but there should be no upper limit. Many had to learn the hard way as .info became available. And .museum. Maybe there will be .solarsystem someday.<br />
+<br />
+So the shortest possible email address consists of 6 characters: "a@b.cd".<br />
+<br />
+I do not use more specific character classes for the domain names because we have international domain names, which opens up the whole unicode range as valid characters. Converting these into useable dns domain names is a different task, best left to appropriate librarys such as PEAR's Net_IDNA.<br />
+<br />
+Rule of thumb: Don't assume too much. If a string doesn't contain an "@"-sign and a dot after that, then it surely is no email address, and no further checking needs to take place. Everything else should go one step further.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="48157""></a>
+  <div class="note">
+   <strong class="user">Patrick</strong>
+   <a href="#48157" class="date">13-Dec-2004 07:53</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+This is a little code example that will validate an email address in two ways:<br />
+- first the general syntax of the string is checked with a regular expression<br />
+- then the domain substring (after the '@') is checked using the 'checkdnsrr' function<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+</span><span class="keyword">function </span><span class="default">validate_email</span><span class="keyword">(</span><span class="default">$email</span><span class="keyword">){<br />
+<br />
+&nbsp;&nbsp; </span><span class="default">$exp </span><span class="keyword">= </span><span class="string">"^[a-z\'0-9]+([._-][a-z\'0-9]+)*@([a-z0-9]+([._-][a-z0-9]+))+$"</span><span class="keyword">;<br />
+<br />
+&nbsp;&nbsp; if(</span><span class="default">eregi</span><span class="keyword">(</span><span class="default">$exp</span><span class="keyword">,</span><span class="default">$email</span><span class="keyword">)){<br />
+<br />
+&nbsp;&nbsp; &nbsp;&nbsp; if(</span><span class="default">checkdnsrr</span><span class="keyword">(</span><span class="default">array_pop</span><span class="keyword">(</span><span class="default">explode</span><span class="keyword">(</span><span class="string">"@"</span><span class="keyword">,</span><span class="default">$email</span><span class="keyword">)),</span><span class="string">"MX"</span><span class="keyword">)){<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">true</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp;&nbsp; }else{<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">false</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp; }else{<br />
+<br />
+&nbsp;&nbsp; &nbsp;&nbsp; return </span><span class="default">false</span><span class="keyword">;<br />
+<br />
+&nbsp;&nbsp; }&nbsp; &nbsp; <br />
+}<br />
+<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="43418""></a>
+  <div class="note">
+   <strong class="user">dave146 at burtonsys dot com</strong>
+   <a href="#43418" class="date">20-Jun-2004 11:46</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+The .museum TLD is weird.&nbsp; All undefined second-level domains resolve to 195.7.77.20 (a/k/a index.museum).&nbsp; So checkdnsrr() doesn't tell you anything at all about second-level domains under .museum.<br />
+<br />
+-Dave<br />
+<br />
+Editors note:<br />
+<br />
+This applies to all TLDs that have a wildcard covering all non-existant domains. This may at some point in the future include .com or .net and does already cover other domains. If you are unsure just try a couple of random domains that can't possibly exist. If they both resolve to the same IP address and checkdnserr() returns false, you may have to check the IP.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="39527""></a>
+  <div class="note">
+   <strong class="user">picaune at hotmail dot com</strong>
+   <a href="#39527" class="date">31-Jan-2004 06:58</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+On Windows NT machines (inc. 2000, XP, 2003, .net, Longhorn) you can emulate this function by spoonfeeding the nslookup proglet.<br />
+<br />
+After spitting out some info on which DNS server it's using, the daemon presents a "&gt; " prompt. At this point if you enter a domain name a list of A records will be returned from the default name server. The sixth line of output has "Address: " followed by the IPv4 address in dotted-quad notation. You may enter "set type=" followed by the IP type. Currently the only supported IP class is IN (Internet); the others are no longer supported. You can exit by entering "exit".<br />
+<br />
+You may perform a one-shot lookup by passing the domain name as a command line argument; in this case nslookup will automatically perform an A lookup on the default name server and exit. The IPv4 address is on the last line with non-whitespace.<br />
+<br />
+Additional information and options can be obtained by running nslookup and then searching for "?".</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="31730""></a>
+  <div class="note">
+   <strong class="user">fox dot 69 at gmx dot net</strong>
+   <a href="#31730" class="date">01-May-2003 01:40</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+maybe usefull, a blacklist (DNSBL) check function:<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">function </span><span class="default">is_blacklisted</span><span class="keyword">(</span><span class="default">$ip</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$dnsbl_check</span><span class="keyword">=array(</span><span class="string">"bl.spamcop.net"</span><span class="keyword">,<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span class="string">"relays.osirusoft.com"</span><span class="keyword">,<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span class="string">"list.dsbl.org"</span><span class="keyword">,<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span class="string">"sbl.spamhaus.org"</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; if (</span><span class="default">$ip</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; </span><span class="default">$quads</span><span class="keyword">=</span><span class="default">explode</span><span class="keyword">(</span><span class="string">"."</span><span class="keyword">,</span><span class="default">$ip</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$rip</span><span class="keyword">=</span><span class="default">$quads</span><span class="keyword">[</span><span class="default">3</span><span class="keyword">].</span><span class="string">"."</span><span class="keyword">.</span><span class="default">$quads</span><span class="keyword">[</span><span class="default">2</span><span class="keyword">].</span><span class="string">"."</span><span class="keyword">.</span><span class="default">$quads</span><span class="keyword">[</span><span class="default">1</span><span class="keyword">].</span><span class="string">"."</span><span class="keyword">.</span><span class="default">$quads</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">];<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; for (</span><span class="default">$i</span><span class="keyword">=</span><span class="default">0</span><span class="keyword">; </span><span class="default">$i</span><span class="keyword">&lt;</span><span class="default">count</span><span class="keyword">(</span><span class="default">$dnsbl_check</span><span class="keyword">); </span><span class="default">$i</span><span class="keyword">++) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if (</span><span class="default">checkdnsrr</span><span class="keyword">(</span><span class="default">$rip</span><span class="keyword">.</span><span class="string">"."</span><span class="keyword">.</span><span class="default">$dnsbl_check</span><span class="keyword">[</span><span class="default">$i</span><span class="keyword">],</span><span class="string">"A"</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$listed</span><span class="keyword">.=</span><span class="default">$dnsbl_check</span><span class="keyword">[</span><span class="default">$i</span><span class="keyword">].</span><span class="string">" "</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; if (</span><span class="default">$listed</span><span class="keyword">) { return </span><span class="default">$listed</span><span class="keyword">; } else { return </span><span class="default">FALSE</span><span class="keyword">; }<br />
+&nbsp;&nbsp;&nbsp; }<br />
+}<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="30692""></a>
+  <div class="note">
+   <strong class="user">kriek at jonkriek dot com</strong>
+   <a href="#30692" class="date">25-Mar-2003 05:08</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+The checkdnsrr function is not implemented on the Windows platform. The way to get around this problem is to write your own version of checkdnsrr. Example: myCheckDNSRR<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">function </span><span class="default">myCheckDNSRR</span><span class="keyword">(</span><span class="default">$hostName</span><span class="keyword">, </span><span class="default">$recType </span><span class="keyword">= </span><span class="string">''</span><span class="keyword">) <br />
+{ <br />
+&nbsp;if(!empty(</span><span class="default">$hostName</span><span class="keyword">)) { <br />
+&nbsp;&nbsp; if( </span><span class="default">$recType </span><span class="keyword">== </span><span class="string">'' </span><span class="keyword">) </span><span class="default">$recType </span><span class="keyword">= </span><span class="string">"MX"</span><span class="keyword">; <br />
+&nbsp;&nbsp; </span><span class="default">exec</span><span class="keyword">(</span><span class="string">"nslookup -type=</span><span class="default">$recType</span><span class="string"> </span><span class="default">$hostName</span><span class="string">"</span><span class="keyword">, </span><span class="default">$result</span><span class="keyword">); <br />
+&nbsp;&nbsp; </span><span class="comment">// check each line to find the one that starts with the host <br />
+&nbsp;&nbsp; // name. If it exists then the function succeeded. <br />
+&nbsp;&nbsp; </span><span class="keyword">foreach (</span><span class="default">$result </span><span class="keyword">as </span><span class="default">$line</span><span class="keyword">) { <br />
+&nbsp;&nbsp; &nbsp; if(</span><span class="default">eregi</span><span class="keyword">(</span><span class="string">"^</span><span class="default">$hostName</span><span class="string">"</span><span class="keyword">,</span><span class="default">$line</span><span class="keyword">)) { <br />
+&nbsp;&nbsp; &nbsp; &nbsp; return </span><span class="default">true</span><span class="keyword">; <br />
+&nbsp;&nbsp; &nbsp; } <br />
+&nbsp;&nbsp; } <br />
+&nbsp;&nbsp; </span><span class="comment">// otherwise there was no mail handler for the domain <br />
+&nbsp;&nbsp; </span><span class="keyword">return </span><span class="default">false</span><span class="keyword">; <br />
+&nbsp;} <br />
+&nbsp;return </span><span class="default">false</span><span class="keyword">; <br />
+}<br />
+</span><span class="default">?&gt;<br />
+</span>Note that the type parameter is optional, and if you don't supply it then the type defaults to "MX" (which means Mail Exchange). If any records are found, the function returns TRUE. Otherwise, it returns FALSE.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="19508""></a>
+  <div class="note">
+   <strong class="user">alex at xela dot co dot uk</strong>
+   <a href="#19508" class="date">01-Mar-2002 05:36</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Hi,<br />
+<br />
+Interesting thing I've discovered regarding checkdnsrr. When querying a domain's status using the command, always append a dot to the end of the domain you are querying. I.e.<br />
+<br />
+<span class="default">&lt;?php<br />
+checkdnsrr</span><span class="keyword">(</span><span class="default">$domain</span><span class="keyword">.</span><span class="string">'.'</span><span class="keyword">)<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+The dot is sometimes necessary if you are searching for a fully qualified domain which has the same name as a host on your local domain.. ie :-<br />
+<br />
+You want to search for "our.info"<br />
+and you happen to have a node on your domain called :<br />
+<br />
+our.info.ourdomain.com<br />
+<br />
+If your DNS server is told to check 'ourdomain.com' before any other you will get a positive result when in fact our.info might not exist.<br />
+<br />
+For this reason adding the dot enforces the root. Of course the dot does not alter results that were OK anyway.<br />
+<br />
+Hope that helps some poor confused people :o)<br />
+<br />
+Alex.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="ref.network.html">Network Functions</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.closelog.html">closelog</a></div>
  <div class="up"><a href="ref.network.html">Network Functions</a></div>

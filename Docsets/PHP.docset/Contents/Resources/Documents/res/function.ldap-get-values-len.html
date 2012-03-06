@@ -103,7 +103,252 @@
  </div>
 
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="103586""></a>
+  <div class="note">
+   <strong class="user">Stav</strong>
+   <a href="#103586" class="date">21-Apr-2011 05:38</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I had a lot of issues with decoding errors using ldap_get_values_len() and found a of unanswered calls for help on a lot of forums.<br />
+<br />
+The error message is - Warning: ldap_get_values(): Cannot get the value(s) of attribute Decoding error in xxx.php.<br />
+<br />
+It appears that this error seems to cover a multitude sins including simple typos in the attribute name.<br />
+<br />
+After using PHP to list the attributes of a particular record I noticed that the attribute userCertificate wasn't listed simply as userCertificate but userCertificate;binary instead.&nbsp; I wrote this into my code and all was fixed.<br />
+<br />
+So my code looks as follows.<br />
+<br />
+<span class="default">&lt;?php<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">if (!</span><span class="default">$val </span><span class="keyword">= @</span><span class="default">ldap_get_values_len</span><span class="keyword">(</span><span class="default">$con</span><span class="keyword">, </span><span class="default">$entry</span><span class="keyword">, </span><span class="string">"</span><span class="default">$attribute</span><span class="string">;binary"</span><span class="keyword">))<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; die (</span><span class="string">'Error retrieving value (' </span><span class="keyword">. </span><span class="default">ldap_error</span><span class="keyword">(</span><span class="default">$con</span><span class="keyword">) . </span><span class="string">')'</span><span class="keyword">);<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+I hope this saves someone the pain I went through trawling Google for an answer.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="91251""></a>
+  <div class="note">
+   <strong class="user">jhgustafsson at gmail dot com</strong>
+   <a href="#91251" class="date">02-Jun-2009 03:07</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Tried a couple of different ways to do this but this seems to work best:<br />
+<br />
+<span class="default">&lt;?php<br />
+$info </span><span class="keyword">= </span><span class="default">ldap_first_entry</span><span class="keyword">(</span><span class="default">$ds</span><span class="keyword">,</span><span class="default">$sr</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">// get it binary-safe.<br />
+</span><span class="default">$bin_guid </span><span class="keyword">= </span><span class="default">ldap_get_values_len</span><span class="keyword">(</span><span class="default">$ds</span><span class="keyword">,</span><span class="default">$info</span><span class="keyword">,</span><span class="string">"objectguid"</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">// convert to hex, bin2hex failed here for me. Unpack() seems to work though.<br />
+</span><span class="default">$hex_guid </span><span class="keyword">= </span><span class="default">unpack</span><span class="keyword">(</span><span class="string">"H*hex"</span><span class="keyword">, </span><span class="default">$bin_guid</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">]);<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="90032""></a>
+  <div class="note">
+   <strong class="user">alexey_baranov at inbox dot ru</strong>
+   <a href="#90032" class="date">02-Apr-2009 04:26</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+no more need to use ldap_get_values_len (). ldap_get_attributes() works well now.<br />
+<br />
+<span class="default">&lt;?php<br />
+$attrs </span><span class="keyword">= </span><span class="default">ldap_get_attributes</span><span class="keyword">(</span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">cid</span><span class="keyword">, </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">re</span><span class="keyword">);<br />
+</span><span class="default">$hex_Sid</span><span class="keyword">= </span><span class="default">bin2hex</span><span class="keyword">(</span><span class="default">$attrs</span><span class="keyword">[</span><span class="string">'objectSid'</span><span class="keyword">][</span><span class="default">0</span><span class="keyword">]); </span><span class="comment">//returns 010500000000000515000000c94d7d363d787b17e77b80109d060000<br />
+</span><span class="default">$hex_GUID</span><span class="keyword">= </span><span class="default">bin2hex</span><span class="keyword">(</span><span class="default">$attrs</span><span class="keyword">[</span><span class="string">'objectGUID'</span><span class="keyword">][</span><span class="default">0</span><span class="keyword">]); </span><span class="comment">//returns 710234bbc2abc148ade8c1f9b4567b24<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="77294""></a>
+  <div class="note">
+   <strong class="user">etienne at i-james dot com</strong>
+   <a href="#77294" class="date">23-Aug-2007 02:40</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+In order to set directory/file permissions with smbcacls, you'll need to get the objectSid and objectGuid, convert them with the functions described in the other post of this manual and concat them like this :<br />
+$user='S-' . $strObjectSid . '-' . $strObjectGuid</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="73717""></a>
+  <div class="note">
+   <strong class="user">derek dot ethier at gmail dot com</strong>
+   <a href="#73717" class="date">07-Mar-2007 11:25</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+One more function to add that complements the bin_to_str_guid function I posted below:<br />
+<br />
+// This function will convert a string GUID value into a HEX value to search AD.<br />
+function str_to_hex_guid($str_guid) {<br />
+&nbsp;&nbsp;&nbsp; $str_guid = str_replace('-', '', $str_guid);<br />
+<br />
+&nbsp;&nbsp;&nbsp; $octet_str = substr($str_guid, 6, 2);<br />
+&nbsp;&nbsp;&nbsp; $octet_str .= substr($str_guid, 4, 2);<br />
+&nbsp;&nbsp;&nbsp; $octet_str .= substr($str_guid, 2, 2);<br />
+&nbsp;&nbsp;&nbsp; $octet_str .= substr($str_guid, 0, 2);<br />
+&nbsp;&nbsp;&nbsp; $octet_str .= substr($str_guid, 10, 2);<br />
+&nbsp;&nbsp;&nbsp; $octet_str .= substr($str_guid, 8, 2);<br />
+&nbsp;&nbsp;&nbsp; $octet_str .= substr($str_guid, 14, 2);<br />
+&nbsp;&nbsp;&nbsp; $octet_str .= substr($str_guid, 12, 2);<br />
+&nbsp;&nbsp;&nbsp; $octet_str .= substr($str_guid, 16, strlen($str_guid));<br />
+<br />
+&nbsp;&nbsp;&nbsp; return $octet_str;<br />
+}<br />
+<br />
+If you want to convert the string GUID back to the HEX format (required if you want to search AD based on the GUID string, make sure you escape the HEX string with double backslashes when searching -- ie. \\AE\\0F\\88...).</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="73198""></a>
+  <div class="note">
+   <strong class="user">derek dot ethier at gmail dot com</strong>
+   <a href="#73198" class="date">12-Feb-2007 07:49</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+To elaborate on rcrow's post, if you want to convert the objectSID value to a usable string (from Active Directory) the following function will do the trick (this was borrowed from another section of the manual, just thought I'd add it here):<br />
+<br />
+// Returns the textual SID<br />
+function bin_to_str_sid($binsid) {<br />
+&nbsp;&nbsp;&nbsp; $hex_sid = bin2hex($binsid);<br />
+&nbsp;&nbsp;&nbsp; $rev = hexdec(substr($hex_sid, 0, 2));<br />
+&nbsp;&nbsp;&nbsp; $subcount = hexdec(substr($hex_sid, 2, 2));<br />
+&nbsp;&nbsp;&nbsp; $auth = hexdec(substr($hex_sid, 4, 12));<br />
+&nbsp;&nbsp;&nbsp; $result&nbsp; &nbsp; = "$rev-$auth";<br />
+<br />
+&nbsp;&nbsp;&nbsp; for ($x=0;$x &lt; $subcount; $x++) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $subauth[$x] = <br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; hexdec($this-&gt;little_endian(substr($hex_sid, 16 + ($x * 8), 8)));<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $result .= "-" . $subauth[$x];<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; // Cheat by tacking on the S-<br />
+&nbsp;&nbsp;&nbsp; return 'S-' . $result;<br />
+}<br />
+<br />
+// Converts a little-endian hex-number to one, that 'hexdec' can convert<br />
+function little_endian($hex) {<br />
+&nbsp;&nbsp;&nbsp; for ($x = strlen($hex) - 2; $x &gt;= 0; $x = $x - 2) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $result .= substr($hex, $x, 2);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; return $result;<br />
+}<br />
+<br />
+This function is not related to the ldap_get_values_len function but is still helpful if you want to convert the objectGUID binary value to a string format (converted from some vbscript provided by Richard Mueller):<br />
+<br />
+// This function will convert a binary value guid into a valid string.<br />
+function bin_to_str_guid($object_guid) {<br />
+&nbsp;&nbsp;&nbsp; $hex_guid = bin2hex($object_guid);<br />
+&nbsp;&nbsp;&nbsp; $hex_guid_to_guid_str = '';<br />
+&nbsp;&nbsp;&nbsp; for($k = 1; $k &lt;= 4; ++$k) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $hex_guid_to_guid_str .= substr($hex_guid, 8 - 2 * $k, 2);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; $hex_guid_to_guid_str .= '-';<br />
+&nbsp;&nbsp;&nbsp; for($k = 1; $k &lt;= 2; ++$k) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $hex_guid_to_guid_str .= substr($hex_guid, 12 - 2 * $k, 2);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; $hex_guid_to_guid_str .= '-';<br />
+&nbsp;&nbsp;&nbsp; for($k = 1; $k &lt;= 2; ++$k) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $hex_guid_to_guid_str .= substr($hex_guid, 16 - 2 * $k, 2);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; $hex_guid_to_guid_str .= '-' . substr($hex_guid, 16, 4);<br />
+&nbsp;&nbsp;&nbsp; $hex_guid_to_guid_str .= '-' . substr($hex_guid, 20);<br />
+<br />
+&nbsp;&nbsp;&nbsp; return strtoupper($hex_guid_to_guid_str);<br />
+}<br />
+<br />
+Here's an example on how to use both:<br />
+<br />
+$filter="samaccountname=".$username;<br />
+$fields=array("objectguid","objectsid");<br />
+<br />
+//establish the connection and specify the base_dn first. there are a lot of examples in the manual for this<br />
+<br />
+$sr=ldap_search($this-&gt;_conn,$this-&gt;_base_dn,$filter,$fields);<br />
+$entries = ldap_get_entries($this-&gt;_conn, $sr);<br />
+<br />
+if (in_array("objectguid", $fields)) {<br />
+&nbsp;&nbsp;&nbsp; $entries[0]["objectguid"][0]=<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $this-&gt;bin_to_str_guid($entries[0]["objectguid"][0]);<br />
+}<br />
+<br />
+if (in_array("objectsid", $fields)) {<br />
+&nbsp;&nbsp;&nbsp; $entry = ldap_first_entry($this-&gt;_conn, $sr);<br />
+&nbsp;&nbsp;&nbsp; $objectsid_binary = ldap_get_values_len($this-&gt;_conn, $entry, "objectsid");<br />
+&nbsp;&nbsp;&nbsp; $entries[0]["objectsid"][0] = $this-&gt;bin_to_str_sid($objectsid_binary[0]);<br />
+}<br />
+<br />
+Hope this helps someone!</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="42023""></a>
+  <div class="note">
+   <strong class="user">rcrow at NOSPAM dot laptv dot com</strong>
+   <a href="#42023" class="date">29-Apr-2004 05:06</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+If you are trying to access BINARY DATA, such as ObjectSID within LDAP, you must first get an individual entry, as stated under ldap_get_values() function -- "This call needs a result_entry_identifier, so needs to be preceded by one of the ldap search calls and one of the calls to get an individual entry."<br />
+<br />
+The following code snippet will get the LDAP objectSID for a specific user.<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="comment">/* Get the binary objectsid entry&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; */<br />
+/* Be sure that you have included the binary field in your ldap_search.&nbsp; &nbsp; */<br />
+</span><span class="default">$criteria </span><span class="keyword">=&nbsp; </span><span class="string">"samaccountname=</span><span class="default">$ldapUser</span><span class="string">"</span><span class="keyword">;<br />
+</span><span class="default">$justthese </span><span class="keyword">= array(</span><span class="string">"memberOf"</span><span class="keyword">, </span><span class="string">"objectsid"</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; <br />
+</span><span class="default">$ldapSearchResult </span><span class="keyword">= </span><span class="default">ldap_search</span><span class="keyword">(</span><span class="default">$ldapConnectionResult</span><span class="keyword">, </span><span class="default">$ldapBase</span><span class="keyword">, </span><span class="default">$criteria</span><span class="keyword">, </span><span class="default">$justthese</span><span class="keyword">);<br />
+&nbsp; <br />
+if (</span><span class="default">ldap_count_entries</span><span class="keyword">(</span><span class="default">$ldapConnectionResult</span><span class="keyword">, </span><span class="default">$ldapSearchResult</span><span class="keyword">)){<br />
+&nbsp;&nbsp; &nbsp; </span><span class="default">$ldapResults </span><span class="keyword">= </span><span class="default">ldap_get_entries</span><span class="keyword">(</span><span class="default">$ldapConnectionResult</span><span class="keyword">, </span><span class="default">$ldapSearchResult</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp; </span><span class="default">$entry </span><span class="keyword">= </span><span class="default">ldap_first_entry</span><span class="keyword">(</span><span class="default">$ldapConnectionResult</span><span class="keyword">, </span><span class="default">$ldapSearchResult</span><span class="keyword">);<br />
+&nbsp;&nbsp; </span><span class="default">$ldapBinary </span><span class="keyword">= </span><span class="default">ldap_get_values_len </span><span class="keyword">(</span><span class="default">$ldapConnectionResult</span><span class="keyword">, </span><span class="default">$entry</span><span class="keyword">, </span><span class="string">"objectsid"</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">/* your code here */<br />
+&nbsp; <br />
+</span><span class="keyword">}<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+You then can use something like bin2hex to put the data in a more usable form.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="function.ldap-get-option.html">ldap_get_option</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.ldap-get-values.html">ldap_get_values</a></div>
  <div class="up"><a href="ref.ldap.html">LDAP Functions</a></div>

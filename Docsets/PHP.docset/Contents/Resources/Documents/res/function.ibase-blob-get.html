@@ -115,7 +115,116 @@
  </div>
 
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="60192""></a>
+  <div class="note">
+   <strong class="user">trinite at trinite dot mine dot nu</strong>
+   <a href="#60192" class="date">29-Dec-2005 03:33</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+The ways mentioned above won't work with segmented blobs. To fix this, I use the following:<br />
+(btw, $result-&gt;MFOTO is an image in the database)<br />
+<br />
+<span class="default">&lt;?php<br />
+&nbsp;&nbsp;&nbsp; $result </span><span class="keyword">= </span><span class="default">ibase_fetch_object</span><span class="keyword">(</span><span class="default">$result</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">/*<br />
+&nbsp;&nbsp; &nbsp; ibase_blob_info array: <br />
+&nbsp;&nbsp; &nbsp; [0] bloblength(total)<br />
+&nbsp;&nbsp; &nbsp; [1] number of segments<br />
+&nbsp;&nbsp; &nbsp; [2] size of largest segment<br />
+&nbsp;&nbsp; &nbsp; [3] stream or segmented blob<br />
+&nbsp;&nbsp; &nbsp; [4] ??<br />
+&nbsp;&nbsp;&nbsp; */<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$blobinfo </span><span class="keyword">= </span><span class="default">ibase_blob_info</span><span class="keyword">(</span><span class="default">$result</span><span class="keyword">-&gt;</span><span class="default">MFOTO</span><span class="keyword">); <br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$blobhandle </span><span class="keyword">= </span><span class="default">ibase_blob_open</span><span class="keyword">(</span><span class="default">$result</span><span class="keyword">-&gt;</span><span class="default">MFOTO</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; for(</span><span class="default">$i </span><span class="keyword">= </span><span class="default">0</span><span class="keyword">; </span><span class="default">$i </span><span class="keyword">&lt; </span><span class="default">$blobinfo</span><span class="keyword">[</span><span class="default">1</span><span class="keyword">]; </span><span class="default">$i</span><span class="keyword">++){<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$readsize </span><span class="keyword">= </span><span class="default">$blobinfo</span><span class="keyword">[</span><span class="default">2</span><span class="keyword">];<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if(</span><span class="default">$i </span><span class="keyword">== (</span><span class="default">$blobinfo</span><span class="keyword">[</span><span class="default">1</span><span class="keyword">] - </span><span class="default">1</span><span class="keyword">)){<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$readsize </span><span class="keyword">= </span><span class="default">$blobinfo</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">] - ((</span><span class="default">$blobinfo</span><span class="keyword">[</span><span class="default">1</span><span class="keyword">] - </span><span class="default">1</span><span class="keyword">) * </span><span class="default">$blobinfo</span><span class="keyword">[</span><span class="default">2</span><span class="keyword">]);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$totalimage </span><span class="keyword">.= </span><span class="default">ibase_blob_get</span><span class="keyword">(</span><span class="default">$blobhandle</span><span class="keyword">, </span><span class="default">$readsize</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">ibase_blob_close</span><span class="keyword">(</span><span class="default">$blobhandle</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; echo </span><span class="default">$totalimage</span><span class="keyword">; <br />
+</span><span class="default">?&gt;<br />
+</span><br />
+This should do the trick ;)</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="47666""></a>
+  <div class="note">
+   <strong class="user">hamacker</strong>
+   <a href="#47666" class="date">24-Nov-2004 06:03</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+The first example is wrong, is missing ibase_blob_close() function.<br />
+The correct example is :<br />
+<span class="default">&lt;?php<br />
+&nbsp;&nbsp; $sql&nbsp; &nbsp; &nbsp; </span><span class="keyword">= </span><span class="string">"SELECT blob_value FROM table"</span><span class="keyword">;<br />
+&nbsp;&nbsp; </span><span class="default">$result&nbsp; &nbsp; </span><span class="keyword">= </span><span class="default">ibase_query</span><span class="keyword">(</span><span class="default">$sql</span><span class="keyword">);<br />
+&nbsp;&nbsp; </span><span class="default">$data&nbsp; &nbsp; &nbsp; </span><span class="keyword">= </span><span class="default">ibase_fetch_object</span><span class="keyword">(</span><span class="default">$result</span><span class="keyword">);<br />
+&nbsp;&nbsp; </span><span class="default">$blob_data </span><span class="keyword">= </span><span class="default">ibase_blob_info</span><span class="keyword">(</span><span class="default">$data</span><span class="keyword">-&gt;</span><span class="default">BLOB_VALUE</span><span class="keyword">);<br />
+&nbsp;&nbsp; </span><span class="default">$blob_hndl </span><span class="keyword">= </span><span class="default">ibase_blob_open</span><span class="keyword">(</span><span class="default">$data</span><span class="keyword">-&gt;</span><span class="default">BLOB_VALUE</span><span class="keyword">);<br />
+&nbsp;&nbsp; print&nbsp; &nbsp; &nbsp; &nbsp; </span><span class="default">ibase_blob_get</span><span class="keyword">(</span><span class="default">$blob_hndl</span><span class="keyword">, </span><span class="default">$blob_data</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">]);<br />
+&nbsp;&nbsp; </span><span class="comment">// without close blob conection, php and ibase_blob_get() do not run.<br />
+&nbsp; </span><span class="default">ibase_blob_close</span><span class="keyword">(</span><span class="default">$blob_hndl</span><span class="keyword">);&nbsp; <br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="30448""></a>
+  <div class="note">
+   <strong class="user">sol at nospam dot example dot com</strong>
+   <a href="#30448" class="date">18-Mar-2003 10:59</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I found examples like these:<br />
+<br />
+$sql = "SELECT ID, CONTENTTYPE, BLOBSIZE, DATA,NAME ";<br />
+$sql.= " FROM OM_BLOB WHERE ID = 42";<br />
+$result = ibase_query($sql);<br />
+while ($row=ibase_fetch_object($result))<br />
+{<br />
+&nbsp;&nbsp;&nbsp; $blob_data = ibase_blob_info( $row-&gt;DATA);<br />
+&nbsp;&nbsp;&nbsp; $blob_hndl = ibase_blob_open($row-&gt;DATA);<br />
+&nbsp;&nbsp;&nbsp; $image = ibase_blob_get( $blob_hndl, $blob_data[0]);<br />
+}<br />
+but this won't work for large blobs.<br />
+<br />
+One solution for big blobs is to retrieve them by chunks:<br />
+<br />
+$sql = "SELECT ID, CONTENTTYPE, BLOBSIZE, DATA,NAME ";<br />
+$sql.= " FROM OM_BLOB WHERE ID = 42";<br />
+$result = ibase_query($sql);<br />
+while ($row=ibase_fetch_object($result))<br />
+{<br />
+&nbsp;&nbsp;&nbsp; $image = ibase_blob_get($blob_hndl,8192);<br />
+&nbsp;&nbsp;&nbsp; while($data = ibase_blob_get($blob_hndl, 8192)){ <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $image .= $data; <br />
+&nbsp;&nbsp;&nbsp; }<br />
+}</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="function.ibase-blob-echo.html">ibase_blob_echo</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.ibase-blob-import.html">ibase_blob_import</a></div>
  <div class="up"><a href="ref.ibase.html">Firebird/InterBase Functions</a></div>

@@ -188,6 +188,93 @@
 
 <h2>Table of Contents</h2><ul class="chunklist chunklist_reference"><li><a href="recursivearrayiterator.getchildren.html">RecursiveArrayIterator::getChildren</a> â€” Returns an iterator for the current entry if it is an array or an object.</li><li><a href="recursivearrayiterator.haschildren.html">RecursiveArrayIterator::hasChildren</a> â€” Returns whether current entry is an array or an object.</li></ul>
 </div>
+<div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="106519""></a>
+  <div class="note">
+   <strong class="user">c dot 1 at smithies dot org</strong>
+   <a href="#106519" class="date">15-Nov-2011 10:29</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+If you are iterating over a multi-dimensional array of objects, you may be tempted to use a RecursiveArrayIterator within a RecursiveIteratorIterator. You are likely to get baffling results if you do. That is because RecursiveArrayIterator treats all objects as having children, and tries to recurse into them. But if you are interested in having your RecursiveIteratorIterator return the objects in your multi-dimensional array, then you don't want the default setting LEAVES_ONLY, because no object can be a leaf (= has no children).<br />
+<br />
+The solution is to extend the RecursiveArrayIterator class and override the hasChildren method appropriately. Something like the following might be suitable:<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">class </span><span class="default">RecursiveArrayOnlyIterator </span><span class="keyword">extends </span><span class="default">RecursiveArrayIterator </span><span class="keyword">{<br />
+&nbsp; public function </span><span class="default">hasChildren</span><span class="keyword">() {<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">is_array</span><span class="keyword">(</span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">current</span><span class="keyword">());<br />
+&nbsp; }<br />
+}<br />
+</span><span class="default">?&gt;<br />
+</span>Of course, this simple example will not recurse into ArrayObjects either!</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="102574""></a>
+  <div class="note">
+   <strong class="user">mccarthy dot richard at gmail dot com</strong>
+   <a href="#102574" class="date">22-Feb-2011 07:23</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Using the RecursiveArrayIterator to traverse an unknown amount of sub arrays within the outer array. Note: This functionality is already provided by using the RecursiveIteratorIterator but is useful in understanding how to use the iterator when using for the first time as all the terminology does get rather confusing at first sight of SPL!<br />
+<br />
+<span class="default">&lt;?php<br />
+$myArray </span><span class="keyword">= array(<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">0 </span><span class="keyword">=&gt; </span><span class="string">'a'</span><span class="keyword">,<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">1 </span><span class="keyword">=&gt; array(</span><span class="string">'subA'</span><span class="keyword">,</span><span class="string">'subB'</span><span class="keyword">,array(</span><span class="default">0 </span><span class="keyword">=&gt; </span><span class="string">'subsubA'</span><span class="keyword">, </span><span class="default">1 </span><span class="keyword">=&gt; </span><span class="string">'subsubB'</span><span class="keyword">, </span><span class="default">2 </span><span class="keyword">=&gt; array(</span><span class="default">0 </span><span class="keyword">=&gt; </span><span class="string">'deepA'</span><span class="keyword">, </span><span class="default">1 </span><span class="keyword">=&gt; </span><span class="string">'deepB'</span><span class="keyword">))),<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">2 </span><span class="keyword">=&gt; </span><span class="string">'b'</span><span class="keyword">,<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">3 </span><span class="keyword">=&gt; array(</span><span class="string">'subA'</span><span class="keyword">,</span><span class="string">'subB'</span><span class="keyword">,</span><span class="string">'subC'</span><span class="keyword">),<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">4 </span><span class="keyword">=&gt; </span><span class="string">'c'<br />
+</span><span class="keyword">);<br />
+<br />
+</span><span class="default">$iterator </span><span class="keyword">= new </span><span class="default">RecursiveArrayIterator</span><span class="keyword">(</span><span class="default">$myArray</span><span class="keyword">);<br />
+</span><span class="default">iterator_apply</span><span class="keyword">(</span><span class="default">$iterator</span><span class="keyword">, </span><span class="string">'traverseStructure'</span><span class="keyword">, array(</span><span class="default">$iterator</span><span class="keyword">));<br />
+<br />
+function </span><span class="default">traverseStructure</span><span class="keyword">(</span><span class="default">$iterator</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; while ( </span><span class="default">$iterator </span><span class="keyword">-&gt; </span><span class="default">valid</span><span class="keyword">() ) {<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if ( </span><span class="default">$iterator </span><span class="keyword">-&gt; </span><span class="default">hasChildren</span><span class="keyword">() ) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">traverseStructure</span><span class="keyword">(</span><span class="default">$iterator </span><span class="keyword">-&gt; </span><span class="default">getChildren</span><span class="keyword">());<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; else {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; echo </span><span class="default">$iterator </span><span class="keyword">-&gt; </span><span class="default">key</span><span class="keyword">() . </span><span class="string">' : ' </span><span class="keyword">. </span><span class="default">$iterator </span><span class="keyword">-&gt; </span><span class="default">current</span><span class="keyword">() .</span><span class="default">PHP_EOL</span><span class="keyword">;&nbsp; &nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$iterator </span><span class="keyword">-&gt; </span><span class="default">next</span><span class="keyword">();<br />
+&nbsp;&nbsp;&nbsp; }<br />
+}<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+The output from which is:<br />
+0 : a<br />
+0 : subA<br />
+1 : subB<br />
+0 : subsubA<br />
+1 : subsubB<br />
+0 : deepA<br />
+1 : deepB<br />
+2 : b<br />
+0 : subA<br />
+1 : subB<br />
+2 : subC<br />
+4 : c</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
 <hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="parentiterator.rewind.html">ParentIterator::rewind</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="recursivearrayiterator.getchildren.html">RecursiveArrayIterator::getChildren</a></div>

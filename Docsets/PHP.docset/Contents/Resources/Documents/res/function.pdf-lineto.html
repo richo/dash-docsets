@@ -31,7 +31,119 @@
   </p>
  </div>
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="25650""></a>
+  <div class="note">
+   <strong class="user">rod-php at thecomplex dot com</strong>
+   <a href="#25650" class="date">01-Oct-2002 10:32</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+function pdf_arrow ($pdfobj, $x1, $y1, $x2, $y2, $dashed) {<br />
+// This function will draw, stroke, and fill a line<br />
+// from (x1,y1) to (x2,y2) with an arrowhead defined<br />
+// by $headangle (in degrees) and $arrowlength.<br />
+// If $dashed is nonzero, a dashed line is drawn.<br />
+// REQUIRES: find_angle<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $headangle = 20;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $arrowlength = 20;<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; list ($angle, $slope) = find_angle($x1, $y1, $x2, $y2);<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; pdf_moveto($pdfobj, $x2, $y2);<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; // Find the two other points of the arrowhead<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; // using $headangle and $arrowlength.<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $xarrow1 = $x2+cos(deg2rad(180+$angle+$headangle/2))*$arrowlength;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $yarrow1 = $y2+sin(deg2rad(180+$angle+$headangle/2))*$arrowlength;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $xarrow2 = $x2+cos(deg2rad(180+$angle-$headangle/2))*$arrowlength;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $yarrow2 = $y2+sin(deg2rad(180+$angle-$headangle/2))*$arrowlength;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; // Draw two legs of the arrowhead, close and fill<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; pdf_lineto($pdfobj, $xarrow1, $yarrow1);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; pdf_lineto($pdfobj, $xarrow2, $yarrow2);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; pdf_closepath($pdfobj);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; pdf_fill($pdfobj);<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; // Find the point bisecting the short side<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; // of the arrowhead. This is necessary so<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; // the end of the line doesn't poke out the<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; // beyond the arrow point.<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $x2line = ($xarrow1+$xarrow2)/2;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $y2line = ($yarrow1+$yarrow2)/2;<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; // Now draw the "body" line of the arrow<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if ($dashed != 0) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; pdf_setdash($pdfobj,5,5);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; pdf_moveto($pdfobj, $x1, $y1);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; pdf_lineto($pdfobj, $x2line, $y2line);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; pdf_stroke($pdfobj);<br />
+}</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="25649""></a>
+  <div class="note">
+   <strong class="user">rod-php at thecomplex dot com</strong>
+   <a href="#25649" class="date">01-Oct-2002 10:20</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+function find_angle ($x1, $y1, $x2, $y2) {<br />
+// This function takes two points (x1,y1) and (x2,y2)<br />
+// as inputs and finds the slope and angle of a line<br />
+// between those two points.&nbsp; It returns the angle<br />
+// and slope in an array. I can't figure out how to<br />
+// return a NULL value, so if the two input points<br />
+// are in a vertical line, the function returns<br />
+// $angle = 90 and $slope = 0. I know this is wrong.<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if (($x2-$x1) != 0) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $slope = ($y2-$y1)/($x2-$x1);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; // Get rotation angle by finding the arctangent of the slope<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $angle = rad2deg(atan($slope));<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if ($x1 &gt; $x2) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $angle = 180+$angle;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; } elseif ($y1 &gt; $y2) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $angle = 360+$angle;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; } else {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; // Vertical line has no slope, 90deg angle<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $angle = 90;<br />
+#&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; unset ($slope);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $slope = 0;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return array ($angle, $slope);<br />
+}</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="25648""></a>
+  <div class="note">
+   <strong class="user">rod-php at thecomplex dot com</strong>
+   <a href="#25648" class="date">01-Oct-2002 10:18</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+function find_length ($x1, $y1, $x2, $y2) {<br />
+// Find distance between two points (x1,y1) and (x2,y2)<br />
+// Also useful to find length of a line.<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return sqrt( pow($x2-$x1,2) + pow($y2-$y1,2) );<br />
+}</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="function.pdf-initgraphics.html">PDF_initgraphics</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.pdf-load-3ddata.html">PDF_load_3ddata</a></div>
  <div class="up"><a href="ref.pdf.html">PDF Functions</a></div>

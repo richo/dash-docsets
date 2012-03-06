@@ -212,6 +212,168 @@
 
 <h2>Table of Contents</h2><ul class="chunklist chunklist_reference"><li><a href="simplexmliterator.current.html">SimpleXMLIterator::current</a> â€” Returns the current element</li><li><a href="simplexmliterator.getchildren.html">SimpleXMLIterator::getChildren</a> â€” Returns the sub-elements of the current element</li><li><a href="simplexmliterator.haschildren.html">SimpleXMLIterator::hasChildren</a> â€” Checks whether the current element has sub elements.</li><li><a href="simplexmliterator.key.html">SimpleXMLIterator::key</a> â€” Return current key</li><li><a href="simplexmliterator.next.html">SimpleXMLIterator::next</a> â€” Move to next element</li><li><a href="simplexmliterator.rewind.html">SimpleXMLIterator::rewind</a> â€” Rewind to the first element</li><li><a href="simplexmliterator.valid.html">SimpleXMLIterator::valid</a> â€” Check whether the current element is valid</li></ul>
 </div>
+<div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="102973""></a>
+  <div class="note">
+   <strong class="user">ajnsit dot NOSPAM at gmail dot com</strong>
+   <a href="#102973" class="date">17-Mar-2011 10:14</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Here's a simple function to convert an XML string to an array -<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="comment">// PHP5.3 and above only<br />
+</span><span class="keyword">function </span><span class="default">parse</span><span class="keyword">(</span><span class="default">$str</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$f </span><span class="keyword">= function(</span><span class="default">$iter</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp;&nbsp; foreach(</span><span class="default">$iter </span><span class="keyword">as </span><span class="default">$key</span><span class="keyword">=&gt;</span><span class="default">$val</span><span class="keyword">)<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$arr</span><span class="keyword">[</span><span class="default">$key</span><span class="keyword">][] = (</span><span class="default">$iter</span><span class="keyword">-&gt;</span><span class="default">hasChildren</span><span class="keyword">())?<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">call_user_func </span><span class="keyword">(</span><span class="default">__FUNCTION__</span><span class="keyword">, </span><span class="default">$val</span><span class="keyword">)<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; : </span><span class="default">strval</span><span class="keyword">(</span><span class="default">$val</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp;&nbsp; return </span><span class="default">$arr</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; };<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">$f</span><span class="keyword">(new </span><span class="default">SimpleXmlIterator</span><span class="keyword">(</span><span class="default">$str</span><span class="keyword">, </span><span class="default">null</span><span class="keyword">));<br />
+}<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+PHP 5.2 and below do not have anonymous functions.<br />
+But you can create a helper function to achieve the same thing -<br />
+<br />
+<span class="default">&lt;?php<br />
+&nbsp; </span><span class="keyword">function </span><span class="default">parse</span><span class="keyword">(</span><span class="default">$str</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">parseHelper</span><span class="keyword">(new </span><span class="default">SimpleXmlIterator</span><span class="keyword">(</span><span class="default">$str</span><span class="keyword">, </span><span class="default">null</span><span class="keyword">));<br />
+&nbsp; }<br />
+&nbsp; function </span><span class="default">parseHelper</span><span class="keyword">(</span><span class="default">$iter</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; foreach(</span><span class="default">$iter </span><span class="keyword">as </span><span class="default">$key</span><span class="keyword">=&gt;</span><span class="default">$val</span><span class="keyword">)<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">$arr</span><span class="keyword">[</span><span class="default">$key</span><span class="keyword">][] = (</span><span class="default">$iter</span><span class="keyword">-&gt;</span><span class="default">hasChildren</span><span class="keyword">())?<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">call_user_func </span><span class="keyword">(</span><span class="default">__FUNCTION__</span><span class="keyword">, </span><span class="default">$val</span><span class="keyword">)<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; : </span><span class="default">strval</span><span class="keyword">(</span><span class="default">$val</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">$arr</span><span class="keyword">;<br />
+&nbsp; }<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+Using it is straightforward enough -<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+$xml </span><span class="keyword">= </span><span class="string">'<br />
+&lt;movies&gt;<br />
+&nbsp; &lt;movie&gt;abcd&lt;/movie&gt;<br />
+&nbsp; &lt;movie&gt;efgh&lt;/movie&gt;<br />
+&nbsp; &lt;movie&gt;hijk&lt;/movie&gt;<br />
+&lt;/movies&gt;'</span><span class="keyword">;<br />
+</span><span class="default">var_dump</span><span class="keyword">(</span><span class="default">parse</span><span class="keyword">(</span><span class="default">$xml</span><span class="keyword">));<br />
+<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+This will output -<br />
+<br />
+array<br />
+&nbsp; 'movie' =&gt; <br />
+&nbsp;&nbsp;&nbsp; array<br />
+&nbsp;&nbsp; &nbsp;&nbsp; 0 =&gt; string 'abcd' (length=4)<br />
+&nbsp;&nbsp; &nbsp;&nbsp; 1 =&gt; string 'efgh' (length=4)<br />
+&nbsp;&nbsp; &nbsp;&nbsp; 2 =&gt; string 'hijk' (length=4)</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="92323""></a>
+  <div class="note">
+   <strong class="user">ratfactor at gmail dot com</strong>
+   <a href="#92323" class="date">19-Jul-2009 05:08</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+The documentation is a bit sparse for SimpleXmlIterator.&nbsp; Here is an example showing the use of its methods. xml2Array and sxiToArray work together to convert an XML document to an associative array structure.<br />
+<br />
+The contents of cats.xml:<br />
+======================================<br />
+&lt;cats&gt;<br />
+&nbsp; &lt;cat&gt;<br />
+&nbsp;&nbsp; &nbsp;&nbsp; &lt;name&gt;Jack&lt;/name&gt;<br />
+&nbsp;&nbsp; &nbsp;&nbsp; &lt;age&gt;2&lt;/age&gt;<br />
+&nbsp;&nbsp; &nbsp;&nbsp; &lt;color&gt;grey&lt;/color&gt;<br />
+&nbsp;&nbsp; &nbsp;&nbsp; &lt;color&gt;white&lt;/color&gt;<br />
+&nbsp; &lt;/cat&gt;<br />
+&nbsp; &lt;cat&gt;<br />
+&nbsp;&nbsp; &nbsp;&nbsp; &lt;name&gt;Maxwell&lt;/name&gt;<br />
+&nbsp;&nbsp; &nbsp;&nbsp; &lt;age&gt;12&lt;/age&gt;<br />
+&nbsp;&nbsp; &nbsp;&nbsp; &lt;color&gt;orange&lt;/color&gt;<br />
+&nbsp;&nbsp; &nbsp;&nbsp; &lt;color&gt;black&lt;/color&gt;<br />
+&nbsp; &lt;/cat&gt;<br />
+&lt;/cats&gt;<br />
+======================================<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">function </span><span class="default">xml2array</span><span class="keyword">(</span><span class="default">$fname</span><span class="keyword">){<br />
+&nbsp; </span><span class="default">$sxi </span><span class="keyword">= new </span><span class="default">SimpleXmlIterator</span><span class="keyword">(</span><span class="default">$fname</span><span class="keyword">, </span><span class="default">null</span><span class="keyword">, </span><span class="default">true</span><span class="keyword">);<br />
+&nbsp; return </span><span class="default">sxiToArray</span><span class="keyword">(</span><span class="default">$sxi</span><span class="keyword">);<br />
+}<br />
+<br />
+function </span><span class="default">sxiToArray</span><span class="keyword">(</span><span class="default">$sxi</span><span class="keyword">){<br />
+&nbsp; </span><span class="default">$a </span><span class="keyword">= array();<br />
+&nbsp; for( </span><span class="default">$sxi</span><span class="keyword">-&gt;</span><span class="default">rewind</span><span class="keyword">(); </span><span class="default">$sxi</span><span class="keyword">-&gt;</span><span class="default">valid</span><span class="keyword">(); </span><span class="default">$sxi</span><span class="keyword">-&gt;</span><span class="default">next</span><span class="keyword">() ) {<br />
+&nbsp;&nbsp;&nbsp; if(!</span><span class="default">array_key_exists</span><span class="keyword">(</span><span class="default">$sxi</span><span class="keyword">-&gt;</span><span class="default">key</span><span class="keyword">(), </span><span class="default">$a</span><span class="keyword">)){<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">$a</span><span class="keyword">[</span><span class="default">$sxi</span><span class="keyword">-&gt;</span><span class="default">key</span><span class="keyword">()] = array();<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; if(</span><span class="default">$sxi</span><span class="keyword">-&gt;</span><span class="default">hasChildren</span><span class="keyword">()){<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">$a</span><span class="keyword">[</span><span class="default">$sxi</span><span class="keyword">-&gt;</span><span class="default">key</span><span class="keyword">()][] = </span><span class="default">sxiToArray</span><span class="keyword">(</span><span class="default">$sxi</span><span class="keyword">-&gt;</span><span class="default">current</span><span class="keyword">());<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; else{<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">$a</span><span class="keyword">[</span><span class="default">$sxi</span><span class="keyword">-&gt;</span><span class="default">key</span><span class="keyword">()][] = </span><span class="default">strval</span><span class="keyword">(</span><span class="default">$sxi</span><span class="keyword">-&gt;</span><span class="default">current</span><span class="keyword">());<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp; }<br />
+&nbsp; return </span><span class="default">$a</span><span class="keyword">;<br />
+}<br />
+<br />
+</span><span class="comment">// Read cats.xml and print the results:<br />
+</span><span class="default">$catArray </span><span class="keyword">= </span><span class="default">xml2array</span><span class="keyword">(</span><span class="string">'cats.xml'</span><span class="keyword">);<br />
+</span><span class="default">print_r</span><span class="keyword">(</span><span class="default">$catArray</span><span class="keyword">);<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+Results (reformatted a bit for compactness and clarity):<br />
+======================================<br />
+Array(<br />
+&nbsp; [cat] =&gt; Array(<br />
+&nbsp;&nbsp;&nbsp; [0] =&gt; Array(<br />
+&nbsp;&nbsp; &nbsp;&nbsp; [name] =&gt; Array(&nbsp; [0] =&gt; Jack&nbsp; &nbsp; )<br />
+&nbsp;&nbsp; &nbsp;&nbsp; [age] =&gt; Array(&nbsp;&nbsp; [0] =&gt; 2&nbsp; &nbsp; &nbsp;&nbsp; )<br />
+&nbsp;&nbsp; &nbsp;&nbsp; [color] =&gt; Array( [0] =&gt; grey,<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [1] =&gt; white&nbsp;&nbsp; )<br />
+&nbsp;&nbsp;&nbsp; )<br />
+&nbsp;&nbsp;&nbsp; [1] =&gt; Array(<br />
+&nbsp;&nbsp; &nbsp;&nbsp; [name] =&gt; Array(&nbsp; [0] =&gt; Maxwell )<br />
+&nbsp;&nbsp; &nbsp;&nbsp; [age] =&gt; Array(&nbsp;&nbsp; [0] =&gt; 12&nbsp; &nbsp; &nbsp; )<br />
+&nbsp;&nbsp; &nbsp;&nbsp; [color] =&gt; Array( [0] =&gt; orange<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [1] =&gt; black&nbsp;&nbsp; )<br />
+&nbsp;&nbsp;&nbsp; )<br />
+&nbsp; )<br />
+)</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="88261""></a>
+  <div class="note">
+   <strong class="user">David Lanstein</strong>
+   <a href="#88261" class="date">17-Jan-2009 06:40</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Unlike the DirectoryIterator, for one, you'll need to call $it-&gt;rewind() before using the iterator in a for() or while() loop.&nbsp; Calling foreach() does rewind the iterator before iteration.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
 <hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="simplexmlelement.xpath.html">SimpleXMLElement::xpath</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="simplexmliterator.current.html">SimpleXMLIterator::current</a></div>

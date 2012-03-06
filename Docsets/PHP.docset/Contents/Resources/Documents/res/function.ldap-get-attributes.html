@@ -127,7 +127,168 @@ return_value[&quot;attribute&quot;][i] = (i+1)th value of the attribute
  </div>
 
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="78588""></a>
+  <div class="note">
+   <strong class="user">dunc at rumbletum dot org</strong>
+   <a href="#78588" class="date">18-Oct-2007 02:52</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I spent quite a while scratching my head about how to read operational attributes such as create and modify timestamps.<br />
+<br />
+This function solved it....<br />
+<br />
+function get_entry_system_attrs( $ds, $dn, $deref=LDAP_DEREF_NEVER )<br />
+{<br />
+&nbsp;&nbsp; $conn = $ds;<br />
+&nbsp;&nbsp; $attrs = array( 'creatorsname', 'createtimestamp', 'modifiersname',<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; 'structuralObjectClass', 'entryUUID',&nbsp; 'modifytimestamp',<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; 'subschemaSubentry', 'hasSubordinates', '+' );<br />
+&nbsp;&nbsp; $search = @ldap_read( $conn, $dn, '(objectClass=*)', $attrs, 0, 0, 0, $deref );<br />
+&nbsp;&nbsp; if( ! $search )<br />
+&nbsp;&nbsp; &nbsp;&nbsp; return false;<br />
+&nbsp;&nbsp; $entry = ldap_first_entry( $conn, $search );<br />
+&nbsp;&nbsp; if( ! $entry)<br />
+&nbsp;&nbsp; &nbsp; &nbsp; return false;<br />
+&nbsp;&nbsp; $attrs = ldap_get_attributes( $conn, $entry );<br />
+&nbsp;&nbsp; if( ! $attrs )<br />
+&nbsp;&nbsp; &nbsp;&nbsp; return false;<br />
+&nbsp;&nbsp; if( ! isset( $attrs['count'] ) )<br />
+&nbsp;&nbsp; &nbsp;&nbsp; return false;<br />
+&nbsp;&nbsp; $count = $attrs['count'];<br />
+&nbsp;&nbsp; unset( $attrs['count'] );<br />
+&nbsp;&nbsp; $return_attrs = array();<br />
+&nbsp;&nbsp; for( $i=0; $i&lt;$count; $i++ ) {<br />
+&nbsp;&nbsp; &nbsp;&nbsp; $attr_name = $attrs[$i];<br />
+&nbsp;&nbsp; &nbsp;&nbsp; unset( $attrs[$attr_name]['count'] );<br />
+&nbsp;&nbsp; &nbsp;&nbsp; $return_attrs[$attr_name] = $attrs[$attr_name];<br />
+&nbsp;&nbsp; }<br />
+&nbsp;&nbsp; return $return_attrs;<br />
+}</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="68439""></a>
+  <div class="note">
+   <strong class="user">Snezko Snezak</strong>
+   <a href="#68439" class="date">27-Jul-2006 01:06</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Code and function to extract all attributes from all entryes in a certain DN. Maybe not the most timewise efficient but it works.<br />
+<br />
+$entry = ldap_first_entry($ds, $sr);<br />
+write_attr($entry,$ds);<br />
+for ($i = 0; $i &lt; $n_entries; $i++){<br />
+&nbsp;&nbsp; $entry = ldap_next_entry($ds, $entry);<br />
+&nbsp;&nbsp; write_attr($entry,$ds);<br />
+}<br />
+<br />
+function write_attr($entry,$ds){<br />
+&nbsp;&nbsp; $attrs = ldap_get_attributes ($ds, $entry);<br />
+&nbsp;&nbsp; for ($j = 0; $j &lt; $attrs["count"]; $j++){<br />
+&nbsp;&nbsp; &nbsp;&nbsp; $attr_name = $attrs[$j];<br />
+&nbsp;&nbsp; &nbsp;&nbsp; $attrs["$attr_name"]["count"] . "\n";<br />
+&nbsp;&nbsp; &nbsp;&nbsp; for ($k = 0; $k &lt; $attrs["$attr_name"]["count"]; $k++) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; echo "&gt;&gt;&gt;&gt;&gt;&gt;";<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; echo $attr_name.": ".$attrs["$attr_name"][$k]."\n";<br />
+&nbsp;&nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; }<br />
+}</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="43765""></a>
+  <div class="note">
+   <strong class="user">php dot net at hiddemann dot org</strong>
+   <a href="#43765" class="date">02-Jul-2004 10:59</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Note that ldap_get_attributes fetches attributes AND values from the LDAP server. Depending on the data stored in the entry, the following code might work a dozen times faster (or even better, but faster in general) than the code in Example 1:<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="comment">// $ds is the link identifier for the directory<br />
+<br />
+// $sr is a valid search result from a prior call to<br />
+// one of the ldap directory search calls<br />
+<br />
+</span><span class="default">$entry </span><span class="keyword">= </span><span class="default">ldap_first_entry</span><span class="keyword">(</span><span class="default">$ds</span><span class="keyword">, </span><span class="default">$sr</span><span class="keyword">);<br />
+<br />
+</span><span class="default">$attrs </span><span class="keyword">= array();<br />
+</span><span class="default">$attribute </span><span class="keyword">= </span><span class="default">ldap_first_attribute</span><span class="keyword">(</span><span class="default">$ds</span><span class="keyword">,</span><span class="default">$entry</span><span class="keyword">,</span><span class="default">$identifier</span><span class="keyword">);<br />
+while (</span><span class="default">$attribute</span><span class="keyword">) {<br />
+&nbsp;&nbsp; </span><span class="default">$attrs</span><span class="keyword">[] = </span><span class="default">$attribute</span><span class="keyword">;<br />
+&nbsp;&nbsp; </span><span class="default">$attribute</span><span class="keyword">=</span><span class="default">ldap_next_attribute</span><span class="keyword">(</span><span class="default">$ds</span><span class="keyword">,</span><span class="default">$entry</span><span class="keyword">,</span><span class="default">$identifier</span><span class="keyword">);<br />
+}<br />
+<br />
+echo </span><span class="default">count</span><span class="keyword">(</span><span class="default">$attrs</span><span class="keyword">) . </span><span class="string">" attributes held for this entry:&lt;p&gt;"</span><span class="keyword">;<br />
+<br />
+for (</span><span class="default">$i</span><span class="keyword">=</span><span class="default">0</span><span class="keyword">; </span><span class="default">$i</span><span class="keyword">&lt;</span><span class="default">count</span><span class="keyword">(</span><span class="default">$attrs</span><span class="keyword">); </span><span class="default">$i</span><span class="keyword">++) {<br />
+&nbsp;&nbsp; echo </span><span class="default">$attrs</span><span class="keyword">[</span><span class="default">$i</span><span class="keyword">] . </span><span class="string">"&lt;br /&gt;"</span><span class="keyword">;<br />
+}<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+You may want to check the time difference with the function "microtime".</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="34511""></a>
+  <div class="note">
+   <strong class="user">kop at meme dot com</strong>
+   <a href="#34511" class="date">29-Jul-2003 11:28</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+It's good practice to use array_change_key_case() on the result of ldap_get_attributes() so your program can ignore case in attribute names just like ldap itself does.&nbsp; (You wouldn't want ldap_get_attributes to _always_ flatten the case because you need a way to get the attribute names in a pretty format for display to the user.)</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="21605""></a>
+  <div class="note">
+   <strong class="user">allie at pajunas dot com</strong>
+   <a href="#21605" class="date">20-May-2002 08:52</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+The array created by this function is similar to the on from ldap_get_entries() but when it creates array keys it alters the attribute's case inconsistently.&nbsp; <br />
+<br />
+ldap_get_entries() lowercases all of the attributes before keying the array with them, but this function appears to leave things as they are.<br />
+<br />
+If you're having problems, do a print_r and make sure you're using correct case for array keys.&nbsp; For example, you might need to use "objectClass" and not "objectclass".</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="13552""></a>
+  <div class="note">
+   <strong class="user">software at inebria dot com</strong>
+   <a href="#13552" class="date">21-Jun-2001 10:31</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+As of PHP 4.0.5, the ldap_get_attributes function does not work with binary data.&nbsp; If you're fetching a JPEG from an LDAP server, use ldap_get_values_len instead.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="function.ldap-free-result.html">ldap_free_result</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.ldap-get-dn.html">ldap_get_dn</a></div>
  <div class="up"><a href="ref.ldap.html">LDAP Functions</a></div>

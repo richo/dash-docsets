@@ -201,7 +201,177 @@ if PHP is compiled using <strong class="option configure">--with-t1lib[=DIR]</st
   </p>
  </div>
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="82991""></a>
+  <div class="note">
+   <strong class="user">eikie</strong>
+   <a href="#82991" class="date">05-May-2008 09:32</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+in my code below, there is an error! <br />
+<br />
+replace<br />
+$w += abs($bb[3])-abs($bb[1]); // accumulate width<br />
+<br />
+with<br />
+$w += abs($bb[2])-abs($bb[0]); // accumulate width<br />
+<br />
+also after<br />
+$bb = imagepsbbox($c, $font, $size); // calculate width<br />
+<br />
+you can add this line because spaces make odd values...<br />
+if ($c == ' ' ) $bb = imagepsbbox('i', $font, $size);</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="82990""></a>
+  <div class="note">
+   <strong class="user">eikie</strong>
+   <a href="#82990" class="date">05-May-2008 08:34</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I have a given image width and need to render a long string on that image. By using the following function I'm, able to get an array of strings which each will fit into the images width. It might need a lot of CPU time, but it's cool:<br />
+<br />
+// Function to return an Array of Strings <br />
+// Arguments: String to be wrapped, maximum width in pixels of each line, font and fontsize<br />
+function imgwordwrap($s, $maxWidth, $font, $size) {<br />
+&nbsp; // Make an empty ArrayList<br />
+&nbsp; $a = array();<br />
+&nbsp; $w = 0;&nbsp; &nbsp; // Accumulate width of chars<br />
+&nbsp; $i = 0;&nbsp; &nbsp; &nbsp; // Count through chars<br />
+&nbsp; $rememberSpace = 0; // Remember where the last space was<br />
+&nbsp; // As long as we are not at the end of the String<br />
+&nbsp; while ($i &lt; strlen($s)) {<br />
+&nbsp;&nbsp;&nbsp; // Current char<br />
+&nbsp;&nbsp;&nbsp; $c = substr($s, $i, 1);<br />
+&nbsp;&nbsp;&nbsp; $bb = imagepsbbox($c, $font, $size); // calculate width<br />
+&nbsp;&nbsp;&nbsp; $w += abs($bb[3])-abs($bb[1]); // accumulate width<br />
+&nbsp;&nbsp;&nbsp; if ($c == ' ') $rememberSpace = $i; // Are we a blank space?<br />
+&nbsp;&nbsp;&nbsp; if ($w &gt; $maxWidth) {&nbsp; // Have we reached the end of a line?<br />
+&nbsp;&nbsp; &nbsp;&nbsp; $sub = substr($s,0,$rememberSpace); // Make a substring<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; // Chop off space at beginning<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if (substr($sub,0,1)==' ') $sub = substr($sub,1);<br />
+&nbsp;&nbsp; &nbsp;&nbsp; // Add substring to the array<br />
+&nbsp;&nbsp; &nbsp;&nbsp; $a[] = $sub;<br />
+&nbsp;&nbsp; &nbsp;&nbsp; // Reset everything<br />
+&nbsp;&nbsp; &nbsp;&nbsp; $s = substr($s,$rememberSpace);<br />
+&nbsp;&nbsp; &nbsp;&nbsp; $i = 0;<br />
+&nbsp;&nbsp; &nbsp;&nbsp; $w = 0;<br />
+&nbsp;&nbsp;&nbsp; } <br />
+&nbsp;&nbsp;&nbsp; else {<br />
+&nbsp;&nbsp; &nbsp;&nbsp; $i++;&nbsp; // Keep going!<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp; }<br />
+&nbsp;<br />
+&nbsp; // Take care of the last remaining line<br />
+&nbsp; trim($s);<br />
+&nbsp; if (substr($s,0,1)==' ') $s = substr($s,1);<br />
+&nbsp; $a[] = $s;<br />
+&nbsp;<br />
+&nbsp; return $a;<br />
+}</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="70681""></a>
+  <div class="note">
+   <strong class="user">honza dot bartos at gmail dot com</strong>
+   <a href="#70681" class="date">23-Oct-2006 02:25</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+When using imagepsbbox, keep in mind, that meaning of y-coordinates is slightly different here. Y-coordinates returned by this function are related to the baseline of the text starting at point [0,0]. Positive values represent points ABOVE the baseline, negative values represent points BELOW the baseline. That is why the lower left y-coordinate is always smaller here than the upper right y-coordinate (these two coordinates are actualy values of metrics.descent and metrics.ascent - see T1Lib docs).<br />
+<br />
+So when you want to place some text using coordinates of the top left corner (for example [100,100]), use this:<br />
+<br />
+<span class="default">&lt;?php <br />
+<br />
+$x </span><span class="keyword">= </span><span class="default">100</span><span class="keyword">;<br />
+</span><span class="default">$y </span><span class="keyword">= </span><span class="default">100</span><span class="keyword">;<br />
+</span><span class="default">$text </span><span class="keyword">= </span><span class="string">"Dodge this"</span><span class="keyword">;<br />
+</span><span class="default">$fontsize</span><span class="keyword">=</span><span class="default">18</span><span class="keyword">;<br />
+</span><span class="default">$font</span><span class="keyword">=</span><span class="default">imagepsloadfont</span><span class="keyword">(</span><span class="string">"somefont.pfb"</span><span class="keyword">);<br />
+list(</span><span class="default">$lx</span><span class="keyword">,</span><span class="default">$ly</span><span class="keyword">,</span><span class="default">$rx</span><span class="keyword">,</span><span class="default">$ry</span><span class="keyword">) = </span><span class="default">imagepsbbox</span><span class="keyword">(</span><span class="default">$text</span><span class="keyword">,</span><span class="default">$font</span><span class="keyword">,</span><span class="default">$fontsize</span><span class="keyword">);<br />
+</span><span class="default">imagepstext </span><span class="keyword">(</span><span class="default">$someimage</span><span class="keyword">, </span><span class="default">$text</span><span class="keyword">, </span><span class="default">$font</span><span class="keyword">, </span><span class="default">$fontsize</span><span class="keyword">, </span><span class="default">$somecolor</span><span class="keyword">, </span><span class="default">$somecolor</span><span class="keyword">, </span><span class="default">$x</span><span class="keyword">, </span><span class="default">$y </span><span class="keyword">+ </span><span class="default">$ry</span><span class="keyword">);<br />
+<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+Hope it helps someone, I got stuck with this for a while.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="20840""></a>
+  <div class="note">
+   <strong class="user">daniel at dantec dot NO_SPAM dot nl</strong>
+   <a href="#20840" class="date">17-Apr-2002 09:23</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+When using imagepsbbox, you are probably trying to do something like creating a button with text, so that the button is large enough for the text...<br />
+Below is a very simple example of making a black button just big enough to display white text on it.<br />
+<br />
+<span class="default">&lt;?php <br />
+<br />
+</span><span class="comment">//if text is no variable set sample text<br />
+</span><span class="keyword">if (!</span><span class="default">$text</span><span class="keyword">)<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$text </span><span class="keyword">= </span><span class="string">"This is a sample text"</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; <br />
+</span><span class="comment">// set the font size<br />
+</span><span class="default">$fontsize</span><span class="keyword">=</span><span class="default">14</span><span class="keyword">;<br />
+<br />
+</span><span class="comment">// load the font to use<br />
+</span><span class="default">$font</span><span class="keyword">=</span><span class="default">ImagePsLoadFont</span><span class="keyword">(</span><span class="string">"/fonts/ariam___.pfb"</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">//get the left lower corner and the right upper<br />
+</span><span class="keyword">list(</span><span class="default">$lx</span><span class="keyword">,</span><span class="default">$ly</span><span class="keyword">,</span><span class="default">$rx</span><span class="keyword">,</span><span class="default">$ry</span><span class="keyword">) = </span><span class="default">imagepsbbox</span><span class="keyword">(</span><span class="default">$text</span><span class="keyword">,</span><span class="default">$font</span><span class="keyword">,</span><span class="default">$fontsize</span><span class="keyword">,</span><span class="default">0</span><span class="keyword">,</span><span class="default">0</span><span class="keyword">,</span><span class="default">0</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">// calculate the size of the text<br />
+</span><span class="default">$textwidth </span><span class="keyword">= </span><span class="default">$rx </span><span class="keyword">- </span><span class="default">$lx</span><span class="keyword">;<br />
+</span><span class="default">$textheight </span><span class="keyword">= </span><span class="default">$ry </span><span class="keyword">- </span><span class="default">$ly</span><span class="keyword">;<br />
+<br />
+</span><span class="comment">// make an image 40 pixels wider and 20 pixels higher than the text<br />
+</span><span class="default">$imh </span><span class="keyword">= </span><span class="default">$textheight </span><span class="keyword">+ </span><span class="default">20</span><span class="keyword">;<br />
+</span><span class="default">$imw </span><span class="keyword">= </span><span class="default">$textwidth </span><span class="keyword">+ </span><span class="default">40</span><span class="keyword">;<br />
+</span><span class="default">$im </span><span class="keyword">= </span><span class="default">imageCreate</span><span class="keyword">( </span><span class="default">$imw</span><span class="keyword">, </span><span class="default">$imh </span><span class="keyword">);<br />
+<br />
+</span><span class="comment">//define colors, first color is used as background color!<br />
+</span><span class="default">$black&nbsp; </span><span class="keyword">= </span><span class="default">ImageColorAllocate </span><span class="keyword">(</span><span class="default">$im</span><span class="keyword">, </span><span class="default">0</span><span class="keyword">, </span><span class="default">0</span><span class="keyword">, </span><span class="default">0</span><span class="keyword">);<br />
+</span><span class="default">$white </span><span class="keyword">= </span><span class="default">ImageColorAllocate </span><span class="keyword">(</span><span class="default">$im</span><span class="keyword">, </span><span class="default">255</span><span class="keyword">, </span><span class="default">255</span><span class="keyword">, </span><span class="default">255</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">//create the text (with the same parameters as imagepsbbox!)<br />
+</span><span class="default">ImagePSText </span><span class="keyword">(</span><span class="default">$im</span><span class="keyword">, </span><span class="string">"</span><span class="default">$text</span><span class="string">"</span><span class="keyword">, </span><span class="default">$font</span><span class="keyword">, </span><span class="default">$fontsize</span><span class="keyword">, </span><span class="default">$white</span><span class="keyword">, </span><span class="default">$white</span><span class="keyword">, </span><span class="default">20</span><span class="keyword">, </span><span class="default">20</span><span class="keyword">,</span><span class="string">''</span><span class="keyword">,</span><span class="string">''</span><span class="keyword">,</span><span class="string">''</span><span class="keyword">,</span><span class="default">4</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">//send the header<br />
+</span><span class="default">header</span><span class="keyword">(</span><span class="string">"Content-type: image/jpeg"</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">// create the image<br />
+</span><span class="default">ImageJPEG </span><span class="keyword">(</span><span class="default">$im</span><span class="keyword">,</span><span class="string">""</span><span class="keyword">,</span><span class="default">100</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">//destroy the image &amp; font to free memory<br />
+</span><span class="default">Imagepsfreefont </span><span class="keyword">( </span><span class="default">$font </span><span class="keyword">);<br />
+</span><span class="default">ImageDestroy </span><span class="keyword">( </span><span class="default">$im </span><span class="keyword">);<br />
+<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="function.imagepolygon.html">imagepolygon</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.imagepsencodefont.html">imagepsencodefont</a></div>
  <div class="up"><a href="ref.image.html">GD and Image Functions</a></div>

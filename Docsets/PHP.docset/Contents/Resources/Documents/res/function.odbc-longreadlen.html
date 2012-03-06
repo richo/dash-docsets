@@ -83,7 +83,170 @@
   </p></blockquote>
  </div>
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="92380""></a>
+  <div class="note">
+   <strong class="user">egil at wp dot pl</strong>
+   <a href="#92380" class="date">22-Jul-2009 02:06</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I've tried to use a suggestion in the first comment but that didn't actually worked as I would expect... I wanted to get all data no matter how big it is, but strange things happened and I finally found this solution (works fine at least for MS SQL 2000 for at least few MB of binary data):<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="comment">// connection<br />
+</span><span class="default">$link </span><span class="keyword">= </span><span class="default">odbc_connect</span><span class="keyword">(</span><span class="default">$odbc_source_name</span><span class="keyword">, </span><span class="default">$user</span><span class="keyword">, </span><span class="default">$pass</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">// query (note - one row in this example)<br />
+</span><span class="default">$sql </span><span class="keyword">= </span><span class="string">'SELECT image_data_column FROM some_table WHERE record_id=1'</span><span class="keyword">;<br />
+<br />
+</span><span class="comment">// run<br />
+</span><span class="default">$result </span><span class="keyword">= </span><span class="default">odbc_exec </span><span class="keyword">(</span><span class="default">$link</span><span class="keyword">, </span><span class="default">$sql</span><span class="keyword">)<br />
+if (!</span><span class="default">$result</span><span class="keyword">)<br />
+{<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">trigger_error </span><span class="keyword">(</span><span class="string">'[sql] exec: '</span><span class="keyword">.</span><span class="default">$sql</span><span class="keyword">, </span><span class="default">E_USER_ERROR</span><span class="keyword">);<br />
+}<br />
+<br />
+</span><span class="comment">// fetch settings<br />
+</span><span class="default">odbc_binmode </span><span class="keyword">(</span><span class="default">$result</span><span class="keyword">, </span><span class="default">ODBC_BINMODE_PASSTHRU</span><span class="keyword">); <br />
+</span><span class="default">odbc_longreadlen </span><span class="keyword">(</span><span class="default">$result</span><span class="keyword">, </span><span class="default">0</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">// get contents<br />
+</span><span class="default">ob_start</span><span class="keyword">(); </span><span class="comment">// you would probably need to move this inside if you expect more rows<br />
+</span><span class="keyword">while (</span><span class="default">odbc_fetch_row</span><span class="keyword">(</span><span class="default">$result</span><span class="keyword">))<br />
+{<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">odbc_result</span><span class="keyword">(</span><span class="default">$result</span><span class="keyword">, </span><span class="default">1</span><span class="keyword">); </span><span class="comment">// this actually echos all of the contents of the image_data_column<br />
+</span><span class="keyword">}<br />
+</span><span class="default">odbc_free_result</span><span class="keyword">(</span><span class="default">$result</span><span class="keyword">);<br />
+</span><span class="default">$contents </span><span class="keyword">= </span><span class="default">ob_get_clean</span><span class="keyword">();<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="56308""></a>
+  <div class="note">
+   <strong class="user">Paul Schmidinger</strong>
+   <a href="#56308" class="date">30-Aug-2005 05:44</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+In my current situation, odbc_binmode(), odbc_longreadlen() and the lrl-setting in the php.ini do not help. But when I remove the DISTINCT from my SELECT-query, it works. I guess in my case DISTINCT truncates the data somehow. Hope that helps someone. <br />
+<br />
+Paul</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="55538""></a>
+  <div class="note">
+   <strong class="user">php dot net dot notes at webqs dot com</strong>
+   <a href="#55538" class="date">06-Aug-2005 06:12</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Hi<br />
+<br />
+If you are experiencing troubles with truncated and/or strangely encoded data when using PHP with MS SQL via ODBC try setting odbc.defaultlrl ( in php.ini or via ini_set() ) to a largish number, say 65536, as stated in the other notes here. <br />
+The trick is to know how long your data is going to be, so you may want to provide some overhead. Unfortunately you have to know how long your piece of string is before you cut it.<br />
+<br />
+Doing this will allow your app to read up to this amount in one go. I'm sure there is a reason for this behaviour but I hadn't experienced anything like it in 5 years of MySQL and Postgres development.<br />
+<br />
+If you still experience problems AND are using unicode data in the long column of your table, make sure it is set to type "ntext", if it is "text". MSDN has some info on data types for Unicode data.<br />
+This caused about 3 days of headaches for me, "binary" data crashing browsers and cyclical result sets (i.e repeating data after odbc.defaultlrl bytes). <br />
+<br />
+This fix was only found by poking things with sticks.<br />
+<br />
+HTH</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="48015""></a>
+  <div class="note">
+   <strong class="user">jdcard at inreach dot com</strong>
+   <a href="#48015" class="date">08-Dec-2004 09:37</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I was reading from a MEMO field (long varchar) in MSAccess, but the data was consistently truncated at 255 characters. I tried all the combinations of odbc_longreadlen() and odbc_binmode()&nbsp; (and odbc.defaultlrl) that I could think of but none of them resolved the problem.<br />
+<br />
+The only fix that worked was to modify my query from "SELECT Field1, Field2 FROM TableName" to "SELECT * FROM TableName".<br />
+<br />
+I suspect that you could cast the field to force the appropriate data type, but when it finally worked after three days of struggle I didn't even try.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="25495""></a>
+  <div class="note">
+   
+   <a href="#25495" class="date">25-Sep-2002 05:00</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+An alternative is to adjust your php.ini file and set:<br />
+odbc.defaultlrl=65536<br />
+Or something else sufficiently large.<br />
+lrl = long read length</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="17057""></a>
+  <div class="note">
+   <strong class="user">buzz77 at gmx dot net</strong>
+   <a href="#17057" class="date">23-Nov-2001 02:31</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Aaargh!<br />
+I was wondering about truncated data when reading from a TEXT (LONG VARCHAR) column.<br />
+With this I was able to increase the buffer size...</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="10103""></a>
+  <div class="note">
+   <strong class="user">jasendorf at lcounty dot com</strong>
+   <a href="#10103" class="date">13-Dec-2000 04:26</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I had a heck of a time figuring out what to do with this function.&nbsp; Here's a little piece of code from Jason Lee which I found that might help someone else...<br />
+<br />
+$cur = odbc_exec($cnx, $query); <br />
+if(!$cur) { <br />
+/* error handler */ <br />
+} <br />
+<br />
+odbc_binmode($cur, ODBC_BINMODE_PASSTHRU); <br />
+odbc_longreadlen($cur, 16384); /* Allow 16kb thru */ <br />
+<br />
+while(odbc_fetch_row($cur)) { <br />
+$bigger_than_4096_var = odbc_result($cur, 1); <br />
+/* etc... */ <br />
+<br />
+Hope this helps someone, John</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="function.odbc-gettypeinfo.html">odbc_gettypeinfo</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.odbc-next-result.html">odbc_next_result</a></div>
  <div class="up"><a href="ref.uodbc.html">ODBC Functions</a></div>

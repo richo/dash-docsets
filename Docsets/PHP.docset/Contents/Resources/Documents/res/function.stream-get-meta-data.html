@@ -262,7 +262,112 @@ Array
  </div>
 
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="81537""></a>
+  <div class="note">
+   <strong class="user">niels at nise81 dot com</strong>
+   <a href="#81537" class="date">03-Mar-2008 05:49</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+here is just an example how to read out all meta data.<br />
+how ever I found out that the "seekable"-entry doesn't exist in most of the streaming media files.<br />
+<br />
+&nbsp;&nbsp; &nbsp;&nbsp; if (!($fp = @fopen($url, 'r')))<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; return NULL;<br />
+<br />
+&nbsp;&nbsp; &nbsp;&nbsp; $meta = stream_get_meta_data($fp);<br />
+&nbsp;&nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; foreach(array_keys($meta) as $h){<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $v = $meta[$h];<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; echo "".$h.": ".$v."&lt;br/&gt;";<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if(is_array($v)){<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; foreach(array_keys($v) as $hh){<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $vv = $v[$hh];<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; echo "_".$hh.": ".$vv."&lt;br/&gt;";<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp;&nbsp; fclose($fp);</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="28951""></a>
+  <div class="note">
+   <strong class="user">ed at readinged dot com</strong>
+   <a href="#28951" class="date">28-Jan-2003 07:54</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Below is a function I wrote to pull the "Last-Modified" header from a given URL.&nbsp; In PHP version 4.3 and above, it takes advantage of the stream_get_meta_data function, and in older version it uses a conventional GET procedure.&nbsp; On failure to connect to $url, it returns NULL.&nbsp; If the server does not return the Last-Modified header, it returns the current time.&nbsp; All times are returned in PHP's integer format (seconds since epoch).<br />
+<br />
+Use it as so:<br />
+<br />
+$last_modified = stream_last_modified('<a href="http://www.php.net/news.rss" rel="nofollow" target="_blank">http://www.php.net/news.rss</a>');<br />
+if (!is_null($last_modified))<br />
+&nbsp;&nbsp; if ($last_modified &lt; time()-3600) //Older than an hour<br />
+&nbsp;&nbsp; &nbsp;&nbsp; echo 'URL is older than an hour.';<br />
+&nbsp;&nbsp; else<br />
+&nbsp;&nbsp; &nbsp;&nbsp; echo 'URL is fairly new.';<br />
+else<br />
+&nbsp;&nbsp; echo 'Invalid URL!';<br />
+<br />
+function stream_last_modified($url)<br />
+{<br />
+&nbsp;&nbsp; if (function_exists('version_compare') &amp;&amp; version_compare(phpversion(), '4.3.0') &gt; 0)<br />
+&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp;&nbsp; if (!($fp = @fopen($url, 'r')))<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; return NULL;<br />
+<br />
+&nbsp;&nbsp; &nbsp;&nbsp; $meta = stream_get_meta_data($fp);<br />
+&nbsp;&nbsp; &nbsp;&nbsp; for ($j = 0; isset($meta['wrapper_data'][$j]); $j++)<br />
+&nbsp;&nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; if (strstr(strtolower($meta['wrapper_data'][$j]), 'last-modified'))<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $modtime = substr($meta['wrapper_data'][$j], 15);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; break;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; }<br />
+&nbsp;&nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp;&nbsp; fclose($fp);<br />
+&nbsp;&nbsp; }<br />
+&nbsp;&nbsp; else<br />
+&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp;&nbsp; $parts = parse_url($url);<br />
+&nbsp;&nbsp; &nbsp;&nbsp; $host&nbsp; = $parts['host'];<br />
+&nbsp;&nbsp; &nbsp;&nbsp; $path&nbsp; = $parts['path'];<br />
+<br />
+&nbsp;&nbsp; &nbsp;&nbsp; if (!($fp = @fsockopen($host, 80)))<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; return NULL;<br />
+<br />
+&nbsp;&nbsp; &nbsp;&nbsp; $req = "HEAD $path HTTP/1.0\r\nUser-Agent: PHP/".phpversion()."\r\nHost: $host:80\r\nAccept: */*\r\n\r\n";<br />
+&nbsp;&nbsp; &nbsp;&nbsp; fputs($fp, $req);<br />
+<br />
+&nbsp;&nbsp; &nbsp;&nbsp; while (!feof($fp))<br />
+&nbsp;&nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; $str = fgets($fp, 4096);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; if (strstr(strtolower($str), 'last-modified'))<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $modtime = substr($str, 15);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; break;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; }<br />
+&nbsp;&nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp;&nbsp; fclose($fp);<br />
+&nbsp; }<br />
+&nbsp;&nbsp; return isset($modtime) ? strtotime($modtime) : time();<br />
+}</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="function.stream-get-line.html">stream_get_line</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.stream-get-transports.html">stream_get_transports</a></div>
  <div class="up"><a href="ref.stream.html">Stream Functions</a></div>

@@ -146,7 +146,133 @@ First field in the second row is: 2
   </p>
  </div>
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="69831""></a>
+  <div class="note">
+   <strong class="user">Alan U. Kennington</strong>
+   <a href="#69831" class="date">22-Sep-2006 06:49</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+See bug #33809 <a href="http://bugs.php.net/bug.php?id=33809" rel="nofollow" target="_blank">http://bugs.php.net/bug.php?id=33809</a><br />
+Whether this really is a bug or a feature is not clear.<br />
+However, it is probably best to always put your column names in extra quotes.<br />
+<br />
+$res = pg_query(...);<br />
+$colname = pg_field_name($res, $j);<br />
+pg_fetch_result($res, $i, "\"$colname\"");</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="69825""></a>
+  <div class="note">
+   <strong class="user">Alan U Kennington</strong>
+   <a href="#69825" class="date">22-Sep-2006 05:16</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+In order to use upper case in pg_fetch_result column names, it is apparently necessary to include explicit quotation marks.<br />
+<br />
+Thus when I do this sort of thing:<br />
+<br />
+$res = pg_query(...);<br />
+$ncols = pg_num_fields($res);<br />
+for ($j = 0; $j &lt; $ncols; ++$j) {<br />
+&nbsp;&nbsp;&nbsp; $colname[$j] = pg_field_name($res, $j);<br />
+&nbsp;&nbsp;&nbsp; $name = htmlspecialchars($colname[$j]);<br />
+&nbsp;&nbsp;&nbsp; print("Column $j name = \"$name\"\n");<br />
+&nbsp;&nbsp;&nbsp; $value = htmlspecialchars(pg_fetch_result($res, 0, $colname[$j]));<br />
+&nbsp;&nbsp;&nbsp; print("Column \"{$colname[$j]}\" value = \"$value\"\n");<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+I get this sort of thing:<br />
+<br />
+[....]<br />
+Warning: pg_fetch_result() [function.pg-fetch-result]: Bad column offset specified in /.../view.php on line 247<br />
+Column 8 name = "VEC index"<br />
+Column "VEC index" value = ""<br />
+<br />
+But if I change the $value line to this:<br />
+<br />
+$value = htmlspecialchars(pg_fetch_result($res, 0, "\"$colname[$j]\""));<br />
+<br />
+I get this:<br />
+<br />
+[...]<br />
+Column 8 name = "VEC index"<br />
+Column "VEC index" value[0] = "47"<br />
+<br />
+In my opinion, pg_fetch_result(...) should use the quotes already. In other words, this may be a bug in the PHP postgres library. It does not seem to be a documented feature of pg_fetch_result() although the postgresql manual documents it under "SQL syntax", "Lexical structure".<br />
+<br />
+PHP version 5.1.4.<br />
+psql version 8.1.4.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="47817""></a>
+  <div class="note">
+   <strong class="user">Akbar</strong>
+   <a href="#47817" class="date">01-Dec-2004 08:01</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Use can use pg_fetch_result when getting a value (like a smallint as in this example) returned by your stored procedure <br />
+<br />
+<span class="default">&lt;?php<br />
+$pgConnection </span><span class="keyword">= </span><span class="default">pg_connect</span><span class="keyword">(</span><span class="string">"dbname=users user=me"</span><span class="keyword">);<br />
+<br />
+</span><span class="default">$userNameToCheckFor </span><span class="keyword">= </span><span class="string">"metal"</span><span class="keyword">;<br />
+<br />
+</span><span class="default">$result </span><span class="keyword">= </span><span class="default">pg_query</span><span class="keyword">(</span><span class="default">$pgConnection</span><span class="keyword">, </span><span class="string">"SELECT howManyUsersHaveThisName('</span><span class="default">$userNameToCheckFor</span><span class="string">')"</span><span class="keyword">);<br />
+<br />
+</span><span class="default">$count </span><span class="keyword">= </span><span class="default">pg_fetch_result</span><span class="keyword">(</span><span class="default">$result</span><span class="keyword">, </span><span class="default">0</span><span class="keyword">, </span><span class="string">'howManyUsersHaveThisName'</span><span class="keyword">);<br />
+<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="24903""></a>
+  <div class="note">
+   <strong class="user">newby_AT_nobletec_DOT_com</strong>
+   <a href="#24903" class="date">04-Sep-2002 08:12</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Comment on boolean fields:<br />
+<br />
+If you retrieve a boolean value from the PostgreSQL database, be aware that the value returned will be either the character 't' or the character 'f', not an integer.&nbsp; So, the statement<br />
+<br />
+&nbsp;&nbsp; &nbsp; if (pg_fetch_result($rsRecords,0,'blnTrueFalseField')) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; echo "TRUE";<br />
+&nbsp;&nbsp; &nbsp; } else {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; echo "FALSE";<br />
+&nbsp;&nbsp; &nbsp; }<br />
+<br />
+will echo "TRUE" in either case (True or False stored in the field).&nbsp; In order to work as expected, do this instead:<br />
+<br />
+&nbsp;&nbsp; &nbsp; if (pg_fetch_result($rsRecords,0,'blnTrueFalseField') == 't') {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; echo "TRUE";<br />
+&nbsp;&nbsp; &nbsp; } else {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; echo "FALSE";<br />
+&nbsp;&nbsp; &nbsp; }</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="function.pg-fetch-object.html">pg_fetch_object</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.pg-fetch-row.html">pg_fetch_row</a></div>
  <div class="up"><a href="ref.pgsql.html">PostgreSQL Functions</a></div>

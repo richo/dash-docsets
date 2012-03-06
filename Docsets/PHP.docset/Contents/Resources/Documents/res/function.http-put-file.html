@@ -112,7 +112,111 @@ success, or <b><tt>FALSE</tt></b> on failure.
  
 
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="99669""></a>
+  <div class="note">
+   <strong class="user">D&amp;#39;n Russler  d_n att CatchMedia dott com</strong>
+   <a href="#99669" class="date">30-Aug-2010 04:13</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+After much frustration and very little documentation that I could find, I thought I'd offer this example of implementation of http_put_file with custom HTTP headers, and the corresponding ReceiveFile.php.<br />
+<br />
+I do an http put with a customized header containing parameters for file processing.<br />
+<br />
+<span class="default">&lt;?php<br />
+&nbsp;&nbsp; &nbsp;&nbsp; $header </span><span class="keyword">= array(<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="string">'file_size'&nbsp;&nbsp; </span><span class="keyword">=&gt; </span><span class="default">$file_size<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">, </span><span class="string">'file_name'&nbsp;&nbsp; </span><span class="keyword">=&gt; </span><span class="default">$file_name<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">, </span><span class="string">'md5sum'&nbsp; &nbsp; &nbsp; </span><span class="keyword">=&gt; </span><span class="default">$md5sum<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">$URI </span><span class="keyword">= </span><span class="string">'<a href="http://MyDomain.com/ReceiveFile.php" rel="nofollow" target="_blank">http://MyDomain.com/ReceiveFile.php</a>'</span><span class="keyword">;<br />
+<br />
+&nbsp;&nbsp; &nbsp;&nbsp; if ((</span><span class="default">$f </span><span class="keyword">= @</span><span class="default">fopen</span><span class="keyword">(</span><span class="default">$URI</span><span class="keyword">,</span><span class="string">'r'</span><span class="keyword">))) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">fclose</span><span class="keyword">(</span><span class="default">$f</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if (</span><span class="default">$result </span><span class="keyword">= @</span><span class="default">http_put_file</span><span class="keyword">(</span><span class="default">$URI</span><span class="keyword">, </span><span class="default">$file_path</span><span class="keyword">, array(<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">headers </span><span class="keyword">=&gt; array(<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span class="string">'X_CUSTOM_PUT_JSON'&nbsp; </span><span class="keyword">=&gt; </span><span class="default">json_encode</span><span class="keyword">(</span><span class="default">$header</span><span class="keyword">)<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; ,</span><span class="string">'X_FRUIT'&nbsp; &nbsp;&nbsp; </span><span class="keyword">=&gt; </span><span class="string">'bananna'<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">)<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; , </span><span class="default">useragent </span><span class="keyword">=&gt; </span><span class="string">'Magic UnitTests'<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span class="keyword">)<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; , </span><span class="default">$info</span><span class="keyword">))) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; echo </span><span class="default">str_replace</span><span class="keyword">(</span><span class="string">"\n"</span><span class="keyword">,</span><span class="string">'&lt;BR&gt;'</span><span class="keyword">,</span><span class="default">$result</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; else<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; echo </span><span class="string">'http failure'</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; }<br />
+&nbsp;&nbsp; &nbsp; else<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; echo </span><span class="string">"Can't find URI: [</span><span class="default">$URI</span><span class="string">]"</span><span class="keyword">;<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+ReceiveFile.php has:<br />
+<span class="default">&lt;?php<br />
+&nbsp;&nbsp; &nbsp;&nbsp; $CUSTOM_HEADER </span><span class="keyword">= </span><span class="string">'HTTP_X_CUSTOM_PUT_JSON'</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">$CHUNK </span><span class="keyword">= </span><span class="default">8192</span><span class="keyword">;<br />
+<br />
+&nbsp;&nbsp; &nbsp;&nbsp; try {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if (!(</span><span class="default">$putData </span><span class="keyword">= </span><span class="default">fopen</span><span class="keyword">(</span><span class="string">"php://input"</span><span class="keyword">, </span><span class="string">"r"</span><span class="keyword">)))<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; throw new </span><span class="default">Exception </span><span class="keyword">(</span><span class="string">"Can't get PUT data."</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if (!(</span><span class="default">array_key_exists</span><span class="keyword">(</span><span class="default">$CUSTOM_HEADER</span><span class="keyword">, </span><span class="default">$_SERVER</span><span class="keyword">)))<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; throw new </span><span class="default">Exception </span><span class="keyword">(</span><span class="string">"Custom header missing."</span><span class="keyword">)<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$json </span><span class="keyword">= </span><span class="default">json_decode</span><span class="keyword">(</span><span class="default">$_SERVER</span><span class="keyword">[</span><span class="default">$CUSTOM_HEADER</span><span class="keyword">], </span><span class="default">true</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">logParams</span><span class="keyword">(</span><span class="default">__FUNCTION__</span><span class="keyword">, </span><span class="default">$json</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; foreach (</span><span class="default">$json </span><span class="keyword">as </span><span class="default">$fld </span><span class="keyword">=&gt; </span><span class="default">$val</span><span class="keyword">)<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $</span><span class="default">$fld </span><span class="keyword">= </span><span class="default">$val</span><span class="keyword">;<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// now the params can be used like any other variable<br />
+&nbsp;&nbsp;&nbsp; // see below after input has finished<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$tot_write </span><span class="keyword">= </span><span class="default">0</span><span class="keyword">;<br />
+<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="comment">// Create a temp file<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">if (!(</span><span class="default">$tmpFileName </span><span class="keyword">= </span><span class="default">tempnam</span><span class="keyword">(</span><span class="string">"/tmp"</span><span class="keyword">, </span><span class="string">"PUT_FILE_"</span><span class="keyword">)))<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; throw new </span><span class="default">Exception </span><span class="keyword">(</span><span class="string">"Can't create tmp file."</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="comment">// Open the file for writing<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">if (!(</span><span class="default">$fp </span><span class="keyword">= </span><span class="default">fopen</span><span class="keyword">(</span><span class="default">$tmpFileName</span><span class="keyword">, </span><span class="string">"w"</span><span class="keyword">)))<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; throw new </span><span class="default">Exception </span><span class="keyword">(</span><span class="string">"Can't write to tmp file"</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="comment">// Read the data a chunk at a time and write to the file<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">while (</span><span class="default">$data </span><span class="keyword">= </span><span class="default">fread</span><span class="keyword">(</span><span class="default">$putData</span><span class="keyword">, </span><span class="default">$CHUNK</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$chunk_read </span><span class="keyword">= </span><span class="default">strlen</span><span class="keyword">(</span><span class="default">$data</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if ((</span><span class="default">$block_write </span><span class="keyword">= </span><span class="default">fwrite</span><span class="keyword">(</span><span class="default">$fp</span><span class="keyword">, </span><span class="default">$data</span><span class="keyword">)) != </span><span class="default">$chunk_read</span><span class="keyword">)<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; throw new </span><span class="default">Exception </span><span class="keyword">(</span><span class="string">"Can't write more to tmp file"</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$tot_write </span><span class="keyword">+= </span><span class="default">$block_write</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if ( ! </span><span class="default">fclose</span><span class="keyword">(</span><span class="default">$fp</span><span class="keyword">) )<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; throw new </span><span class="default">Exception </span><span class="keyword">(</span><span class="string">"Can't close tmp file"</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; unset(</span><span class="default">$putData</span><span class="keyword">);<br />
+<br />
+&nbsp; </span><span class="comment">// Check file length and MD5<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">if (</span><span class="default">$tot_write </span><span class="keyword">!= </span><span class="default">$file_size</span><span class="keyword">)<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; throw new </span><span class="default">Exception </span><span class="keyword">(</span><span class="string">"Wrong file size"</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$md5_arr </span><span class="keyword">= </span><span class="default">explode</span><span class="keyword">(</span><span class="string">' '</span><span class="keyword">,</span><span class="default">exec</span><span class="keyword">(</span><span class="string">"md5sum </span><span class="default">$tmpFileName</span><span class="string">"</span><span class="keyword">));<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$md5 </span><span class="keyword">= </span><span class="default">$md5sum_arr</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">];<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if (</span><span class="default">$md5 </span><span class="keyword">!= </span><span class="default">$md5sum</span><span class="keyword">)<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; throw new </span><span class="default">Exception </span><span class="keyword">(</span><span class="string">"Wrong md5"</span><span class="keyword">);<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="function.http-put-data.html">http_put_data</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.http-put-stream.html">http_put_stream</a></div>
  <div class="up"><a href="ref.http.html">HTTP Functions</a></div>

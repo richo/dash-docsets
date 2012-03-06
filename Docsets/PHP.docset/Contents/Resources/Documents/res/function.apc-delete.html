@@ -90,7 +90,136 @@
  </div>
 
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="101794""></a>
+  <div class="note">
+   <strong class="user">J Fox</strong>
+   <a href="#101794" class="date">11-Jan-2011 09:25</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Contrary to what's documented here - apc_delete also accepts and array of keys or even an APCIterator object, making batch operations a breeze (tested in version 3.1.3p1):<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+</span><span class="keyword">function </span><span class="default">showCache</span><span class="keyword">() {<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$cachedKeys </span><span class="keyword">= new </span><span class="default">APCIterator</span><span class="keyword">(</span><span class="string">'user'</span><span class="keyword">, </span><span class="string">'/^MY_APC/'</span><span class="keyword">, </span><span class="default">APC_ITER_VALUE</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; echo </span><span class="string">"\nkeys in cache\n-------------\n"</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; foreach (</span><span class="default">$cachedKeys </span><span class="keyword">AS </span><span class="default">$key </span><span class="keyword">=&gt; </span><span class="default">$value</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; echo </span><span class="default">$key </span><span class="keyword">. </span><span class="string">"\n"</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; echo </span><span class="string">"-------------\n"</span><span class="keyword">;<br />
+}<br />
+<br />
+</span><span class="default">apc_add</span><span class="keyword">(</span><span class="string">'MY_APC_TESTA_1'</span><span class="keyword">,</span><span class="string">'1'</span><span class="keyword">);<br />
+</span><span class="default">apc_add</span><span class="keyword">(</span><span class="string">'MY_APC_TESTA_2'</span><span class="keyword">,</span><span class="string">'2'</span><span class="keyword">);<br />
+</span><span class="default">apc_add</span><span class="keyword">(</span><span class="string">'MY_APC_TESTA_3'</span><span class="keyword">,</span><span class="string">'3'</span><span class="keyword">);<br />
+</span><span class="default">apc_add</span><span class="keyword">(</span><span class="string">'MY_APC_TESTB_4'</span><span class="keyword">,</span><span class="string">'4'</span><span class="keyword">);<br />
+</span><span class="default">apc_add</span><span class="keyword">(</span><span class="string">'MY_APC_TESTB_5'</span><span class="keyword">,</span><span class="string">'5'</span><span class="keyword">);<br />
+</span><span class="default">apc_add</span><span class="keyword">(</span><span class="string">'MY_APC_TESTB_6'</span><span class="keyword">,</span><span class="string">'6'</span><span class="keyword">);<br />
+<br />
+</span><span class="default">showCache</span><span class="keyword">();<br />
+<br />
+</span><span class="comment">/* outputs:<br />
+<br />
+keys in cache<br />
+-------------<br />
+MY_APC_TESTB_4<br />
+MY_APC_TESTB_5<br />
+MY_APC_TESTB_6<br />
+MY_APC_TESTA_1<br />
+MY_APC_TESTA_2<br />
+MY_APC_TESTA_3<br />
+-------------<br />
+*/<br />
+<br />
+// delete all keys beginning with a regex match on MY_APC_TESTA<br />
+</span><span class="default">$toDelete </span><span class="keyword">= new </span><span class="default">APCIterator</span><span class="keyword">(</span><span class="string">'user'</span><span class="keyword">, </span><span class="string">'/^MY_APC_TESTA/'</span><span class="keyword">, </span><span class="default">APC_ITER_VALUE</span><span class="keyword">);<br />
+<br />
+</span><span class="default">var_dump</span><span class="keyword">( </span><span class="default">apc_delete</span><span class="keyword">(</span><span class="default">$toDelete</span><span class="keyword">) ); <br />
+</span><span class="comment">// returns boolean true|false on success or failure<br />
+<br />
+</span><span class="default">showCache</span><span class="keyword">();<br />
+<br />
+</span><span class="comment">/* outputs:<br />
+<br />
+boolean true<br />
+<br />
+keys in cache<br />
+-------------<br />
+MY_APC_TESTB_4<br />
+MY_APC_TESTB_5<br />
+MY_APC_TESTB_6<br />
+-------------<br />
+*/<br />
+<br />
+// explicitly delete an array of keys <br />
+</span><span class="default">var_dump</span><span class="keyword">( </span><span class="default">apc_delete</span><span class="keyword">( array(</span><span class="string">'MY_APC_TESTB_4'</span><span class="keyword">,</span><span class="string">'MY_APC_TESTB_5'</span><span class="keyword">,</span><span class="string">'MY_APC_NOT_EXISTS'</span><span class="keyword">)) );<br />
+</span><span class="comment">// returns an array of keys that where not found/removed from the cache<br />
+<br />
+</span><span class="default">showCache</span><span class="keyword">();<br />
+<br />
+</span><span class="comment">/* outputs:<br />
+<br />
+array<br />
+&nbsp; 0 =&gt; string 'MY_APC_NOT_EXISTS' (length=17)<br />
+<br />
+keys in cache<br />
+-------------<br />
+MY_APC_TESTB_6<br />
+-------------<br />
+*/<br />
+<br />
+// delete a single key<br />
+</span><span class="default">var_dump</span><span class="keyword">( </span><span class="default">apc_delete</span><span class="keyword">(</span><span class="string">'MY_APC_TESTB_6'</span><span class="keyword">) );<br />
+</span><span class="comment">// returns boolean true|false on success or failure<br />
+<br />
+</span><span class="default">showCache</span><span class="keyword">();<br />
+<br />
+</span><span class="comment">/* outputs:<br />
+<br />
+boolean true<br />
+<br />
+keys in cache<br />
+-------------<br />
+-------------<br />
+*/<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="98237""></a>
+  <div class="note">
+   <strong class="user">dave1010 at gmail dot com</strong>
+   <a href="#98237" class="date">03-Jun-2010 06:26</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+To clear out the whole APC user cache:<br />
+<br />
+<span class="default">&lt;?php<br />
+$info </span><span class="keyword">= </span><span class="default">apc_cache_info</span><span class="keyword">(</span><span class="string">"user"</span><span class="keyword">);<br />
+foreach (</span><span class="default">$info</span><span class="keyword">[</span><span class="string">'cache_list'</span><span class="keyword">] as </span><span class="default">$obj</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">apc_delete</span><span class="keyword">(</span><span class="default">$obj</span><span class="keyword">[</span><span class="string">'info'</span><span class="keyword">]);<br />
+&nbsp;&nbsp;&nbsp; print </span><span class="string">'Deleted: ' </span><span class="keyword">. </span><span class="default">$obj</span><span class="keyword">[</span><span class="string">'info'</span><span class="keyword">] . </span><span class="default">PHP_EOL</span><span class="keyword">;<br />
+}<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="function.apc-delete-file.html">apc_delete_file</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.apc-exists.html">apc_exists</a></div>
  <div class="up"><a href="ref.apc.html">APC Functions</a></div>

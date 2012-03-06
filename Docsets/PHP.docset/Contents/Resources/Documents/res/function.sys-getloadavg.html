@@ -65,7 +65,190 @@ implemented on Windows platforms.</span></p></blockquote>
  </div>
 
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="107243""></a>
+  <div class="note">
+   <strong class="user">rick at rctonline dot nl</strong>
+   <a href="#107243" class="date">24-Jan-2012 12:57</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Here is another one that also works on windows. Note that this method is not fast, so be careful in the number of calls to this function.<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">function </span><span class="default">get_server_load</span><span class="keyword">() {<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if (</span><span class="default">stristr</span><span class="keyword">(</span><span class="default">PHP_OS</span><span class="keyword">, </span><span class="string">'win'</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$wmi </span><span class="keyword">= new </span><span class="default">COM</span><span class="keyword">(</span><span class="string">"Winmgmts://"</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$server </span><span class="keyword">= </span><span class="default">$wmi</span><span class="keyword">-&gt;</span><span class="default">execquery</span><span class="keyword">(</span><span class="string">"SELECT LoadPercentage FROM Win32_Processor"</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$cpu_num </span><span class="keyword">= </span><span class="default">0</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$load_total </span><span class="keyword">= </span><span class="default">0</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; foreach(</span><span class="default">$server </span><span class="keyword">as </span><span class="default">$cpu</span><span class="keyword">){<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$cpu_num</span><span class="keyword">++;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$load_total </span><span class="keyword">+= </span><span class="default">$cpu</span><span class="keyword">-&gt;</span><span class="default">loadpercentage</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$load </span><span class="keyword">= </span><span class="default">round</span><span class="keyword">(</span><span class="default">$load_total</span><span class="keyword">/</span><span class="default">$cpu_num</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; } else {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$sys_load </span><span class="keyword">= </span><span class="default">sys_getloadavg</span><span class="keyword">();<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$load </span><span class="keyword">= </span><span class="default">$sys_load</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">];<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return (int) </span><span class="default">$load</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; }<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="98396""></a>
+  <div class="note">
+   <strong class="user">828586 at gmail dot com</strong>
+   <a href="#98396" class="date">12-Jun-2010 07:43</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+equivalent for windows<br />
+<span class="default">&lt;?php<br />
+ob_start</span><span class="keyword">();<br />
+</span><span class="default">passthru</span><span class="keyword">(</span><span class="string">'typeperf -sc 1 "\processor(_total)\% processor time"'</span><span class="keyword">,</span><span class="default">$status</span><span class="keyword">);<br />
+</span><span class="default">$content </span><span class="keyword">= </span><span class="default">ob_get_contents</span><span class="keyword">();<br />
+</span><span class="default">ob_end_clean</span><span class="keyword">();<br />
+if (</span><span class="default">$status </span><span class="keyword">=== </span><span class="default">0</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; if (</span><span class="default">preg_match</span><span class="keyword">(</span><span class="string">"/\,\"([0-9]+\.[0-9]+)\"/"</span><span class="keyword">,</span><span class="default">$content</span><span class="keyword">,</span><span class="default">$load</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if (</span><span class="default">$load</span><span class="keyword">[</span><span class="default">1</span><span class="keyword">] &gt; </span><span class="default">get_config</span><span class="keyword">(</span><span class="string">'busy_error'</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">header</span><span class="keyword">(</span><span class="string">'HTTP/1.1 503 Too busy, try again later'</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; die(</span><span class="string">'Server too busy. Please try again later.'</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; }<br />
+}<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="94713""></a>
+  <div class="note">
+   <strong class="user">Anonymous</strong>
+   <a href="#94713" class="date">19-Nov-2009 12:14</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+To get just current load avg, you can do :<br />
+<br />
+<span class="default">&lt;?php<br />
+$output </span><span class="keyword">= </span><span class="default">shell_exec</span><span class="keyword">(</span><span class="string">'cat /proc/loadavg'</span><span class="keyword">);<br />
+</span><span class="default">$loadavg </span><span class="keyword">= </span><span class="default">substr</span><span class="keyword">(</span><span class="default">$output</span><span class="keyword">,</span><span class="default">0</span><span class="keyword">,</span><span class="default">strpos</span><span class="keyword">(</span><span class="default">$output</span><span class="keyword">,</span><span class="string">" "</span><span class="keyword">));<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="71412""></a>
+  <div class="note">
+   <strong class="user">scott at corelevel dot com</strong>
+   <a href="#71412" class="date">27-Nov-2006 02:47</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I was having a problem with a large script I need to run - was a loop through about 50,000 records and downloading several pictures for a bunch of them, and updating the database.<br />
+<br />
+the problem came as I started getting visitors to my site, the server would get behind, run out of memory, iowait skyrockets, mysql slows down... was a total downhill spiral.<br />
+<br />
+Use this to fix it.<br />
+<br />
+$load = sys_getloadavg();<br />
+$sleep=5;<br />
+$maxload=2;<br />
+if ($load[0] &gt; $maxload) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; sleep($sleep);<br />
+&nbsp;&nbsp;&nbsp; echo "Busy server - sleep $sleep seconds&lt;br&gt;";<br />
+}<br />
+<br />
+I have to play with the load and the sleep number to find what worked for my script, but now my server does not bog at all.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="67928""></a>
+  <div class="note">
+   <strong class="user">surfchen at gmail dot com</strong>
+   <a href="#67928" class="date">06-Jul-2006 09:22</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+the codes below will provide this function for order versions of PHP.<br />
+if (!function_exists('sys_getloadavg')) {<br />
+&nbsp;&nbsp;&nbsp; function sys_getloadavg()<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $loadavg_file = '/proc/loadavg';<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if (file_exists($loadavg_file)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; return explode(chr(32),file_get_contents($loadavg_file));<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return array(0,0,0);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+}</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="62557""></a>
+  <div class="note">
+   <strong class="user">tom pittlik</strong>
+   <a href="#62557" class="date">03-Mar-2006 02:36</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+The code below mimics the output of sys_getloadavg(). You may have to tweak the way the substring is captured for different distros.<br />
+<br />
+&lt;?<br />
+<br />
+function sys_getloadavg_hack()<br />
+{<br />
+&nbsp;&nbsp;&nbsp; $str = substr(strrchr(shell_exec("uptime"),":"),1);<br />
+&nbsp;&nbsp;&nbsp; $avs = array_map("trim",explode(",",$str));<br />
+<br />
+&nbsp;&nbsp;&nbsp; return $avs;<br />
+}<br />
+<br />
+print_r(sys_getloadavg_hack());<br />
+<br />
+// Array<br />
+// (<br />
+//&nbsp; &nbsp;&nbsp; [0] =&gt; 6.24<br />
+//&nbsp; &nbsp;&nbsp; [1] =&gt; 4.92<br />
+//&nbsp; &nbsp;&nbsp; [2] =&gt; 3.99<br />
+// )<br />
+<br />
+?&gt;<br />
+<br />
+This function is a neat way of running low priority or non-essential cron jobs on a busy server - if the load is high, don't continue with the task (and try again in a few minutes time).</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="function.sleep.html">sleep</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.time-nanosleep.html">time_nanosleep</a></div>
  <div class="up"><a href="ref.misc.html">Misc. Functions</a></div>

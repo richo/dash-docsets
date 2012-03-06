@@ -122,7 +122,165 @@
  </div>
 
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="100594""></a>
+  <div class="note">
+   <strong class="user">Safak Ozpinar (safakozpinar at gmail dot com)</strong>
+   <a href="#100594" class="date">25-Oct-2010 02:20</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Function parse_ini_file doesn't parse a remote ini file if allow_url_include is off. But if allow_url_fopen is on, you can use parse_ini_string to parse a remote ini file after read its contents.<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="comment">/**<br />
+&nbsp;* Assume that; allow_url_include=0 and allow_url_fopen=1<br />
+&nbsp;* (default values in php.ini)<br />
+&nbsp;*/<br />
+</span><span class="default">$iniUrl </span><span class="keyword">= </span><span class="string">'<a href="http://example.com/remote/config.ini" rel="nofollow" target="_blank">http://example.com/remote/config.ini</a>'</span><span class="keyword">;<br />
+<br />
+</span><span class="comment">/**<br />
+&nbsp;* Warning: parse_ini_file(): <a href="http:// wrapper is disabled in the server configuration by allow_url_include=0" rel="nofollow" target="_blank">http:// wrapper is disabled in the server configuration by allow_url_include=0</a><br />
+&nbsp;*/<br />
+</span><span class="default">$config </span><span class="keyword">= </span><span class="default">parse_ini_file</span><span class="keyword">(</span><span class="default">$iniUrl</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">/**<br />
+&nbsp;* works fine<br />
+&nbsp;*/<br />
+</span><span class="default">$config </span><span class="keyword">= </span><span class="default">parse_ini_string</span><span class="keyword">(</span><span class="default">file_get_contents</span><span class="keyword">(</span><span class="default">$iniUrl</span><span class="keyword">));<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="97621""></a>
+  <div class="note">
+   <strong class="user">boukeversteegh at gmail dot com</strong>
+   <a href="#97621" class="date">28-Apr-2010 10:05</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+<span class="default">&lt;?php<br />
+</span><span class="comment"># Define parse_ini_string if it doesn't exist.<br />
+# Does accept lines starting with ; as comments<br />
+# Does not accept comments after values<br />
+</span><span class="keyword">if( !</span><span class="default">function_exists</span><span class="keyword">(</span><span class="string">'parse_ini_string'</span><span class="keyword">) ){<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; function </span><span class="default">parse_ini_string</span><span class="keyword">( </span><span class="default">$string </span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$array </span><span class="keyword">= Array();<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$lines </span><span class="keyword">= </span><span class="default">explode</span><span class="keyword">(</span><span class="string">"\n"</span><span class="keyword">, </span><span class="default">$string </span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; foreach( </span><span class="default">$lines </span><span class="keyword">as </span><span class="default">$line </span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$statement </span><span class="keyword">= </span><span class="default">preg_match</span><span class="keyword">(<br />
+</span><span class="string">"/^(?!;)(?P&lt;key&gt;[\w+\.\-]+?)\s*=\s*(?P&lt;value&gt;.+?)\s*$/"</span><span class="keyword">, </span><span class="default">$line</span><span class="keyword">, </span><span class="default">$match </span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if( </span><span class="default">$statement </span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$key&nbsp; &nbsp; </span><span class="keyword">= </span><span class="default">$match</span><span class="keyword">[ </span><span class="string">'key' </span><span class="keyword">];<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$value&nbsp; &nbsp; </span><span class="keyword">= </span><span class="default">$match</span><span class="keyword">[ </span><span class="string">'value' </span><span class="keyword">];<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment"># Remove quote<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">if( </span><span class="default">preg_match</span><span class="keyword">( </span><span class="string">"/^\".*\"$/"</span><span class="keyword">, </span><span class="default">$value </span><span class="keyword">) || </span><span class="default">preg_match</span><span class="keyword">( </span><span class="string">"/^'.*'$/"</span><span class="keyword">, </span><span class="default">$value </span><span class="keyword">) ) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$value </span><span class="keyword">= </span><span class="default">mb_substr</span><span class="keyword">( </span><span class="default">$value</span><span class="keyword">, </span><span class="default">1</span><span class="keyword">, </span><span class="default">mb_strlen</span><span class="keyword">( </span><span class="default">$value </span><span class="keyword">) - </span><span class="default">2 </span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$array</span><span class="keyword">[ </span><span class="default">$key </span><span class="keyword">] = </span><span class="default">$value</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">$array</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+}<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="94192""></a>
+  <div class="note">
+   <strong class="user">alexandre at nospam dot imaginacom dot com</strong>
+   <a href="#94192" class="date">21-Oct-2009 12:24</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+If your server has yet not been updated to PHP 5.2 (like mine), the following function can help you without having to use temporary paths.<br />
+<br />
+I tried to make it the more similar possible to the PHP's behaviour, including dealing with errors or exceptions.<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">if(!</span><span class="default">function_exists</span><span class="keyword">(</span><span class="string">'parse_ini_string'</span><span class="keyword">)){<br />
+&nbsp;&nbsp;&nbsp; function </span><span class="default">parse_ini_string</span><span class="keyword">(</span><span class="default">$str</span><span class="keyword">, </span><span class="default">$ProcessSections</span><span class="keyword">=</span><span class="default">false</span><span class="keyword">){<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$lines&nbsp; </span><span class="keyword">= </span><span class="default">explode</span><span class="keyword">(</span><span class="string">"\n"</span><span class="keyword">, </span><span class="default">$str</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$return </span><span class="keyword">= Array();<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$inSect </span><span class="keyword">= </span><span class="default">false</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; foreach(</span><span class="default">$lines </span><span class="keyword">as </span><span class="default">$line</span><span class="keyword">){<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$line </span><span class="keyword">= </span><span class="default">trim</span><span class="keyword">(</span><span class="default">$line</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if(!</span><span class="default">$line </span><span class="keyword">|| </span><span class="default">$line</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">] == </span><span class="string">"#" </span><span class="keyword">|| </span><span class="default">$line</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">] == </span><span class="string">";"</span><span class="keyword">)<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; continue;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if(</span><span class="default">$line</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">] == </span><span class="string">"[" </span><span class="keyword">&amp;&amp; </span><span class="default">$endIdx </span><span class="keyword">= </span><span class="default">strpos</span><span class="keyword">(</span><span class="default">$line</span><span class="keyword">, </span><span class="string">"]"</span><span class="keyword">)){<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$inSect </span><span class="keyword">= </span><span class="default">substr</span><span class="keyword">(</span><span class="default">$line</span><span class="keyword">, </span><span class="default">1</span><span class="keyword">, </span><span class="default">$endIdx</span><span class="keyword">-</span><span class="default">1</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; continue;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if(!</span><span class="default">strpos</span><span class="keyword">(</span><span class="default">$line</span><span class="keyword">, </span><span class="string">'='</span><span class="keyword">)) </span><span class="comment">// (We don't use "=== false" because value 0 is not valid as well)<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">continue;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$tmp </span><span class="keyword">= </span><span class="default">explode</span><span class="keyword">(</span><span class="string">"="</span><span class="keyword">, </span><span class="default">$line</span><span class="keyword">, </span><span class="default">2</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if(</span><span class="default">$ProcessSections </span><span class="keyword">&amp;&amp; </span><span class="default">$inSect</span><span class="keyword">)<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$return</span><span class="keyword">[</span><span class="default">$inSect</span><span class="keyword">][</span><span class="default">trim</span><span class="keyword">(</span><span class="default">$tmp</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">])] = </span><span class="default">ltrim</span><span class="keyword">(</span><span class="default">$tmp</span><span class="keyword">[</span><span class="default">1</span><span class="keyword">]);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; else<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$return</span><span class="keyword">[</span><span class="default">trim</span><span class="keyword">(</span><span class="default">$tmp</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">])] = </span><span class="default">ltrim</span><span class="keyword">(</span><span class="default">$tmp</span><span class="keyword">[</span><span class="default">1</span><span class="keyword">]);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">$return</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+}<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="92641""></a>
+  <div class="note">
+   <strong class="user">aldo at mschat dot net</strong>
+   <a href="#92641" class="date">01-Aug-2009 03:28</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+If you want to use something like this on a PHP version below that of PHP 5.3, you can emulate it roughly by doing something like this:<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">if(!</span><span class="default">function_exists</span><span class="keyword">(</span><span class="string">'parse_ini_string'</span><span class="keyword">))<br />
+{<br />
+&nbsp; function </span><span class="default">parse_ini_string</span><span class="keyword">(</span><span class="default">$ini</span><span class="keyword">, </span><span class="default">$process_sections </span><span class="keyword">= </span><span class="default">false</span><span class="keyword">, </span><span class="default">$scanner_mode </span><span class="keyword">= </span><span class="default">null</span><span class="keyword">)<br />
+&nbsp; {<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment"># Generate a temporary file.<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$tempname </span><span class="keyword">= </span><span class="default">tempnam</span><span class="keyword">(</span><span class="string">'/tmp'</span><span class="keyword">, </span><span class="string">'ini'</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$fp </span><span class="keyword">= </span><span class="default">fopen</span><span class="keyword">(</span><span class="default">$tempname</span><span class="keyword">, </span><span class="string">'w'</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">fwrite</span><span class="keyword">(</span><span class="default">$fp</span><span class="keyword">, </span><span class="default">$ini</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$ini </span><span class="keyword">= </span><span class="default">parse_ini_file</span><span class="keyword">(</span><span class="default">$tempname</span><span class="keyword">, !empty(</span><span class="default">$process_sections</span><span class="keyword">));<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">fclose</span><span class="keyword">(</span><span class="default">$fp</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; @</span><span class="default">unlink</span><span class="keyword">(</span><span class="default">$tempname</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">$ini</span><span class="keyword">;<br />
+&nbsp; }<br />
+}<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+May not be the most efficient way (I suppose you could do some regex stuff instead...) but it certainly works!</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="function.parse-ini-file.html">parse_ini_file</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.pathinfo.html">pathinfo</a></div>
  <div class="up"><a href="ref.filesystem.html">Filesystem Functions</a></div>

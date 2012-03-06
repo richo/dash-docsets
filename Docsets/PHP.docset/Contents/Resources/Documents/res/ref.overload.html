@@ -24,6 +24,798 @@
 
 <h2>Table of Contents</h2><ul class="chunklist chunklist_reference"><li><a href="function.overload.html">overload</a> â€” Enable property and method call overloading for a class</li></ul>
 </div>
+<div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="78159""></a>
+  <div class="note">
+   <strong class="user">none at example dot com</strong>
+   <a href="#78159" class="date">01-Oct-2007 03:42</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I am coding a server with a lot of method. To avoid doing a $this-&gt;check_auth() call (and others similar processing) in _each_ on my method, I was looking for a way to wrap them all through a dispatch.<br />
+Combining _call, with call_user_func_array is the way I did it finally.<br />
+So basically, if you want to call "testFunc" you just call $class-&gt;test () and<br />
+it will be wrapped and testFunc will be executed.<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+</span><span class="keyword">class </span><span class="default">MytestClass<br />
+</span><span class="keyword">{<br />
+&nbsp;&nbsp;&nbsp; function </span><span class="default">__call</span><span class="keyword">(</span><span class="default">$method</span><span class="keyword">, </span><span class="default">$param</span><span class="keyword">)<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// do anything here<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">return (</span><span class="default">call_user_func_array </span><span class="keyword">(array (</span><span class="string">"MytestClass"</span><span class="keyword">, </span><span class="default">$method</span><span class="keyword">.</span><span class="string">"Func"</span><span class="keyword">), </span><span class="default">$param</span><span class="keyword">));<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; function </span><span class="default">testFunc</span><span class="keyword">(</span><span class="default">$param</span><span class="keyword">, </span><span class="default">$arg</span><span class="keyword">)<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; echo </span><span class="string">"It works ! Param: </span><span class="default">$param</span><span class="string">, ARG=</span><span class="default">$arg</span><span class="string">\n"</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">true</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+}<br />
+<br />
+</span><span class="default">$test </span><span class="keyword">= new </span><span class="default">MytestClass</span><span class="keyword">;<br />
+</span><span class="default">$test</span><span class="keyword">-&gt;</span><span class="default">test </span><span class="keyword">(</span><span class="string">"Cool"</span><span class="keyword">, </span><span class="string">"Test"</span><span class="keyword">);<br />
+<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="70886""></a>
+  <div class="note">
+   <strong class="user">kris - Heehaw</strong>
+   <a href="#70886" class="date">02-Nov-2006 09:07</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Simple way to restrict class property access (read and/or write) and range checking on setting, custom get also.<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">final class </span><span class="default">test </span><span class="keyword">{<br />
+&nbsp;&nbsp;&nbsp; protected </span><span class="default">$x</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; protected </span><span class="default">$y</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; protected </span><span class="default">$z</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; private </span><span class="default">$publicRead </span><span class="keyword">= Array(<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="string">'x'</span><span class="keyword">=&gt;</span><span class="string">""</span><span class="keyword">,<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="string">'y'</span><span class="keyword">=&gt;</span><span class="string">""</span><span class="keyword">,<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="string">'z'</span><span class="keyword">=&gt;</span><span class="string">"getZ"<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; private </span><span class="default">$publicWrite </span><span class="keyword">= Array(<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="string">'x'</span><span class="keyword">=&gt;</span><span class="string">"setX"</span><span class="keyword">,<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="string">'y'</span><span class="keyword">=&gt;</span><span class="string">"setY"<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; final public function </span><span class="default">test</span><span class="keyword">(){<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">x </span><span class="keyword">= </span><span class="default">0</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">y </span><span class="keyword">= </span><span class="default">0</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">z </span><span class="keyword">= </span><span class="default">100</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">$this</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; final public function </span><span class="default">setX</span><span class="keyword">(</span><span class="default">$val</span><span class="keyword">){<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">//allow only 1 - 10<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">if (</span><span class="default">$val </span><span class="keyword">&gt; </span><span class="default">0 </span><span class="keyword">&amp;&amp; </span><span class="default">$val </span><span class="keyword">&lt; </span><span class="default">11</span><span class="keyword">){<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">x </span><span class="keyword">= </span><span class="default">$val</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; } else {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; echo </span><span class="string">"Cannot set X to </span><span class="default">$val</span><span class="string">, valid range is 1-10\n&lt;br /&gt;"</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; final public function </span><span class="default">setY</span><span class="keyword">(</span><span class="default">$val</span><span class="keyword">){<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">//allow only 11 - 20<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">if (</span><span class="default">$val </span><span class="keyword">&gt; </span><span class="default">10 </span><span class="keyword">&amp;&amp; </span><span class="default">$val </span><span class="keyword">&lt; </span><span class="default">21</span><span class="keyword">){<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">y </span><span class="keyword">= </span><span class="default">$val</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; } else {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; echo </span><span class="string">"Cannot set Y to </span><span class="default">$val</span><span class="string">, valid range is 11-20\n&lt;br /&gt;"</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; final public function </span><span class="default">getZ</span><span class="keyword">(){<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return (</span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">z</span><span class="keyword">*</span><span class="default">2</span><span class="keyword">).</span><span class="string">" (x2) "</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; final private function </span><span class="default">__get</span><span class="keyword">(</span><span class="default">$nm</span><span class="keyword">)<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if (</span><span class="default">array_key_exists</span><span class="keyword">(</span><span class="default">$nm</span><span class="keyword">, </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">publicRead</span><span class="keyword">)){<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$method </span><span class="keyword">= </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">publicRead</span><span class="keyword">[</span><span class="default">$nm</span><span class="keyword">];<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if (</span><span class="default">$method </span><span class="keyword">!= </span><span class="string">""</span><span class="keyword">){</span><span class="comment">//if we have a custom get method use it<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">return </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">$method</span><span class="keyword">();<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; } else { </span><span class="comment">//else return the value directly<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">return </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">$nm</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; } else {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; echo </span><span class="string">"Cannot get protected property "</span><span class="keyword">.</span><span class="default">get_class</span><span class="keyword">(</span><span class="default">$this</span><span class="keyword">).</span><span class="string">"::</span><span class="default">$nm</span><span class="string">\n&lt;br /&gt;"</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">null</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; final private function </span><span class="default">__set</span><span class="keyword">(</span><span class="default">$nm</span><span class="keyword">, </span><span class="default">$val</span><span class="keyword">)<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if (</span><span class="default">array_key_exists</span><span class="keyword">(</span><span class="default">$nm</span><span class="keyword">, </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">publicWrite</span><span class="keyword">)){<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$method </span><span class="keyword">= </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">publicWrite</span><span class="keyword">[</span><span class="default">$nm</span><span class="keyword">];<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">$method</span><span class="keyword">(</span><span class="default">$val</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; } else {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; echo </span><span class="string">"Cannot set protected property "</span><span class="keyword">.</span><span class="default">get_class</span><span class="keyword">(</span><span class="default">$this</span><span class="keyword">).</span><span class="string">"::</span><span class="default">$nm</span><span class="string">\n&lt;br /&gt;"</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; }<br />
+}<br />
+<br />
+</span><span class="default">$t </span><span class="keyword">= new </span><span class="default">test</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$t</span><span class="keyword">-&gt;</span><span class="default">x </span><span class="keyword">= </span><span class="default">1</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$t</span><span class="keyword">-&gt;</span><span class="default">y </span><span class="keyword">= </span><span class="default">113</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$t</span><span class="keyword">-&gt;</span><span class="default">z </span><span class="keyword">= </span><span class="default">1001</span><span class="keyword">;<br />
+<br />
+echo </span><span class="string">"&lt;br /&gt;&lt;br /&gt;"</span><span class="keyword">;<br />
+echo </span><span class="string">"X:"</span><span class="keyword">.</span><span class="default">$t</span><span class="keyword">-&gt;</span><span class="default">x</span><span class="keyword">.</span><span class="string">"&lt;br /&gt;"</span><span class="keyword">;<br />
+echo </span><span class="string">"Y:"</span><span class="keyword">.</span><span class="default">$t</span><span class="keyword">-&gt;</span><span class="default">y</span><span class="keyword">.</span><span class="string">"&lt;br /&gt;"</span><span class="keyword">;<br />
+echo </span><span class="string">"Z:"</span><span class="keyword">.</span><span class="default">$t</span><span class="keyword">-&gt;</span><span class="default">z</span><span class="keyword">.</span><span class="string">"&lt;br /&gt;"</span><span class="keyword">;<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="62303""></a>
+  <div class="note">
+   <strong class="user">daniel at softel dot jp</strong>
+   <a href="#62303" class="date">24-Feb-2006 09:13</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Note that with this class:<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">class </span><span class="default">SillyClass<br />
+</span><span class="keyword">{<br />
+&nbsp;&nbsp;&nbsp; private </span><span class="default">$config </span><span class="keyword">= array();<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; public function </span><span class="default">__construct</span><span class="keyword">()<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">config</span><span class="keyword">[</span><span class="string">'fruit'</span><span class="keyword">] = </span><span class="string">'banana'</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">config</span><span class="keyword">[</span><span class="string">'animal'</span><span class="keyword">] = </span><span class="string">'monkey'</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">config</span><span class="keyword">[</span><span class="string">'shoppingList'</span><span class="keyword">] = <br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; array(</span><span class="string">'drink' </span><span class="keyword">=&gt; </span><span class="string">'milk'</span><span class="keyword">, </span><span class="string">'food' </span><span class="keyword">=&gt; </span><span class="string">'cheeseburger'</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp; </span><span class="comment">//Allow mySillyClass-&gt;someProperty style getting of<br />
+&nbsp;&nbsp;&nbsp; //anything that might happen to be in the $config array<br />
+&nbsp;&nbsp;&nbsp; //(returns NULL if not in the $config array).<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">public function </span><span class="default">__get</span><span class="keyword">(</span><span class="default">$property</span><span class="keyword">)<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if(isset(</span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">config</span><span class="keyword">-&gt;</span><span class="default">$property</span><span class="keyword">))<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">config</span><span class="keyword">-&gt;</span><span class="default">$property</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; }<br />
+}<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+The following code can not be used:<br />
+<span class="default">&lt;?php<br />
+$mySillyClass </span><span class="keyword">= new </span><span class="default">SillyClass</span><span class="keyword">();<br />
+</span><span class="default">$drinkToBuy </span><span class="keyword">= </span><span class="default">$mySillyClass</span><span class="keyword">-&gt;</span><span class="default">shoppingList</span><span class="keyword">-&gt;</span><span class="default">drink</span><span class="keyword">;<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+It seems that although there is no error, $mySillyClass-&gt;someProperty-&gt;someProperty<br />
+does *not* work (__get() is only called once).<br />
+It's not really a bug, and I'm sure PHP is behaving properly but it had me stumped for a while!</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="54293""></a>
+  <div class="note">
+   <strong class="user">dreamscape</strong>
+   <a href="#54293" class="date">29-Jun-2005 01:12</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I didn't see this posted anywhere, so here it is:<br />
+<br />
+In PHP 4, if you are calling your overloaded class A from inside class B, you MUST include and overload class A before including class B.<br />
+<br />
+I struggled with this one for some time, before attempting to change the include order of the classes, which then worked great.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="49645""></a>
+  <div class="note">
+   <strong class="user">Shores</strong>
+   <a href="#49645" class="date">03-Feb-2005 10:11</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+One way to overcome the foreach overloading malfunction:<br />
+<br />
+//non functioning:<br />
+foreach ($object-&gt;arrayProperty as $key =&gt; $value) { ... }<br />
+<br />
+//functioning:<br />
+foreach (array_merge($object-&gt;arrayProperty) as $key =&gt; $value) { ... }<br />
+<br />
+Bye!</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="49108""></a>
+  <div class="note">
+   <strong class="user">evert at rooftopsolutions dot nl</strong>
+   <a href="#49108" class="date">16-Jan-2005 09:46</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I use the overloader to perform a method-level permission check for objects<br />
+<br />
+&lt;?<br />
+<br />
+class MyClass {<br />
+<br />
+&nbsp; function method1() {<br />
+<br />
+&nbsp;&nbsp; // .... //<br />
+<br />
+&nbsp; }<br />
+<br />
+&nbsp; function method2() {<br />
+<br />
+&nbsp; // .... //<br />
+<br />
+&nbsp; }<br />
+<br />
+}<br />
+<br />
+class ObjectProtector {<br />
+<br />
+&nbsp;&nbsp;&nbsp; var $obj; <br />
+<br />
+&nbsp;&nbsp;&nbsp; function ObjectProtector(&amp;$object) {<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp; $this-&gt;obj =&amp; $object;<br />
+<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; function __call($m,$a,&amp;$r) {<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp; if (myPermissionChecker(...)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; $r = call_user_func_array(array($this-&gt;obj,$m),$a);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; return true;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; } else return false;<br />
+<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+}<br />
+<br />
+&nbsp;&nbsp; <br />
+overload('ObjectProtector');<br />
+<br />
+// Create your object<br />
+$myObj = new MyClass;<br />
+<br />
+// Prodect your object<br />
+$myProtectedObj = new ObjectProtector($myObj);<br />
+<br />
+//call your methods trough $myProtectedObj<br />
+<br />
+$myProtectedObj-&gt;method1();<br />
+$myProtectedObj-&gt;method2('arguments');<br />
+<br />
+?&gt;<br />
+<br />
+I'm not sure this is bad practice, but the engine allows it and it seems right.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="46103""></a>
+  <div class="note">
+   <strong class="user">koert  at  idislikespam  dot  bitfactory  dot  nl</strong>
+   <a href="#46103" class="date">29-Sep-2004 07:36</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Do not implement __call() if you need pass-by-reference of return-by-reference elswhere in your class. <br />
+For more information view php bug #25831. Unfortunately this bug is marked wont-fix.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="42582""></a>
+  <div class="note">
+   <strong class="user">almethot at yahoo dot com</strong>
+   <a href="#42582" class="date">22-May-2004 12:33</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Here is a cleaner way to fake overloading which is a modification on fabiostt[X_AT_X]libero[X_DOT_X]it<br />
+12-Aug-2003 01:56 posting. This example allows you to reuse the object and not have to re-create the object everytime the variables need to change.<br />
+<br />
+Hope this helps,<br />
+<br />
+&lt;?<br />
+Class NCSession<br />
+{<br />
+//Class Variables<br />
+<br />
+&nbsp;&nbsp;&nbsp; Var $sessionResult = null;<br />
+<br />
+&nbsp;&nbsp;&nbsp; // Sims Overloading in PHP - Yes it is crap but it works until you move to PHP 5.<br />
+&nbsp;&nbsp;&nbsp; function ncStartSession()<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $numArgs = func_num_args() ; //number of args<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $args = func_get_args() ;&nbsp; //array containing args<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $x = call_user_func_array( array( &amp;$this, 'ncStartSession'.$numArgs),&nbsp; $args) ;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $sessionResult = $x;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return $sessionResult;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; function ncStartSession0()<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; session_start();<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $sessionResult = "SUCCESS|YES|SESSIONID|" . session_id(); <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; session_destroy();<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return $sessionResult;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; function ncStartSession1($arg)<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; session_start($arg);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $sessionResult = "SUCCESS|YES|SESSIONID|" . session_id(); <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; session_destroy();<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return $sessionResult;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+}<br />
+//End of Class<br />
+<br />
+$myTestSession = NEW NCSession();<br />
+<br />
+$myResult = $myTestSession-&gt;ncStartSession();<br />
+echo "\n\$myResult = $myResult\n";<br />
+<br />
+?&gt;</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="40790""></a>
+  <div class="note">
+   <strong class="user">Metal</strong>
+   <a href="#40790" class="date">14-Mar-2004 11:11</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Overload and Inheritance.<br />
+<br />
+After wasting a few hours trying to get it to work, it seems appropriate to put a warning here.<br />
+<br />
+Short Version:<br />
+<br />
+DON'T ever subclass an overloaded class. EVER.<br />
+<br />
+Corollary:<br />
+If an overloaded class simply must be subclassed, rewrite the parent class to get rid of the overloading. It can be as simple as commenting out the overload() statement and calling the get/set/call methods explicitely. <br />
+This was the road I ended up taking.<br />
+<br />
+Long Version:<br />
+<br />
+While it is, in theory, possible to end up with a working subclass, it requires much mucking and OO-principles compromise. <br />
+There is a great post that details the problem at great length. For those with the stomach, the URL is:<br />
+<a href="http://www.zend.com/lists/engine2/200201/msg00140.html" rel="nofollow" target="_blank">http://www.zend.com/lists/engine2/200201/msg00140.html</a><br />
+<br />
+If you're still thinking about mixing inheritance and overloading, at least read the "Best Practices for the overload functions" in the URL above. If that doesn't change your mind, at least you'll be able to avoid most of the pitfalls.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="40301""></a>
+  <div class="note">
+   <strong class="user">josh at uncommonprojects dot com</strong>
+   <a href="#40301" class="date">27-Feb-2004 06:45</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+One thing about __get is that if you return an array it doesn't work directly within a foreach...<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">class </span><span class="default">Foo </span><span class="keyword">{<br />
+&nbsp; function </span><span class="default">__get</span><span class="keyword">(</span><span class="default">$prop</span><span class="keyword">,&amp;</span><span class="default">$ret</span><span class="keyword">) { <br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$ret </span><span class="keyword">= array(</span><span class="default">1</span><span class="keyword">,</span><span class="default">2</span><span class="keyword">,</span><span class="default">3</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">true</span><span class="keyword">;<br />
+&nbsp; }<br />
+}<br />
+</span><span class="default">overload </span><span class="keyword">(</span><span class="string">'Foo'</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">//works<br />
+</span><span class="default">$foo </span><span class="keyword">= new </span><span class="default">Foo</span><span class="keyword">;<br />
+</span><span class="default">$bar </span><span class="keyword">= </span><span class="default">$foo</span><span class="keyword">-&gt;</span><span class="default">bar</span><span class="keyword">;<br />
+foreach(</span><span class="default">$bar </span><span class="keyword">as </span><span class="default">$n</span><span class="keyword">) {<br />
+&nbsp; echo </span><span class="string">"</span><span class="default">$n</span><span class="string"> \n"</span><span class="keyword">;<br />
+}<br />
+<br />
+</span><span class="comment">//doesn't work (bad argument to foreach)<br />
+</span><span class="keyword">foreach(</span><span class="default">$foo</span><span class="keyword">-&gt;</span><span class="default">bar </span><span class="keyword">as </span><span class="default">$n</span><span class="keyword">) {<br />
+&nbsp; echo </span><span class="string">"</span><span class="default">$n</span><span class="string"> \n"</span><span class="keyword">;<br />
+}<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+for loops also work fine..</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="40217""></a>
+  <div class="note">
+   <strong class="user">upphpdoc at upcd dot de</strong>
+   <a href="#40217" class="date">25-Feb-2004 12:58</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+While this is a nice Feature it has nothing to do with Overloading as it is known in other OO-Languages.<br />
+<br />
+What this feature does is allowing the dynamic addition of instance variables as e.g in Python.<br />
+<br />
+Overloading means defining several methods with the same name in a single class. Which method will be called depends on the number and type of arguments specified. With dynamic and weak typed languages (like PHP) this can&nbsp; of course not work.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="39897""></a>
+  <div class="note">
+   <strong class="user">jw at jwscripts dot com</strong>
+   <a href="#39897" class="date">14-Feb-2004 11:10</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+The following backwards compatible code demonstrates the differences between the PHP version 4 and 5 implementation of overloading:<br />
+<br />
+&lt;?<br />
+<br />
+class Foo {<br />
+&nbsp;&nbsp;&nbsp; // The properties array<br />
+&nbsp;&nbsp;&nbsp; var $array = array('a' =&gt; 1, 'b' =&gt; 2, 'c' =&gt; 4);<br />
+<br />
+&nbsp;&nbsp;&nbsp; // Getter<br />
+&nbsp;&nbsp;&nbsp; function __get($n, $val = "") {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if (phpversion() &gt;= 5) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; return $this-&gt;array[$n];<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; } else {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $val = $this-&gt;array[$n];<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; return true;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; // Setter<br />
+&nbsp;&nbsp;&nbsp; function __set($n, $val) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $this-&gt;array[$n] = $val;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if (phpversion() &lt; 5) return true;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; // Caller, applied when $function isn't defined<br />
+&nbsp;&nbsp;&nbsp; function __call($function, $arguments) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; // Constructor called in PHP version &lt; 5<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if ($function != __CLASS__) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $this-&gt;$arguments[0] = $arguments[1];<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if (phpversion() &lt; 5) return true;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+}<br />
+<br />
+// Call the overload() function when appropriate<br />
+if (function_exists("overload") &amp;&amp; phpversion() &lt; 5) {<br />
+&nbsp;&nbsp;&nbsp; overload("Foo");<br />
+}<br />
+<br />
+// Create the object instance<br />
+$foo = new Foo;<br />
+<br />
+// Adjust the value of $foo-&gt;array['c'] through <br />
+// method overloading<br />
+$foo-&gt;set_array('c', 3);<br />
+<br />
+// Adjust the value of $foo-&gt;array['c'] through <br />
+// property overloading<br />
+$foo-&gt;c = 3;<br />
+<br />
+// Print the new correct value of $foo-&gt;array['c']<br />
+echo 'The value of $foo-&gt;array["c"] is: ', $foo-&gt;c;<br />
+<br />
+?&gt;</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="39288""></a>
+  <div class="note">
+   <strong class="user">sdavey at datalink dot net dot au</strong>
+   <a href="#39288" class="date">23-Jan-2004 01:45</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+It wasn't quite clear, but I found out that __get() and __set() only overload attributes that _don't_ exist.<br />
+<br />
+For example:<br />
+&lt;?<br />
+class Foo <br />
+{<br />
+&nbsp;&nbsp;&nbsp; var $a = "normal attribute";<br />
+<br />
+&nbsp;&nbsp;&nbsp; function __get($key, &amp;$ret)<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $ret = "overloaded return value";<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return true;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+}<br />
+overload("Foo");<br />
+<br />
+$foo = new Foo();<br />
+print "get a: $foo-&gt;a \n";&nbsp; &nbsp; &nbsp; &nbsp; // prints:&nbsp;&nbsp; get a: normal attribute <br />
+print "get b: $foo-&gt;b \n";&nbsp; &nbsp; &nbsp; &nbsp; // prints:&nbsp;&nbsp; get b: overloaded return value <br />
+?&gt;<br />
+<br />
+The important thing to note here is that $foo-&gt;a did not pass through __get(), because the attibute has been defined.<br />
+<br />
+So it's more like "underloading" than "overloading", as it only virtualises attributes that _do not_ exist.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="38120""></a>
+  <div class="note">
+   <strong class="user">John Martin</strong>
+   <a href="#38120" class="date">09-Dec-2003 02:47</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I've found a work around that allows overload to work with nested classes.&nbsp; I was trying to design a set of classes that I didn't need to define the setter/getter methods for each of the properties.&nbsp; <br />
+<br />
+I stayed away from the __get() and __set() function since this bypasses object encapsulation.&nbsp; Instead I use the __call() method to implement the accessor functions.&nbsp; The __call() function emulates the get{var name} and stores the variable into an internal array with in the class.&nbsp; The get{var name} checks the array for the var name and returns it if found.<br />
+<br />
+Using the Zend Dev Studio (Great Product!) I was able to debug the code and found that when overloaded objects are nested that the nested object somehow looses the array var.&nbsp; Just for giggles, I added a second variable and assigned the array var by reference.&nbsp; Some how this worked.&nbsp; <br />
+<br />
+class Base {<br />
+&nbsp;&nbsp; var $_prop = array();<br />
+&nbsp;&nbsp; var $_fix;<br />
+&nbsp;&nbsp; <br />
+&nbsp;&nbsp; function Base() {<br />
+&nbsp;&nbsp; &nbsp;&nbsp; // This somehow fixes the problem with nested overloading<br />
+&nbsp;&nbsp; &nbsp;&nbsp; $this-&gt;_fix = &amp; $this-&gt;_prop;&nbsp; <br />
+&nbsp;&nbsp; }<br />
+}</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="35249""></a>
+  <div class="note">
+   <strong class="user">admin (hat) solidox (dawt) org</strong>
+   <a href="#35249" class="date">25-Aug-2003 08:51</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+there are a couple of things you should be aware of when using overloading.<br />
+<br />
+&lt;?<br />
+&nbsp;&nbsp;&nbsp; class cTest<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; function __get($key, &amp;$value)<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; echo "get: $key&lt;br /&gt;";<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; return true;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; function __set($key, $value)<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; echo "set: $key value: $value&lt;br /&gt;";<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; return true;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; function __call($method, $params, &amp;$return)<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; echo "call: $method params: " . var_export($params, 1) . "&lt;br /&gt;";<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; return true;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; }<br />
+overload('cTest');<br />
+$cake = new cTest;<br />
+?&gt;<br />
+<br />
+firstly it should be noted that nested classes don't work.<br />
+secondly if you try to set an array it somehow becomes a get<br />
+and thirdly, if you call a nested class it picks the last nest as the method name, as opposed to a nested get which picks the first in the list.<br />
+&lt;?<br />
+$x = $cake-&gt;hello-&gt;moto; //outputs "get: hello" moto is nowhere to be seen<br />
+<br />
+$cake-&gt;hello['moto'] = 4; //outputs "get: hello"<br />
+<br />
+$cake-&gt;moo-&gt;cow("hello"); //outputs "call: cow params: array ( 0 =&gt; 'hello', )"<br />
+?&gt;<br />
+bit strange, these occur on php4.3.2. havn't tried other versions</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="34954""></a>
+  <div class="note">
+   <strong class="user">Justin B</strong>
+   <a href="#34954" class="date">13-Aug-2003 03:16</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Some useful things to know about overloading:<br />
+__call($m,$p,&amp;$r) returns $r back to you, not whatever you put after the keyword return.&nbsp; What you return determines whether or not the parser consideres the function defined.<br />
+__get($var,&amp;$val) returns $val back to you, so fill up $val with what you want then return true or false, same as above.<br />
+<br />
+when extending classes, you must overload the most extended level class for it to work:<br />
+<br />
+class TestClass<br />
+{<br />
+&nbsp;&nbsp;&nbsp; var $x = "x";<br />
+&nbsp;&nbsp;&nbsp; var $y = "y";<br />
+&nbsp;&nbsp;&nbsp; var $z = "z";<br />
+&nbsp;&nbsp;&nbsp; function __call($method,$params,&amp;$return)<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $return = "Hello, you called $method with ".var_export($params,true)."&lt;br&gt;\n";<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return true;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; function __get($var,&amp;$val)<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if($var == "l") { $val = $this-&gt;x; return true; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return false;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+}<br />
+overload('TestClass');<br />
+<br />
+$test = new TestClass;<br />
+print $test-&gt;hello();<br />
+print $test-&gt;goodbye();<br />
+print $test-&gt;x;<br />
+print $test-&gt;l;<br />
+print $test-&gt;n;<br />
+<br />
+class Test2 extends TestClass<br />
+{<br />
+}<br />
+<br />
+$test2 = new Test2;<br />
+print $test2-&gt;hello();<br />
+<br />
+/* output:<br />
+Hello, you called hello with array()<br />
+Hello, you called goodbye with array()<br />
+xx<br />
+<br />
+Fatal Error: Call to undefined function hello() in ...<br />
+*/</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="34921""></a>
+  <div class="note">
+   <strong class="user">fabiostt[X_AT_X]libero[X_DOT_X]it</strong>
+   <a href="#34921" class="date">12-Aug-2003 01:56</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+This extension has not much to do with overloading as we know it in Java or C++<br />
+<br />
+We can sort of mimic overloading using call_user_func_array()<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+</span><span class="keyword">class </span><span class="default">OverloadTest</span><span class="keyword">{<br />
+<br />
+&nbsp;&nbsp;&nbsp; var </span><span class="default">$message </span><span class="keyword">;<br />
+<br />
+&nbsp;&nbsp;&nbsp; function </span><span class="default">OverloadTest</span><span class="keyword">(){<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$numArgs </span><span class="keyword">= </span><span class="default">func_num_args</span><span class="keyword">() ; </span><span class="comment">//number of args<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$args </span><span class="keyword">= </span><span class="default">func_get_args</span><span class="keyword">() ;&nbsp; </span><span class="comment">//array containing args<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">call_user_func_array</span><span class="keyword">( array( &amp;</span><span class="default">$this</span><span class="keyword">, </span><span class="string">'OverloadTest'</span><span class="keyword">.</span><span class="default">$numArgs</span><span class="keyword">),&nbsp; </span><span class="default">$args</span><span class="keyword">) ; <br />
+<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; function </span><span class="default">overloadTest0</span><span class="keyword">(){<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">message </span><span class="keyword">= </span><span class="string">'There are no args' </span><span class="keyword">;<br />
+<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; function </span><span class="default">overloadTest1</span><span class="keyword">(</span><span class="default">$arg</span><span class="keyword">){<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">message </span><span class="keyword">= </span><span class="string">'There\'s just one arg, its value is '</span><span class="keyword">.</span><span class="default">$arg </span><span class="keyword">;<br />
+<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; function </span><span class="default">overloadTest2</span><span class="keyword">(</span><span class="default">$arg1</span><span class="keyword">, </span><span class="default">$arg2</span><span class="keyword">){<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">message </span><span class="keyword">= </span><span class="string">'There are 2 args, their values are '</span><span class="keyword">.</span><span class="default">join</span><span class="keyword">( </span><span class="default">func_get_args</span><span class="keyword">(), </span><span class="string">', '</span><span class="keyword">) ;<br />
+<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; function </span><span class="default">getMessage</span><span class="keyword">(){<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; return(</span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">message</span><span class="keyword">) ;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+<br />
+}</span><span class="comment">//end class<br />
+<br />
+</span><span class="default">$x </span><span class="keyword">= new </span><span class="default">OverloadTest</span><span class="keyword">(</span><span class="string">'fooA'</span><span class="keyword">, </span><span class="string">'fooB'</span><span class="keyword">) ;<br />
+<br />
+echo( </span><span class="default">$x</span><span class="keyword">-&gt;</span><span class="default">getMessage</span><span class="keyword">() ) ;<br />
+<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="29784""></a>
+  <div class="note">
+   <strong class="user">steve at walkereffects dot com</strong>
+   <a href="#29784" class="date">24-Feb-2003 10:32</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+If you are a perfectionist when it comes to your class interfaces, and you are unable to use overload(), there is another viable solution:<br />
+<br />
+Use func_num_args() to determine how many arguments were sent to the function in order to create virtual polymorphism. You can create different scenarios by making logical assumptions about the parameters sent. From the outside the interface works just like an overloaded function.<br />
+<br />
+The following shows an example of overloading a class constructor:<br />
+<br />
+class Name<br />
+{<br />
+&nbsp;&nbsp; &nbsp;&nbsp; var $FirstName;<br />
+&nbsp;&nbsp; &nbsp;&nbsp; var $LastName;<br />
+<br />
+&nbsp;&nbsp; &nbsp;&nbsp; function Name($first, $last)<br />
+&nbsp;&nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $numargs = func_num_args();<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if($numargs &gt;= 2)<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $this-&gt;FirstName = $first;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $this-&gt;LastName = $last;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; else<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $names = explode($first);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $this-&gt;FirstName = $names[0];<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $this-&gt;LastName = $names[1]<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; <br />
+}</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
 <hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="overload.examples.basic.html">Basic usage</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.overload.html">overload</a></div>

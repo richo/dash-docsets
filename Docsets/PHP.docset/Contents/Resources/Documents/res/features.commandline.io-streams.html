@@ -114,7 +114,92 @@
     <i>stdin</i>.
    </p>
   </p></blockquote>
- </div><hr /><div class="manualnavbar" style="text-align: center;">
+ </div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="105096""></a>
+  <div class="note">
+   <strong class="user">ecrist at secure-computing dot net</strong>
+   <a href="#105096" class="date">27-Jul-2011 08:15</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+The following code shows how to test for input on STDIN.&nbsp; In this case, we were looking for CSV data, so we use fgetcsv to read STDIN, if it creates an array, we assume CVS input on STDIN, if no array was created, we assume there's no input from STDIN, and look, later, to an argument with a CSV file name.<br />
+<br />
+Note, without the stream_set_blocking() call, fgetcsv() hangs on STDIN, awaiting input from the user, which isn't useful as we're looking for a piped file. If it isn't here already, it isn't going to be.<br />
+<br />
+<span class="default">&lt;?php<br />
+stream_set_blocking</span><span class="keyword">(</span><span class="default">STDIN</span><span class="keyword">, </span><span class="default">0</span><span class="keyword">);<br />
+</span><span class="default">$csv_ar </span><span class="keyword">= </span><span class="default">fgetcsv</span><span class="keyword">(</span><span class="default">STDIN</span><span class="keyword">);<br />
+if (</span><span class="default">is_array</span><span class="keyword">(</span><span class="default">$csv_ar</span><span class="keyword">)){<br />
+&nbsp; print </span><span class="string">"CVS on STDIN\n"</span><span class="keyword">;<br />
+} else {<br />
+&nbsp; print </span><span class="string">"Look to ARGV for CSV file name.\n"</span><span class="keyword">;<br />
+}<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="102767""></a>
+  <div class="note">
+   <strong class="user">Aurelien Marchand</strong>
+   <a href="#102767" class="date">04-Mar-2011 08:10</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Please remember in multi-process applications (which are best suited under CLI), that I/O operations often will BLOCK signals from being processed.<br />
+<br />
+For instance, if you have a parent waiting on fread(STDIN), it won't handle SIGCHLD, even if you defined a signal handler for it, until after the call to fread has returned. <br />
+<br />
+Your solution in this case is to wait on stream_select() to find out whether reading will block. Waiting on stream_select(), critically, does NOT BLOCK signals from being processed. <br />
+<br />
+Aurelien</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="101307""></a>
+  <div class="note">
+   <strong class="user">James Zhu</strong>
+   <a href="#101307" class="date">09-Dec-2010 01:45</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Example:<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">function </span><span class="default">ReadStdin</span><span class="keyword">(</span><span class="default">$prompt</span><span class="keyword">, </span><span class="default">$valid_inputs</span><span class="keyword">, </span><span class="default">$default </span><span class="keyword">= </span><span class="string">''</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; while(!isset(</span><span class="default">$input</span><span class="keyword">) || (</span><span class="default">is_array</span><span class="keyword">(</span><span class="default">$valid_inputs</span><span class="keyword">) &amp;&amp; !</span><span class="default">in_array</span><span class="keyword">(</span><span class="default">$input</span><span class="keyword">, </span><span class="default">$valid_inputs</span><span class="keyword">)) || (</span><span class="default">$valid_inputs </span><span class="keyword">== </span><span class="string">'is_file' </span><span class="keyword">&amp;&amp; !</span><span class="default">is_file</span><span class="keyword">(</span><span class="default">$input</span><span class="keyword">))) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; echo </span><span class="default">$prompt</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$input </span><span class="keyword">= </span><span class="default">strtolower</span><span class="keyword">(</span><span class="default">trim</span><span class="keyword">(</span><span class="default">fgets</span><span class="keyword">(</span><span class="default">STDIN</span><span class="keyword">)));<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if(empty(</span><span class="default">$input</span><span class="keyword">) &amp;&amp; !empty(</span><span class="default">$default</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$input </span><span class="keyword">= </span><span class="default">$default</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">$input</span><span class="keyword">;<br />
+}<br />
+<br />
+</span><span class="comment">// you can input &lt;Enter&gt; or 1, 2, 3<br />
+</span><span class="default">$choice </span><span class="keyword">= </span><span class="default">ReadStdin</span><span class="keyword">(</span><span class="string">'Please choose your answer or press Enter to continue: '</span><span class="keyword">, array(</span><span class="string">''</span><span class="keyword">, </span><span class="string">'1'</span><span class="keyword">, </span><span class="string">'2'</span><span class="keyword">, </span><span class="string">'3'</span><span class="keyword">));<br />
+<br />
+</span><span class="comment">// check input is valid file name, use /var/path for input nothing<br />
+</span><span class="default">$file </span><span class="keyword">= </span><span class="default">ReadStdin</span><span class="keyword">(</span><span class="string">'Please input the file name(/var/path):'</span><span class="keyword">, </span><span class="string">'is_file'</span><span class="keyword">, </span><span class="string">'/var/path'</span><span class="keyword">);<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+you can add more functions if you want.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="features.commandline.usage.html">Usage</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="features.commandline.interactive.html">Interactive shell</a></div>
  <div class="up"><a href="features.commandline.html">Command line usage</a></div>

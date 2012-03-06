@@ -320,7 +320,56 @@
  </div>
 
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="96328""></a>
+  <div class="note">
+   <strong class="user">Botjan kufca</strong>
+   <a href="#96328" class="date">20-Feb-2010 11:11</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+CN_match works contrary to intuitive thinking. I came across this when I was developing SSL server implemented in PHP. I stated (in code): <br />
+<br />
+- do not allow self signed certs (works)<br />
+- verify peer certs against CA cert (works)<br />
+- verify the client's CN against CN_match (does not work), like this:<br />
+<br />
+stream_context_set_option($context, 'ssl', 'CN_match', '*.example.org');<br />
+<br />
+I presumed this would match any client with CN below .example.org domain.<br />
+Unfortunately this is NOT the case. The option above does not do that.<br />
+<br />
+What it really does is this:<br />
+- it takes client's CN and compares it to CN_match<br />
+- IF CLIENT's CN CONTAINS AN ASTERISK like *.example.org, then it is matched against CN_match in wildcard matching fashion<br />
+<br />
+Examples to illustrate behaviour:<br />
+(CNM = server's CN_match)<br />
+(CCN = client's CN)<br />
+<br />
+- CNM=host.example.org, CCN=host.example.org ---&gt; OK<br />
+- CNM=host.example.org, CCN=*.example.org ---&gt; OK<br />
+- CNM=.example.org, CCN=*.example.org ---&gt; OK<br />
+- CNM=example.org, CCN=*.example.org ---&gt; ERROR<br />
+<br />
+- CNM=*.example.org, CCN=host.example.org ---&gt; ERROR<br />
+- CNM=*.example.org, CCN=*.example.org ---&gt; OK<br />
+<br />
+According to PHP sources I believe that the same applies if you are trying to act as Client and the server contains a wildcard certificate. If you set CN_match to myserver.example.org and server presents itself with *.example.org, the connection is allowed.<br />
+<br />
+Everything above applies to PHP version 5.2.12.<br />
+I will supply a patch to support CN_match starting with asterisk.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="context.ftp.html">FTP context options</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="context.curl.html">CURL context options</a></div>
  <div class="up"><a href="context.html">Context options and parameters</a></div>

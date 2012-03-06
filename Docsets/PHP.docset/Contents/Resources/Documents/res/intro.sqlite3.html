@@ -16,7 +16,116 @@
   <p class="para">
    Support for SQLite version 3 databases.
   </p>
- </div><hr /><div class="manualnavbar" style="text-align: center;">
+ </div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="90712""></a>
+  <div class="note">
+   <strong class="user">dzcowart at gmail dot com</strong>
+   <a href="#90712" class="date">05-May-2009 11:00</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+In Ubuntu the package php5-sqlite3 uses this method for accessing sqlite3 databases:<br />
+(from /usr/share/doc/php5-sqlite3/examples/example1.php)<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="comment">/*<br />
+&nbsp;* create a SQLite3 handle. <br />
+&nbsp;*<br />
+&nbsp;* Note: in-memory database are created by the magic keyword ":memory:"<br />
+&nbsp;*<br />
+&nbsp;*/<br />
+<br />
+</span><span class="default">$db </span><span class="keyword">= </span><span class="default">sqlite3_open</span><span class="keyword">(</span><span class="string">":memory:"</span><span class="keyword">);<br />
+if (!</span><span class="default">$db</span><span class="keyword">) die (</span><span class="string">"Could not create in-memory database.."</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">/*<br />
+&nbsp;* create a simple test and insert some values..<br />
+&nbsp;*/<br />
+<br />
+</span><span class="default">$ret </span><span class="keyword">= </span><span class="default">sqlite3_exec </span><span class="keyword">(</span><span class="default">$db</span><span class="keyword">, </span><span class="string">"CREATE TABLE test (id INTEGER, name TEXT, age INTEGER);"</span><span class="keyword">);<br />
+if (!</span><span class="default">$ret</span><span class="keyword">) die (</span><span class="default">sqlite3_error</span><span class="keyword">(</span><span class="default">$db</span><span class="keyword">));<br />
+<br />
+</span><span class="default">sqlite3_exec</span><span class="keyword">(</span><span class="default">$db</span><span class="keyword">, </span><span class="string">"INSERT INTO test (id,name,age) VALUES (1,'michael',32)"</span><span class="keyword">);<br />
+</span><span class="default">sqlite3_exec</span><span class="keyword">(</span><span class="default">$db</span><span class="keyword">, </span><span class="string">"INSERT INTO test (id,name,age) VALUES (2,'bob',27)"</span><span class="keyword">);<br />
+</span><span class="default">sqlite3_exec</span><span class="keyword">(</span><span class="default">$db</span><span class="keyword">, </span><span class="string">"INSERT INTO test (id,name,age) VALUES (3,'martin',12)"</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">/*<br />
+&nbsp;* Create a query<br />
+&nbsp;*/<br />
+<br />
+</span><span class="default">$query </span><span class="keyword">= </span><span class="default">sqlite3_query</span><span class="keyword">(</span><span class="default">$db</span><span class="keyword">, </span><span class="string">"SELECT * FROM test ORDER BY age DESC"</span><span class="keyword">);<br />
+if (!</span><span class="default">$query</span><span class="keyword">) die (</span><span class="default">sqlite3_error</span><span class="keyword">(</span><span class="default">$db</span><span class="keyword">));<br />
+<br />
+</span><span class="comment">/*<br />
+&nbsp;* sqlite3_fetch_array() returns an associative array <br />
+&nbsp;* for each row in the result set. Key indexes are <br />
+&nbsp;* the columns names.<br />
+&nbsp;*/<br />
+<br />
+</span><span class="keyword">while ( (</span><span class="default">$row </span><span class="keyword">= </span><span class="default">sqlite3_fetch_array</span><span class="keyword">(</span><span class="default">$query</span><span class="keyword">)))<br />
+{<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">printf</span><span class="keyword">(</span><span class="string">"%-20s %u\n"</span><span class="keyword">, </span><span class="default">$row</span><span class="keyword">[</span><span class="string">'name'</span><span class="keyword">], </span><span class="default">$row</span><span class="keyword">[</span><span class="string">'age'</span><span class="keyword">]);<br />
+}<br />
+<br />
+</span><span class="comment">/*<br />
+&nbsp;* do not forget to release all handles !<br />
+&nbsp;*/<br />
+<br />
+</span><span class="default">sqlite3_query_close</span><span class="keyword">(</span><span class="default">$query</span><span class="keyword">);<br />
+</span><span class="default">sqlite3_close </span><span class="keyword">(</span><span class="default">$db</span><span class="keyword">);<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="89809""></a>
+  <div class="note">
+   <strong class="user">pomax at nihongoresources dot com</strong>
+   <a href="#89809" class="date">24-Mar-2009 02:28</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+If you use PHP5, the currently advised approach to natively (ie, without using a third party library) interfacing with sqlite3 databases is through the use of a PDO object:<br />
+<br />
+<span class="default">&lt;?php<br />
+&nbsp; $dbh </span><span class="keyword">= new </span><span class="default">PDO</span><span class="keyword">(</span><span class="string">'sqlite:yourdatabase.db'</span><span class="keyword">);<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+Any execution of functions and commands supported by sqlite3 can then be called through the PDO query and exec functions. For instance, a broad select would be achieved as follows:<br />
+<br />
+<span class="default">&lt;?php<br />
+&nbsp; </span><span class="keyword">foreach(</span><span class="default">$dbh</span><span class="keyword">-&gt;</span><span class="default">query</span><span class="keyword">(</span><span class="string">'SELECT * FROM table WHERE column = criterium'</span><span class="keyword">) as </span><span class="default">$row</span><span class="keyword">)<br />
+&nbsp; {<br />
+&nbsp; </span><span class="default">ã€€foreach</span><span class="keyword">(</span><span class="default">$row </span><span class="keyword">as </span><span class="default">$key</span><span class="keyword">=&gt;</span><span class="default">$val</span><span class="keyword">)<br />
+</span><span class="default">ã€€&nbsp; </span><span class="keyword">{<br />
+</span><span class="default">ã€€&nbsp; ã€€</span><span class="comment">// PDO has no built in fetch_assoc equivalent<br />
+</span><span class="default">ã€€&nbsp; ã€€if</span><span class="keyword">(!</span><span class="default">is_numeric</span><span class="keyword">(</span><span class="default">$key</span><span class="keyword">)) print </span><span class="string">"</span><span class="default">$key</span><span class="string">: </span><span class="default">$val</span><span class="string">\n"</span><span class="keyword">;<br />
+</span><span class="default">ã€€&nbsp; </span><span class="keyword">}<br />
+&nbsp; }<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+when done consulting or administrating a database that relies on PDO access, it is generally a good idea to either issue a<br />
+<br />
+<span class="default">&lt;?php $dbh </span><span class="keyword">= </span><span class="default">null</span><span class="keyword">; </span><span class="default">?&gt;<br />
+</span><br />
+or<br />
+<br />
+<span class="default">&lt;?php </span><span class="keyword">unset(</span><span class="default">$dbh</span><span class="keyword">); </span><span class="default">?&gt;<br />
+</span><br />
+statement, as the PDO class does not come with a function for closing a connection, and so any PDO connection will sit idle until you explicitly dispose of it.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="book.sqlite3.html">SQLite3</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="sqlite3.setup.html">Installing/Configuring</a></div>
  <div class="up"><a href="book.sqlite3.html">SQLite3</a></div>

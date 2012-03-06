@@ -176,7 +176,89 @@ UID @ Sun, 12 Oct 2008 20:48:28 +0100: ross
  </div>
 
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="105888""></a>
+  <div class="note">
+   <strong class="user">matt_m at me dot com</strong>
+   <a href="#105888" class="date">23-Sep-2011 03:04</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+unlink() does not clear the cache if you are performing file_exists() on a remote file like:<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">if (</span><span class="default">file_exists</span><span class="keyword">(</span><span class="string">"<a href="ftp://ftp.example.com/somefile" rel="nofollow" target="_blank">ftp://ftp.example.com/somefile</a>"</span><span class="keyword">))<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+In this case, even after you unlink() successfully, you must call clearstatcache().<br />
+<br />
+<span class="default">&lt;?php<br />
+unlink</span><span class="keyword">(</span><span class="string">"<a href="ftp://ftp.example.com/somefile" rel="nofollow" target="_blank">ftp://ftp.example.com/somefile</a>"</span><span class="keyword">);<br />
+</span><span class="default">clearstatcache</span><span class="keyword">();<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+file_exists() then properly returns false.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="96621""></a>
+  <div class="note">
+   <strong class="user">markandrewslade at gmail dot com</strong>
+   <a href="#96621" class="date">08-Mar-2010 11:54</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+On Linux, a forked process inherits a copy of the parent's cache, but after forking the two caches do not impact each other.&nbsp; The snippet below demonstrates this by creating a child and confirming outdated (cached) information, then clearing the cache, and getting new information.<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+</span><span class="keyword">function </span><span class="default">report</span><span class="keyword">(</span><span class="default">$directory</span><span class="keyword">, </span><span class="default">$prefix </span><span class="keyword">= </span><span class="string">''</span><span class="keyword">) { </span><span class="default">printf</span><span class="keyword">(</span><span class="string">'%sDoes %s exist?&nbsp; PHP says "%s"'</span><span class="keyword">. </span><span class="default">PHP_EOL</span><span class="keyword">, </span><span class="default">$prefix</span><span class="keyword">, </span><span class="default">$directory</span><span class="keyword">, </span><span class="default">is_dir</span><span class="keyword">(</span><span class="default">$directory</span><span class="keyword">) ? </span><span class="string">'yes' </span><span class="keyword">: </span><span class="string">'no'</span><span class="keyword">); }<br />
+</span><span class="default">$target </span><span class="keyword">= </span><span class="string">'./delete-me-before-running-statcache'</span><span class="keyword">;<br />
+<br />
+if (</span><span class="default">is_dir</span><span class="keyword">(</span><span class="default">$target</span><span class="keyword">)) {<br />
+&nbsp;&nbsp;&nbsp; die(</span><span class="string">"Delete </span><span class="default">$target</span><span class="string"> before running.\n"</span><span class="keyword">);<br />
+}<br />
+<br />
+echo </span><span class="string">"Creating </span><span class="default">$target</span><span class="string">.\n"</span><span class="keyword">;<br />
+</span><span class="default">mkdir</span><span class="keyword">(</span><span class="default">$target</span><span class="keyword">) || die(</span><span class="string">"Unable to create </span><span class="default">$target</span><span class="string">.\n"</span><span class="keyword">);<br />
+</span><span class="default">report</span><span class="keyword">(</span><span class="default">$target</span><span class="keyword">); </span><span class="comment">// is_dir($target) is now cached as true<br />
+<br />
+</span><span class="keyword">echo </span><span class="string">"Unlinking </span><span class="default">$target</span><span class="string">.\n"</span><span class="keyword">;<br />
+</span><span class="default">rmdir</span><span class="keyword">(</span><span class="default">$target</span><span class="keyword">) || die(</span><span class="string">"Unable to unlink </span><span class="default">$target</span><span class="string">.\n"</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">// This will say "yes", which is old (inaccurate) information.<br />
+</span><span class="default">report</span><span class="keyword">(</span><span class="default">$target</span><span class="keyword">);<br />
+<br />
+if ((</span><span class="default">$pid </span><span class="keyword">= </span><span class="default">pcntl_fork</span><span class="keyword">()) === -</span><span class="default">1</span><span class="keyword">) { die(</span><span class="string">"Failed to pcntl_fork.\n"</span><span class="keyword">); }<br />
+elseif (</span><span class="default">$pid </span><span class="keyword">=== </span><span class="default">0</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// child<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">report</span><span class="keyword">(</span><span class="default">$target</span><span class="keyword">, </span><span class="string">'&lt;&lt;child&gt;&gt; '</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; echo </span><span class="string">"&lt;&lt;child&gt;&gt; Clearing stat cache.\n"</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">clearstatcache</span><span class="keyword">();<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">report</span><span class="keyword">(</span><span class="default">$target</span><span class="keyword">, </span><span class="string">'&lt;&lt;child&gt;&gt; '</span><span class="keyword">);<br />
+} else {<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// parent<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">sleep</span><span class="keyword">(</span><span class="default">2</span><span class="keyword">); </span><span class="comment">// move this to the child block to reverse the test.<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">report</span><span class="keyword">(</span><span class="default">$target</span><span class="keyword">, </span><span class="string">'&lt;&lt;&lt;parent&gt;&gt; '</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">clearstatcache</span><span class="keyword">();<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">report</span><span class="keyword">(</span><span class="default">$target</span><span class="keyword">, </span><span class="string">'&lt;&lt;&lt;parent&gt;&gt; '</span><span class="keyword">);<br />
+}<br />
+<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="function.chown.html">chown</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.copy.html">copy</a></div>
  <div class="up"><a href="ref.filesystem.html">Filesystem Functions</a></div>

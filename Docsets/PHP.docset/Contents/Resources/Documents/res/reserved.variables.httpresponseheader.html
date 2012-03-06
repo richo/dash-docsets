@@ -75,7 +75,107 @@ NULL
  </div>
 
  
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="98293""></a>
+  <div class="note">
+   <strong class="user">imchillindave at hotmail dot com</strong>
+   <a href="#98293" class="date">07-Jun-2010 12:05</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Here's a few pointers I've learned about using the $http_response_header variable:<br />
+<br />
+1) The value changes with each request made.<br />
+<br />
+2) When used in methods/functions, the current value must be passed to the method/function.&nbsp; <br />
+Using $http_response_header directly in the method/function without being assigned a value by a function/method parameter will result in the error message:&nbsp; Notice: Undefined variable: http_response_header<br />
+<br />
+3) The array length and value locations in the array may change depending on the server being queried and the response received.&nbsp; I'm not sure if there are any 'absolute' value positions in the array.<br />
+<br />
+4) $http_response_header ONLY gets populated using file_get_contents() when using a URL and NOT a local file.&nbsp; This is stated in the description when it mentions the HTTP_wrapper.<br />
+<br />
+Example of using $http_response_header in a class.<br />
+This example will show how the output changes between the two requests.<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">class </span><span class="default">foo<br />
+</span><span class="keyword">{<br />
+&nbsp;&nbsp;&nbsp; private function </span><span class="default">header_code</span><span class="keyword">( </span><span class="default">$http_response_header </span><span class="keyword">)<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// Display return header status<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">echo </span><span class="string">'Status: ' </span><span class="keyword">. </span><span class="default">$http_response_header</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">];<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// Display easy-to-read valid PHP array code<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">echo </span><span class="string">'&lt;pre&gt;' </span><span class="keyword">. </span><span class="default">var_export</span><span class="keyword">( </span><span class="default">$http_response_header</span><span class="keyword">, </span><span class="default">true </span><span class="keyword">) . </span><span class="string">'&lt;/pre&gt;'</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; public function </span><span class="default">test</span><span class="keyword">()<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// Make first request<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$req1 </span><span class="keyword">= </span><span class="default">file_get_contents</span><span class="keyword">( </span><span class="string">'<a href="http://www.google.com/" rel="nofollow" target="_blank">http://www.google.com/</a>' </span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// Show header data<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">header_code</span><span class="keyword">( </span><span class="default">$http_response_header </span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// Make second request - ( Will have a 301 return header status )<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$req2 </span><span class="keyword">= </span><span class="default">file_get_contents</span><span class="keyword">( </span><span class="string">'<a href="http://google.com" rel="nofollow" target="_blank">http://google.com</a>' </span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// Show header data<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">header_code</span><span class="keyword">( </span><span class="default">$http_response_header </span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+}<br />
+</span><span class="default">$test </span><span class="keyword">= new </span><span class="default">foo</span><span class="keyword">;<br />
+</span><span class="default">$test</span><span class="keyword">-&gt;</span><span class="default">test</span><span class="keyword">();<br />
+<br />
+</span><span class="comment">/* Output:<br />
+<br />
+Status: HTTP/1.0 200 OK<br />
+array (<br />
+&nbsp; 0 =&gt; 'HTTP/1.0 200 OK',<br />
+&nbsp; 1 =&gt; 'Date: Mon, 07 Jun 2010 18:47:10 GMT',<br />
+&nbsp; 2 =&gt; 'Expires: -1',<br />
+&nbsp; 3 =&gt; 'Cache-Control: private, max-age=0',<br />
+&nbsp; 4 =&gt; 'Content-Type: text/html; charset=ISO-8859-1',<br />
+&nbsp; 5 =&gt; 'Set-Cookie: PREF=ID=410f407bde472198; expires=Wed, 06-Jun-2012 18:47:10 GMT; path=/; domain=.google.com',<br />
+&nbsp; 6 =&gt; 'Server: gws',<br />
+&nbsp; 7 =&gt; 'X-XSS-Protection: 1; mode=block',<br />
+&nbsp; 8 =&gt; 'Alternate-Protocol: 443:npn-spdy/1',<br />
+)<br />
+<br />
+Status: HTTP/1.0 301 Moved Permanently<br />
+array (<br />
+&nbsp; 0 =&gt; 'HTTP/1.0 301 Moved Permanently',<br />
+&nbsp; 1 =&gt; 'Location: <a href="http://www.google.com/" rel="nofollow" target="_blank">http://www.google.com/</a>',<br />
+&nbsp; 2 =&gt; 'Content-Type: text/html; charset=UTF-8',<br />
+&nbsp; 3 =&gt; 'Date: Mon, 07 Jun 2010 18:47:10 GMT',<br />
+&nbsp; 4 =&gt; 'Expires: Wed, 07 Jul 2010 18:47:10 GMT',<br />
+&nbsp; 5 =&gt; 'Cache-Control: public, max-age=2592000',<br />
+&nbsp; 6 =&gt; 'Server: gws',<br />
+&nbsp; 7 =&gt; 'Content-Length: 219',<br />
+&nbsp; 8 =&gt; 'X-XSS-Protection: 1; mode=block',<br />
+&nbsp; 9 =&gt; 'HTTP/1.0 200 OK',<br />
+&nbsp; 10 =&gt; 'Date: Mon, 07 Jun 2010 18:47:10 GMT',<br />
+&nbsp; 11 =&gt; 'Expires: -1',<br />
+&nbsp; 12 =&gt; 'Cache-Control: private, max-age=0',<br />
+&nbsp; 13 =&gt; 'Content-Type: text/html; charset=ISO-8859-1',<br />
+&nbsp; 14 =&gt; 'Set-Cookie: PREF=ID=86ae94efdb5499c2; expires=Wed, 06-Jun-2012 18:47:10 GMT; path=/; domain=.google.com',<br />
+&nbsp; 15 =&gt; 'Server: gws',<br />
+&nbsp; 16 =&gt; 'X-XSS-Protection: 1; mode=block',<br />
+&nbsp; 17 =&gt; 'Alternate-Protocol: 443:npn-spdy/1',<br />
+)<br />
+*/<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="reserved.variables.httprawpostdata.html">$HTTP_RAW_POST_DATA</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="reserved.variables.argc.html">$argc</a></div>
  <div class="up"><a href="reserved.variables.html">Predefined Variables</a></div>

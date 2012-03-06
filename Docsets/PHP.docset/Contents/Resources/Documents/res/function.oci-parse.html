@@ -150,7 +150,265 @@ in current versions, however it is deprecated and not recommended.
  </div>
 
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="102313""></a>
+  <div class="note">
+   <strong class="user">falundir at gmail dot com</strong>
+   <a href="#102313" class="date">08-Feb-2011 05:38</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+When you want to call stored function (and want to read its result) which executes DML queries (insert, update, delete) inside its body you can't use "select your_stored_function(:param1, :param2) from dual" because you will receive "ORA-14551: cannot perform a DML operation inside a query" error.<br />
+<br />
+In order to call such function and get its result you need to wrap it into nested procedure with OUT parameter like this:<br />
+<br />
+DECLARE<br />
+&nbsp; PROCEDURE caller(return_value OUT NUMBER) AS<br />
+&nbsp; BEGIN<br />
+&nbsp;&nbsp;&nbsp; return_value := your_stored_function(:param1, :param2);<br />
+&nbsp; END;<br />
+BEGIN<br />
+&nbsp; caller(:return_value);<br />
+END;<br />
+<br />
+and bind to :return_value variable to get the result of function.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="79584""></a>
+  <div class="note">
+   <strong class="user">michael dot virnstein at brodos dot de</strong>
+   <a href="#79584" class="date">04-Dec-2007 08:43</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+A neat way to parse a query only once per script, if the query is done inside a function:<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">function </span><span class="default">querySomething</span><span class="keyword">(</span><span class="default">$conn</span><span class="keyword">, </span><span class="default">$id</span><span class="keyword">)<br />
+{<br />
+&nbsp;&nbsp;&nbsp; static </span><span class="default">$stmt</span><span class="keyword">;<br />
+<br />
+&nbsp;&nbsp;&nbsp; if (</span><span class="default">is_null</span><span class="keyword">(</span><span class="default">$stmt</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$stmt </span><span class="keyword">= </span><span class="default">oci_parse</span><span class="keyword">(</span><span class="default">$conn</span><span class="keyword">, </span><span class="string">'select * from t where pk = :id'</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">oci_bind_by_name</span><span class="keyword">(</span><span class="default">$stmt</span><span class="keyword">, </span><span class="string">':id'</span><span class="keyword">, </span><span class="default">$id</span><span class="keyword">, -</span><span class="default">1</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">oci_execute</span><span class="keyword">(</span><span class="default">$stmt</span><span class="keyword">, </span><span class="default">OCI_DEFAULT</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">oci_fetch_array</span><span class="keyword">(</span><span class="default">$stmt</span><span class="keyword">, </span><span class="default">OCI_ASSOC</span><span class="keyword">);<br />
+<br />
+}<br />
+<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+With the static variable, the statment handle isn't closed after the function has terminated. Very nice for functions that are called e.g. in loops. Unfortunately this only works for static sql. If you have dynamic sql, you can do the following:<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+</span><span class="keyword">function </span><span class="default">querySomething</span><span class="keyword">(</span><span class="default">$conn</span><span class="keyword">, </span><span class="default">$data</span><span class="keyword">)<br />
+{<br />
+&nbsp;&nbsp;&nbsp; static </span><span class="default">$stmt </span><span class="keyword">= array();<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$first </span><span class="keyword">= </span><span class="default">true</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$query </span><span class="keyword">= </span><span class="string">'select * from t'</span><span class="keyword">;<br />
+<br />
+&nbsp;&nbsp;&nbsp; foreach (</span><span class="default">$data </span><span class="keyword">as </span><span class="default">$key </span><span class="keyword">=&gt; </span><span class="default">$value</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if (</span><span class="default">$first</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$first </span><span class="keyword">= </span><span class="default">false</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$query </span><span class="keyword">.= </span><span class="string">' where '</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; } else {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$query </span><span class="keyword">.= </span><span class="string">' and '</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$query </span><span class="keyword">.= </span><span class="string">"</span><span class="default">$key</span><span class="string"> = :b</span><span class="default">$key</span><span class="string">"</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$queryhash </span><span class="keyword">= </span><span class="default">md5</span><span class="keyword">(</span><span class="default">$query</span><span class="keyword">);<br />
+&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; if (</span><span class="default">is_null</span><span class="keyword">(</span><span class="default">$stmt</span><span class="keyword">[</span><span class="default">$queryhash</span><span class="keyword">])) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$stmt</span><span class="keyword">[</span><span class="default">$queryhash</span><span class="keyword">] = </span><span class="default">oci_parse</span><span class="keyword">(</span><span class="default">$conn</span><span class="keyword">, </span><span class="default">$query</span><span class="keyword">);&nbsp; &nbsp; <br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; foreach (</span><span class="default">$data </span><span class="keyword">as </span><span class="default">$key </span><span class="keyword">=&gt; </span><span class="default">$value</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// don't use $value, because we bind memory addresses here.<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; // this would result in every bind pointing at the same value after foreach<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">oci_bind_by_name</span><span class="keyword">(</span><span class="default">$stmt</span><span class="keyword">[</span><span class="default">$queryhash</span><span class="keyword">], </span><span class="string">":b</span><span class="default">$key</span><span class="string">"</span><span class="keyword">, </span><span class="default">$data</span><span class="keyword">[</span><span class="default">$key</span><span class="keyword">], -</span><span class="default">1</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">oci_execute</span><span class="keyword">(</span><span class="default">$stmt</span><span class="keyword">[</span><span class="default">$queryhash</span><span class="keyword">], </span><span class="default">OCI_DEFAULT</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">oci_fetch_array</span><span class="keyword">(</span><span class="default">$stmt</span><span class="keyword">[</span><span class="default">$queryhash</span><span class="keyword">], </span><span class="default">OCI_ASSOC</span><span class="keyword">);<br />
+<br />
+}<br />
+<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="61154""></a>
+  <div class="note">
+   
+   <a href="#61154" class="date">26-Jan-2006 04:05</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+one of the most things that is done wrong with oracle is the following.<br />
+<br />
+Cosider:<br />
+<br />
+<span class="default">&lt;?php<br />
+$dbh </span><span class="keyword">= </span><span class="default">ocilogon</span><span class="keyword">(</span><span class="string">'user'</span><span class="keyword">, </span><span class="string">'pass'</span><span class="keyword">, </span><span class="string">'db'</span><span class="keyword">);<br />
+<br />
+for (</span><span class="default">$i </span><span class="keyword">= </span><span class="default">0</span><span class="keyword">; </span><span class="default">$i</span><span class="keyword">&lt;=</span><span class="default">10</span><span class="keyword">; </span><span class="default">$i</span><span class="keyword">++) {<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$sth </span><span class="keyword">= </span><span class="default">ociparse</span><span class="keyword">(</span><span class="default">$dbh</span><span class="keyword">, </span><span class="string">'SELECT * FROM T WHERE x = :x'</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">ocibindbyname</span><span class="keyword">(</span><span class="default">$sth</span><span class="keyword">, </span><span class="string">':x'</span><span class="keyword">, </span><span class="default">$i</span><span class="keyword">, -</span><span class="default">1</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">ociexecute</span><span class="keyword">(</span><span class="default">$sth</span><span class="keyword">, </span><span class="default">OCI_DEFAULT</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; if (</span><span class="default">ocifetchrow</span><span class="keyword">(</span><span class="default">$sth</span><span class="keyword">, </span><span class="default">$row</span><span class="keyword">, </span><span class="default">OCI_ASSOC</span><span class="keyword">+</span><span class="default">OCI_RETURN_NULLS</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">var_dump</span><span class="keyword">(</span><span class="default">$row</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+}<br />
+<br />
+</span><span class="default">ocilogoff</span><span class="keyword">(</span><span class="default">$dbh</span><span class="keyword">);<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+Problem here is, that you parse the same statement over and over and that'll cost ressources and will introduce many wait events. This problem will increase exponentially with the number of users using your system. That's one of the things besides not using bind variables that will prevent your application from scaling well.<br />
+<br />
+The right approach:<br />
+<br />
+<span class="default">&lt;?php<br />
+$dbh </span><span class="keyword">= </span><span class="default">ocilogon</span><span class="keyword">(</span><span class="string">'user'</span><span class="keyword">, </span><span class="string">'pass'</span><span class="keyword">, </span><span class="string">'db'</span><span class="keyword">);<br />
+</span><span class="default">$sth </span><span class="keyword">= </span><span class="default">ociparse</span><span class="keyword">(</span><span class="default">$dbh</span><span class="keyword">, </span><span class="string">'SELECT * FROM T WHERE x = :x'</span><span class="keyword">);<br />
+for (</span><span class="default">$i </span><span class="keyword">= </span><span class="default">0</span><span class="keyword">; </span><span class="default">$i</span><span class="keyword">&lt;=</span><span class="default">10</span><span class="keyword">; </span><span class="default">$i</span><span class="keyword">++) {<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">ocibindbyname</span><span class="keyword">(</span><span class="default">$sth</span><span class="keyword">, </span><span class="string">':x'</span><span class="keyword">, </span><span class="default">$i</span><span class="keyword">, -</span><span class="default">1</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">ociexecute</span><span class="keyword">(</span><span class="default">$sth</span><span class="keyword">, </span><span class="default">OCI_DEFAULT</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; if (</span><span class="default">ocifetchrow</span><span class="keyword">(</span><span class="default">$sth</span><span class="keyword">, </span><span class="default">$row</span><span class="keyword">, </span><span class="default">OCI_ASSOC</span><span class="keyword">+</span><span class="default">OCI_RETURN_NULLS</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">var_dump</span><span class="keyword">(</span><span class="default">$row</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+}<br />
+</span><span class="default">ocilogoff</span><span class="keyword">(</span><span class="default">$dbh</span><span class="keyword">);<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+Now we are parsing the statement once and using it as often as possible. <br />
+<br />
+When your using Oracle, create proper indexes, use bind variables and parse once and execute often. Not doing so will get you into trouble when more than a few users are working with your application simultaneously.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="42128""></a>
+  <div class="note">
+   <strong class="user">kurt at kovac dot ch</strong>
+   <a href="#42128" class="date">04-May-2004 08:40</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+For those that are having trouble with error checking, i have noticed on a lot of sites that people are trying to check the statement handle for error messages with OCIParse. Since the statement handle ($sth) is not created yet, you need to check the database handle ($dbh) for any errors with OCIParse. For example:<br />
+<br />
+instead of:<br />
+<br />
+<span class="default">&lt;?php<br />
+$stmt </span><span class="keyword">= </span><span class="default">OCIParse</span><span class="keyword">(</span><span class="default">$conn</span><span class="keyword">, </span><span class="default">$query</span><span class="keyword">);<br />
+if (!</span><span class="default">$stmt</span><span class="keyword">) {<br />
+&nbsp;&nbsp; </span><span class="default">$oerr </span><span class="keyword">= </span><span class="default">OCIError</span><span class="keyword">(</span><span class="default">$stmt</span><span class="keyword">);<br />
+&nbsp;&nbsp; echo </span><span class="string">"Fetch Code 1:"</span><span class="keyword">.</span><span class="default">$oerr</span><span class="keyword">[</span><span class="string">"message"</span><span class="keyword">];<br />
+&nbsp;&nbsp; exit;<br />
+} <br />
+</span><span class="default">?&gt;<br />
+</span><br />
+use:<br />
+<br />
+<span class="default">&lt;?php<br />
+$stmt </span><span class="keyword">= </span><span class="default">OCIParse</span><span class="keyword">(</span><span class="default">$conn</span><span class="keyword">, </span><span class="default">$query</span><span class="keyword">);<br />
+if (!</span><span class="default">$stmt</span><span class="keyword">) {<br />
+&nbsp;&nbsp; </span><span class="default">$oerr </span><span class="keyword">= </span><span class="default">OCIError</span><span class="keyword">(</span><span class="default">$conn</span><span class="keyword">);<br />
+&nbsp;&nbsp; echo </span><span class="string">"Fetch Code 1:"</span><span class="keyword">.</span><span class="default">$oerr</span><span class="keyword">[</span><span class="string">"message"</span><span class="keyword">];<br />
+&nbsp;&nbsp; exit;<br />
+} <br />
+</span><span class="default">?&gt;<br />
+</span><br />
+Hope this helps someone.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="38144""></a>
+  <div class="note">
+   <strong class="user">jicurito at hotmail dot com</strong>
+   <a href="#38144" class="date">09-Dec-2003 04:41</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+regarding egypt note on double quotes, the reason for that behaviour is that Oracle treats things with double quotes as identifiers on a given statement... using single quotes won't provoque mistakes...</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="36557""></a>
+  <div class="note">
+   <strong class="user">egypt at nmt dot edu</strong>
+   <a href="#36557" class="date">14-Oct-2003 07:31</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Whereas MySQL doesn't care what kind of quotes are around a LIKE clause, ociexecute gives the error:<br />
+&nbsp;&nbsp;&nbsp; ociexecute(): OCIStmtExecute: ORA-00904: "NM": invalid identifier <br />
+for the following.<br />
+<span class="default">&lt;?php<br />
+$sql&nbsp; </span><span class="keyword">= </span><span class="string">"SELECT * FROM addresses "<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="keyword">. </span><span class="string">"WHERE state LIKE \"NM\""</span><span class="keyword">;&nbsp; </span><span class="comment">// error!<br />
+</span><span class="default">$stmt </span><span class="keyword">= </span><span class="default">ociparse</span><span class="keyword">(</span><span class="default">$conn</span><span class="keyword">, </span><span class="default">$sql</span><span class="keyword">);<br />
+</span><span class="default">ociexecute</span><span class="keyword">(</span><span class="default">$stmt</span><span class="keyword">);<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+it's fine if you just use single quotes:<br />
+&nbsp;&nbsp;&nbsp; . "WHERE state LIKE 'NM'";<br />
+but i think it's interesting that ociparse doesn't say anything</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="10272""></a>
+  <div class="note">
+   <strong class="user">mwd at modulo3 dot de</strong>
+   <a href="#10272" class="date">22-Dec-2000 07:21</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+if you're using "complex" statements e.g such having calls to build in oracle functions in the select list (as in example below), I did not find any other way as using the "AS &lt;Name&gt;" clause to being able to output the functions outcome using ociresult<br />
+<br />
+example:<br />
+<br />
+<span class="default">&lt;?php<br />
+ociparse</span><span class="keyword">(</span><span class="default">$conn</span><span class="keyword">,</span><span class="string">"select EMPNO, LPAD(' ', 2*(LEVEL-1)) || ENAME AS COMPLETE_FANTASY_NAME, JOB, HIREDATE from scott.emp start with job='MANAGER' connect by PRIOR EMPNO = MGR"</span><span class="keyword">);<br />
+<br />
+echo </span><span class="default">ociresult $stmt</span><span class="keyword">,</span><span class="string">"COMPLETE_FANTASY_NAME"</span><span class="keyword">).</span><span class="string">" "</span><span class="keyword">;<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+BTW: I also found out by TAE that "COMPLETE_FANATASY_NAME" might not be "complete fantasy" as it has to be all capital letters.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="function.oci-num-rows.html">oci_num_rows</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.oci-password-change.html">oci_password_change</a></div>
  <div class="up"><a href="ref.oci8.html">OCI8 Functions</a></div>

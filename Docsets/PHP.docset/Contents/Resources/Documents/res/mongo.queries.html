@@ -271,7 +271,109 @@ m2&#039;s slave is: europeanHost<br />
 
 
  </div>
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="106522""></a>
+  <div class="note">
+   <strong class="user">patrick at hexane dot org</strong>
+   <a href="#106522" class="date">15-Nov-2011 07:08</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Note that $db-&gt;collection-&gt;find()-&gt;count() will always run on the PRIMARY, since underneath the hood -&gt;count() is a dbcommand.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="98874""></a>
+  <div class="note">
+   <strong class="user">Charle Demers</strong>
+   <a href="#98874" class="date">12-Jul-2010 10:00</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Do not forget to call rewind on your resulting MongoCursor, I just learned the hard way that it might not be rewind when you receive it.<br />
+<br />
+For example, assuming that you have some results to the query:<br />
+<br />
+<span class="default">&lt;?php<br />
+&nbsp; </span><span class="comment">// Assuming that $mongo is a valid mongo object.<br />
+&nbsp; </span><span class="default">$collection </span><span class="keyword">= </span><span class="default">$mongo</span><span class="keyword">-&gt;</span><span class="default">selectDB</span><span class="keyword">(</span><span class="string">"foo"</span><span class="keyword">)-&gt;</span><span class="default">selectCollection</span><span class="keyword">(</span><span class="string">"bar"</span><span class="keyword">);<br />
+&nbsp; </span><span class="default">$cursor </span><span class="keyword">= </span><span class="default">$collection</span><span class="keyword">-&gt;</span><span class="default">find</span><span class="keyword">();<br />
+&nbsp; echo </span><span class="string">"Is it valid? " </span><span class="keyword">. </span><span class="default">$cursor</span><span class="keyword">-&gt;</span><span class="default">valid</span><span class="keyword">()?</span><span class="string">"VALID"</span><span class="keyword">:</span><span class="string">"INVALID"</span><span class="keyword">;<br />
+<br />
+&nbsp; </span><span class="default">$cursor</span><span class="keyword">-&gt;</span><span class="default">rewind</span><span class="keyword">();<br />
+&nbsp; echo </span><span class="string">"Is it valid now? " </span><span class="keyword">. </span><span class="default">$cursor</span><span class="keyword">-&gt;</span><span class="default">valid</span><span class="keyword">()?</span><span class="string">"VALID"</span><span class="keyword">:</span><span class="string">"INVALID"</span><span class="keyword">;<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+Will possibly result in:<br />
+<br />
+Is it valid? INVALID<br />
+Is it valid now? VALID</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="97881""></a>
+  <div class="note">
+   <strong class="user">Charle Demers</strong>
+   <a href="#97881" class="date">13-May-2010 09:14</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Watch for types casting in your queries, make sure ints are typed as ints and strings as strings. <br />
+<br />
+Ex:<br />
+<span class="default">&lt;?php<br />
+<br />
+$friendId </span><span class="keyword">= </span><span class="default">$_SESSION</span><span class="keyword">[</span><span class="string">'friendId'</span><span class="keyword">];<br />
+</span><span class="default">$request </span><span class="keyword">= array( </span><span class="string">'friends.friendId' </span><span class="keyword">=&gt; (int)</span><span class="default">$friendId </span><span class="keyword">);<br />
+</span><span class="default">$friend </span><span class="keyword">= </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">_mongo</span><span class="keyword">-&gt;</span><span class="default">friends</span><span class="keyword">-&gt;</span><span class="default">findOne</span><span class="keyword">( </span><span class="default">$request </span><span class="keyword">);<br />
+<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+This example would not work without casting the $friendId to int in the request array (unless the friendId column in Mongo is actually really a string).</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="96268""></a>
+  <div class="note">
+   <strong class="user">jhuntwork at lightcubesolutions dot com</strong>
+   <a href="#96268" class="date">17-Feb-2010 02:25</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+If you have already converted the MongoID into a string elsewhere and need to query for an _id based on the string, you can do so by creating a new MongoID object:<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+$m </span><span class="keyword">= new </span><span class="default">Mongo</span><span class="keyword">();<br />
+</span><span class="default">$collection </span><span class="keyword">= </span><span class="default">$collection </span><span class="keyword">= </span><span class="default">$m</span><span class="keyword">-&gt;</span><span class="default">selectDB</span><span class="keyword">(</span><span class="string">'foo'</span><span class="keyword">)-&gt;</span><span class="default">selectCollection</span><span class="keyword">(</span><span class="string">'bar'</span><span class="keyword">);<br />
+<br />
+</span><span class="default">$id_string </span><span class="keyword">= </span><span class="string">'4b7c29908ead0e2e1d000000'</span><span class="keyword">;<br />
+<br />
+</span><span class="comment">// The string is converted to a MongoID object<br />
+</span><span class="default">$mongo_id </span><span class="keyword">= new </span><span class="default">MongoID</span><span class="keyword">(</span><span class="default">$id_string</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">// $obj will be an array of data if the _id exists in the collection<br />
+</span><span class="default">$obj </span><span class="keyword">= </span><span class="default">$collection</span><span class="keyword">-&gt;</span><span class="default">findOne</span><span class="keyword">(array(</span><span class="string">'_id'</span><span class="keyword">=&gt;</span><span class="default">$mongo_id</span><span class="keyword">));<br />
+<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="mongo.writes.html">Writes</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="mongo.updates.html">Updates</a></div>
  <div class="up"><a href="mongo.manual.html">Manual</a></div>

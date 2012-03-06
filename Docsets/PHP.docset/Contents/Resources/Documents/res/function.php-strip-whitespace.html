@@ -103,7 +103,594 @@
  </div>
 
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="91065""></a>
+  <div class="note">
+   <strong class="user">TK</strong>
+   <a href="#91065" class="date">22-May-2009 06:07</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I was looking earlier for a way to strip php comments from my source files but didn't come up with much.&nbsp; I wrote the following function to do the trick using the tokenizer.&nbsp; I've tested in on an entire phpMyAdmin install and it worked fine afterward... so it should be good to go.&nbsp; You may also specify any number of tokens to strip such as T_WHITESPACE rather the default of T_COMMENT and T_DOC_COMMENT.<br />
+<br />
+Hopefully someone finds it useful.<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+</span><span class="keyword">function </span><span class="default">strip_tokens</span><span class="keyword">(</span><span class="default">$code</span><span class="keyword">) {<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$args </span><span class="keyword">= </span><span class="default">func_get_args</span><span class="keyword">();<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$arg_count </span><span class="keyword">= </span><span class="default">count</span><span class="keyword">(</span><span class="default">$args</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// if no tokens to strip have been specified then strip comments by default<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">if( </span><span class="default">$arg_count </span><span class="keyword">=== </span><span class="default">1 </span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$args</span><span class="keyword">[</span><span class="default">1</span><span class="keyword">] = </span><span class="default">T_COMMENT</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$args</span><span class="keyword">[</span><span class="default">2</span><span class="keyword">] = </span><span class="default">T_DOC_COMMENT</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// build a keyed array of tokens to strip<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">for( </span><span class="default">$i </span><span class="keyword">= </span><span class="default">1</span><span class="keyword">; </span><span class="default">$i </span><span class="keyword">&lt; </span><span class="default">$arg_count</span><span class="keyword">; ++</span><span class="default">$i </span><span class="keyword">)<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$strip</span><span class="keyword">[ </span><span class="default">$args</span><span class="keyword">[</span><span class="default">$i</span><span class="keyword">] ] = </span><span class="default">true</span><span class="keyword">;<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// set a keyed array of newline characters used to preserve line numbering<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$newlines </span><span class="keyword">= array(</span><span class="string">"\n" </span><span class="keyword">=&gt; </span><span class="default">true</span><span class="keyword">, </span><span class="string">"\r" </span><span class="keyword">=&gt; </span><span class="default">true</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$tokens </span><span class="keyword">= </span><span class="default">token_get_all</span><span class="keyword">(</span><span class="default">$code</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">reset</span><span class="keyword">(</span><span class="default">$tokens</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$return </span><span class="keyword">= </span><span class="string">''</span><span class="keyword">;<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$token </span><span class="keyword">= </span><span class="default">current</span><span class="keyword">(</span><span class="default">$tokens</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; while( </span><span class="default">$token </span><span class="keyword">) {<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if( !</span><span class="default">is_array</span><span class="keyword">(</span><span class="default">$token</span><span class="keyword">) )<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$return</span><span class="keyword">.= </span><span class="default">$token</span><span class="keyword">;<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; elseif(&nbsp; &nbsp; !isset(</span><span class="default">$strip</span><span class="keyword">[ </span><span class="default">$token</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">] ]) )<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$return</span><span class="keyword">.= </span><span class="default">$token</span><span class="keyword">[</span><span class="default">1</span><span class="keyword">];<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; else {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// return only the token's newline characters to preserve line numbering<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">for( </span><span class="default">$i </span><span class="keyword">= </span><span class="default">0</span><span class="keyword">, </span><span class="default">$token_length </span><span class="keyword">= </span><span class="default">strlen</span><span class="keyword">(</span><span class="default">$token</span><span class="keyword">[</span><span class="default">1</span><span class="keyword">]); </span><span class="default">$i </span><span class="keyword">&lt; </span><span class="default">$token_length</span><span class="keyword">; ++</span><span class="default">$i </span><span class="keyword">)<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if( isset(</span><span class="default">$newlines</span><span class="keyword">[ </span><span class="default">$token</span><span class="keyword">[</span><span class="default">1</span><span class="keyword">][</span><span class="default">$i</span><span class="keyword">] ]) )<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$return</span><span class="keyword">.= </span><span class="default">$token</span><span class="keyword">[</span><span class="default">1</span><span class="keyword">][</span><span class="default">$i</span><span class="keyword">];<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$token </span><span class="keyword">= </span><span class="default">next</span><span class="keyword">(</span><span class="default">$tokens</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp;&nbsp; } </span><span class="comment">// while more tokens<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">return </span><span class="default">$return</span><span class="keyword">;<br />
+<br />
+} </span><span class="comment">// function<br />
+<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="82437""></a>
+  <div class="note">
+   <strong class="user">gelamu at gmail dot com</strong>
+   <a href="#82437" class="date">10-Apr-2008 02:12</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+With this function You can compress Your PHP source code.<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+</span><span class="keyword">function </span><span class="default">compress_php_src</span><span class="keyword">(</span><span class="default">$src</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// Whitespaces left and right from this signs can be ignored<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">static </span><span class="default">$IW </span><span class="keyword">= array(<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">T_CONCAT_EQUAL</span><span class="keyword">,&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// .=<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">T_DOUBLE_ARROW</span><span class="keyword">,&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// =&gt;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">T_BOOLEAN_AND</span><span class="keyword">,&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span class="comment">// &amp;&amp;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">T_BOOLEAN_OR</span><span class="keyword">,&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// ||<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">T_IS_EQUAL</span><span class="keyword">,&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// ==<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">T_IS_NOT_EQUAL</span><span class="keyword">,&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// != or &lt;&gt;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">T_IS_SMALLER_OR_EQUAL</span><span class="keyword">,&nbsp; &nbsp; &nbsp; </span><span class="comment">// &lt;=<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">T_IS_GREATER_OR_EQUAL</span><span class="keyword">,&nbsp; &nbsp; &nbsp; </span><span class="comment">// &gt;=<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">T_INC</span><span class="keyword">,&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span class="comment">// ++<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">T_DEC</span><span class="keyword">,&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span class="comment">// --<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">T_PLUS_EQUAL</span><span class="keyword">,&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// +=<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">T_MINUS_EQUAL</span><span class="keyword">,&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span class="comment">// -=<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">T_MUL_EQUAL</span><span class="keyword">,&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span class="comment">// *=<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">T_DIV_EQUAL</span><span class="keyword">,&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span class="comment">// /=<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">T_IS_IDENTICAL</span><span class="keyword">,&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// ===<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">T_IS_NOT_IDENTICAL</span><span class="keyword">,&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// !==<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">T_DOUBLE_COLON</span><span class="keyword">,&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// ::<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">T_PAAMAYIM_NEKUDOTAYIM</span><span class="keyword">,&nbsp; &nbsp;&nbsp; </span><span class="comment">// ::<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">T_OBJECT_OPERATOR</span><span class="keyword">,&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span class="comment">// -&gt;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">T_DOLLAR_OPEN_CURLY_BRACES</span><span class="keyword">, </span><span class="comment">// ${<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">T_AND_EQUAL</span><span class="keyword">,&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span class="comment">// &amp;=<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">T_MOD_EQUAL</span><span class="keyword">,&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span class="comment">// %=<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">T_XOR_EQUAL</span><span class="keyword">,&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span class="comment">// ^=<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">T_OR_EQUAL</span><span class="keyword">,&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// |=<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">T_SL</span><span class="keyword">,&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// &lt;&lt;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">T_SR</span><span class="keyword">,&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// &gt;&gt;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">T_SL_EQUAL</span><span class="keyword">,&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// &lt;&lt;=<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">T_SR_EQUAL</span><span class="keyword">,&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// &gt;&gt;=<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; if(</span><span class="default">is_file</span><span class="keyword">(</span><span class="default">$src</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if(!</span><span class="default">$src </span><span class="keyword">= </span><span class="default">file_get_contents</span><span class="keyword">(</span><span class="default">$src</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">false</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$tokens </span><span class="keyword">= </span><span class="default">token_get_all</span><span class="keyword">(</span><span class="default">$src</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$new </span><span class="keyword">= </span><span class="string">""</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$c </span><span class="keyword">= </span><span class="default">sizeof</span><span class="keyword">(</span><span class="default">$tokens</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$iw </span><span class="keyword">= </span><span class="default">false</span><span class="keyword">; </span><span class="comment">// ignore whitespace<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$ih </span><span class="keyword">= </span><span class="default">false</span><span class="keyword">; </span><span class="comment">// in HEREDOC<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$ls </span><span class="keyword">= </span><span class="string">""</span><span class="keyword">;&nbsp; &nbsp; </span><span class="comment">// last sign<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$ot </span><span class="keyword">= </span><span class="default">null</span><span class="keyword">;&nbsp; </span><span class="comment">// open tag<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">for(</span><span class="default">$i </span><span class="keyword">= </span><span class="default">0</span><span class="keyword">; </span><span class="default">$i </span><span class="keyword">&lt; </span><span class="default">$c</span><span class="keyword">; </span><span class="default">$i</span><span class="keyword">++) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$token </span><span class="keyword">= </span><span class="default">$tokens</span><span class="keyword">[</span><span class="default">$i</span><span class="keyword">];<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if(</span><span class="default">is_array</span><span class="keyword">(</span><span class="default">$token</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; list(</span><span class="default">$tn</span><span class="keyword">, </span><span class="default">$ts</span><span class="keyword">) = </span><span class="default">$token</span><span class="keyword">; </span><span class="comment">// tokens: number, string, line<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$tname </span><span class="keyword">= </span><span class="default">token_name</span><span class="keyword">(</span><span class="default">$tn</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if(</span><span class="default">$tn </span><span class="keyword">== </span><span class="default">T_INLINE_HTML</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$new </span><span class="keyword">.= </span><span class="default">$ts</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$iw </span><span class="keyword">= </span><span class="default">false</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; } else {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if(</span><span class="default">$tn </span><span class="keyword">== </span><span class="default">T_OPEN_TAG</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if(</span><span class="default">strpos</span><span class="keyword">(</span><span class="default">$ts</span><span class="keyword">, </span><span class="string">" "</span><span class="keyword">) || </span><span class="default">strpos</span><span class="keyword">(</span><span class="default">$ts</span><span class="keyword">, </span><span class="string">"\n"</span><span class="keyword">) || </span><span class="default">strpos</span><span class="keyword">(</span><span class="default">$ts</span><span class="keyword">, </span><span class="string">"\t"</span><span class="keyword">) || </span><span class="default">strpos</span><span class="keyword">(</span><span class="default">$ts</span><span class="keyword">, </span><span class="string">"\r"</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$ts </span><span class="keyword">= </span><span class="default">rtrim</span><span class="keyword">(</span><span class="default">$ts</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$ts </span><span class="keyword">.= </span><span class="string">" "</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$new </span><span class="keyword">.= </span><span class="default">$ts</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$ot </span><span class="keyword">= </span><span class="default">T_OPEN_TAG</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$iw </span><span class="keyword">= </span><span class="default">true</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; } elseif(</span><span class="default">$tn </span><span class="keyword">== </span><span class="default">T_OPEN_TAG_WITH_ECHO</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$new </span><span class="keyword">.= </span><span class="default">$ts</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$ot </span><span class="keyword">= </span><span class="default">T_OPEN_TAG_WITH_ECHO</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$iw </span><span class="keyword">= </span><span class="default">true</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; } elseif(</span><span class="default">$tn </span><span class="keyword">== </span><span class="default">T_CLOSE_TAG</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if(</span><span class="default">$ot </span><span class="keyword">== </span><span class="default">T_OPEN_TAG_WITH_ECHO</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$new </span><span class="keyword">= </span><span class="default">rtrim</span><span class="keyword">(</span><span class="default">$new</span><span class="keyword">, </span><span class="string">"; "</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; } else {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$ts </span><span class="keyword">= </span><span class="string">" "</span><span class="keyword">.</span><span class="default">$ts</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$new </span><span class="keyword">.= </span><span class="default">$ts</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$ot </span><span class="keyword">= </span><span class="default">null</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$iw </span><span class="keyword">= </span><span class="default">false</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; } elseif(</span><span class="default">in_array</span><span class="keyword">(</span><span class="default">$tn</span><span class="keyword">, </span><span class="default">$IW</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$new </span><span class="keyword">.= </span><span class="default">$ts</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$iw </span><span class="keyword">= </span><span class="default">true</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; } elseif(</span><span class="default">$tn </span><span class="keyword">== </span><span class="default">T_CONSTANT_ENCAPSED_STRING<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span class="keyword">|| </span><span class="default">$tn </span><span class="keyword">== </span><span class="default">T_ENCAPSED_AND_WHITESPACE</span><span class="keyword">)<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if(</span><span class="default">$ts</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">] == </span><span class="string">'"'</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$ts </span><span class="keyword">= </span><span class="default">addcslashes</span><span class="keyword">(</span><span class="default">$ts</span><span class="keyword">, </span><span class="string">"\n\t\r"</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$new </span><span class="keyword">.= </span><span class="default">$ts</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$iw </span><span class="keyword">= </span><span class="default">true</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; } elseif(</span><span class="default">$tn </span><span class="keyword">== </span><span class="default">T_WHITESPACE</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$nt </span><span class="keyword">= @</span><span class="default">$tokens</span><span class="keyword">[</span><span class="default">$i</span><span class="keyword">+</span><span class="default">1</span><span class="keyword">];<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if(!</span><span class="default">$iw </span><span class="keyword">&amp;&amp; (!</span><span class="default">is_string</span><span class="keyword">(</span><span class="default">$nt</span><span class="keyword">) || </span><span class="default">$nt </span><span class="keyword">== </span><span class="string">'$'</span><span class="keyword">) &amp;&amp; !</span><span class="default">in_array</span><span class="keyword">(</span><span class="default">$nt</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">], </span><span class="default">$IW</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$new </span><span class="keyword">.= </span><span class="string">" "</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$iw </span><span class="keyword">= </span><span class="default">false</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; } elseif(</span><span class="default">$tn </span><span class="keyword">== </span><span class="default">T_START_HEREDOC</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$new </span><span class="keyword">.= </span><span class="string">"&lt;&lt;&lt;S\n"</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$iw </span><span class="keyword">= </span><span class="default">false</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$ih </span><span class="keyword">= </span><span class="default">true</span><span class="keyword">; </span><span class="comment">// in HEREDOC<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">} elseif(</span><span class="default">$tn </span><span class="keyword">== </span><span class="default">T_END_HEREDOC</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$new </span><span class="keyword">.= </span><span class="string">"S;"</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$iw </span><span class="keyword">= </span><span class="default">true</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$ih </span><span class="keyword">= </span><span class="default">false</span><span class="keyword">; </span><span class="comment">// in HEREDOC<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">for(</span><span class="default">$j </span><span class="keyword">= </span><span class="default">$i</span><span class="keyword">+</span><span class="default">1</span><span class="keyword">; </span><span class="default">$j </span><span class="keyword">&lt; </span><span class="default">$c</span><span class="keyword">; </span><span class="default">$j</span><span class="keyword">++) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if(</span><span class="default">is_string</span><span class="keyword">(</span><span class="default">$tokens</span><span class="keyword">[</span><span class="default">$j</span><span class="keyword">]) &amp;&amp; </span><span class="default">$tokens</span><span class="keyword">[</span><span class="default">$j</span><span class="keyword">] == </span><span class="string">";"</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$i </span><span class="keyword">= </span><span class="default">$j</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; break;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; } else if(</span><span class="default">$tokens</span><span class="keyword">[</span><span class="default">$j</span><span class="keyword">][</span><span class="default">0</span><span class="keyword">] == </span><span class="default">T_CLOSE_TAG</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; break;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; } elseif(</span><span class="default">$tn </span><span class="keyword">== </span><span class="default">T_COMMENT </span><span class="keyword">|| </span><span class="default">$tn </span><span class="keyword">== </span><span class="default">T_DOC_COMMENT</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$iw </span><span class="keyword">= </span><span class="default">true</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; } else {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if(!</span><span class="default">$ih</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$ts </span><span class="keyword">= </span><span class="default">strtolower</span><span class="keyword">(</span><span class="default">$ts</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$new </span><span class="keyword">.= </span><span class="default">$ts</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$iw </span><span class="keyword">= </span><span class="default">false</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$ls </span><span class="keyword">= </span><span class="string">""</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; } else {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if((</span><span class="default">$token </span><span class="keyword">!= </span><span class="string">";" </span><span class="keyword">&amp;&amp; </span><span class="default">$token </span><span class="keyword">!= </span><span class="string">":"</span><span class="keyword">) || </span><span class="default">$ls </span><span class="keyword">!= </span><span class="default">$token</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$new </span><span class="keyword">.= </span><span class="default">$token</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$ls </span><span class="keyword">= </span><span class="default">$token</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$iw </span><span class="keyword">= </span><span class="default">true</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">$new</span><span class="keyword">;<br />
+}<br />
+<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+For example:<br />
+<span class="default">&lt;?php<br />
+<br />
+$src </span><span class="keyword">= &lt;&lt;&lt;EOT<br />
+</span><span class="string">&lt;?php<br />
+// some comment<br />
+for ( </span><span class="default">$i</span><span class="string"> = 0; </span><span class="default">$i</span><span class="string"> &lt; 99; </span><span class="default">$i</span><span class="string"> ++ ) {<br />
+&nbsp;&nbsp; echo "i=</span><span class="keyword">${ </span><span class="default">i </span><span class="keyword">}</span><span class="string">\n";<br />
+&nbsp;&nbsp; /* ... */<br />
+}<br />
+/** ... */<br />
+function abc() {<br />
+&nbsp;&nbsp; return&nbsp;&nbsp; "abc";<br />
+};<br />
+<br />
+abc();<br />
+?&gt;<br />
+&lt;h1&gt;&lt;?= "Some text " . str_repeat("_-x-_ ", 32);;; ?&gt;&lt;/h1&gt;<br />
+</span><span class="keyword">EOT;<br />
+</span><span class="default">var_dump</span><span class="keyword">(</span><span class="default">compress_php_src</span><span class="keyword">(</span><span class="default">$src</span><span class="keyword">));<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+And the result is:<br />
+string(125) "<span class="default">&lt;?php </span><span class="keyword">for(=</span><span class="default">0</span><span class="keyword">;&lt;</span><span class="default">99</span><span class="keyword">;++){echo </span><span class="string">"i=\n"</span><span class="keyword">;}function </span><span class="default">abc</span><span class="keyword">(){return </span><span class="string">"abc"</span><span class="keyword">;};</span><span class="default">abc</span><span class="keyword">(); </span><span class="default">?&gt;<br />
+</span>&lt;h1&gt;&lt;?="Some text ".str_repeat("_-x-_ ",32)?&gt;&lt;/h1&gt;"</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="78216""></a>
+  <div class="note">
+   <strong class="user">Jouni</strong>
+   <a href="#78216" class="date">03-Oct-2007 05:14</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+If you wish to just remove excess whitespace from a string, see the example "Strip whitespace" in the preg_replace documentation (<a href="http://www.php.net/manual/en/function.preg-replace.php" rel="nofollow" target="_blank">http://www.php.net/manual/en/function.preg-replace.php</a>).</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="77820""></a>
+  <div class="note">
+   <strong class="user">Zvjezdan Patz</strong>
+   <a href="#77820" class="date">13-Sep-2007 08:14</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I was given a report that was separated by spaces and asked to make graphs from it.&nbsp; I needed to turn the report data into a csv in memory so I could manipulate it further.&nbsp; <br />
+<br />
+First needed to see the report, then need to strip out the whitespace, but leave one space between each item that I could convert to a column.<br />
+<br />
+There were lots of complicated ways to do this.&nbsp; I stumbled on something simple.<br />
+<br />
+Say the report looks like this:<br />
+<br />
+Monday&nbsp; &nbsp; Tuesday&nbsp; &nbsp; Wednesday&nbsp; &nbsp; Thursday&nbsp;&nbsp; Friday&nbsp;&nbsp; Saturday&nbsp;&nbsp; Sunday<br />
+1&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; 5&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; 7&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 8&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; 10&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; 7&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 8&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <br />
+7&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; 15&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; 4&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 0&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; 21&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; 4&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 12<br />
+9&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; 5&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; 7&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 9&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; 0&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; 9&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 43<br />
+<br />
+The report is using spaces and not tabs to separate everything.&nbsp; Assume it's a file called data.txt you can use the following to strip out the spaces and make it comma delimited:<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+$handle </span><span class="keyword">= @</span><span class="default">fopen</span><span class="keyword">(</span><span class="string">"data.txt"</span><span class="keyword">, </span><span class="string">"r"</span><span class="keyword">);<br />
+<br />
+if (</span><span class="default">$handle</span><span class="keyword">) <br />
+{<br />
+&nbsp; while (!</span><span class="default">feof</span><span class="keyword">(</span><span class="default">$handle</span><span class="keyword">)) <br />
+&nbsp; {<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$buffer </span><span class="keyword">= </span><span class="default">fgets</span><span class="keyword">(</span><span class="default">$handle</span><span class="keyword">, </span><span class="default">4096</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// this will search for 5 spaces and replace with 1, then 4, then 3, then 2<br />
+&nbsp;&nbsp;&nbsp; // then only one will be left.&nbsp; Replace that one space with a comma<br />
+&nbsp;&nbsp;&nbsp; // then output with nl2br so you can see the line breaks<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">print </span><span class="default">nl2br</span><span class="keyword">(</span><span class="default">str_replace</span><span class="keyword">(</span><span class="string">" "</span><span class="keyword">, </span><span class="string">","</span><span class="keyword">,</span><span class="default">ereg_replace</span><span class="keyword">( </span><span class="string">'&nbsp; '</span><span class="keyword">, </span><span class="string">' '</span><span class="keyword">,</span><span class="default">ereg_replace</span><span class="keyword">( </span><span class="string">'&nbsp;&nbsp; '</span><span class="keyword">, </span><span class="string">' '</span><span class="keyword">, </span><span class="default">ereg_replace</span><span class="keyword">( </span><span class="string">'&nbsp; &nbsp; '</span><span class="keyword">, </span><span class="string">' '</span><span class="keyword">, </span><span class="default">ereg_replace</span><span class="keyword">( </span><span class="string">'&nbsp; &nbsp;&nbsp; '</span><span class="keyword">,</span><span class="string">' '</span><span class="keyword">,</span><span class="default">$buffer </span><span class="keyword">))))));<br />
+&nbsp; }<br />
+}<br />
+<br />
+</span><span class="default">fclose</span><span class="keyword">(</span><span class="default">$handle</span><span class="keyword">);<br />
+</span><span class="default">?&gt;</span> <br />
+<br />
+Hope that helps someone else.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="77624""></a>
+  <div class="note">
+   <strong class="user">natio at phpfox dot com</strong>
+   <a href="#77624" class="date">05-Sep-2007 11:21</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Notice: In my last comment for this function I failed to add some important parts of the function. So I have re-added it here. Feel free to delete my earlier comment. Thanks!<br />
+---<br />
+<br />
+To use php_strip_whitespace in (PHP 4 &gt;= 4.2.0) you could try the function below. This function also helps solve the issues with php_strip_whitespace not fully removing new lines and extra whitespace's in HTML when embedded with PHP.<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+</span><span class="keyword">if (!</span><span class="default">defined </span><span class="keyword">(</span><span class="string">'T_ML_COMMENT'</span><span class="keyword">))<br />
+{<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">define </span><span class="keyword">(</span><span class="string">'T_ML_COMMENT'</span><span class="keyword">, </span><span class="default">T_COMMENT</span><span class="keyword">);<br />
+}<br />
+if (!</span><span class="default">defined </span><span class="keyword">(</span><span class="string">'T_DOC_COMMENT'</span><span class="keyword">))<br />
+{<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">define </span><span class="keyword">(</span><span class="string">'T_DOC_COMMENT'</span><span class="keyword">, </span><span class="default">T_ML_COMMENT</span><span class="keyword">);<br />
+}<br />
+<br />
+function </span><span class="default">StripWhitespace</span><span class="keyword">(</span><span class="default">$sFileName</span><span class="keyword">)<br />
+{<br />
+&nbsp;&nbsp;&nbsp; if ( !</span><span class="default">is_file</span><span class="keyword">(</span><span class="default">$sFileName</span><span class="keyword">) )<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">false</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$sContent </span><span class="keyword">= </span><span class="default">implode</span><span class="keyword">(</span><span class="string">''</span><span class="keyword">, </span><span class="default">file</span><span class="keyword">(</span><span class="default">$sFileName</span><span class="keyword">));<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$aTokens </span><span class="keyword">= </span><span class="default">token_get_all</span><span class="keyword">(</span><span class="default">$sContent</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$bLast </span><span class="keyword">= </span><span class="default">false</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$sStr </span><span class="keyword">= </span><span class="string">''</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; for ( </span><span class="default">$i </span><span class="keyword">= </span><span class="default">0</span><span class="keyword">, </span><span class="default">$j </span><span class="keyword">= </span><span class="default">count</span><span class="keyword">(</span><span class="default">$aTokens</span><span class="keyword">); </span><span class="default">$i </span><span class="keyword">&lt; </span><span class="default">$j</span><span class="keyword">; </span><span class="default">$i</span><span class="keyword">++ )<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if ( </span><span class="default">is_string</span><span class="keyword">(</span><span class="default">$aTokens</span><span class="keyword">[</span><span class="default">$i</span><span class="keyword">]) )<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$bLast </span><span class="keyword">= </span><span class="default">false</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$sStr </span><span class="keyword">.= </span><span class="default">$aTokens</span><span class="keyword">[</span><span class="default">$i</span><span class="keyword">];<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; else<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; switch ( </span><span class="default">$aTokens</span><span class="keyword">[</span><span class="default">$i</span><span class="keyword">][</span><span class="default">0</span><span class="keyword">] )<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; case </span><span class="default">T_COMMENT</span><span class="keyword">:<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; case </span><span class="default">T_ML_COMMENT</span><span class="keyword">:<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; case </span><span class="default">T_DOC_COMMENT</span><span class="keyword">:<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; break;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; case </span><span class="default">T_WHITESPACE</span><span class="keyword">:<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if (!</span><span class="default">$bLast</span><span class="keyword">)<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$sStr </span><span class="keyword">.= </span><span class="string">' '</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$bLast </span><span class="keyword">= </span><span class="default">true</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; break;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; default:<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span class="default">$bLast </span><span class="keyword">= </span><span class="default">false</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$sStr </span><span class="keyword">.= </span><span class="default">$aTokens</span><span class="keyword">[</span><span class="default">$i</span><span class="keyword">][</span><span class="default">1</span><span class="keyword">];<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; break;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$sStr </span><span class="keyword">= </span><span class="default">trim</span><span class="keyword">(</span><span class="default">$sStr</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$sStr </span><span class="keyword">= </span><span class="default">str_replace</span><span class="keyword">(</span><span class="string">"\n"</span><span class="keyword">, </span><span class="string">""</span><span class="keyword">, </span><span class="default">$sStr</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$sStr </span><span class="keyword">= </span><span class="default">str_replace</span><span class="keyword">(</span><span class="string">"\r"</span><span class="keyword">, </span><span class="string">""</span><span class="keyword">, </span><span class="default">$sStr</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">$sStr</span><span class="keyword">;<br />
+}<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="74899""></a>
+  <div class="note">
+   <strong class="user">nyctimus at yahoo dot com</strong>
+   <a href="#74899" class="date">03-May-2007 02:01</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Here's one for CSS:<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+</span><span class="keyword">function </span><span class="default">css_strip_whitespace</span><span class="keyword">(</span><span class="default">$css</span><span class="keyword">)<br />
+{<br />
+&nbsp; </span><span class="default">$replace </span><span class="keyword">= array(<br />
+&nbsp;&nbsp;&nbsp; </span><span class="string">"#/\*.*?\*/#s" </span><span class="keyword">=&gt; </span><span class="string">""</span><span class="keyword">,&nbsp; </span><span class="comment">// Strip C style comments.<br />
+&nbsp;&nbsp;&nbsp; </span><span class="string">"#\s\s+#"&nbsp; &nbsp; &nbsp; </span><span class="keyword">=&gt; </span><span class="string">" "</span><span class="keyword">, </span><span class="comment">// Strip excess whitespace.<br />
+&nbsp; </span><span class="keyword">);<br />
+&nbsp; </span><span class="default">$search </span><span class="keyword">= </span><span class="default">array_keys</span><span class="keyword">(</span><span class="default">$replace</span><span class="keyword">);<br />
+&nbsp; </span><span class="default">$css </span><span class="keyword">= </span><span class="default">preg_replace</span><span class="keyword">(</span><span class="default">$search</span><span class="keyword">, </span><span class="default">$replace</span><span class="keyword">, </span><span class="default">$css</span><span class="keyword">);<br />
+<br />
+&nbsp; </span><span class="default">$replace </span><span class="keyword">= array(<br />
+&nbsp;&nbsp;&nbsp; </span><span class="string">": "&nbsp; </span><span class="keyword">=&gt; </span><span class="string">":"</span><span class="keyword">,<br />
+&nbsp;&nbsp;&nbsp; </span><span class="string">"; "&nbsp; </span><span class="keyword">=&gt; </span><span class="string">";"</span><span class="keyword">,<br />
+&nbsp;&nbsp;&nbsp; </span><span class="string">" {"&nbsp; </span><span class="keyword">=&gt; </span><span class="string">"{"</span><span class="keyword">,<br />
+&nbsp;&nbsp;&nbsp; </span><span class="string">" }"&nbsp; </span><span class="keyword">=&gt; </span><span class="string">"}"</span><span class="keyword">,<br />
+&nbsp;&nbsp;&nbsp; </span><span class="string">", "&nbsp; </span><span class="keyword">=&gt; </span><span class="string">","</span><span class="keyword">,<br />
+&nbsp;&nbsp;&nbsp; </span><span class="string">"{ "&nbsp; </span><span class="keyword">=&gt; </span><span class="string">"{"</span><span class="keyword">,<br />
+&nbsp;&nbsp;&nbsp; </span><span class="string">";}"&nbsp; </span><span class="keyword">=&gt; </span><span class="string">"}"</span><span class="keyword">, </span><span class="comment">// Strip optional semicolons.<br />
+&nbsp;&nbsp;&nbsp; </span><span class="string">",\n" </span><span class="keyword">=&gt; </span><span class="string">","</span><span class="keyword">, </span><span class="comment">// Don't wrap multiple selectors.<br />
+&nbsp;&nbsp;&nbsp; </span><span class="string">"\n}" </span><span class="keyword">=&gt; </span><span class="string">"}"</span><span class="keyword">, </span><span class="comment">// Don't wrap closing braces.<br />
+&nbsp;&nbsp;&nbsp; </span><span class="string">"} "&nbsp; </span><span class="keyword">=&gt; </span><span class="string">"}\n"</span><span class="keyword">, </span><span class="comment">// Put each rule on it's own line.<br />
+&nbsp; </span><span class="keyword">);<br />
+&nbsp; </span><span class="default">$search </span><span class="keyword">= </span><span class="default">array_keys</span><span class="keyword">(</span><span class="default">$replace</span><span class="keyword">);<br />
+&nbsp; </span><span class="default">$css </span><span class="keyword">= </span><span class="default">str_replace</span><span class="keyword">(</span><span class="default">$search</span><span class="keyword">, </span><span class="default">$replace</span><span class="keyword">, </span><span class="default">$css</span><span class="keyword">);<br />
+<br />
+&nbsp; return </span><span class="default">trim</span><span class="keyword">(</span><span class="default">$css</span><span class="keyword">);<br />
+}<br />
+<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+A word on the first regular expression, since it took me a while.<br />
+It strips C style comments. /* Like this. */<br />
+<br />
+#/\*.*?\*/#s<br />
+^&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; ^<br />
+The pound signs at either end quote the regex. They don't match anything.<br />
+<br />
+#/\*.*?\*/#s<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; ^<br />
+The s at the very end sets the PCRE_DOTALL modifier. More info here:<br />
+<a href="http://www.php.net/manual/en/reference.pcre.pattern.modifiers.php" rel="nofollow" target="_blank">http://www.php.net/manual/en/reference.pcre.pattern.modifiers.php</a><br />
+<br />
+#&nbsp; /\*&nbsp; .*?&nbsp; \*/&nbsp; #s<br />
+&nbsp;&nbsp;&nbsp; 1&nbsp; &nbsp; 2&nbsp; &nbsp; 3<br />
+The expression itself consists of 3 parts:<br />
+1. the opening comment sequence, represented by&nbsp; &nbsp;&nbsp; /\*<br />
+2. everything in the middle, represented by&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; .*?<br />
+3. and the closing comment sequence, represented by \*/<br />
+<br />
+#/\*.*?\*/#s<br />
+&nbsp;&nbsp; ^&nbsp; &nbsp; ^<br />
+The comment asterisks are escaped. If I had used the more common / for PCRE quoting I would've had to escape those too.<br />
+<br />
+#/\*.*?\*/#s<br />
+&nbsp;&nbsp; &nbsp;&nbsp; ^<br />
+The ? prevents the regex from being greedy. See halfway down this page:<br />
+<a href="http://www.php.net/manual/en/reference.pcre.pattern.syntax.php" rel="nofollow" target="_blank">http://www.php.net/manual/en/reference.pcre.pattern.syntax.php</a></span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="67983""></a>
+  <div class="note">
+   <strong class="user">flconseil at yahoo dot fr</strong>
+   <a href="#67983" class="date">08-Jul-2006 08:57</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Beware that this function uses the output buffering mechanism.<br />
+<br />
+If you give a 'stream wrapped' path as argument, anything echoed by the stream wrapper during this call (e.g. trace messages) won't be displayed to the screen but will be inserted in php_strip_whitespace's result.<br />
+<br />
+If you execute this stripped code later, it will display the messages which should have been output during php_strip_whitespace's execution !</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="65245""></a>
+  <div class="note">
+   <strong class="user">mwwaygoo AT hotmail DOT com</strong>
+   <a href="#65245" class="date">27-Apr-2006 09:17</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I thought this was a nice function until I realised it wouldnt strip down html. As i'd been reading an article on compressing output to speed up delivery.<br />
+So I wrote a little one to do that for me. Here its is, incase people were looking for a html version. It may need tweaking, like with existing &amp;nbsp;'s.<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">function </span><span class="default">strip_html</span><span class="keyword">(</span><span class="default">$data</span><span class="keyword">)<br />
+{<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// strip unecessary comments and characters from a webpages text<br />
+&nbsp;&nbsp;&nbsp; // all line comments, multi-line comments \\r \\n \\t multi-spaces that make a script readable.<br />
+&nbsp;&nbsp;&nbsp; // it also safeguards enquoted values and values within textareas, as these are required<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$data</span><span class="keyword">=</span><span class="default">preg_replace_callback</span><span class="keyword">(</span><span class="string">"/&gt;[^&lt;]*&lt;\\/textarea/i"</span><span class="keyword">, </span><span class="string">"harden_characters"</span><span class="keyword">, </span><span class="default">$data</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$data</span><span class="keyword">=</span><span class="default">preg_replace_callback</span><span class="keyword">(</span><span class="string">"/\\"</span><span class="keyword">[^\\</span><span class="string">"&lt;&gt;]+\\"</span><span class="keyword">/</span><span class="string">", "</span><span class="default">harden_characters</span><span class="string">", </span><span class="default">$data</span><span class="string">);<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$data</span><span class="string">=preg_replace("</span><span class="keyword">/(\\/\\/.*\\</span><span class="default">n</span><span class="keyword">)/</span><span class="string">","",</span><span class="default">$data</span><span class="string">); // remove single line comments, like this, from // to \\n<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$data</span><span class="string">=preg_replace("</span><span class="keyword">/(\\</span><span class="default">t</span><span class="keyword">|\\</span><span class="default">r</span><span class="keyword">|\\</span><span class="default">n</span><span class="keyword">)/</span><span class="string">","",</span><span class="default">$data</span><span class="string">);&nbsp; // remove new lines \\n, tabs and \\r<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$data</span><span class="string">=preg_replace("</span><span class="keyword">/(\\/\\*.*\\*\\/)/</span><span class="string">","",</span><span class="default">$data</span><span class="string">);&nbsp; // remove multi-line comments /* */<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$data</span><span class="string">=preg_replace("</span><span class="keyword">/(&lt;![^&gt;]*&gt;)/</span><span class="string">","",</span><span class="default">$data</span><span class="string">);&nbsp; // remove multi-line comments &lt;!-- --&gt;<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$data</span><span class="string">=preg_replace('/(\\s+)/', ' ',</span><span class="default">$data</span><span class="string">); // replace multi spaces with singles<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$data</span><span class="string">=preg_replace('/&gt;\\s&lt;/', '&gt;&lt;',</span><span class="default">$data</span><span class="string">); <br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$data</span><span class="string">=preg_replace_callback("</span><span class="keyword">/\\</span><span class="string">"[^\\"</span><span class="keyword">&lt;&gt;]+\\</span><span class="string">"/"</span><span class="keyword">, </span><span class="string">"unharden_characters"</span><span class="keyword">, </span><span class="default">$data</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$data</span><span class="keyword">=</span><span class="default">preg_replace_callback</span><span class="keyword">(</span><span class="string">"/&gt;[^&lt;]*&lt;\\/textarea/"</span><span class="keyword">, </span><span class="string">"unharden_characters"</span><span class="keyword">, </span><span class="default">$data</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">$data</span><span class="keyword">;<br />
+}<br />
+<br />
+function </span><span class="default">harden_characters</span><span class="keyword">(</span><span class="default">$array</span><span class="keyword">)<br />
+{<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$safe</span><span class="keyword">=</span><span class="default">$array</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">];<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$safe</span><span class="keyword">=</span><span class="default">preg_replace</span><span class="keyword">(</span><span class="string">'/\\n/'</span><span class="keyword">, </span><span class="string">"%0A"</span><span class="keyword">, </span><span class="default">$safe</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$safe</span><span class="keyword">=</span><span class="default">preg_replace</span><span class="keyword">(</span><span class="string">'/\\t/'</span><span class="keyword">, </span><span class="string">"%09"</span><span class="keyword">, </span><span class="default">$safe</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$safe</span><span class="keyword">=</span><span class="default">preg_replace</span><span class="keyword">(</span><span class="string">'/\\s/'</span><span class="keyword">, </span><span class="string">"&amp;nbsp;"</span><span class="keyword">, </span><span class="default">$safe</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">$safe</span><span class="keyword">;<br />
+}<br />
+function </span><span class="default">unharden_characters</span><span class="keyword">(</span><span class="default">$array</span><span class="keyword">)<br />
+{<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$safe</span><span class="keyword">=</span><span class="default">$array</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">];<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$safe</span><span class="keyword">=</span><span class="default">preg_replace</span><span class="keyword">(</span><span class="string">'/%0A/'</span><span class="keyword">, </span><span class="string">"\\n"</span><span class="keyword">, </span><span class="default">$safe</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$safe</span><span class="keyword">=</span><span class="default">preg_replace</span><span class="keyword">(</span><span class="string">'/%09/'</span><span class="keyword">, </span><span class="string">"\\t"</span><span class="keyword">, </span><span class="default">$safe</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$safe</span><span class="keyword">=</span><span class="default">preg_replace</span><span class="keyword">(</span><span class="string">'/&amp;nbsp;/'</span><span class="keyword">, </span><span class="string">" "</span><span class="keyword">, </span><span class="default">$safe</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">$safe</span><span class="keyword">;<br />
+}<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+The article code was similar to this, which shouldn't work as php_strip_whitespace takes a filename as input:-<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="comment">// ob_start(); and output here<br />
+</span><span class="default">$data</span><span class="keyword">=</span><span class="default">ob_get_contents</span><span class="keyword">();<br />
+</span><span class="default">ob_end_clean</span><span class="keyword">();<br />
+if(</span><span class="default">strstr</span><span class="keyword">(</span><span class="default">$_SERVER</span><span class="keyword">[</span><span class="string">'HTTP_ACCEPT_ENCODING'</span><span class="keyword">],</span><span class="string">'gzip'</span><span class="keyword">))<br />
+{<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$data</span><span class="keyword">=</span><span class="default">gzencode</span><span class="keyword">(</span><span class="default">php_strip_whitespace</span><span class="keyword">(</span><span class="default">$data</span><span class="keyword">),</span><span class="default">9</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">header</span><span class="keyword">(</span><span class="string">'Content-Encoding: gzip'</span><span class="keyword">);<br />
+}<br />
+echo </span><span class="default">$data</span><span class="keyword">;<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="58037""></a>
+  <div class="note">
+   <strong class="user">dnc at seznam dot cz</strong>
+   <a href="#58037" class="date">21-Oct-2005 03:01</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+This function can not be used to strip comments outside <span class="default">&lt;?php </span><span class="keyword">... </span><span class="default">?&gt;<br />
+</span><br />
+// this comment will not be removed<br />
+<span class="default">&lt;?php<br />
+</span><span class="comment">// this comment will be removed<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="54613""></a>
+  <div class="note">
+   <strong class="user">amedee at amedee dot be</strong>
+   <a href="#54613" class="date">09-Jul-2005 05:29</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Not only can this be used for JavaScript files, but also for:<br />
+<br />
+* Java source code<br />
+* CSS (Style Sheets)<br />
+* Any file with C-style comments.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="function.php-check-syntax.html">php_check_syntax</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.show-source.html">show_source</a></div>
  <div class="up"><a href="ref.misc.html">Misc. Functions</a></div>

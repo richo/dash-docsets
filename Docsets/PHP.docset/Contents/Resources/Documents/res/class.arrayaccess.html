@@ -135,6 +135,265 @@ obj Object
 
 <h2>Table of Contents</h2><ul class="chunklist chunklist_reference"><li><a href="arrayaccess.offsetexists.html">ArrayAccess::offsetExists</a> â€” Whether a offset exists</li><li><a href="arrayaccess.offsetget.html">ArrayAccess::offsetGet</a> â€” Offset to retrieve</li><li><a href="arrayaccess.offsetset.html">ArrayAccess::offsetSet</a> â€” Offset to set</li><li><a href="arrayaccess.offsetunset.html">ArrayAccess::offsetUnset</a> â€” Offset to unset</li></ul>
 </div>
+<div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="104061""></a>
+  <div class="note">
+   <strong class="user">Per</strong>
+   <a href="#104061" class="date">20-May-2011 02:16</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+It bit me today, so putting it here in the hope it will help others:<br />
+If you call array_key_exists() on an object of a class that implements ArrayAccess, ArrayAccess::offsetExists() wil NOT be called.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="99236""></a>
+  <div class="note">
+   <strong class="user">uramihsayibok, gmail, com</strong>
+   <a href="#99236" class="date">05-Aug-2010 03:34</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+EDITOR NOTE: You can return by reference in offsetGet as of PHP 5.3.4.<br />
+<br />
+If you find yourself facing the dreaded "Indirect modification of overloaded element of $class has no effect" then don't worry too much: there's a clever solution. While you *CANNOT* return by-reference with offsetGet, you can return objects which _also_ implement ArrayAccess...<br />
+<br />
+Example:<br />
+<span class="default">&lt;?php<br />
+<br />
+</span><span class="comment">// sanity and error checking omitted for brevity<br />
+// note: it's a good idea to implement arrayaccess + countable + an<br />
+// iterator interface (like iteratoraggregate) as a triplet<br />
+<br />
+</span><span class="keyword">class </span><span class="default">RecursiveArrayAccess </span><span class="keyword">implements </span><span class="default">ArrayAccess </span><span class="keyword">{<br />
+<br />
+&nbsp;&nbsp;&nbsp; private </span><span class="default">$data </span><span class="keyword">= array();<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// necessary for deep copies<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">public function </span><span class="default">__clone</span><span class="keyword">() {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; foreach (</span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">data </span><span class="keyword">as </span><span class="default">$key </span><span class="keyword">=&gt; </span><span class="default">$value</span><span class="keyword">) if (</span><span class="default">$value </span><span class="keyword">instanceof </span><span class="default">self</span><span class="keyword">) </span><span class="default">$this</span><span class="keyword">[</span><span class="default">$key</span><span class="keyword">] = clone </span><span class="default">$value</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; public function </span><span class="default">__construct</span><span class="keyword">(array </span><span class="default">$data </span><span class="keyword">= array()) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; foreach (</span><span class="default">$data </span><span class="keyword">as </span><span class="default">$key </span><span class="keyword">=&gt; </span><span class="default">$value</span><span class="keyword">) </span><span class="default">$this</span><span class="keyword">[</span><span class="default">$key</span><span class="keyword">] = </span><span class="default">$value</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; public function </span><span class="default">offsetSet</span><span class="keyword">(</span><span class="default">$offset</span><span class="keyword">, </span><span class="default">$data</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if (</span><span class="default">is_array</span><span class="keyword">(</span><span class="default">$data</span><span class="keyword">)) </span><span class="default">$data </span><span class="keyword">= new </span><span class="default">self</span><span class="keyword">(</span><span class="default">$data</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if (</span><span class="default">$offset </span><span class="keyword">=== </span><span class="default">null</span><span class="keyword">) { </span><span class="comment">// don't forget this!<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">data</span><span class="keyword">[] = </span><span class="default">$data</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; } else {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">data</span><span class="keyword">[</span><span class="default">$offset</span><span class="keyword">] = </span><span class="default">$data</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; public function </span><span class="default">toArray</span><span class="keyword">() {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$data </span><span class="keyword">= </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">data</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; foreach (</span><span class="default">$data </span><span class="keyword">as </span><span class="default">$key </span><span class="keyword">=&gt; </span><span class="default">$value</span><span class="keyword">) if (</span><span class="default">$value </span><span class="keyword">instanceof </span><span class="default">self</span><span class="keyword">) </span><span class="default">$data</span><span class="keyword">[</span><span class="default">$key</span><span class="keyword">] = </span><span class="default">$value</span><span class="keyword">-&gt;</span><span class="default">toArray</span><span class="keyword">();<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">$data</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// as normal<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">public function </span><span class="default">offsetGet</span><span class="keyword">(</span><span class="default">$offset</span><span class="keyword">) { return </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">data</span><span class="keyword">[</span><span class="default">$offset</span><span class="keyword">]; }<br />
+&nbsp;&nbsp;&nbsp; public function </span><span class="default">offsetExists</span><span class="keyword">(</span><span class="default">$offset</span><span class="keyword">) { return isset(</span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">data</span><span class="keyword">[</span><span class="default">$offset</span><span class="keyword">]); }<br />
+&nbsp;&nbsp;&nbsp; public function </span><span class="default">offsetUnset</span><span class="keyword">(</span><span class="default">$offset</span><span class="keyword">) { unset(</span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">data</span><span class="keyword">); }<br />
+<br />
+}<br />
+<br />
+</span><span class="default">$a </span><span class="keyword">= new </span><span class="default">RecursiveArrayAccess</span><span class="keyword">();<br />
+</span><span class="default">$a</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">] = array(</span><span class="default">1</span><span class="keyword">=&gt;</span><span class="string">"foo"</span><span class="keyword">, </span><span class="default">2</span><span class="keyword">=&gt;array(</span><span class="default">3</span><span class="keyword">=&gt;</span><span class="string">"bar"</span><span class="keyword">, </span><span class="default">4</span><span class="keyword">=&gt;array(</span><span class="default">5</span><span class="keyword">=&gt;</span><span class="string">"bz"</span><span class="keyword">)));<br />
+</span><span class="comment">// oops. typo<br />
+</span><span class="default">$a</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">][</span><span class="default">2</span><span class="keyword">][</span><span class="default">4</span><span class="keyword">][</span><span class="default">5</span><span class="keyword">] = </span><span class="string">"baz"</span><span class="keyword">;<br />
+<br />
+</span><span class="comment">//var_dump($a);<br />
+//var_dump($a-&gt;toArray());<br />
+<br />
+// isset and unset work too<br />
+//var_dump(isset($a[0][2][4][5])); // equivalent to $a[0][2][4]-&gt;offsetExists(5)<br />
+//unset($a[0][2][4][5]); // equivalent to $a[0][2][4]-&gt;offsetUnset(5);<br />
+<br />
+// if __clone wasn't implemented then cloning would produce a shallow copy, and<br />
+</span><span class="default">$b </span><span class="keyword">= clone </span><span class="default">$a</span><span class="keyword">;<br />
+</span><span class="default">$b</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">][</span><span class="default">2</span><span class="keyword">][</span><span class="default">4</span><span class="keyword">][</span><span class="default">5</span><span class="keyword">] = </span><span class="string">"xyzzy"</span><span class="keyword">;<br />
+</span><span class="comment">// would affect $a's data too<br />
+//echo $a[0][2][4][5]; // still "baz"<br />
+<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="97163""></a>
+  <div class="note">
+   <strong class="user">max at flashdroid dot com</strong>
+   <a href="#97163" class="date">05-Apr-2010 06:49</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Objects implementing ArrayAccess may return objects by references in PHP 5.3.0.<br />
+<br />
+You can implement your ArrayAccess object like this:<br />
+<br />
+&nbsp;&nbsp;&nbsp; class Reflectable implements ArrayAccess {<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; public function set($name, $value) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $this-&gt;{$name} = $value;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; public function &amp;get($name) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; return $this-&gt;{$name};<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; public function offsetGet($offset) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; return $this-&gt;get($offset);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; public function offsetSet($offset, $value) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $this-&gt;set($offset, $value);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; ...<br />
+<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+This base class allows you to get / set your object properties using the [] operator just like in Javascript:<br />
+<br />
+&nbsp;&nbsp;&nbsp; class Boo extends Reflectable {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; public $name;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; $obj = new Boo();<br />
+&nbsp;&nbsp;&nbsp; $obj['name'] = "boo";<br />
+&nbsp;&nbsp;&nbsp; echo $obj['name']; // prints boo</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="94336""></a>
+  <div class="note">
+   <strong class="user">Cintix</strong>
+   <a href="#94336" class="date">29-Oct-2009 01:32</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+To take full advantages of all array features with ArrayAccess, then you would need to implements Countable and Iterator<br />
+<br />
+Like this.<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+</span><span class="keyword">class </span><span class="default">ArrayOfColorModel </span><span class="keyword">implements </span><span class="default">ArrayAccess</span><span class="keyword">, </span><span class="default">Iterator</span><span class="keyword">, </span><span class="default">Countable </span><span class="keyword">{<br />
+&nbsp;&nbsp;&nbsp; private </span><span class="default">$container </span><span class="keyword">= array();<br />
+<br />
+&nbsp;&nbsp;&nbsp; public function </span><span class="default">__construct</span><span class="keyword">() {<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; public function </span><span class="default">offsetSet</span><span class="keyword">(</span><span class="default">$offset</span><span class="keyword">,</span><span class="default">$value</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; if (</span><span class="default">$value </span><span class="keyword">instanceof </span><span class="default">ColorModel</span><span class="keyword">){<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if (</span><span class="default">$offset </span><span class="keyword">== </span><span class="string">""</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">container</span><span class="keyword">[] = </span><span class="default">$value</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }else {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">container</span><span class="keyword">[</span><span class="default">$offset</span><span class="keyword">] = </span><span class="default">$value</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; } else {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; throw new </span><span class="default">Exception</span><span class="keyword">(</span><span class="string">"Value have to be a instance of the Model ColorModel"</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; public function </span><span class="default">offsetExists</span><span class="keyword">(</span><span class="default">$offset</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; return isset(</span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">container</span><span class="keyword">[</span><span class="default">$offset</span><span class="keyword">]);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; public function </span><span class="default">offsetUnset</span><span class="keyword">(</span><span class="default">$offset</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; unset(</span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">container</span><span class="keyword">[</span><span class="default">$offset</span><span class="keyword">]);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; public function </span><span class="default">offsetGet</span><span class="keyword">(</span><span class="default">$offset</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return isset(</span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">container</span><span class="keyword">[</span><span class="default">$offset</span><span class="keyword">]) ? </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">container</span><span class="keyword">[</span><span class="default">$offset</span><span class="keyword">] : </span><span class="default">null</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; public function </span><span class="default">rewind</span><span class="keyword">() {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">reset</span><span class="keyword">(</span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">container</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; public function </span><span class="default">current</span><span class="keyword">() {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">current</span><span class="keyword">(</span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">container</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; public function </span><span class="default">key</span><span class="keyword">() {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">key</span><span class="keyword">(</span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">container</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; public function </span><span class="default">next</span><span class="keyword">() {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">next</span><span class="keyword">(</span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">container</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; public function </span><span class="default">valid</span><span class="keyword">() {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">current</span><span class="keyword">() !== </span><span class="default">false</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }&nbsp; &nbsp; <br />
+<br />
+&nbsp;&nbsp;&nbsp; public function </span><span class="default">count</span><span class="keyword">() {<br />
+&nbsp;&nbsp; &nbsp; return </span><span class="default">count</span><span class="keyword">(</span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">container</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+}<br />
+<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+Now you can using it like any other array.<br />
+<br />
+<span class="default">&lt;?php<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp; $array </span><span class="keyword">= new </span><span class="default">ArrayOfColorModel</span><span class="keyword">();<br />
+&nbsp;&nbsp; foreach (</span><span class="default">$array </span><span class="keyword">as </span><span class="default">$model</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">var_export</span><span class="keyword">(</span><span class="default">$model</span><span class="keyword">);<br />
+&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp; </span><span class="comment">// OR<br />
+<br />
+&nbsp;&nbsp; </span><span class="keyword">for(</span><span class="default">$i</span><span class="keyword">=</span><span class="default">0</span><span class="keyword">;</span><span class="default">$i</span><span class="keyword">&lt;</span><span class="default">count</span><span class="keyword">(</span><span class="default">$array</span><span class="keyword">);</span><span class="default">$i</span><span class="keyword">++){<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">var_export</span><span class="keyword">(</span><span class="default">$array</span><span class="keyword">[</span><span class="default">$i</span><span class="keyword">]);<br />
+&nbsp;&nbsp; }<br />
+<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="88079""></a>
+  <div class="note">
+   <strong class="user">AryehGregor+php-comment at gmail dot com</strong>
+   <a href="#88079" class="date">08-Jan-2009 05:33</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Note that at least in PHP 5.1, objects implementing ArrayAccess cannot return objects by reference.&nbsp; See <a href="http://bugs.php.net/bug.php?id=34783 .&nbsp; If you have code like " rel="nofollow" target="_blank">http://bugs.php.net/bug.php?id=34783 .&nbsp; If you have code like </a><br />
+<br />
+<span class="default">&lt;?php<br />
+$x </span><span class="keyword">= &amp;</span><span class="default">$y</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">];<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+then this will (as far as I can tell) *always* fail unless $y is a real array -- it cannot work if $y is an object implementing ArrayAccess.&nbsp; If your offsetGet() function returns by reference, you get the fatal error "Declaration of MyClass::offsetGet() must be compatible with that of ArrayAccess::offsetGet()".&nbsp; If you try to have it return by value, however, you get the (contradictory) fatal error "Objects used as arrays in post/pre increment/decrement must return values by reference", at least in my version of PHP.<br />
+<br />
+It is therefore not possible to take arbitrary code dealing with arrays and try to substitute an object of your own for an array, even if all of the normal array functions didn't fail as well (which they do, or at least some of them).</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
 <hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="iteratoraggregate.getiterator.html">IteratorAggregate::getIterator</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="arrayaccess.offsetexists.html">ArrayAccess::offsetExists</a></div>

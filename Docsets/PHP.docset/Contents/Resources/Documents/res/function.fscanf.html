@@ -179,7 +179,412 @@ luigi   florist it</pre>
  </div>
 
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="87949""></a>
+  <div class="note">
+   <strong class="user">dave at dave dot st</strong>
+   <a href="#87949" class="date">01-Jan-2009 11:58</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+The fgetd() function suggested by worldwideroach on 14-Jul-2005 04:33 does not handle the last buffer-load of data correctly. At least not for my requirement. It is possible for EOF to have been reached but for there still to be characters in $sRecord.<br />
+<br />
+For the, er... record I got better results with this version:<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">function </span><span class="default">fgetd</span><span class="keyword">(&amp;</span><span class="default">$rFile</span><span class="keyword">, </span><span class="default">$sDelim</span><span class="keyword">, </span><span class="default">$iBuffer</span><span class="keyword">=</span><span class="default">1024</span><span class="keyword">) {<br />
+<br />
+&nbsp; </span><span class="default">$sRecord </span><span class="keyword">= </span><span class="string">''</span><span class="keyword">;<br />
+<br />
+&nbsp; while(!</span><span class="default">feof</span><span class="keyword">(</span><span class="default">$rFile</span><span class="keyword">)) {<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$iPos </span><span class="keyword">= </span><span class="default">strpos</span><span class="keyword">(</span><span class="default">$sRecord</span><span class="keyword">, </span><span class="default">$sDelim</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; if (</span><span class="default">$iPos </span><span class="keyword">=== </span><span class="default">FALSE</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$sRecord </span><span class="keyword">.= </span><span class="default">fread</span><span class="keyword">(</span><span class="default">$rFile</span><span class="keyword">, </span><span class="default">$iBuffer</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; } else {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">fseek</span><span class="keyword">(</span><span class="default">$rFile</span><span class="keyword">, </span><span class="default">0</span><span class="keyword">-</span><span class="default">strlen</span><span class="keyword">(</span><span class="default">$sRecord</span><span class="keyword">)+</span><span class="default">$iPos</span><span class="keyword">+</span><span class="default">strlen</span><span class="keyword">(</span><span class="default">$sDelim</span><span class="keyword">), </span><span class="default">SEEK_CUR</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">substr</span><span class="keyword">(</span><span class="default">$sRecord</span><span class="keyword">, </span><span class="default">0</span><span class="keyword">, </span><span class="default">$iPos</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp; }<br />
+<br />
+&nbsp; </span><span class="comment">// Last read got some more data before hitting EOF?<br />
+&nbsp; </span><span class="keyword">if (</span><span class="default">$sRecord </span><span class="keyword">!= </span><span class="string">''</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; if ((</span><span class="default">$iPos </span><span class="keyword">= </span><span class="default">strpos</span><span class="keyword">(</span><span class="default">$sRecord</span><span class="keyword">, </span><span class="default">$sDelim</span><span class="keyword">)) !== </span><span class="default">FALSE</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">fseek</span><span class="keyword">(</span><span class="default">$rFile</span><span class="keyword">, </span><span class="default">0</span><span class="keyword">-</span><span class="default">strlen</span><span class="keyword">(</span><span class="default">$sRecord</span><span class="keyword">)+</span><span class="default">$iPos</span><span class="keyword">+</span><span class="default">strlen</span><span class="keyword">(</span><span class="default">$sDelim</span><span class="keyword">), </span><span class="default">SEEK_CUR</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp;&nbsp; return </span><span class="default">substr</span><span class="keyword">(</span><span class="default">$sRecord</span><span class="keyword">, </span><span class="default">0</span><span class="keyword">, </span><span class="default">$iPos</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; else {<br />
+&nbsp;&nbsp; &nbsp;&nbsp; return </span><span class="default">$sRecord</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp; }<br />
+&nbsp; else {<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">FALSE</span><span class="keyword">;<br />
+&nbsp; }<br />
+}<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="78148""></a>
+  <div class="note">
+   <strong class="user">arentzen at religion dot dk</strong>
+   <a href="#78148" class="date">30-Sep-2007 02:56</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+If you want fscanf()to scan one variable in a large number of lines,&nbsp; e.g an Ipadress in a line with more variables, then use fscanf with explode()<br />
+&lt;?<br />
+$filename = "somefile.txt";<br />
+$fp = fopen($filename, "r") or die ("Error opening file! \n");<br />
+$u = explode(" ",$line); // $u is the variable eg. an IPadress<br />
+while ($line = fscanf($fp,"%s",$u)) {<br />
+if(preg_match("/^$u/",$_SERVER['REMOTE_ADDR'])) {$badipadresss++;} // do something and continue scan<br />
+}<br />
+?&gt;<br />
+Besides, fscanf()is much faster than fgets()</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="75438""></a>
+  <div class="note">
+   <strong class="user">Bertrand dot Lecun at prism dot uvsq dot Fr</strong>
+   <a href="#75438" class="date">30-May-2007 12:48</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+It would be great to precise in the fscanf documentation<br />
+that one call to the function, reads a complete line.<br />
+and not just the number of values defined in the format.<br />
+<br />
+If a text file contains 2 lines each containing 4 integer values,<br />
+reading the file with 8 fscanf($fd,"%d",$v) doesnt run !<br />
+You have to make 2 <br />
+fscanf($fd,"%d %d %d %d",$v1,$v2,$v3,$v4);<br />
+<br />
+Then 1 fscanf per line.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="68344""></a>
+  <div class="note">
+   <strong class="user">loco.xxx at gmail dot com</strong>
+   <a href="#68344" class="date">24-Jul-2006 12:46</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+to include all type of visible chars you should try:<br />
+<br />
+<span class="default">&lt;?php fscanf</span><span class="keyword">(</span><span class="default">$file_handler</span><span class="keyword">,</span><span class="string">"%[ -~]"</span><span class="keyword">); </span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="54769""></a>
+  <div class="note">
+   <strong class="user">worldwideroach at hotmail dot com</strong>
+   <a href="#54769" class="date">14-Jul-2005 09:33</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Yet another function to read a file and return a record/string by a delimiter.&nbsp; It is very much like fgets() with the delimiter being an additional parameter.&nbsp; Works great across multiple lines.<br />
+<br />
+function fgetd(&amp;$rFile, $sDelim, $iBuffer=1024) {<br />
+&nbsp;&nbsp;&nbsp; $sRecord = '';<br />
+&nbsp;&nbsp;&nbsp; while(!feof($rFile)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $iPos = strpos($sRecord, $sDelim);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if ($iPos === false) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $sRecord .= fread($rFile, $iBuffer);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; } else {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; fseek($rFile, 0-strlen($sRecord)+$iPos+strlen($sDelim), SEEK_CUR);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; return substr($sRecord, 0, $iPos);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; return false;<br />
+}</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="54376""></a>
+  <div class="note">
+   <strong class="user">rudigreen at gmail dot com</strong>
+   <a href="#54376" class="date">01-Jul-2005 03:43</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I have a function for reading delimited files, it works for multiple lines too (i think...)<br />
+<br />
+&lt;?<br />
+//$fh - is the file pointer<br />
+//$delim - is the seperator<br />
+//$callback - self explanatory<br />
+//$len - optional<br />
+function file_read_delim($fh,$delim,$callback,$len=1024)<br />
+{<br />
+&nbsp;&nbsp;&nbsp; $rec = '';<br />
+&nbsp;&nbsp;&nbsp; while(!feof($fh))<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $buf = fread($fh,$len);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if(strpos($buf,$delim) === false)<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $rec .= $buf;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; else<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $strs = explode($delim,$buf);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; foreach ($strs as $ele)<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $rec .= $ele;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; call_user_func($callback,$rec);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $rec = '';<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; }<br />
+}<br />
+<br />
+//Here is an example how to use the function<br />
+<br />
+$fh = fopen($filename,'r');<br />
+&nbsp;&nbsp;&nbsp; if(!$fh)<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; die 'Could not open file for reading';<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; //call the function<br />
+&nbsp;&nbsp;&nbsp; file_read_delim($fh,'-','cb');<br />
+&nbsp;&nbsp;&nbsp; fclose($fh);<br />
+<br />
+function cb($rec)<br />
+{<br />
+echo "$rec \n";<br />
+}<br />
+?&gt;</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="42648""></a>
+  <div class="note">
+   <strong class="user">me at hesterc dot fsnet dot co dot uk</strong>
+   <a href="#42648" class="date">25-May-2004 07:03</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I have a simpler method I use to parse delimited text. Using the data posted by gozer at fanhunter dot com, here is my script. Maybe it is faster?<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+$fp </span><span class="keyword">= </span><span class="default">fopen </span><span class="keyword">(</span><span class="string">"sections.dat"</span><span class="keyword">,</span><span class="string">"r"</span><span class="keyword">);<br />
+<br />
+if (!</span><span class="default">$fp</span><span class="keyword">) {echo </span><span class="string">"&lt;p&gt;Unable to open remote file.&lt;/p&gt;"</span><span class="keyword">; exit;}<br />
+<br />
+while (!</span><span class="default">feof</span><span class="keyword">(</span><span class="default">$fp</span><span class="keyword">)):<br />
+&nbsp;</span><span class="default">$line </span><span class="keyword">= </span><span class="default">fgets</span><span class="keyword">(</span><span class="default">$fp</span><span class="keyword">, </span><span class="default">2048</span><span class="keyword">);<br />
+&nbsp;</span><span class="default">$out </span><span class="keyword">= array(</span><span class="default">$line</span><span class="keyword">);<br />
+&nbsp;list (</span><span class="default">$id</span><span class="keyword">, </span><span class="default">$name</span><span class="keyword">, </span><span class="default">$description</span><span class="keyword">, </span><span class="default">$language</span><span class="keyword">, </span><span class="default">$directory</span><span class="keyword">, </span><span class="default">$id_uplevel</span><span class="keyword">, </span><span class="default">$order</span><span class="keyword">, </span><span class="default">$hassubsection</span><span class="keyword">) = </span><span class="default">split </span><span class="keyword">(</span><span class="string">"\|"</span><span class="keyword">, </span><span class="default">$out</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">]);<br />
+&nbsp;echo </span><span class="string">"</span><span class="default">$id</span><span class="string">-</span><span class="default">$name</span><span class="string">-</span><span class="default">$description</span><span class="string">-</span><span class="default">$language</span><span class="string">-</span><span class="default">$directory</span><span class="string">-<br />
+</span><span class="default">$id_uplevel</span><span class="string">-</span><span class="default">$order</span><span class="string">-</span><span class="default">$hassubsection</span><span class="string">&lt;br /&gt;\n"</span><span class="keyword">;<br />
+&nbsp;</span><span class="default">$fp</span><span class="keyword">++;<br />
+endwhile;<br />
+<br />
+</span><span class="default">fclose</span><span class="keyword">(</span><span class="default">$fp</span><span class="keyword">);<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+Notes:<br />
+<br />
+Avoid the php extension on a data file - it will cause PHP to parse the file, but there is no PHP in it.<br />
+<br />
+The "2048" value on line 2 of the loop is set for long lines. 1024 works fine, but I had to increase it with a large database I use a similar script to read.<br />
+<br />
+You don't need to open and close the speech marks (as in gozer at fanhunter dot com's example) in the echo line, just use the variables inbetween the dashes.<br />
+<br />
+(Remove the line break halfway through the echo line - it is just there for this forum.)</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="39220""></a>
+  <div class="note">
+   <strong class="user">matt at mattsinclair dot com</strong>
+   <a href="#39220" class="date">21-Jan-2004 12:36</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+A better way to use fscanf() would be this:<br />
+<br />
+<span class="default">&lt;?php<br />
+$handle </span><span class="keyword">= </span><span class="default">fopen</span><span class="keyword">(</span><span class="string">"users.txt"</span><span class="keyword">, </span><span class="string">"r"</span><span class="keyword">);<br />
+while (!</span><span class="default">feof</span><span class="keyword">(</span><span class="default">$handle</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; </span><span class="default">$userinfo </span><span class="keyword">= </span><span class="default">fscanf</span><span class="keyword">(</span><span class="default">$handle</span><span class="keyword">, </span><span class="string">"%s\t%s\t%s\n"</span><span class="keyword">);<br />
+&nbsp;&nbsp; if (</span><span class="default">$userinfo</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; list (</span><span class="default">$name</span><span class="keyword">, </span><span class="default">$profession</span><span class="keyword">, </span><span class="default">$countrycode</span><span class="keyword">) = </span><span class="default">$userinfo</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; </span><span class="comment">//... do something with the values<br />
+&nbsp;&nbsp; </span><span class="keyword">}<br />
+&nbsp;&nbsp; </span><span class="default">$userinfo</span><span class="keyword">=</span><span class="default">NULL</span><span class="keyword">;<br />
+}<br />
+</span><span class="default">fclose</span><span class="keyword">(</span><span class="default">$handle</span><span class="keyword">);<br />
+</span><span class="default">?&gt;</span> <br />
+<br />
+as you can see, instead of waiting for fscanf() to fail to return a value... it waits for the the pointer to get to the end of the file... this way, if for some reason one of your lines does not match your expression, it will not kill the loop.&nbsp; it will simply go on to the next line.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="26280""></a>
+  <div class="note">
+   <strong class="user">robert at NOSPAM dot NOSPAM</strong>
+   <a href="#26280" class="date">24-Oct-2002 04:08</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+actually, instead of trying to think of every character that might be in your file, excluding the delimiter would be much easier.<br />
+<br />
+for example, if your delimiter was a comma use:<br />
+<br />
+%[^,]<br />
+<br />
+instead of:<br />
+<br />
+%[a-zA-Z0-9.| ... ]<br />
+<br />
+Just make sure to use %[^,\n] on your last entry so you don't include the newline.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="24420""></a>
+  <div class="note">
+   <strong class="user">ruiner911 at yahoo dot com</strong>
+   <a href="#24420" class="date">15-Aug-2002 01:01</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Clear the variables before you scan them in.&nbsp; As a programmer this should have been very apparent.&nbsp; Goof.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="19948""></a>
+  <div class="note">
+   <strong class="user">eugene at pro-access dot com</strong>
+   <a href="#19948" class="date">16-Mar-2002 12:39</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+If you want to read text files in csv format or the like(no matter what character the fields are separated with), you should use fgetcsv() instead. When a text for a field is blank, fscanf() may skip it and fill it with the next text, whereas fgetcsv() correctly regards it as a blank field.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="19677""></a>
+  <div class="note">
+   <strong class="user">gozer at fanhunter dot com</strong>
+   <a href="#19677" class="date">07-Mar-2002 06:53</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Hi,<br />
+A few days ago we got multiple mySQL crashes due to a hardware failure and other processes running.<br />
+While we thought it could be the mySQL daemon overloaded, we started looking for alternate ways to get our little databases working so we started using fscanf to parse files.<br />
+<br />
+We ran into multiple problems due to the whitespace and other characters that were in our database. Finally, we made it to work using sets as james@zephyr-works.com remarked.<br />
+<br />
+Our final function is:<br />
+<br />
+&nbsp; function get_sections($include_dir){<br />
+&nbsp;&nbsp;&nbsp; $filename = $include_dir . "sections.dat.php";<br />
+&nbsp;&nbsp;&nbsp; $datafile = fopen ($filename ,"r");<br />
+&nbsp;&nbsp;&nbsp; while ($sectioninfo = fscanf ($datafile, "%[0-9]|%[a-zA-Z0-9@&amp;;:,. /!?-]|%[a-zA-Z0-9@&amp;;:,. /!?-]|%[a-zA-Z]|%[a-zA-Z0-9@/?&amp;;.+=-]|%[0-9]|%[0-9]|%[0-9]\n")) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; list($id, $name, $description, $language, $directory, $id_uplevel, $order, $hassubsection) = $sectioninfo;<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; // Show output<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; echo $id . "-" . $name. "-" . $description . "-" . $language . "-" . $directory . "-" . $id_uplevel . "-" . $order . "-" . $hassubsection . "&lt;br&gt;\n";<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; fclose($datafile);<br />
+&nbsp; }<br />
+<br />
+The contents of sections.dat.php (for example):<br />
+<br />
+1|home|P&amp;aacute;gina principal de Fanhunter.|castellano|==|0|0|0<br />
+2|fanhunter|Secci&amp;oacute;n principal dedicada al universo Fanhunter.|castellano|fanhunter/|1|0|0<br />
+3|outfan|Secci&amp;oacute;n principal dedicada al universo Outfan.|castellano|outfan/|1|0|0<br />
+4|fanpiro|Secci&amp;oacute;n principal dedicada al universo Fanpiro.|castellano|fanpiro/|1|0|0<br />
+5|tienda|La tienda de Fanhunter.|castellano|tienda/|1|0|0<br />
+6|the zone|Secci&amp;oacute;n principal Miscel&amp;aacute;nea.|castellano|thezone/|1|0|0<br />
+7|flfcn|Secci&amp;oacute;n principal dedicada a Fan Letal/Fan con Nata.|castellano|fanletal/|1|0|0<br />
+8|foro|Nuestro foro de discusi&amp;oacute;n.|castellano|foro/|1|0|0<br />
+9|chat|Secci&amp;oacute;n para chatear.|castellano|chat/|1|0|0<br />
+10|links|Secci&amp;oacute;n recopilatoria de enlaces de inter&amp;eacute;s a otras p&amp;aacute;ginas.|castellano|links/|1|0|0<br />
+<br />
+Note: The '==' in directory means no directory needed to be specified.<br />
+Pay attention to linebreaks, as this forum puts some of them into the code I pasted.<br />
+<br />
+Good luck guys.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="13881""></a>
+  <div class="note">
+   <strong class="user">james at zephyr-works dot com</strong>
+   <a href="#13881" class="date">08-Jul-2001 12:29</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+fscanf works a little retardedly I've found. Instead of using just a plain %s you probably will need to use sets instead. Because it works so screwy compared to C/C++, fscanf does not have the ability to scan ahead in a string and pattern match correctly, so a seemingly perfect function call like:<br />
+<br />
+fscanf($fh, "%s::%s");<br />
+<br />
+With a file like:<br />
+<br />
+user::password<br />
+<br />
+Will not work. When fscanf looks for a string, it will look and stop at nothing except for a whitespace so :: and everything except whitespace is considered part of that string, however you can make it a little smarter by:<br />
+<br />
+fscanf($fh, "%[a-zA-Z0-9,. ]::%[a-zA-Z0-9,. ]" $var1, $var2);<br />
+<br />
+Which tells it that it can only accept a through z A through Z 0 through 9 a comma a period and a whitespace as input to the string, everything else cause it to stop taking in as input and continue parsing the line. This is very useful if you want to get a sentence into the string and you're not sure of exactly how many words to add, etc.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="11904""></a>
+  <div class="note">
+   <strong class="user">yasuo_ohgaki at hotmail dot com</strong>
+   <a href="#11904" class="date">12-Mar-2001 11:59</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+For C/C++ programmers.<br />
+<br />
+fscanf() does not work like C/C++, because PHP's fscanf() move file pointer the next line implicitly.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="function.fread.html">fread</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.fseek.html">fseek</a></div>
  <div class="up"><a href="ref.filesystem.html">Filesystem Functions</a></div>

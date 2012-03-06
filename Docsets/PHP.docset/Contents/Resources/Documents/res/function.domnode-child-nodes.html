@@ -35,7 +35,271 @@
   </p>
  </div>
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="82884""></a>
+  <div class="note">
+   <strong class="user">thibo1025 at hotmail dot fr</strong>
+   <a href="#82884" class="date">30-Apr-2008 02:57</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+to avoid the "#text" what you can simply do without changing your xml file, is:<br />
+<br />
+if($item-&gt;nodeName != "#text"){<br />
+// do your code.<br />
+}</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="42695""></a>
+  <div class="note">
+   <strong class="user">andrew at transitionkiteboarding dot com</strong>
+   <a href="#42695" class="date">26-May-2004 11:58</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Sometimes unless you know exactly where elements are it can be time consuming to pick each thing up with get_element_by_tagname calls. <br />
+<br />
+I used a quick little function that, given a structure such as:<br />
+<br />
+&lt;customer&gt;<br />
+&nbsp; &lt;firstname&gt;Joe&lt;/firstname&gt;<br />
+&nbsp; &lt;surname&gt;Bloggs&lt;/surname&gt;<br />
+&nbsp; &lt;age&gt;24&lt;/age&gt;<br />
+&nbsp; &lt;sex&gt;Male&lt;/sex&gt;<br />
+&nbsp; ...<br />
+&lt;/customer&gt;<br />
+<br />
+it will return an associative array with the tag names as keys and the content as values. During the load I strip whitespace as well so it isn't confused by \n's creating blank nodes<br />
+<br />
+-- CODE --<br />
+$xmldoc = domxml_open_mem($xmlstring,<br />
+&nbsp; DOMXML_LOAD_PARSING + //0<br />
+&nbsp; DOMXML_LOAD_COMPLETE_ATTRS + //8<br />
+&nbsp; DOMXML_LOAD_SUBSTITUTE_ENTITIES + //4<br />
+&nbsp; DOMXML_LOAD_DONT_KEEP_BLANKS //16 ));<br />
+<br />
+&nbsp; // get the node root and then the children of it.<br />
+&nbsp; $noderoot = $xmldoc-&gt;document_element();<br />
+&nbsp; $childnodes = $noderoot-&gt;child_nodes();<br />
+<br />
+&nbsp; // build the array<br />
+&nbsp; foreach ($childnodes as $value) {<br />
+&nbsp;&nbsp; &nbsp;&nbsp; echo $value-&gt;tagname . " : " . $value-&gt;get_content() . "&lt;br&gt;";<br />
+&nbsp;&nbsp; &nbsp;&nbsp; $nodeArray[$value-&gt;tagname] = $value-&gt;get_content();<br />
+&nbsp; }<br />
+<br />
+-- END CODE -- <br />
+<br />
+You can then return node array or start using it however you like in other functions just like a normal associative array then.<br />
+<br />
+$nodeArray['firstname'] == "Joe"</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="39351""></a>
+  <div class="note">
+   <strong class="user">grillen at abendstille dot at</strong>
+   <a href="#39351" class="date">25-Jan-2004 01:08</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+There were some comments about problems with whitespaces.<br />
+you can easily solve them by creating the dom-document as follows:<br />
+<br />
+<span class="default">&lt;?php<br />
+&nbsp;&nbsp;&nbsp; $xmlDoc </span><span class="keyword">= @</span><span class="default">domxml_open_mem</span><span class="keyword">(<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$xmlString<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">,&nbsp; &nbsp; </span><span class="default">DOMXML_LOAD_PARSING </span><span class="keyword">+ </span><span class="comment">//0<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">DOMXML_LOAD_COMPLETE_ATTRS </span><span class="keyword">+ </span><span class="comment">//8<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">DOMXML_LOAD_SUBSTITUTE_ENTITIES </span><span class="keyword">+ </span><span class="comment">//4<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">DOMXML_LOAD_DONT_KEEP_BLANKS </span><span class="comment">//16<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">,&nbsp; &nbsp; </span><span class="default">$error<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">);<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+if you call child_nodes() on eg. the root-element whitespaces are ignored.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="37146""></a>
+  <div class="note">
+   <strong class="user">zombie(at)artattack(dot)to</strong>
+   <a href="#37146" class="date">04-Nov-2003 05:17</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Here is a handy little function i started using at work and home quite a bit. It takes in an array of nodes, typically from DomNode-&gt;child_nodes() as well as a filter argument and returns an array of filtered out nodes.<br />
+<br />
+If the $filter arg is a string, then the $boolean argument is used. If boolean is true, then only nodes named $filter will be returned. If boolean is false, then only nodes NOT named $filter will be returend. <br />
+<br />
+Additionally, you can specify the filter as an assoc array in the form of $array[$node_name] = true|false and only nodes in the array with a true value are returend. Note that if it is an array, then $boolean is not used. I was planning on having the boolean act as a negation kinda like !in_array(), but it was more for completeness than need so i dropped it. <br />
+<br />
+function get_filtered_children($children_array,$filter,$boolean = true){<br />
+&nbsp;&nbsp;&nbsp; $total_children = count($children_array);<br />
+&nbsp;&nbsp;&nbsp; for ($i = 0; $i &lt; $total_children; $i++){<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $cur_child = $children_array[$i];<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $node_name = $cur_child-&gt;node_name();<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if (is_array($filter)){ //array in the form of [node_name] = true|false<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if ($filter[$node_name])<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $filtered_children_array[] = $cur_child;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; else if(is_string($filter)){ //string hopefully...<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if ($boolean &amp;&amp; $node_name == $filter)<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $filtered_children_array[] = $cur_child;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; elseif (!$boolean &amp;&amp; $node_name != $filter)<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $filtered_children_array[] = $cur_child;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; else<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; user_error('filter is of type ' . gettype($filter) . '. Please only supply arrays or strings.', E_USER_ERROR);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; return $filtered_children_array;<br />
+}<br />
+<br />
+Blaine Garrett<br />
+Web Master of the Art Attack<br />
+<a href="http://artattack.to" rel="nofollow" target="_blank">http://artattack.to</a></span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="30185""></a>
+  <div class="note">
+   <strong class="user">arcana at yetta dot net</strong>
+   <a href="#30185" class="date">09-Mar-2003 05:32</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+A better way to check for Text Child nodes (PHP 4.3.0)<br />
+<br />
+&nbsp;&nbsp;&nbsp; if ($childnode-&gt;node_type() == XML_TEXT_NODE)<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; echo "&lt;br/&gt;This item is a text node.";<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; else<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; echo "&lt;br/&gt;This item is not a text node.";<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+You may want to look at DomElement-&gt;is_blank_node() as well.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="28034""></a>
+  <div class="note">
+   <strong class="user">zombie)(at)(localm)(dor)(org</strong>
+   <a href="#28034" class="date">30-Dec-2002 10:34</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Loop through children making sure that the children are not text nodes. <br />
+&lt;pre&gt;<br />
+<br />
+$moduleDoc = domxml_open_file("main_module_defs.xml");<br />
+$moduleDefinitionXPath = xpath_new_context($moduleDoc);<br />
+$dConvsNodeSet = xpath_eval($moduleDefinitionXPath, "//modules/module[@name='search']/dConvs");<br />
+$children = $dConvsNodeSet-&gt;nodeset[0]-&gt; child_nodes();<br />
+$dTotal = count($children);<br />
+for ($i=0;$i&lt;$dTotal;$i++){<br />
+&nbsp;&nbsp;&nbsp; $curNode = $children[$i];<br />
+&nbsp;&nbsp;&nbsp; if($curNode-&gt;node_name() != "#text"){<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; echo "This are probably TextNodes...";&nbsp; &nbsp; }<br />
+}<br />
+&lt;/pre&gt;<br />
+<br />
+--<br />
+<a href="http://artattack.to" rel="nofollow" target="_blank">http://artattack.to</a></span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="25102""></a>
+  <div class="note">
+   <strong class="user">jon.sprague(AT)itgco.com</strong>
+   <a href="#25102" class="date">10-Sep-2002 04:54</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+To answer hrosas)at(linuxmail)dot(org.<br />
+<br />
+&lt;node&gt;<br />
+&lt;child/&gt;<br />
+&lt;/node&gt;<br />
+<br />
+&lt;node&gt; has 3 children. <br />
+1. whitespace between &lt;node&gt; and &lt;child/&gt;<br />
+2. &lt;child/&gt;<br />
+3. whitespace between &lt;child/&gt; and &lt;/node&gt;<br />
+<br />
+The whitespace is treated like text. To avoid this remove all whitespace.<br />
+<br />
+&lt;node&gt;&lt;child/&gt;&lt;/node&gt;<br />
+<br />
+This can get hard to read, but correct.<br />
+<br />
+But, you can tell some programs to ignore the whitespace, so it remains easy to read.<br />
+<br />
+Jon Sprague</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="24759""></a>
+  <div class="note">
+   <strong class="user">hrosas)at(linuxmail)dot(org</strong>
+   <a href="#24759" class="date">27-Aug-2002 06:36</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I was using child_nodes and if I have a node like this.<br />
+&lt;node&gt;<br />
+&nbsp;&nbsp;&nbsp; &lt;child/&gt;<br />
+&lt;/node&gt;<br />
+<br />
+the node &lt;node&gt; have two children: one the "&nbsp; &nbsp; " spaces that appear as #text on php and &lt;child/&gt;. Is that normal? I think node has just one child &lt;child/&gt;</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="24703""></a>
+  <div class="note">
+   <strong class="user">j dot metzger at steptown dot com</strong>
+   <a href="#24703" class="date">26-Aug-2002 08:01</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+if no children present, method <br />
+returns <br />
+FALSE (bool)<br />
+<br />
+you can check the return result like this:<br />
+<br />
+$children = $domNode -&gt; child_nodes();<br />
+if (is_bool($children))<br />
+&nbsp;&nbsp; print "Sorry, no children present ...";</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="function.domnode-attributes.html">DomNode::attributes</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.domnode-clone-node.html">DomNode::clone_node</a></div>
  <div class="up"><a href="ref.domxml.html">DOM XML (PHP 4) Functions</a></div>

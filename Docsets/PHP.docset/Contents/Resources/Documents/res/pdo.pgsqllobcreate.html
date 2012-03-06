@@ -101,7 +101,50 @@
 
 
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="63911""></a>
+  <div class="note">
+   <strong class="user">mauroi at digbang dot com</strong>
+   <a href="#63911" class="date">03-Apr-2006 09:38</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+IMHO, there's a better way to handle the deletion of lob objects than the suggested here. The programmer can easily forget to unlink the lob. With the following trigger, no programmer actions are required.<br />
+By the way, one problem with bytea fields is that when you query the database, if you ask for that field, the data is actually retrieved. When you query for and oid, only the oid is retrieved and then you can open the lob whenever you want (if it's required).<br />
+<br />
+CREATE OR REPLACE FUNCTION oidtable_after_update_delete()<br />
+&nbsp; RETURNS "trigger" AS<br />
+$BODY$<br />
+BEGIN<br />
+&nbsp;&nbsp; &nbsp; IF (TG_OP = 'UPDATE') THEN<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; IF (OLD.oidfield = NEW.oidfield) OR (OLD.oidfield IS NULL) THEN<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; RETURN NEW;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; END IF;<br />
+&nbsp;&nbsp; &nbsp; END IF;<br />
+&nbsp;&nbsp; &nbsp; IF (EXISTS (SELECT 1 FROM pg_largeobject WHERE loid = OLD.oidfield)) THEN<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; PERFORM LO_UNLINK (OLD.oidfield);<br />
+&nbsp;&nbsp; &nbsp; END IF;<br />
+&nbsp;&nbsp; &nbsp; RETURN NEW;<br />
+END;<br />
+$BODY$<br />
+&nbsp; LANGUAGE 'plpgsql' VOLATILE;<br />
+<br />
+CREATE TRIGGER oidtable_after_update_delete<br />
+&nbsp; AFTER UPDATE OR DELETE<br />
+&nbsp; ON oidtable<br />
+&nbsp; FOR EACH ROW<br />
+&nbsp; EXECUTE PROCEDURE oidtable_after_update_delete();</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="ref.pdo-pgsql.connection.html">PDO_PGSQL DSN</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="pdo.pgsqllobopen.html">PDO::pgsqlLOBOpen</a></div>
  <div class="up"><a href="ref.pdo-pgsql.html">PostgreSQL (PDO)</a></div>

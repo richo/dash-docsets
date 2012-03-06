@@ -108,7 +108,133 @@ returned by <span class="function"><a href="function.mysqli-connect.html" class=
  </div>
 
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="96659""></a>
+  <div class="note">
+   <strong class="user">xcalibur at xcalibur dot dk</strong>
+   <a href="#96659" class="date">10-Mar-2010 03:04</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Just a note about auto incremental ids and rollback.<br />
+When using transactions and inserting into a table containing a column with auto incremental ids, the id will be incremented even though the transaction is rolled back.<br />
+<br />
+This might occupy a lot of ids if a lot of rollbacks are performed.<br />
+<br />
+Example:<br />
+<span class="default">&lt;?php<br />
+$mysqli </span><span class="keyword">= new </span><span class="default">mysqli</span><span class="keyword">(</span><span class="string">"localhost"</span><span class="keyword">, </span><span class="string">"gugbageri"</span><span class="keyword">, </span><span class="string">"gugbageri"</span><span class="keyword">, </span><span class="string">"gugbageri"</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">/* check connection */<br />
+</span><span class="keyword">if (</span><span class="default">mysqli_connect_errno</span><span class="keyword">()) {<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">printf</span><span class="keyword">(</span><span class="string">"Connect failed: %s\n"</span><span class="keyword">, </span><span class="default">mysqli_connect_error</span><span class="keyword">());<br />
+&nbsp;&nbsp;&nbsp; exit();<br />
+}<br />
+<br />
+</span><span class="comment">/* disable autocommit */<br />
+</span><span class="default">$mysqli</span><span class="keyword">-&gt;</span><span class="default">autocommit</span><span class="keyword">(</span><span class="default">FALSE</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">/* We just create a test table with one auto incremental primary column and a content column*/<br />
+</span><span class="default">$mysqli</span><span class="keyword">-&gt;</span><span class="default">query</span><span class="keyword">(</span><span class="string">"CREATE TABLE TestTable ( `id_column` INT NOT NULL&nbsp; AUTO_INCREMENT , `content` INT NOT NULL , PRIMARY KEY ( `id_column` )) ENGINE = InnoDB;"</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">/* commit newly created table */<br />
+</span><span class="default">$mysqli</span><span class="keyword">-&gt;</span><span class="default">commit</span><span class="keyword">();<br />
+<br />
+</span><span class="comment">/* we insert a row */<br />
+</span><span class="default">$mysqli</span><span class="keyword">-&gt;</span><span class="default">query</span><span class="keyword">(</span><span class="string">"INSERT INTO TestTable (content) VALUES (99)"</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">/* we commit the inserted row */<br />
+</span><span class="default">$mysqli</span><span class="keyword">-&gt;</span><span class="default">commit</span><span class="keyword">();<br />
+<br />
+</span><span class="comment">/* we insert another three rows */<br />
+</span><span class="default">$mysqli</span><span class="keyword">-&gt;</span><span class="default">query</span><span class="keyword">(</span><span class="string">"INSERT INTO TestTable (content) VALUES (99)"</span><span class="keyword">);<br />
+</span><span class="default">$mysqli</span><span class="keyword">-&gt;</span><span class="default">query</span><span class="keyword">(</span><span class="string">"INSERT INTO TestTable (content) VALUES (99)"</span><span class="keyword">);<br />
+</span><span class="default">$mysqli</span><span class="keyword">-&gt;</span><span class="default">query</span><span class="keyword">(</span><span class="string">"INSERT INTO TestTable (content) VALUES (99)"</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">/* we the rollback */<br />
+</span><span class="default">$mysqli</span><span class="keyword">-&gt;</span><span class="default">rollback</span><span class="keyword">();<br />
+<br />
+</span><span class="comment">/* we insert a row */<br />
+</span><span class="default">$mysqli</span><span class="keyword">-&gt;</span><span class="default">query</span><span class="keyword">(</span><span class="string">"INSERT INTO TestTable (content) VALUES (99)"</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">/* we commit the inserted row */<br />
+</span><span class="default">$mysqli</span><span class="keyword">-&gt;</span><span class="default">commit</span><span class="keyword">();<br />
+<br />
+if (</span><span class="default">$result </span><span class="keyword">= </span><span class="default">$mysqli</span><span class="keyword">-&gt;</span><span class="default">query</span><span class="keyword">(</span><span class="string">"SELECT id_column FROM TestTable"</span><span class="keyword">)) {<br />
+<br />
+&nbsp;&nbsp; while(</span><span class="default">$row </span><span class="keyword">= </span><span class="default">$result</span><span class="keyword">-&gt;</span><span class="default">fetch_row</span><span class="keyword">()) {<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">printf</span><span class="keyword">(</span><span class="string">"Id: %d.\n"</span><span class="keyword">, </span><span class="default">$row</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">]);<br />
+&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">/* Free result */<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$result</span><span class="keyword">-&gt;</span><span class="default">close</span><span class="keyword">();<br />
+}<br />
+<br />
+</span><span class="comment">/* Drop table TestTable */<br />
+</span><span class="default">$mysqli</span><span class="keyword">-&gt;</span><span class="default">query</span><span class="keyword">(</span><span class="string">"DROP TABLE TestTable"</span><span class="keyword">);<br />
+<br />
+</span><span class="default">$mysqli</span><span class="keyword">-&gt;</span><span class="default">close</span><span class="keyword">();<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+This will output:<br />
+Id: 1.<br />
+Id: 5.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="92395""></a>
+  <div class="note">
+   <strong class="user">jd at dilltree dot com</strong>
+   <a href="#92395" class="date">22-Jul-2009 04:08</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Something to consider when using transact is that you should not perform a normal query on the same table (such as a DELETE) immediately after a transaction.&nbsp; If the transaction rolls-back, the DELETE will execute and even show affected rows, but the row can be magically re-inserted even if the rollback() command comes before the DELETE query.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="88838""></a>
+  <div class="note">
+   <strong class="user">Lorenzo - webmaster AT 4tour DOT it</strong>
+   <a href="#88838" class="date">10-Feb-2009 06:31</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+This is an example to explain the powerful of the rollback and commit functions.<br />
+Let's suppose you want to be sure that all queries have to be executed without errors before writing data on the database.<br />
+Here's the code:<br />
+<br />
+<span class="default">&lt;?php<br />
+$all_query_ok</span><span class="keyword">=</span><span class="default">true</span><span class="keyword">; </span><span class="comment">// our control variable<br />
+<br />
+//we make 4 inserts, the last one generates an error<br />
+//if at least one query returns an error we change our control variable<br />
+</span><span class="default">$mysqli</span><span class="keyword">-&gt;</span><span class="default">query</span><span class="keyword">(</span><span class="string">"INSERT INTO myCity (id) VALUES (100)"</span><span class="keyword">) ? </span><span class="default">null </span><span class="keyword">: </span><span class="default">$all_query_ok</span><span class="keyword">=</span><span class="default">false</span><span class="keyword">;<br />
+</span><span class="default">$mysqli</span><span class="keyword">-&gt;</span><span class="default">query</span><span class="keyword">(</span><span class="string">"INSERT INTO myCity (id) VALUES (200)"</span><span class="keyword">) ? </span><span class="default">null </span><span class="keyword">: </span><span class="default">$all_query_ok</span><span class="keyword">=</span><span class="default">false</span><span class="keyword">;<br />
+</span><span class="default">$mysqli</span><span class="keyword">-&gt;</span><span class="default">query</span><span class="keyword">(</span><span class="string">"INSERT INTO myCity (id) VALUES (300)"</span><span class="keyword">) ? </span><span class="default">null </span><span class="keyword">: </span><span class="default">$all_query_ok</span><span class="keyword">=</span><span class="default">false</span><span class="keyword">;<br />
+</span><span class="default">$mysqli</span><span class="keyword">-&gt;</span><span class="default">query</span><span class="keyword">(</span><span class="string">"INSERT INTO myCity (id) VALUES (100)"</span><span class="keyword">) ? </span><span class="default">null </span><span class="keyword">: </span><span class="default">$all_query_ok</span><span class="keyword">=</span><span class="default">false</span><span class="keyword">; </span><span class="comment">//duplicated PRIMARY KEY VALUE<br />
+<br />
+//now let's test our control variable<br />
+</span><span class="default">$all_query_ok </span><span class="keyword">? </span><span class="default">$mysqli</span><span class="keyword">-&gt;</span><span class="default">commit</span><span class="keyword">() : </span><span class="default">$mysqli</span><span class="keyword">-&gt;</span><span class="default">rollback</span><span class="keyword">();<br />
+<br />
+</span><span class="default">$mysqli</span><span class="keyword">-&gt;</span><span class="default">close</span><span class="keyword">();<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+hope to be helpful!</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="mysqli.refresh.html">mysqli::refresh</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="mysqli.rpl-query-type.html">mysqli::rpl_query_type</a></div>
  <div class="up"><a href="class.mysqli.html">mysqli</a></div>

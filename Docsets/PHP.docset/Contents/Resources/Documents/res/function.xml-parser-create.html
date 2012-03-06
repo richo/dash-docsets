@@ -85,7 +85,333 @@
  </div>
 
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="100099""></a>
+  <div class="note">
+   <strong class="user">marek995 at seznam dot cz</strong>
+   <a href="#100099" class="date">24-Sep-2010 11:46</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I created a function, which combines xml_paresr_create and all functions around.<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">function </span><span class="default">html_parse</span><span class="keyword">(</span><span class="default">$file</span><span class="keyword">)<br />
+&nbsp;&nbsp; &nbsp; {<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">$array </span><span class="keyword">= </span><span class="default">str_split</span><span class="keyword">(</span><span class="default">$file</span><span class="keyword">, </span><span class="default">1</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">$count </span><span class="keyword">= </span><span class="default">false</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">$text </span><span class="keyword">= </span><span class="string">""</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">$end </span><span class="keyword">= </span><span class="default">false</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp;&nbsp; foreach(</span><span class="default">$array </span><span class="keyword">as </span><span class="default">$temp</span><span class="keyword">)<br />
+&nbsp;&nbsp; &nbsp; &nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; switch(</span><span class="default">$temp</span><span class="keyword">)<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; case </span><span class="string">"&lt;"</span><span class="keyword">:<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span class="default">between</span><span class="keyword">(</span><span class="default">$text</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span class="default">$text </span><span class="keyword">= </span><span class="string">""</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span class="default">$count </span><span class="keyword">= </span><span class="default">true</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span class="default">$end </span><span class="keyword">= </span><span class="default">false</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; break;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; case </span><span class="string">"&gt;"</span><span class="keyword">:<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; if(</span><span class="default">$end </span><span class="keyword">== </span><span class="default">true</span><span class="keyword">) {</span><span class="default">end_tag</span><span class="keyword">(</span><span class="default">$text</span><span class="keyword">);}<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; else {</span><span class="default">start_tag</span><span class="keyword">(</span><span class="default">$text</span><span class="keyword">);}<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span class="default">$text </span><span class="keyword">= </span><span class="string">""</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; break;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; case </span><span class="string">"/"</span><span class="keyword">:<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; if(</span><span class="default">$count </span><span class="keyword">== </span><span class="default">true</span><span class="keyword">) {</span><span class="default">$end </span><span class="keyword">= </span><span class="default">true</span><span class="keyword">;}<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; else {</span><span class="default">$text </span><span class="keyword">= </span><span class="default">$text </span><span class="keyword">. </span><span class="string">"/"</span><span class="keyword">;}<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; break;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; default:<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span class="default">$count </span><span class="keyword">= </span><span class="default">false</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span class="default">$text </span><span class="keyword">= </span><span class="default">$text </span><span class="keyword">. </span><span class="default">$temp</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; }<br />
+&nbsp;&nbsp; &nbsp; }<br />
+</span><span class="default">?&gt;<br />
+</span>The input value is a string.<br />
+It calls functions start_tag() , between() and end_tag() just like the original xml parser.<br />
+<br />
+But it has a few differences:<br />
+&nbsp; - It does NOT check the code. Just resends values to that three functions, no matter, if they are right<br />
+&nbsp; - It works with parameters. For example: from tag &lt;sth b="42"&gt; sends sth b="42"<br />
+&nbsp; - It works wit diacritics. The original parser sometimes wrapped the text before the first diacritics appearance.<br />
+&nbsp; - Works with all encoding. If the input is UTF-8, the output will be UTF-8 too<br />
+&nbsp; - It works with strings. Not with file pointers.<br />
+&nbsp; - No "Reserved XML name" error<br />
+&nbsp; - No doctype needed<br />
+&nbsp; - It does not work with commentaries, notes, programming instructions etc. Just the tags<br />
+<br />
+definition of the handling functions is:<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">function </span><span class="default">between</span><span class="keyword">(</span><span class="default">$stuff</span><span class="keyword">) {}<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+No other attributes</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="79621""></a>
+  <div class="note">
+   <strong class="user">juanhdv at NOSPAM dot divvol dot org</strong>
+   <a href="#79621" class="date">05-Dec-2007 12:08</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+In PHP 5, when including in your xml file the definition '&lt;?xml version="1.0" encoding="ISO-8859-1" ?&gt;',&nbsp;&nbsp; I'd also recommend adding the option below:<br />
+&nbsp;<br />
+xml_parser_set_option($xml_parser,XML_OPTION_TARGET_ENCODING, "ISO-8859-1").<br />
+<br />
+It works fine!<br />
+<br />
+If your enconding is 'UTF-8', just replace 'ISO-8859-1'.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="64663""></a>
+  <div class="note">
+   
+   <a href="#64663" class="date">19-Apr-2006 07:42</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I'd also recommend adding the option below <br />
+xml_parser_set_option($parser,XML_OPTION_SKIP_WHITE,1);</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="53188""></a>
+  <div class="note">
+   <strong class="user">Tobbe</strong>
+   <a href="#53188" class="date">25-May-2005 06:01</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+The above "XML to array" code does not work properly if you have several tags on the same level and with the same name, example:<br />
+<br />
+&lt;currenterrors&gt;<br />
+&lt;error&gt;<br />
+&lt;description&gt;This is a real error...&lt;/description&gt;<br />
+&lt;/error&gt;<br />
+&lt;error&gt;<br />
+&lt;description&gt;This is a second error...&lt;/description&gt;<br />
+&lt;/error&gt;<br />
+&lt;error&gt;<br />
+&lt;description&gt;Lots of errors today...&lt;/description&gt;<br />
+&lt;/error&gt;<br />
+&lt;error&gt;<br />
+&lt;description&gt;This is the last error...&lt;/description&gt;<br />
+&lt;/error&gt;<br />
+&lt;/currenterrors&gt;<br />
+<br />
+It will then only display the first &lt;error&gt;-tag.<br />
+In this case you will need to number the tags automatically or maybe have several arrays for each new element.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="52324""></a>
+  <div class="note">
+   <strong class="user">dma05 at web dot de</strong>
+   <a href="#52324" class="date">27-Apr-2005 02:54</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+xml_parser_create () on php5 sometimes detects the wrong input format for me -- for example, sometimes when i try to parse data that has been fetched from a databse by my script and that only contains a handful of special ISO-8859-1 characters, it seems to think the input was something else and xml_parse() chokes on things like umlauts.<br />
+<br />
+the only reason i was able to figure out so far would be that -- unlike my data files -- the xml data generated by my script doesn't contain the &lt;?xml&nbsp; [...] encoding="..." ?&gt; definition. every data source with that definition seemed just fine; it's kinda odd that it worked *sometimes* without it *shrugs*.<br />
+no matter what the reason, using utf8_encode () on the string made it work, and prepending '&lt;?xml version="1.0" encoding="ISO-8859-1" ?&gt;' worked as well.<br />
+<br />
+this problem shouldn't occur in php4, since there you would specify the input encoding along with the output encoding.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="50182""></a>
+  <div class="note">
+   <strong class="user">php at stock-consulting dot com</strong>
+   <a href="#50182" class="date">21-Feb-2005 02:47</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Even though I passed "UTF-8" as encoding type PHP (Version 4.3.3) did *not* treat the input file as UTF-8. The input file was missing the BOM header bytes (which may indeed be omitted, according to RFC3629...but things are a bit unclear there. The RFC seems to make mere recommendations concering the BOM header). If you want to sure that PHP treats an UTF-8 encoded file correctly, make sure that it begins with the corresponding 3 byte BOM header (0xEF 0xBB 0xBF)</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="41235""></a>
+  <div class="note">
+   <strong class="user">jcalvert at gmx dot net</strong>
+   <a href="#41235" class="date">03-Apr-2004 10:39</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+To maintain compatibility between PHP4 and PHP5 you should always pass a string argument to this function. PHP4 autodetects the format of the input if you leave it out whereas PHP5 will assume the format to be ISO-8859-1 (and choke on the byte order marker of UTF-8 files).<br />
+<br />
+Calling the function as <span class="default">&lt;?php $res </span><span class="keyword">= </span><span class="default">xml_parser_create</span><span class="keyword">(</span><span class="string">''</span><span class="keyword">) </span><span class="default">?&gt;</span> will cause both versions of PHP to autodetect the format.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="38739""></a>
+  <div class="note">
+   <strong class="user">mmustafa at vsnl dot com</strong>
+   <a href="#38739" class="date">05-Jan-2004 10:00</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+thought I'd share this small piece of PHP code that prepares a proper array from XML Data <br />
+(uses xml_parse_into_struct to get a raw array)<br />
+features : 1) can easily adjust to multiple levels 2) simple.<br />
+<br />
+&lt;code&gt;<br />
+<br />
+$file = "data.xml";<br />
+$xml_parser = xml_parser_create();<br />
+<br />
+if (!($fp = fopen($file, "r"))) {<br />
+&nbsp;&nbsp;&nbsp; die("could not open XML input");<br />
+}<br />
+<br />
+$data = fread($fp, filesize($file));<br />
+fclose($fp);<br />
+xml_parse_into_struct($xml_parser, $data, $vals, $index);<br />
+xml_parser_free($xml_parser);<br />
+<br />
+$params = array();<br />
+$level = array();<br />
+foreach ($vals as $xml_elem) {<br />
+&nbsp; if ($xml_elem['type'] == 'open') {<br />
+&nbsp;&nbsp;&nbsp; if (array_key_exists('attributes',$xml_elem)) {<br />
+&nbsp;&nbsp; &nbsp;&nbsp; list($level[$xml_elem['level']],$extra) = array_values($xml_elem['attributes']);<br />
+&nbsp;&nbsp;&nbsp; } else {<br />
+&nbsp;&nbsp; &nbsp;&nbsp; $level[$xml_elem['level']] = $xml_elem['tag'];<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp; }<br />
+&nbsp; if ($xml_elem['type'] == 'complete') {<br />
+&nbsp;&nbsp;&nbsp; $start_level = 1;<br />
+&nbsp;&nbsp;&nbsp; $php_stmt = '$params';<br />
+&nbsp;&nbsp;&nbsp; while($start_level &lt; $xml_elem['level']) {<br />
+&nbsp;&nbsp; &nbsp;&nbsp; $php_stmt .= '[$level['.$start_level.']]';<br />
+&nbsp;&nbsp; &nbsp;&nbsp; $start_level++;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; $php_stmt .= '[$xml_elem[\'tag\']] = $xml_elem[\'value\'];';<br />
+&nbsp;&nbsp;&nbsp; eval($php_stmt);<br />
+&nbsp; }<br />
+}<br />
+<br />
+echo "&lt;pre&gt;";<br />
+print_r ($params);<br />
+echo "&lt;/pre&gt;";<br />
+<br />
+&lt;/code&gt;<br />
+<br />
+Example : <br />
+I/P XML ...<br />
+<br />
+&lt;country id="ZZ"&gt;<br />
+&lt;name&gt;My Land&lt;/name&gt;<br />
+&lt;location&gt;15E&lt;/location&gt;<br />
+&lt;area&gt;40000&lt;/area&gt;<br />
+<br />
+&nbsp;&nbsp;&nbsp; &lt;state1&gt;<br />
+&lt;name&gt;Hi State&lt;/name&gt;<br />
+&lt;area&gt;1000&lt;/area&gt;<br />
+&lt;population&gt;2000&lt;/population&gt;<br />
+<br />
+&nbsp;&nbsp;&nbsp; &lt;city1&gt;<br />
+&lt;location&gt;13E&lt;/location&gt;<br />
+&lt;population&gt;500&lt;/population&gt;<br />
+&lt;area&gt;500&lt;/area&gt;<br />
+&lt;/city1&gt;<br />
+<br />
+&nbsp;&nbsp;&nbsp; &lt;city2&gt;<br />
+&lt;location&gt;13E&lt;/location&gt;<br />
+&lt;population&gt;500&lt;/population&gt;<br />
+&lt;area&gt;5000&lt;/area&gt;<br />
+&lt;/city2&gt;<br />
+&lt;/state1&gt;<br />
+<br />
+&nbsp;&nbsp;&nbsp; &lt;state2&gt;<br />
+&lt;name&gt;Low State&lt;/name&gt;<br />
+&lt;area&gt;3000&lt;/area&gt;<br />
+&lt;population&gt;20000&lt;/population&gt;<br />
+<br />
+&nbsp;&nbsp;&nbsp; &lt;city1&gt;<br />
+&lt;location&gt;15E&lt;/location&gt;<br />
+&lt;population&gt;5000&lt;/population&gt;<br />
+&lt;area&gt;1500&lt;/area&gt;<br />
+&lt;/city1&gt;<br />
+&lt;/state2&gt;<br />
+&lt;/country&gt;<br />
+<br />
+O/P Array :<br />
+Array<br />
+(<br />
+&nbsp;&nbsp;&nbsp; [ZZ] =&gt; Array<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; (<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [NAME] =&gt; My Land<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [LOCATION] =&gt; 15E<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [AREA] =&gt; 40000<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [STATE1] =&gt; Array<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; (<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [NAME] =&gt; Hi State<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [AREA] =&gt; 1000<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [POPULATION] =&gt; 2000<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [CITY1] =&gt; Array<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; (<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [LOCATION] =&gt; 13E<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [POPULATION] =&gt; 500<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [AREA] =&gt; 500<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; )<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [CITY2] =&gt; Array<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; (<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [LOCATION] =&gt; 13E<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [POPULATION] =&gt; 500<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [AREA] =&gt; 5000<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; )<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; )<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [STATE2] =&gt; Array<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; (<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [NAME] =&gt; Low State<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [AREA] =&gt; 3000<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [POPULATION] =&gt; 20000<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [CITY1] =&gt; Array<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; (<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [LOCATION] =&gt; 15E<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [POPULATION] =&gt; 5000<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [AREA] =&gt; 1500<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; )<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; )<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; )<br />
+<br />
+)</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="function.xml-parser-create-ns.html">xml_parser_create_ns</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.xml-parser-free.html">xml_parser_free</a></div>
  <div class="up"><a href="ref.xml.html">XML Parser Functions</a></div>

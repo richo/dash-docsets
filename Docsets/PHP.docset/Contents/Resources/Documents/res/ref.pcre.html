@@ -72,6 +72,196 @@
 
 <h2>Table of Contents</h2><ul class="chunklist chunklist_reference"><li><a href="function.preg-filter.html">preg_filter</a> â€” Perform a regular expression search and replace</li><li><a href="function.preg-grep.html">preg_grep</a> â€” Return array entries that match the pattern</li><li><a href="function.preg-last-error.html">preg_last_error</a> â€” Returns the error code of the last PCRE regex execution</li><li><a href="function.preg-match-all.html">preg_match_all</a> â€” Perform a global regular expression match</li><li><a href="function.preg-match.html">preg_match</a> â€” Perform a regular expression match</li><li><a href="function.preg-quote.html">preg_quote</a> â€” Quote regular expression characters</li><li><a href="function.preg-replace-callback.html">preg_replace_callback</a> â€” Perform a regular expression search and replace using a callback</li><li><a href="function.preg-replace.html">preg_replace</a> â€” Perform a regular expression search and replace</li><li><a href="function.preg-split.html">preg_split</a> â€” Split string by a regular expression</li></ul>
 </div>
+<div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="88836""></a>
+  <div class="note">
+   <strong class="user">Svoop</strong>
+   <a href="#88836" class="date">10-Feb-2009 05:43</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I have written a short introduction and a colorful cheat sheet for Perl Compatible Regular Expressions (PCRE):<br />
+<br />
+<a href="http://www.bitcetera.com/en/techblog/2008/04/01/regex-in-a-nutshell/" rel="nofollow" target="_blank">http://www.bitcetera.com/en/techblog/2008/04/01/regex-in-a-nutshell/</a></span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="77790""></a>
+  <div class="note">
+   <strong class="user">stronk7 at moodle dot org</strong>
+   <a href="#77790" class="date">13-Sep-2007 01:42</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+One comment about 5.2.x and the pcre.backtrack_limit:<br />
+<br />
+Note that this setting wasn't present under previous PHP releases and the behaviour (or limit) under those releases was, in practise,&nbsp; higher so all these PCRE functions were able to "capture" longer strings.<br />
+<br />
+With the arrival of the setting, defaulting to 100000 (less than 100K), you won't be able to match/capture strings over that size using, for example "ungreedy" modifiers.<br />
+<br />
+So, in a lot of situations, you'll need to raise that (very small IMO) limit.<br />
+<br />
+The worst part is that PHP simply won't match/capture those strings over pcre.backtrack_limit and will it be 100% silent about that (I think that throwing some NOTICE/WARNING if raised could help a lot to developers).<br />
+<br />
+There is a lot of people suffering this changed behaviour from I've read on forums, bugs and so on).<br />
+<br />
+Hope this note helps, ciao :-)</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="74939""></a>
+  <div class="note">
+   <strong class="user">misc at e2007 dot cynergi dot com</strong>
+   <a href="#74939" class="date">05-May-2007 04:16</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+PCRE faster than POSIX RE? Not always.<br />
+<br />
+In a recent search-engine project here at Cynergi, I had a simple loop with a few cute ereg_replace() functions that took 3min to process data. I changed that 10-line loop into a 100-line hand-written code for replacement and the loop now took 10s to process the same data! This opened my eye to what can *IN SOME CASES* be very slow regular expressions.<br />
+<br />
+Lately I decided to look into Perl-compatible regular expressions (PCRE). Most pages claim PCRE are faster than POSIX, but a few claim otherwise. I decided on bechmarks of my own.<br />
+<br />
+My first few tests confirmed PCRE to be faster, but... the results were slightly different than others were getting, so I decided to benchmark every case of RE usage I had on a 8000-line secure (and fast) Webmail project here at Cynergi to check it out.<br />
+<br />
+The results? Inconclusive! Sometimes PCRE *are* faster (sometimes by a factor greater than 100x faster!), but some other times POSIX RE are faster (by a factor of 2x).<br />
+<br />
+I still have to find a rule on when are one or the other faster. It's not only about search data size, amount of data matched, or "RE compilation time" which would show when you repeated the function often: one would *always* be faster than the other. But I didn't find a pattern here. But truth be said, I also didn't take the time to look into the source code and analyse the problem.<br />
+<br />
+I can give you some examples, though. The POSIX RE<br />
+<br />
+([0-9]{4})/([0-9]{2})/([0-9]{2})[^0-9]+<br />
+([0-9]{2}):([0-9]{2}):([0-9]{2})<br />
+<br />
+is 30% faster in POSIX than when converted to PCRE (even if you use \d and \D and non-greedy matching). On the other hand, a similarly PCRE complex pattern<br />
+<br />
+/[0-9]{1,2}[ \t]+[a-zA-Z]{3}[ \t]+[0-9]{4}[ \t]+[0-9]{1,2}:[0-9]{1,2}(:[0-9]{1,2})?[ \t]+[+-][0-9]{4}/<br />
+<br />
+is 2.5x faster in PCRE than in POSIX RE. Simple replacement patterns like<br />
+<br />
+ereg_replace( "[^a-zA-Z0-9-]+", "", $m );<br />
+<br />
+are 2x faster in POSIX RE than PCRE. And then we get confused again because a POSIX RE pattern like<br />
+<br />
+(^|\n|\r)begin-base64[ \t]+[0-7]{3,4}[ \t]+......<br />
+<br />
+is 2x faster as POSIX RE, but the case-insensitive PCRE<br />
+<br />
+/^Received[ \t]*:[ \t]*by[ \t]+([^ \t]+)[ \t]/i<br />
+<br />
+is 30x faster than its POSIX RE version!<br />
+<br />
+When it comes to case sensitivity, PCRE has so far seemed to be the best option. But I found some really strange behaviour from ereg/eregi. On a very simple POSIX RE<br />
+<br />
+(^|\r|\n)mime-version[ \t]*:<br />
+<br />
+I found eregi() taking 3.60s (just a number in a test benchmark), while the corresponding PCRE took 0.16s! But if I used ereg() (case-sensitive) the POSIX RE time went down to 0.08s! So I investigated further. I tried to make the POSIX RE case-insensitive itself. I got as far as this:<br />
+<br />
+(^|\r|\n)[mM][iI][mM][eE]-vers[iI][oO][nN][ \t]*:<br />
+<br />
+This version also took 0.08s. But if I try to apply the same rule to any of the 'v', 'e', 'r' or 's' letters that are not changed, the time is back to the 3.60s mark, and not gradually, but immediatelly so! The test data didn't have any "vers" in it, other "mime" words in it or any "ion" that might be confusing the POSIX parser, so I'm at a loss.<br />
+<br />
+Bottom line: always benchmark your PCRE / POSIX RE to find the fastest!<br />
+<br />
+Tests were performed with PHP 5.1.2 under Windows, from the command line.<br />
+<br />
+Pedro Freire<br />
+cynergi.com</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="57073""></a>
+  <div class="note">
+   <strong class="user">richardh at phpguru dot org</strong>
+   <a href="#57073" class="date">22-Sep-2005 11:50</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+There's a printable PDF PCRE cheat sheet available here:<br />
+<br />
+<a href="http://www.phpguru.org/article.php?ne_id=67" rel="nofollow" target="_blank">http://www.phpguru.org/article.php?ne_id=67</a><br />
+<br />
+Has the common metacharacters, quantifiers, pattern modifiers, character classes and assertions with short explanations.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="46798""></a>
+  <div class="note">
+   <strong class="user">Ned Baldessin</strong>
+   <a href="#46798" class="date">23-Oct-2004 06:08</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+If you want to perform regular expressions on Unicode strings, the PCRE functions will NOT be of any help. You need to use the Multibyte extension : mb_ereg(), mb_eregi(), pb_ereg_replace() and so on. When doing so, be carefull to set the default text encoding to the same encoding used by the text you are searching and replacing in. You can do that with the mb_regex_encoding() function. You will probably also want to set the default encoding for the other mb_* string functions with mb_internal_encoding().<br />
+<br />
+So when dealing with, say, french text, I start with these :<br />
+<span class="default">&lt;?php<br />
+mb_internal_encoding</span><span class="keyword">(</span><span class="string">'UTF-8'</span><span class="keyword">);<br />
+</span><span class="default">mb_regex_encoding</span><span class="keyword">(</span><span class="string">'UTF-8'</span><span class="keyword">);<br />
+</span><span class="default">setlocale</span><span class="keyword">(</span><span class="default">LC_ALL</span><span class="keyword">, </span><span class="string">'fr-fr'</span><span class="keyword">);<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="44274""></a>
+  <div class="note">
+   <strong class="user">steve at stevedix dot de</strong>
+   <a href="#44274" class="date">20-Jul-2004 05:17</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Something to bear in mind is that regex is actually a declarative programming language like prolog : your regex is a set of rules which the regex interpreter tries to match against a string.&nbsp;&nbsp; During this matching, the interpreter will assume certain things, and continue assuming them until it comes up against a failure to match, which then causes it to backtrack.&nbsp; Regex assumes "greedy matching" unless explicitly told not to, which can cause a lot of backtracking.&nbsp; A general rule of thumb is that the more backtracking, the slower the matching process.<br />
+<br />
+It is therefore vital, if you are trying to optimise your program to run quickly (and if you can't do without regex), to optimise your regexes to match quickly.<br />
+<br />
+I recommend the use of a tool such as "The Regex Coach" to debug your regex strings.<br />
+<br />
+<a href="http://weitz.de/files/regex-coach.exe (Windows installer" rel="nofollow" target="_blank">http://weitz.de/files/regex-coach.exe (Windows installer</a>) <a href="http://weitz.de/files/regex-coach.tgz (Linux tar archive" rel="nofollow" target="_blank">http://weitz.de/files/regex-coach.tgz (Linux tar archive</a>)</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="35966""></a>
+  <div class="note">
+   <strong class="user">Biju</strong>
+   <a href="#35966" class="date">20-Sep-2003 09:00</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Regular Expressions Tutorial from non PHP sites<br />
+&nbsp;&nbsp; <a href="http://www.amk.ca/python/howto/regex/" rel="nofollow" target="_blank">http://www.amk.ca/python/howto/regex/</a><br />
+&nbsp;&nbsp; <a href="http://sitescooper.org/tao_regexps.html" rel="nofollow" target="_blank">http://sitescooper.org/tao_regexps.html</a><br />
+&nbsp;&nbsp; <a href="http://www.english.uga.edu/humcomp/perl/regex2a.html" rel="nofollow" target="_blank">http://www.english.uga.edu/humcomp/perl/regex2a.html</a><br />
+&nbsp;&nbsp; <a href="http://www.english.uga.edu/humcomp/perl/regexps.html" rel="nofollow" target="_blank">http://www.english.uga.edu/humcomp/perl/regexps.html</a><br />
+&nbsp;&nbsp; <a href="http://www.english.uga.edu/humcomp/perl/regular_expressions.HTML" rel="nofollow" target="_blank">http://www.english.uga.edu/humcomp/perl/regular_expressions.HTML</a><br />
+&nbsp;&nbsp; <a href="http://www.english.uga.edu/humcomp/perl/" rel="nofollow" target="_blank">http://www.english.uga.edu/humcomp/perl/</a><br />
+&nbsp;&nbsp; <a href="http://java.sun.com/docs/books/tutorial/extra/regex/" rel="nofollow" target="_blank">http://java.sun.com/docs/books/tutorial/extra/regex/</a><br />
+&nbsp;&nbsp; <a href="http://gnosis.cx/publish/programming/regular_expressions.html" rel="nofollow" target="_blank">http://gnosis.cx/publish/programming/regular_expressions.html</a><br />
+&nbsp;&nbsp; <a href="http://www.zvon.org/other/PerlTutorial/Books/Book1/" rel="nofollow" target="_blank">http://www.zvon.org/other/PerlTutorial/Books/Book1/</a><br />
+&nbsp;&nbsp; <a href="http://it.metr.ou.edu/regex/" rel="nofollow" target="_blank">http://it.metr.ou.edu/regex/</a><br />
+&nbsp;&nbsp; <a href="http://www.regular-expressions.info/" rel="nofollow" target="_blank">http://www.regular-expressions.info/</a></span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
 <hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="reference.pcre.pattern.posix.html">Differences from POSIX regex</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.preg-filter.html">preg_filter</a></div>

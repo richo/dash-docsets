@@ -101,7 +101,91 @@ returned by <span class="function"><a href="function.mysqli-connect.html" class=
  </div>
 
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="93457""></a>
+  <div class="note">
+   <strong class="user">Bob Johnson</strong>
+   <a href="#93457" class="date">10-Sep-2009 10:42</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+The compactness of Lorenzo's code is admirable.<br />
+However, it is a good idea to also check&nbsp; $mysqli-&gt;affected_rows to make sure that the INSERT statement did not fail. <br />
+<br />
+<span class="default">&lt;?php<br />
+$result_query </span><span class="keyword">= @</span><span class="default">mysqli_query</span><span class="keyword">(</span><span class="default">$query</span><span class="keyword">, </span><span class="default">$connect</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if ((</span><span class="default">$result_query </span><span class="keyword">== </span><span class="default">false</span><span class="keyword">) &amp;&amp;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; (</span><span class="default">mysqli_affected_rows</span><span class="keyword">(</span><span class="default">$connect</span><span class="keyword">) == </span><span class="default">0</span><span class="keyword">))<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// verify the query executed completely and verify that it<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; // had impact on the table<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$success </span><span class="keyword">= </span><span class="default">false</span><span class="keyword">;<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// here also, the developer could choose to add a ROLLBACK<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; // statement<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">}<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="89976""></a>
+  <div class="note">
+   <strong class="user">mvanlamz</strong>
+   <a href="#89976" class="date">31-Mar-2009 11:36</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Please note that calling mysqli::commit() will NOT automatically set mysqli::autocommit() back to 'true'.<br />
+<br />
+This means that any queries following mysqli::commit() will be rolled back when your script exits.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="88857""></a>
+  <div class="note">
+   <strong class="user">Lorenzo - webmaster AT 4tour DOT it</strong>
+   <a href="#88857" class="date">11-Feb-2009 03:12</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+This is an example to explain the powerful of the rollback and commit functions.<br />
+Let's suppose you want to be sure that all queries have to be executed without errors before writing data on the database.<br />
+Here's the code:<br />
+<br />
+<span class="default">&lt;?php<br />
+$all_query_ok</span><span class="keyword">=</span><span class="default">true</span><span class="keyword">; </span><span class="comment">// our control variable<br />
+<br />
+//we make 4 inserts, the last one generates an error<br />
+//if at least one query returns an error we change our control variable<br />
+</span><span class="default">$mysqli</span><span class="keyword">-&gt;</span><span class="default">query</span><span class="keyword">(</span><span class="string">"INSERT INTO myCity (id) VALUES (100)"</span><span class="keyword">) ? </span><span class="default">null </span><span class="keyword">: </span><span class="default">$all_query_ok</span><span class="keyword">=</span><span class="default">false</span><span class="keyword">;<br />
+</span><span class="default">$mysqli</span><span class="keyword">-&gt;</span><span class="default">query</span><span class="keyword">(</span><span class="string">"INSERT INTO myCity (id) VALUES (200)"</span><span class="keyword">) ? </span><span class="default">null </span><span class="keyword">: </span><span class="default">$all_query_ok</span><span class="keyword">=</span><span class="default">false</span><span class="keyword">;<br />
+</span><span class="default">$mysqli</span><span class="keyword">-&gt;</span><span class="default">query</span><span class="keyword">(</span><span class="string">"INSERT INTO myCity (id) VALUES (300)"</span><span class="keyword">) ? </span><span class="default">null </span><span class="keyword">: </span><span class="default">$all_query_ok</span><span class="keyword">=</span><span class="default">false</span><span class="keyword">;<br />
+</span><span class="default">$mysqli</span><span class="keyword">-&gt;</span><span class="default">query</span><span class="keyword">(</span><span class="string">"INSERT INTO myCity (id) VALUES (100)"</span><span class="keyword">) ? </span><span class="default">null </span><span class="keyword">: </span><span class="default">$all_query_ok</span><span class="keyword">=</span><span class="default">false</span><span class="keyword">; </span><span class="comment">//duplicated PRIMARY KEY VALUE<br />
+<br />
+//now let's test our control variable<br />
+</span><span class="default">$all_query_ok </span><span class="keyword">? </span><span class="default">$mysqli</span><span class="keyword">-&gt;</span><span class="default">commit</span><span class="keyword">() : </span><span class="default">$mysqli</span><span class="keyword">-&gt;</span><span class="default">rollback</span><span class="keyword">();<br />
+<br />
+</span><span class="default">$mysqli</span><span class="keyword">-&gt;</span><span class="default">close</span><span class="keyword">();<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+hope to be helpful!</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="mysqli.close.html">mysqli::close</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="mysqli.connect-errno.html">mysqli::$connect_errno</a></div>
  <div class="up"><a href="class.mysqli.html">mysqli</a></div>

@@ -88,7 +88,487 @@
  </div>
 
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="95809""></a>
+  <div class="note">
+   <strong class="user">john at host89 dot net</strong>
+   <a href="#95809" class="date">22-Jan-2010 12:11</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Hello all,<br />
+<br />
+While working on a fully customized session management system I decided to add the ability to force a user from their session while within another administrative session. (Basically, as an admin I would see currently active sessions and then have the choice to end them immediately.) I had already written a decently secure session tracking and theft-prevention system (An independent session key is created and then changed every 5 pages/requests. Even AJAX calls use the key.) I have posted that code on another page here at PHP.net.<br />
+<br />
+The solution I arrived at was to record session IDs as users log in (If a session ID changes the user is forced to login again - session key changes frequently instead) and then tie the entries to their user id, from which I could get their username, name, e-mail, etc. A final part is recording the time that their session ID is recorded so that a garbage collector could go through and delete old entries in the database. (IDs are recorded in a MySQL database.)<br />
+<br />
+The code on the login page looks something like this, and is run well after the session has started and their credentials have been verified:<br />
+<br />
+<span class="default">&lt;?php<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment"># Quick! Record their session information so they can be off kicked by demand later. :-D<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$session_id</span><span class="keyword">=</span><span class="default">session_id</span><span class="keyword">();<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$savsessionquery</span><span class="keyword">=</span><span class="string">"INSERT INTO admin_users_sessions (user_id, session_id) VALUES ('"</span><span class="keyword">.</span><span class="default">$userid</span><span class="keyword">.</span><span class="string">"', '"</span><span class="keyword">.</span><span class="default">$session_id</span><span class="keyword">.</span><span class="string">"') ON DUPLICATE KEY UPDATE session_id='"</span><span class="keyword">.</span><span class="default">$session_id</span><span class="keyword">.</span><span class="string">"'"</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$savesessionresult</span><span class="keyword">=</span><span class="default">mysql_query</span><span class="keyword">(</span><span class="default">$savsessionquery</span><span class="keyword">, </span><span class="default">$sql</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment"># And we won't care if it don't work. :-)<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+That last comment is because if the insert fails, then that user is safe from kicking during their active session. (However, if they click "Home" it re-runs through the login.php file which will pick up on a bad password/disallowed login and kick them out via logout.php which unsets the cookie and variables and destroys the session.)<br />
+<br />
+The table has 4 columns: id, user_id, session_id, and timestamp. id is an AUTO_INCREMENT (so it's not specifically inserted) and TIMESTAMP is an AUTO-UPDATE (and so it also is not specifically inserted).<br />
+<br />
+The code that actually kicks them out while maintaining the administrative session is as follows ($_POST['kickid'] is passed from the page where the user can pick the session to kill):<br />
+<br />
+<span class="default">&lt;?php<br />
+&nbsp;&nbsp;&nbsp; session_cache_limiter</span><span class="keyword">(</span><span class="string">'nocache'</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; require(</span><span class="string">'authheader.php'</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$permissiontocheck</span><span class="keyword">=</span><span class="string">"permission5"</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; require(</span><span class="string">'permissioncheck.php'</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$kickid</span><span class="keyword">=</span><span class="default">$_POST</span><span class="keyword">[</span><span class="string">'kickid'</span><span class="keyword">];<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment"># Alright. Save the current session stuff so we can resume it at the end.<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$realsessionid</span><span class="keyword">=</span><span class="default">session_id</span><span class="keyword">();<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment"># Look up the session ID we're kicking<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$query</span><span class="keyword">=</span><span class="string">"SELECT session_id FROM admin_users_sessions WHERE id='"</span><span class="keyword">.</span><span class="default">$kickid</span><span class="keyword">.</span><span class="string">"'"</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$result</span><span class="keyword">=</span><span class="default">mysql_query</span><span class="keyword">(</span><span class="default">$query</span><span class="keyword">, </span><span class="default">$sql</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; if (!</span><span class="default">$result </span><span class="keyword">|| </span><span class="default">mysql_num_rows</span><span class="keyword">(</span><span class="default">$result</span><span class="keyword">)!=</span><span class="default">1</span><span class="keyword">)<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment"># No result or too many matches<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$_SESSION</span><span class="keyword">[</span><span class="string">'returnstatus'</span><span class="keyword">]=</span><span class="default">2</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$_SESSION</span><span class="keyword">[</span><span class="string">'returnmessage'</span><span class="keyword">]=</span><span class="string">"Invalid session selection. Please try again."</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">header </span><span class="keyword">(</span><span class="string">'Location: forcelogout.php'</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; exit;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$array</span><span class="keyword">=</span><span class="default">mysql_fetch_row</span><span class="keyword">(</span><span class="default">$result</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$kicksessionid</span><span class="keyword">=</span><span class="default">$array</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">];<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment"># Ok. End the current session and start one up with the ID being kicked.<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">session_commit</span><span class="keyword">();<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">session_id</span><span class="keyword">(</span><span class="default">$kicksessionid</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">session_start</span><span class="keyword">();<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment"># Now we're in. Destroy some stuff and then get out.<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$_SESSION </span><span class="keyword">= array();<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$_SESSION</span><span class="keyword">[</span><span class="string">'loggedin'</span><span class="keyword">]=</span><span class="default">false</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">session_destroy</span><span class="keyword">();<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">session_commit</span><span class="keyword">();<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment"># Sweet. Now we re-load our current session and head back celebrating.<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">session_id</span><span class="keyword">(</span><span class="default">$realsessionid</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">session_start</span><span class="keyword">();<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$_SESSION</span><span class="keyword">[</span><span class="string">'returnstatus'</span><span class="keyword">]=</span><span class="default">1</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$_SESSION</span><span class="keyword">[</span><span class="string">'returnmessage'</span><span class="keyword">]=</span><span class="string">"Session successfully destroyed"</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">header </span><span class="keyword">(</span><span class="string">'Location: forcelogout.php'</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; exit;<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+authheader.php and permissioncheck.php are both portions of the session management system that this page runs under. permission5 is the required permission to kick a user from their session.<br />
+<br />
+There you go! Dig in and I hope somebody can use this little tid-bit of code.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="85743""></a>
+  <div class="note">
+   <strong class="user">yesmarklapointe at hotmail dot com</strong>
+   <a href="#85743" class="date">15-Sep-2008 10:16</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I ran an experiment. Firefox3 and IE7 both behave the same on my machine. The following statements clear out the variables immediately: <br />
+<br />
+session_unset()<br />
+$_SESSION = array()<br />
+unset($_SESSION['whatever'])<br />
+<br />
+But if you are intent upon using session_destroy(), know that it only empties out the variables when the page is reloaded or redirected to some other page. As long as it's the same page, the variables are still usable after invoking session_destroy().</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="85379""></a>
+  <div class="note">
+   <strong class="user">elbowni</strong>
+   <a href="#85379" class="date">27-Aug-2008 02:23</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+If you want to remove all variables from session and change SID first use <br />
+<br />
+session_regenerate_id();<br />
+session_destroy();<br />
+<br />
+if you do destroy first then regenerate_id your SID will not change</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="84534""></a>
+  <div class="note">
+   <strong class="user">iam4webwork at hotmail dot com</strong>
+   <a href="#84534" class="date">17-Jul-2008 01:19</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+<span class="default">&lt;?php<br />
+session_name</span><span class="keyword">(</span><span class="string">"PeekABook"</span><span class="keyword">);<br />
+</span><span class="comment">/**<br />
+&nbsp;&nbsp; *<br />
+&nbsp;&nbsp; *&nbsp; Assuming that we resume a session already underway<br />
+&nbsp;&nbsp; *&nbsp; with a specified session name, over-riding<br />
+&nbsp;&nbsp; *&nbsp; the default provided in php.ini: session.name<br />
+&nbsp;&nbsp; *<br />
+**/&nbsp; <br />
+<br />
+</span><span class="default">session_start</span><span class="keyword">();<br />
+<br />
+</span><span class="comment">/**<br />
+&nbsp;&nbsp; * If you only wish to nullify all of the session variables.<br />
+&nbsp;&nbsp; *<br />
+**/<br />
+</span><span class="default">$_SESSION </span><span class="keyword">= array();<br />
+<br />
+</span><span class="comment">/**<br />
+&nbsp;&nbsp; * read and save session name to later void session<br />
+&nbsp;&nbsp; * cookie<br />
+&nbsp;&nbsp; *<br />
+**/<br />
+</span><span class="default">$session_name </span><span class="keyword">= </span><span class="default">session_name</span><span class="keyword">();&nbsp;&nbsp; <br />
+<br />
+</span><span class="comment">/**<br />
+&nbsp; * destroy session data.<br />
+&nbsp; * no need to use session_unset() in PHP5<br />
+**/<br />
+</span><span class="default">session_destroy</span><span class="keyword">();<br />
+<br />
+</span><span class="comment">/**<br />
+&nbsp;&nbsp; * If you wish to kill the session, then you must<br />
+&nbsp;&nbsp; * delete the&nbsp; session cookie.<br />
+&nbsp;&nbsp; * An http request is needed to effectively<br />
+&nbsp;&nbsp; * set the cookie to permanent inactive status;<br />
+&nbsp;&nbsp; * only the browser can remove the cookie.<br />
+&nbsp;&nbsp; * <br />
+**/<br />
+<br />
+</span><span class="keyword">if ( isset( </span><span class="default">$_COOKIE</span><span class="keyword">[ </span><span class="default">$session_name </span><span class="keyword">] ) ) {<br />
+&nbsp;&nbsp;&nbsp; if ( </span><span class="default">setcookie</span><span class="keyword">(</span><span class="default">session_name</span><span class="keyword">(), </span><span class="string">''</span><span class="keyword">, </span><span class="default">time</span><span class="keyword">()-</span><span class="default">3600</span><span class="keyword">, </span><span class="string">'/'</span><span class="keyword">) ) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">header</span><span class="keyword">(</span><span class="string">"Location: <a href="http://localhost/some_other_page.php" rel="nofollow" target="_blank">http://localhost/some_other_page.php</a>"</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; exit();&nbsp; &nbsp; <br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; else<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// setcookie() fails when there is output sent prior to calling this function.<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">}<br />
+}<br />
+<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="84003""></a>
+  <div class="note">
+   <strong class="user">james at dunmore dot me dot uk</strong>
+   <a href="#84003" class="date">23-Jun-2008 08:25</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+If you are using a custom save handler (i.e. calling session_set_save_handler ) - like you would for DB based session handling. If you call session_destroy, followed by session_start, you will get an error.<br />
+<br />
+You need to re-call session_set_save_handler with the lines you previously did (e.g.<br />
+session_set_save_handler('mysql_session_write_func') )</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="83844""></a>
+  <div class="note">
+   <strong class="user">ale at alejandrolapeyre dot com dot ar</strong>
+   <a href="#83844" class="date">14-Jun-2008 04:16</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Example #1 fails to delete the session cookie if the session COOKIE is not set but a session is started (as the example does)<br />
+<br />
+To delete the session cookie ALWAYS, change the line:<br />
+<br />
+if (isset($_COOKIE[session_name()])) {<br />
+<br />
+to:<br />
+<br />
+if (session_id != "" || isset($_COOKIE[session_name()]))</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="76832""></a>
+  <div class="note">
+   <strong class="user">administrator at anorhack dot com</strong>
+   <a href="#76832" class="date">01-Aug-2007 07:34</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Destroying&nbsp; a session from a background job<br />
+<br />
+I have a thief-protection system that compares country codes from login IPs via whois. This has to run in the background as it is way too processor-hungry to be run in the browser.<br />
+<br />
+What I needed was a way to destroy the web session from the background job. For some reason, a background session_destroy APPEARS to work, but doesnt't actually destroy the web session.<br />
+<br />
+There is a work around, I set the username to NULL and the web code picks up on that, bouncing the user (thief) to a "gotcha" page where his IP is logged.<br />
+<br />
+Yes I know its nasty and dirty, but surprisingly it works.<br />
+<br />
+$sid = the session_id() of the suspicious web session, passed in $argv to the background job<br />
+<br />
+The trick is to "stuff" the $_GET array with the sid, then the session_start in the background job picks this value up (as if it were a genuine trans-sid type thing...?PHPSESSID=blah) and "connects to" the web session. All $_SESSION variable can be viewed (and CHANGED , which is how this kludge works) but for some reason (that no doubt someone will illuminate) they can't be unset...setting the particular variable to NULL works well though:<br />
+<br />
+&nbsp;<br />
+$_GET[session_name()]=$sid;<br />
+session_start();<br />
+// prove we are getting the web session data<br />
+foreach($_SESSION as $k =&gt; $v) echo($k."=".$v);<br />
+// now kill the thief<br />
+$_SESSION['username']=NULL;<br />
+//web session variable now NULL - honestly!</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="73192""></a>
+  <div class="note">
+   <strong class="user">wade at defianceinteractive dot com</strong>
+   <a href="#73192" class="date">12-Feb-2007 11:59</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+You should also be careful when you destroy a session. I believe a previous user posted something similar to this but didn't emphasize this point.<br />
+<br />
+If you are creating a new session, but want to make sure that&nbsp; there are currently no sessions active by doing session_destroy(); make sure you start the session again using session_start(); or else your session data will not register properly.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="73045""></a>
+  <div class="note">
+   <strong class="user">Colin</strong>
+   <a href="#73045" class="date">07-Feb-2007 01:52</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Note that when you are using a custom session handler, session_destroy will cause a fatal error if you have set the session destroy function used by session_set_save_handler to private.<br />
+<br />
+Example:<br />
+Fatal error: Call to private method Session::sessDestroy()<br />
+<br />
+where sessDestroy was the function I specified in the 5th parameter of session_set_save_handler.<br />
+<br />
+Even though it isn't all that desirable, the simple solution is to set sessDestroy to public.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="71889""></a>
+  <div class="note">
+   <strong class="user">r dot swets at guidance dot nl</strong>
+   <a href="#71889" class="date">21-Dec-2006 12:59</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Bothering with the timestamp can always give troubles. A lot better is forcing the sessionid to be regenrerated. A trick to destroy the session completly is actually restarting the session, like someone closed and reopened his browser. This will fix the whole authority problem and browser cookie deletion problem quite more easy, and it gives cleaner code without having to clean the $_SESSION array.<br />
+<br />
+I would suggest the following function session_restart();<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+session_start</span><span class="keyword">();<br />
+<br />
+</span><span class="comment">// Some simple code etc etc<br />
+</span><span class="default">$requested_logout </span><span class="keyword">= </span><span class="default">true</span><span class="keyword">;<br />
+<br />
+if (</span><span class="default">$requested_logout</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">session_restart</span><span class="keyword">();<br />
+}<br />
+<br />
+</span><span class="comment">// Now the session_id will be different every browser refresh<br />
+</span><span class="keyword">print(</span><span class="default">session_id</span><span class="keyword">());<br />
+<br />
+function </span><span class="default">session_restart</span><span class="keyword">()<br />
+{<br />
+&nbsp;&nbsp;&nbsp; if (</span><span class="default">session_name</span><span class="keyword">()==</span><span class="string">''</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// Session not started yet<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">session_start</span><span class="keyword">();<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; else {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// Session was started, so destroy<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">session_destroy</span><span class="keyword">();<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// But we do want a session started for the next request<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">session_start</span><span class="keyword">();<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">session_regenerate_id</span><span class="keyword">();<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// PHP &lt; 4.3.3, since it does not put <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">setcookie</span><span class="keyword">(</span><span class="default">session_name</span><span class="keyword">(), </span><span class="default">session_id</span><span class="keyword">());<br />
+&nbsp;&nbsp;&nbsp; }<br />
+}<br />
+<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+NOTE: session_restart() acts like session_start(), so no output must be written before its called.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="71498""></a>
+  <div class="note">
+   <strong class="user">rob a.t. mobius d.o.t. ph</strong>
+   <a href="#71498" class="date">02-Dec-2006 02:02</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I was experiencing problems with "sess_deleted" files and tracked it down to:<br />
+<br />
+&nbsp;&nbsp;&nbsp; setcookie(session_name(), '', time()-42000, '/');<br />
+<br />
+When "setcookie" is passed an empty value (ie, ''), it changes the value to the string "deleted" and sets the date to exactly one year and one second in the past, ignoring the expiration parameter.*<br />
+<br />
+So, I'm guessing that if a client machine has its time set to more than a year in the past or if the browser is somehow broken, then a site visitor could potentially send a PHPSESSID with a value of "deleted".&nbsp; This will cause PHP to create a "sess_deleted" file in the sessions directory.<br />
+<br />
+In my case, I was seeing several incidents per minute, with each user clobbering the other's session data causing all kinds of security and identity issues.&nbsp; Two changes seemed to have solved the problem:<br />
+<br />
+1) Use session_id() in place of '' in setcookie, as well as pick a date that's far in the past (in this case Jan 1, 1970, 8:00:01AM):<br />
+<br />
+&nbsp;&nbsp;&nbsp; setcookie(session_name(), session_id(), 1, '/');<br />
+<br />
+2) Use session_regenerate_id() when logging a user in or otherwise changing their authority level.<br />
+<br />
+Hope this helps somebody.<br />
+<br />
+Rob<br />
+<br />
+* Here is the relevant code in head.c:<br />
+<br />
+&nbsp;&nbsp;&nbsp; if (value &amp;&amp; value_len == 0) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; /*&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; * MSIE doesn't delete a cookie when you set it to a null value&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; * so in order to force cookies to be deleted, even on MSIE, we&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; * pick an expiry date 1 year and 1 second in the past&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; */<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; time_t t = time(NULL) - 31536001;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; dt = php_format_date("D, d-M-Y H:i:s T", sizeof("D, d-M-Y H:i:s T")-1, t, 0 TSRMLS_CC);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; sprintf(cookie, "Set-Cookie: %s=deleted; expires=%s", name, dt);</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="51001""></a>
+  <div class="note">
+   <strong class="user">markus at fischer dot name</strong>
+   <a href="#51001" class="date">16-Mar-2005 01:09</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Note that there's a bug with custom session handlers and when you want to start a session again after you have called session_destroy.<br />
+<br />
+session_destroy disables the custom session_handler and this a call to session_start after it will fail with "Failed to initialize storage module".<br />
+<br />
+See <a href="http://bugs.php.net/32330 for more information and a workaround." rel="nofollow" target="_blank">http://bugs.php.net/32330 for more information and a workaround.</a></span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="47557""></a>
+  <div class="note">
+   <strong class="user">Johan</strong>
+   <a href="#47557" class="date">19-Nov-2004 06:00</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Remember that session_destroy() does not unset $_SESSION at the moment it is executed.&nbsp; $_SESSION is unset when the current script has stopped running.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="46337""></a>
+  <div class="note">
+   <strong class="user">thomas at uninet dot se</strong>
+   <a href="#46337" class="date">07-Oct-2004 08:25</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I did encounter a minor problem when I tried to remove the physical file that stores the session. The problem was that my working directory wasn't on the same drive as my PHP installation (yes, I used Windows).<br />
+<br />
+So I used the PHP_BINDIR to start at the same place as PHP does and then change directory to the place that was specified in PHP.INI. This makes it transparent to relative paths in session.save_path.<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">function </span><span class="default">DeleteSessionID</span><span class="keyword">(</span><span class="default">$sessionid</span><span class="keyword">) {<br />
+&nbsp; </span><span class="default">$orgpath </span><span class="keyword">= </span><span class="default">getcwd</span><span class="keyword">();<br />
+&nbsp; </span><span class="default">chdir</span><span class="keyword">(</span><span class="default">PHP_BINDIR</span><span class="keyword">);<br />
+&nbsp; </span><span class="default">chdir</span><span class="keyword">(</span><span class="default">session_save_path</span><span class="keyword">());<br />
+&nbsp; </span><span class="default">$path </span><span class="keyword">= </span><span class="default">realpath</span><span class="keyword">(</span><span class="default">getcwd</span><span class="keyword">()).</span><span class="string">'/'</span><span class="keyword">;<br />
+&nbsp; if(</span><span class="default">file_exists</span><span class="keyword">(</span><span class="default">$path</span><span class="keyword">.</span><span class="string">'sess_'</span><span class="keyword">.</span><span class="default">$sessionid</span><span class="keyword">)) {<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// Delete it here<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">unlink</span><span class="keyword">(</span><span class="default">$path</span><span class="keyword">.</span><span class="string">'sess_'</span><span class="keyword">.</span><span class="default">$sessionid</span><span class="keyword">);<br />
+&nbsp; } else {<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// File not found<br />
+&nbsp; </span><span class="keyword">}<br />
+&nbsp; </span><span class="default">chdir</span><span class="keyword">(</span><span class="default">$orgpath</span><span class="keyword">);<br />
+}<br />
+<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+The final chdir($orgpath) is just to restore the working directory as it were before .</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="26968""></a>
+  <div class="note">
+   <strong class="user">powerlord at spamless dot vgmusic dot com</strong>
+   <a href="#26968" class="date">18-Nov-2002 11:41</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+This code might be a bit better for expiring session cookies, in case your domain, path, and/or secure session cookie settings are changed.<br />
+<br />
+&nbsp;&nbsp;&nbsp; $CookieInfo = session_get_cookie_params();<br />
+&nbsp;&nbsp;&nbsp; if ( (empty($CookieInfo['domain'])) &amp;&amp; (empty($CookieInfo['secure'])) ) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; setcookie(session_name(), '', time()-3600, $CookieInfo['path']);<br />
+&nbsp;&nbsp;&nbsp; } elseif (empty($CookieInfo['secure'])) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; setcookie(session_name(), '', time()-3600, $CookieInfo['path'], $CookieInfo['domain']);<br />
+&nbsp;&nbsp;&nbsp; } else {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; setcookie(session_name(), '', time()-3600, $CookieInfo['path'], $CookieInfo['domain'], $CookieInfo['secure']);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; unset($_COOKIE[session_name()]);<br />
+&nbsp;&nbsp;&nbsp; session_destroy();</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="function.session-decode.html">session_decode</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.session-encode.html">session_encode</a></div>
  <div class="up"><a href="ref.session.html">Session Functions</a></div>

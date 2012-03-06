@@ -140,7 +140,443 @@ Haarlemmermeer
  </div>
 
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="106126""></a>
+  <div class="note">
+   <strong class="user">crmccar at gmail dot com</strong>
+   <a href="#106126" class="date">12-Oct-2011 06:40</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I'd like to reinforce the correct way of catching errors from the queries executed by multi_query(), since the manual's examples don't show it and it's easy to lose UPDATEs, INSERTs, etc. without knowing it.<br />
+<br />
+$mysqli-&gt;next_result() will return false if it runs out of statements OR if the next statement has an error. Therefore, it's important to check for errors when the loop ends. Also, I believe it's useful to know when and where the loop broke, so consider the following code:<br />
+<br />
+<span class="default">&lt;?php<br />
+$statements </span><span class="keyword">= array(</span><span class="string">"INSERT INTO tablename VALUES ('1', 'one')"</span><span class="keyword">, </span><span class="string">"INSERT INTO tablename VALUES ('2', 'two')"</span><span class="keyword">);<br />
+if (</span><span class="default">$mysqli</span><span class="keyword">-&gt;</span><span class="default">multi_query</span><span class="keyword">(</span><span class="default">implode</span><span class="keyword">(</span><span class="string">';'</span><span class="keyword">, </span><span class="default">$statements</span><span class="keyword">))) {<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$i </span><span class="keyword">= </span><span class="default">0</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; do {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$i</span><span class="keyword">++;<br />
+&nbsp;&nbsp;&nbsp; } while (</span><span class="default">$mysqli</span><span class="keyword">-&gt;</span><span class="default">next_result</span><span class="keyword">());<br />
+}<br />
+if (</span><span class="default">$mysqli</span><span class="keyword">-&gt;</span><span class="default">errno</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; echo </span><span class="string">"Batch execution prematurely ended on statement </span><span class="default">$i</span><span class="string">.\n"</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">var_dump</span><span class="keyword">(</span><span class="default">$statements</span><span class="keyword">[</span><span class="default">$i</span><span class="keyword">], </span><span class="default">$mysqli</span><span class="keyword">-&gt;</span><span class="default">error</span><span class="keyword">);<br />
+}<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+The IF statement on the multi_query() call checks the first result, because next_result() starts at the second.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="105579""></a>
+  <div class="note">
+   <strong class="user">lcruz at humansoft dot pt</strong>
+   <a href="#105579" class="date">29-Aug-2011 02:16</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Please note that MySQL does not support Transactions on DDL statements.<br />
+<br />
+<span class="default">&lt;?php<br />
+$link </span><span class="keyword">= </span><span class="default">mysqli_connect</span><span class="keyword">(</span><span class="string">'localhost'</span><span class="keyword">, </span><span class="string">'user'</span><span class="keyword">, </span><span class="string">'pw'</span><span class="keyword">, </span><span class="string">'db'</span><span class="keyword">);<br />
+<br />
+</span><span class="default">$script </span><span class="keyword">= </span><span class="string">"INSERT INTO T1('pk', 'val') VALUES('1', 'A');"</span><span class="keyword">;<br />
+</span><span class="default">$script </span><span class="keyword">.= </span><span class="string">"INSERT INTO T1('pk', 'val') VALUES('2', 'B');"<br />
+</span><span class="default">$script </span><span class="keyword">.= </span><span class="string">"INSERT INTO T1('pk', 'val') VALUES('3', 'C');"<br />
+</span><span class="default">$script </span><span class="keyword">.= </span><span class="string">"ALTER TABLE T1 ADD COLUMN `foo` INT(1) NOT NULL;"</span><span class="keyword">;<br />
+</span><span class="default">$script </span><span class="keyword">.= </span><span class="string">"UPDATE T1 SET val = 'D' where pkkkkkkkkkkkk = '1'"</span><span class="keyword">; </span><span class="comment">// Note that this statement will force a SQL Error since column pkkkkkkkkkkkk doesn't exist<br />
+<br />
+</span><span class="default">mysqli_autocommit</span><span class="keyword">(</span><span class="default">$link</span><span class="keyword">, </span><span class="default">false</span><span class="keyword">); </span><span class="comment">// set autocommit to false<br />
+<br />
+</span><span class="default">mysqli_multi_query</span><span class="keyword">(</span><span class="default">$link</span><span class="keyword">, </span><span class="default">$script</span><span class="keyword">); </span><span class="comment">// execute statements<br />
+<br />
+</span><span class="default">mysqli_rollback</span><span class="keyword">(</span><span class="default">$link</span><span class="keyword">); </span><span class="comment">// rollback all statements<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+I would expect that the entire set of statements would not occur since the last update would generate an error. However after the code execution you'll see the values on table T1. <br />
+<br />
+I've spent a couple of days to find that this behavior is normal in MySQL since the ALTER TABLE statement automatically commits the transaction. See more in <a href="http://dev.mysql.com/doc/refman/5.0/en/implicit-commit.html" rel="nofollow" target="_blank">http://dev.mysql.com/doc/refman/5.0/en/implicit-commit.html</a></span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="104076""></a>
+  <div class="note">
+   <strong class="user">Anonymous</strong>
+   <a href="#104076" class="date">20-May-2011 07:25</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+If your second or late query returns no result or even if your query is not a valid SQL query, more_results(); returns true in any case.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="102837""></a>
+  <div class="note">
+   <strong class="user">jcn50</strong>
+   <a href="#102837" class="date">09-Mar-2011 05:09</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+WATCH OUT: if you mix $mysqli-&gt;multi_query and $mysqli-&gt;query, the latter(s) won't be executed!<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="comment">// BAD CODE:<br />
+</span><span class="default">$mysqli</span><span class="keyword">-&gt;</span><span class="default">multi_query</span><span class="keyword">(</span><span class="string">" Many SQL queries ; "</span><span class="keyword">); </span><span class="comment">// OK<br />
+</span><span class="default">$mysqli</span><span class="keyword">-&gt;</span><span class="default">query</span><span class="keyword">(</span><span class="string">" SQL statement #1 ; "</span><span class="keyword">) </span><span class="comment">// not executed!<br />
+</span><span class="default">$mysqli</span><span class="keyword">-&gt;</span><span class="default">query</span><span class="keyword">(</span><span class="string">" SQL statement #2 ; "</span><span class="keyword">) </span><span class="comment">// not executed!<br />
+</span><span class="default">$mysqli</span><span class="keyword">-&gt;</span><span class="default">query</span><span class="keyword">(</span><span class="string">" SQL statement #3 ; "</span><span class="keyword">) </span><span class="comment">// not executed!<br />
+</span><span class="default">$mysqli</span><span class="keyword">-&gt;</span><span class="default">query</span><span class="keyword">(</span><span class="string">" SQL statement #4 ; "</span><span class="keyword">) </span><span class="comment">// not executed!<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+The only way to do this correctly is:<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="comment">// WORKING CODE:<br />
+</span><span class="default">$mysqli</span><span class="keyword">-&gt;</span><span class="default">multi_query</span><span class="keyword">(</span><span class="string">" Many SQL queries ; "</span><span class="keyword">); </span><span class="comment">// OK<br />
+</span><span class="keyword">while (</span><span class="default">$mysqli</span><span class="keyword">-&gt;</span><span class="default">next_result</span><span class="keyword">()) {;} </span><span class="comment">// flush multi_queries<br />
+</span><span class="default">$mysqli</span><span class="keyword">-&gt;</span><span class="default">query</span><span class="keyword">(</span><span class="string">" SQL statement #1 ; "</span><span class="keyword">) </span><span class="comment">// now executed!<br />
+</span><span class="default">$mysqli</span><span class="keyword">-&gt;</span><span class="default">query</span><span class="keyword">(</span><span class="string">" SQL statement #2 ; "</span><span class="keyword">) </span><span class="comment">// now executed!<br />
+</span><span class="default">$mysqli</span><span class="keyword">-&gt;</span><span class="default">query</span><span class="keyword">(</span><span class="string">" SQL statement #3 ; "</span><span class="keyword">) </span><span class="comment">// now executed!<br />
+</span><span class="default">$mysqli</span><span class="keyword">-&gt;</span><span class="default">query</span><span class="keyword">(</span><span class="string">" SQL statement #4 ; "</span><span class="keyword">) </span><span class="comment">// now executed!<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="100018""></a>
+  <div class="note">
+   <strong class="user">luka8088 at owave dot net</strong>
+   <a href="#100018" class="date">20-Sep-2010 10:17</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+if you don't iterate through all results you get "server has gone away" error message ...<br />
+<br />
+to resolve this, in php 5.2 it is enough to use<br />
+<br />
+<span class="default">&lt;?php<br />
+&nbsp; </span><span class="comment">// ok for php 5.2<br />
+&nbsp; </span><span class="keyword">while (</span><span class="default">$mysqli</span><span class="keyword">-&gt;</span><span class="default">next_result</span><span class="keyword">());<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+to drop unwanted results, but in php 5.3 using only this throws<br />
+<br />
+mysqli::next_result(): There is no next result set. Please, call mysqli_more_results()/mysqli::more_results() to check whether to call this function/method<br />
+<br />
+so it should be replaced with<br />
+<br />
+<span class="default">&lt;?php<br />
+&nbsp; </span><span class="comment">// ok for php 5.3<br />
+&nbsp; </span><span class="keyword">while (</span><span class="default">$mysqli</span><span class="keyword">-&gt;</span><span class="default">more_results</span><span class="keyword">() &amp;&amp; </span><span class="default">$mysqli</span><span class="keyword">-&gt;</span><span class="default">next_result</span><span class="keyword">());<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+I also tried but failed:<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+&nbsp; </span><span class="comment">// can create infinite look in some cases<br />
+&nbsp; </span><span class="keyword">while (</span><span class="default">$mysqli</span><span class="keyword">-&gt;</span><span class="default">more_results</span><span class="keyword">())<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$mysqli</span><span class="keyword">-&gt;</span><span class="default">next_result</span><span class="keyword">();<br />
+<br />
+&nbsp; </span><span class="comment">// also throws error in some cases<br />
+&nbsp; </span><span class="keyword">if (</span><span class="default">$mysqli</span><span class="keyword">-&gt;</span><span class="default">more_results</span><span class="keyword">())<br />
+&nbsp;&nbsp;&nbsp; while (</span><span class="default">$mysqli</span><span class="keyword">-&gt;</span><span class="default">next_result</span><span class="keyword">());<br />
+<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="97354""></a>
+  <div class="note">
+   <strong class="user">Shawn Pyle</strong>
+   <a href="#97354" class="date">15-Apr-2010 09:29</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Be sure to not send a set of queries that are larger than max_allowed_packet size on your MySQL server. If you do, you'll get an error like: <br />
+Mysql Error (1153): Got a packet bigger than 'max_allowed_packet' bytes<br />
+<br />
+To see your MySQL size limitation, run the following query: show variables like 'max_allowed_packet';<br />
+<br />
+or see <a href="http://dev.mysql.com/doc/refman/5.1/en/packet-too-large.html" rel="nofollow" target="_blank">http://dev.mysql.com/doc/refman/5.1/en/packet-too-large.html</a></span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="91677""></a>
+  <div class="note">
+   <strong class="user">Miles</strong>
+   <a href="#91677" class="date">22-Jun-2009 10:47</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+You can use prepared statements on stored procedures.<br />
+<br />
+You just need to flush all the subsequent result sets before closing the statement... so:<br />
+<br />
+$mysqli_stmt = $mysqli-&gt;prepare(....);<br />
+<br />
+... bind, execute, bind, fetch ...<br />
+<br />
+while($mysqli-&gt;more_results())<br />
+{<br />
+&nbsp;&nbsp;&nbsp; $mysqli-&gt;next_result();<br />
+&nbsp;&nbsp;&nbsp; $discard = $mysqli-&gt;store_result();<br />
+}<br />
+<br />
+$mysqli_stmt-&gt;close();<br />
+<br />
+Hope that helps :o)</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="88562""></a>
+  <div class="note">
+   <strong class="user">raye1010 at yahoo dot com dot hk</strong>
+   <a href="#88562" class="date">28-Jan-2009 10:56</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+This is my point of view:<br />
+<br />
+Actually when calling $mysqli-&gt;next_result(), MySQL server will try to prepare resources for storing resultset. If you want to multi query for stored procedures, it's better to use $mysqli-&gt;use_result()-&gt;close() to close the resources. For functions, it's better to use $mysqli-&gt;store_result()-&gt;free() since there's resultset returned. Otherwise, an error of "Commands out of sync" will be rasied.<br />
+<br />
+Here's the code I test:<br />
+<br />
+<span class="default">&lt;?php<br />
+$mysql </span><span class="keyword">= new </span><span class="default">mysql</span><span class="keyword">(</span><span class="string">'localhost'</span><span class="keyword">, </span><span class="string">'user'</span><span class="keyword">, </span><span class="string">'pw'</span><span class="keyword">, </span><span class="string">'db'</span><span class="keyword">);<br />
+<br />
+</span><span class="default">$query </span><span class="keyword">= </span><span class="string">'show tables;'</span><span class="keyword">;<br />
+</span><span class="default">$query</span><span class="keyword">.= </span><span class="string">'show tables;'</span><span class="keyword">;<br />
+</span><span class="default">$query</span><span class="keyword">.= </span><span class="string">'select * from dummy_table;'</span><span class="keyword">;<br />
+</span><span class="default">$query</span><span class="keyword">.= </span><span class="string">'show tables;'</span><span class="keyword">; </span><span class="comment">// this statement will be ignored as the dummy_table doesn't exist and the loop should quit<br />
+<br />
+</span><span class="default">$mysqli</span><span class="keyword">-&gt;</span><span class="default">multi_query</span><span class="keyword">(</span><span class="default">$query</span><span class="keyword">);<br />
+do {<br />
+&nbsp; </span><span class="default">$mysqli</span><span class="keyword">-&gt;</span><span class="default">use_result</span><span class="keyword">()-&gt;</span><span class="default">close</span><span class="keyword">();<br />
+&nbsp; echo </span><span class="string">"Okay\n"</span><span class="keyword">;<br />
+} while (</span><span class="default">$mysqli</span><span class="keyword">-&gt;</span><span class="default">next_result</span><span class="keyword">());<br />
+<br />
+if (</span><span class="default">$mysqli</span><span class="keyword">-&gt;</span><span class="default">errno</span><span class="keyword">) {<br />
+&nbsp; echo </span><span class="string">"Stopped while retrieving result : "</span><span class="keyword">.</span><span class="default">$mysqli</span><span class="keyword">-&gt;</span><span class="default">error</span><span class="keyword">;<br />
+}<br />
+<br />
+</span><span class="default">?&gt;<br />
+</span>Returns :<br />
+Okay<br />
+Okay<br />
+Stopped while retrieving result : Table 'db.dummy_table' doesn't exist</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="85370""></a>
+  <div class="note">
+   <strong class="user">jparedes at gmail dot com</strong>
+   <a href="#85370" class="date">27-Aug-2008 09:05</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+It's very important that after executing mysqli_multi_query you have first process the resultsets before sending any another statement to the server, otherwise your<br />
+socket is still blocked.<br />
+<br />
+Please note that even if your multi statement doesn't contain SELECT queries, the server will send result packages containing errorcodes (or OK packet) for single statements.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="81566""></a>
+  <div class="note">
+   <strong class="user">undefined(AT)users(DOT)berlios(DOT)de</strong>
+   <a href="#81566" class="date">04-Mar-2008 04:13</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+mysqli_multi_query handles MySQL Transaction on InnoDB's :-)<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+$mysqli&nbsp; </span><span class="keyword">= </span><span class="default">mysqli_connect</span><span class="keyword">( </span><span class="string">"localhost"</span><span class="keyword">, </span><span class="string">"owner"</span><span class="keyword">, </span><span class="string">"pass"</span><span class="keyword">, </span><span class="string">"db"</span><span class="keyword">, </span><span class="default">3306</span><span class="keyword">, </span><span class="string">"/var/lib/mysql/mysql.sock" </span><span class="keyword">);<br />
+<br />
+</span><span class="default">$QUERY </span><span class="keyword">= &lt;&lt;&lt;EOT<br />
+</span><span class="string">START TRANSACTION;<br />
+SELECT @lng:=IF( STRCMP(`main_lang`,'de'), 'en', 'de' )<br />
+FROM `main_data` WHERE&nbsp; ( `main_activ` LIKE 1 ) ORDER BY `main_id` ASC;<br />
+SELECT `main_id`, `main_type`, `main_title`, `main_body`, `main_modified`, `main_posted`<br />
+FROM `main_data`<br />
+WHERE ( `main_type` RLIKE "news|about" AND `main_lang` LIKE @lng AND `main_activ` LIKE 1 )<br />
+ORDER BY `main_type` ASC;<br />
+COMMIT;<br />
+</span><span class="keyword">EOT;<br />
+<br />
+</span><span class="default">$query </span><span class="keyword">= </span><span class="default">mysqli_multi_query</span><span class="keyword">( </span><span class="default">$mysqli</span><span class="keyword">, </span><span class="default">$QUERY </span><span class="keyword">) or die( </span><span class="default">mysqli_error</span><span class="keyword">( </span><span class="default">$mysqli </span><span class="keyword">) );<br />
+<br />
+if( </span><span class="default">$query </span><span class="keyword">)<br />
+{<br />
+&nbsp; do {<br />
+&nbsp;&nbsp;&nbsp; if( </span><span class="default">$result </span><span class="keyword">= </span><span class="default">mysqli_store_result</span><span class="keyword">( </span><span class="default">$mysqli </span><span class="keyword">) )<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">$subresult </span><span class="keyword">= </span><span class="default">mysqli_fetch_assoc</span><span class="keyword">( </span><span class="default">$result </span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp;&nbsp; if( ! isset( </span><span class="default">$subresult</span><span class="keyword">[</span><span class="string">'main_id'</span><span class="keyword">] ) )<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; continue;<br />
+<br />
+&nbsp;&nbsp; &nbsp;&nbsp; foreach( </span><span class="default">$subresult </span><span class="keyword">AS </span><span class="default">$k </span><span class="keyword">=&gt; </span><span class="default">$v </span><span class="keyword">)<br />
+&nbsp;&nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">var_dump</span><span class="keyword">( </span><span class="default">$k </span><span class="keyword">, </span><span class="default">$v </span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp; } while ( </span><span class="default">mysqli_next_result</span><span class="keyword">( </span><span class="default">$mysqli </span><span class="keyword">) );<br />
+}<br />
+<br />
+</span><span class="default">mysqli_close</span><span class="keyword">( </span><span class="default">$mysqli </span><span class="keyword">);<br />
+<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="71465""></a>
+  <div class="note">
+   <strong class="user">mjmendoza at grupzero dot tk</strong>
+   <a href="#71465" class="date">29-Nov-2006 10:47</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I was developing my own CMS and I was having problem with attaching the database' sql file. I thought mysqli_multi_query got bugs where it crashes my MySQL server. I tried to report the bug but it showed that it has duplicate bug reports of other developers. To my surprise, mysqli_multi_query needs to bother with result even if there's none.<br />
+<br />
+I finally got it working when I copied the sample and removed somethings. Here is what it looked liked<br />
+<br />
+<span class="default">&lt;?php<br />
+$link </span><span class="keyword">= </span><span class="default">mysqli_connect</span><span class="keyword">(</span><span class="string">"localhost"</span><span class="keyword">, </span><span class="string">"my_user"</span><span class="keyword">, </span><span class="string">"my_password"</span><span class="keyword">, </span><span class="string">"world"</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">/* check connection */<br />
+</span><span class="keyword">if (</span><span class="default">mysqli_connect_errno</span><span class="keyword">()) {<br />
+&nbsp;&nbsp; </span><span class="default">printf</span><span class="keyword">(</span><span class="string">"Connect failed: %s\n"</span><span class="keyword">, </span><span class="default">mysqli_connect_error</span><span class="keyword">());<br />
+&nbsp;&nbsp; exit();<br />
+}<br />
+<br />
+</span><span class="default">$query&nbsp; </span><span class="keyword">= </span><span class="string">"CREATE TABLE....;...;... blah blah blah;..."</span><span class="keyword">;<br />
+<br />
+</span><span class="comment">/* execute multi query */<br />
+</span><span class="keyword">if (</span><span class="default">mysqli_multi_query</span><span class="keyword">(</span><span class="default">$link</span><span class="keyword">, </span><span class="default">$query</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; do {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; </span><span class="comment">/* store first result set */<br />
+&nbsp;&nbsp; &nbsp; &nbsp; </span><span class="keyword">if (</span><span class="default">$result </span><span class="keyword">= </span><span class="default">mysqli_store_result</span><span class="keyword">(</span><span class="default">$link</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span class="comment">//do nothing since there's nothing to handle<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span class="default">mysqli_free_result</span><span class="keyword">(</span><span class="default">$result</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; </span><span class="comment">/* print divider */<br />
+&nbsp;&nbsp; &nbsp; &nbsp; </span><span class="keyword">if (</span><span class="default">mysqli_more_results</span><span class="keyword">(</span><span class="default">$link</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span class="comment">//I just kept this since it seems useful<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; //try removing and see for yourself<br />
+&nbsp;&nbsp; &nbsp; &nbsp; </span><span class="keyword">}<br />
+&nbsp;&nbsp; } while (</span><span class="default">mysqli_next_result</span><span class="keyword">(</span><span class="default">$link</span><span class="keyword">));<br />
+}<br />
+<br />
+</span><span class="comment">/* close connection */<br />
+</span><span class="default">mysqli_close</span><span class="keyword">(</span><span class="default">$link</span><span class="keyword">);<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+bottom-line: I think mysql_multi_query should only be used for attaching a database. it's hard to handle results from 'SELECT' statements inside a single while loop.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="69503""></a>
+  <div class="note">
+   <strong class="user">sly underscore mcfly at hotmail dot com</strong>
+   <a href="#69503" class="date">07-Sep-2006 05:32</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Ive just had exactly the same problem as below trying to execute multiple stored procedures. I thought i might as well add how to do it the object oriented way.<br />
+<br />
+Instead of putting the one statement:<br />
+<br />
+<span class="default">&lt;?php<br />
+$mysqli</span><span class="keyword">-&gt;</span><span class="default">next_result</span><span class="keyword">();<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+Put two:<br />
+<br />
+<span class="default">&lt;?php<br />
+$mysqli</span><span class="keyword">-&gt;</span><span class="default">next_result</span><span class="keyword">();<br />
+</span><span class="default">$mysqli</span><span class="keyword">-&gt;</span><span class="default">next_result</span><span class="keyword">();<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+The first statement points (possibly using the term incorrectly) you to the return value. The second one will point you to the result of the next query.<br />
+<br />
+I hope this makes sense.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="65810""></a>
+  <div class="note">
+   <strong class="user">info at ff dot net</strong>
+   <a href="#65810" class="date">08-May-2006 04:02</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Note that you need to use this function to call Stored Procedures!<br />
+<br />
+If you experience "lost connection to MySQL server" errors with your Stored Procedure calls then you did not fetch the 'OK' (or 'ERR') message, which is a second result-set from a Stored Procedure call. You have to fetch that result to have no problems with subsequent queries.<br />
+<br />
+Bad example, will FAIL now and then on subsequent calls:<br />
+<span class="default">&lt;?php<br />
+$sQuery</span><span class="keyword">=</span><span class="string">'CALL exampleSP('</span><span class="default">param</span><span class="string">')'</span><span class="keyword">;<br />
+if(!</span><span class="default">mysqli_multi_query</span><span class="keyword">(</span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">sqlLink</span><span class="keyword">,</span><span class="default">$sQuery</span><span class="keyword">))<br />
+&nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">queryError</span><span class="keyword">();<br />
+</span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">sqlResult</span><span class="keyword">=</span><span class="default">mysqli_store_result</span><span class="keyword">(</span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">sqlLink</span><span class="keyword">);<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+Working example:<br />
+<span class="default">&lt;?php<br />
+$sQuery</span><span class="keyword">=</span><span class="string">'CALL exampleSP('</span><span class="default">param</span><span class="string">')'</span><span class="keyword">;<br />
+if(!</span><span class="default">mysqli_multi_query</span><span class="keyword">(</span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">sqlLink</span><span class="keyword">,</span><span class="default">$sQuery</span><span class="keyword">))<br />
+&nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">queryError</span><span class="keyword">();<br />
+</span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">sqlResult</span><span class="keyword">=</span><span class="default">mysqli_store_result</span><span class="keyword">(</span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">sqlLink</span><span class="keyword">);<br />
+<br />
+if(</span><span class="default">mysqli_more_results</span><span class="keyword">(</span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">sqlLink</span><span class="keyword">))<br />
+&nbsp; while(</span><span class="default">mysqli_next_result</span><span class="keyword">(</span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">sqlLink</span><span class="keyword">));<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+Of course you can do more with the multiple results then just throwing them away, but for most this will suffice. You could for example make an "sp" function which will kill the 2nd 'ok' result.<br />
+<br />
+This nasty 'OK'-message made me spend hours trying to figure out why MySQL server was logging warnings with 'bad packets from client' and PHP mysql_error() with 'Connection lost'. It's a shame the mysqli library does catch this by just doing it for you.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="mysqli.more-results.html">mysqli::more_results</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="mysqli.next-result.html">mysqli::next_result</a></div>
  <div class="up"><a href="class.mysqli.html">mysqli</a></div>

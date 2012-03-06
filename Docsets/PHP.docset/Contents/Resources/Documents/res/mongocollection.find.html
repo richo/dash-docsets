@@ -264,7 +264,111 @@ array(3) {
  </div>
 
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="105860""></a>
+  <div class="note">
+   <strong class="user">Andrew Rose (blog.andrewrose.co.uk)</strong>
+   <a href="#105860" class="date">20-Sep-2011 07:48</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+An undocumented feature is that you can pass a stdClass instead of an array to $fields which will allow you to get around the issue of PHP casting string values to integers which mongo doesn't like.&nbsp; i.e.<br />
+<br />
+array('123' =&gt; 0, '321' =&gt; 0);<br />
+<br />
+becomes:<br />
+<br />
+array(213 =&gt; 0, 312 =&gt; 0);<br />
+<br />
+which will trip up with the error:<br />
+<br />
+PHP Fatal error:&nbsp; Uncaught exception 'MongoException' with message 'field names must be strings'<br />
+<br />
+The fix is as simple as:<br />
+<br />
+<span class="default">&lt;?php<br />
+$fields </span><span class="keyword">= new </span><span class="default">stdClass</span><span class="keyword">;<br />
+</span><span class="default">$fields</span><span class="keyword">-&gt;{</span><span class="default">123</span><span class="keyword">} = </span><span class="default">0</span><span class="keyword">;<br />
+</span><span class="default">$fields</span><span class="keyword">-&gt;{</span><span class="default">321</span><span class="keyword">} = </span><span class="default">0</span><span class="keyword">;<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="101316""></a>
+  <div class="note">
+   <strong class="user">nospam at alexyves dot fr</strong>
+   <a href="#101316" class="date">09-Dec-2010 06:28</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+This will work with versions &gt;=1.5.3, please note that this is just a example of the way to use the or statement.<br />
+<br />
+<span class="default">&lt;?php<br />
+&nbsp; $connection </span><span class="keyword">= new </span><span class="default">Mongo</span><span class="keyword">();<br />
+<br />
+&nbsp; </span><span class="default">$db </span><span class="keyword">= </span><span class="default">$connection</span><span class="keyword">-&gt;</span><span class="default">test</span><span class="keyword">;<br />
+&nbsp; </span><span class="default">$collection </span><span class="keyword">= </span><span class="default">$db</span><span class="keyword">-&gt;</span><span class="default">test</span><span class="keyword">;<br />
+&nbsp; </span><span class="comment">// Clean the DB before the test.<br />
+&nbsp; </span><span class="default">$collection</span><span class="keyword">-&gt;</span><span class="default">drop</span><span class="keyword">();<br />
+&nbsp; </span><span class="default">$collection </span><span class="keyword">= </span><span class="default">$db</span><span class="keyword">-&gt;</span><span class="default">test</span><span class="keyword">;<br />
+<br />
+&nbsp; </span><span class="default">$apple </span><span class="keyword">= array(<br />
+&nbsp;&nbsp;&nbsp; </span><span class="string">'fruit' </span><span class="keyword">=&gt; </span><span class="string">'Apple'</span><span class="keyword">,<br />
+&nbsp;&nbsp;&nbsp; </span><span class="string">'type' </span><span class="keyword">=&gt; </span><span class="string">'Juice'</span><span class="keyword">,<br />
+&nbsp; );<br />
+<br />
+&nbsp; </span><span class="default">$orange </span><span class="keyword">= array(<br />
+&nbsp;&nbsp;&nbsp; </span><span class="string">'fruit' </span><span class="keyword">=&gt; </span><span class="string">'Orange'</span><span class="keyword">,<br />
+&nbsp;&nbsp;&nbsp; </span><span class="string">'type' </span><span class="keyword">=&gt; </span><span class="string">'Marmalade'</span><span class="keyword">,<br />
+&nbsp; );<br />
+<br />
+&nbsp; </span><span class="default">$collection</span><span class="keyword">-&gt;</span><span class="default">insert</span><span class="keyword">(</span><span class="default">$apple</span><span class="keyword">);<br />
+&nbsp; </span><span class="default">$collection</span><span class="keyword">-&gt;</span><span class="default">insert</span><span class="keyword">(</span><span class="default">$orange</span><span class="keyword">);<br />
+<br />
+&nbsp; </span><span class="comment">// Basic find<br />
+&nbsp; </span><span class="default">$results </span><span class="keyword">= </span><span class="default">$collection</span><span class="keyword">-&gt;</span><span class="default">find</span><span class="keyword">(array(</span><span class="string">'fruit' </span><span class="keyword">=&gt; </span><span class="string">'Apple'</span><span class="keyword">));<br />
+<br />
+&nbsp; foreach(</span><span class="default">$results </span><span class="keyword">as </span><span class="default">$result</span><span class="keyword">)<br />
+&nbsp; {<br />
+&nbsp;&nbsp;&nbsp; echo </span><span class="default">sprintf</span><span class="keyword">(</span><span class="string">"Fruit: %s, Type: %s%s"</span><span class="keyword">, </span><span class="default">$result</span><span class="keyword">[</span><span class="string">'fruit'</span><span class="keyword">], </span><span class="default">$result</span><span class="keyword">[</span><span class="string">'type'</span><span class="keyword">], </span><span class="default">PHP_EOL</span><span class="keyword">);<br />
+&nbsp; }<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+Output:<br />
+<br />
+Fruit: Apple, Type: Juice<br />
+<br />
+Now an advanced search with "or" statement.<br />
+<br />
+<span class="default">&lt;?php<br />
+&nbsp; </span><span class="comment">// Advanced find with "OR" note the double array.<br />
+&nbsp; // if you use double quotes escape the or "\$or"<br />
+&nbsp; </span><span class="default">$results </span><span class="keyword">= </span><span class="default">$collection</span><span class="keyword">-&gt;</span><span class="default">find</span><span class="keyword">( array( </span><span class="string">'$or' </span><span class="keyword">=&gt; array( array(</span><span class="string">'fruit' </span><span class="keyword">=&gt; </span><span class="string">'Apple'</span><span class="keyword">), array(</span><span class="string">'fruit' </span><span class="keyword">=&gt; </span><span class="string">'Orange'</span><span class="keyword">) ) ) );<br />
+<br />
+&nbsp; foreach(</span><span class="default">$results </span><span class="keyword">as </span><span class="default">$result</span><span class="keyword">)<br />
+&nbsp; {<br />
+&nbsp;&nbsp;&nbsp; echo </span><span class="default">sprintf</span><span class="keyword">(</span><span class="string">"Fruit: %s, Type: %s%s"</span><span class="keyword">, </span><span class="default">$result</span><span class="keyword">[</span><span class="string">'fruit'</span><span class="keyword">], </span><span class="default">$result</span><span class="keyword">[</span><span class="string">'type'</span><span class="keyword">], </span><span class="default">PHP_EOL</span><span class="keyword">);<br />
+&nbsp; }<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+Output:<br />
+<br />
+Fruit: Apple, Type: Juice<br />
+Fruit: Orange, Type: Marmalade</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="mongocollection.ensureindex.html">MongoCollection::ensureIndex</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="mongocollection.findone.html">MongoCollection::findOne</a></div>
  <div class="up"><a href="class.mongocollection.html">MongoCollection</a></div>

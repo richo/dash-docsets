@@ -72,7 +72,889 @@
   </p></blockquote>
  </div>
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="105480""></a>
+  <div class="note">
+   <strong class="user">neil at woolandcompany dot com</strong>
+   <a href="#105480" class="date">21-Aug-2011 11:50</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Working Example of odbc_num_rows with MSSQL 2000.<br />
+<br />
+This works ...<br />
+<br />
+<span class="default">&lt;?php<br />
+$connstr </span><span class="keyword">= </span><span class="string">"Driver={SQL Server};Server=SERVERNAME;Database=DBNAME;"</span><span class="keyword">;<br />
+</span><span class="default">$conn </span><span class="keyword">= </span><span class="default">odbc_connect</span><span class="keyword">(</span><span class="default">$connstr</span><span class="keyword">, </span><span class="string">"usr"</span><span class="keyword">, </span><span class="string">"pwd"</span><span class="keyword">);<br />
+</span><span class="default">$queryresult </span><span class="keyword">= </span><span class="default">odbc_exec</span><span class="keyword">(</span><span class="default">$conn</span><span class="keyword">, </span><span class="string">"select * from table"</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; if ( </span><span class="default">odbc_num_rows</span><span class="keyword">(</span><span class="default">$queryresult</span><span class="keyword">) &gt; </span><span class="default">0 </span><span class="keyword">) { <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// rows to process<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">} else {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// no rows to process<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">}<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="100883""></a>
+  <div class="note">
+   <strong class="user">Vadim Istratov</strong>
+   <a href="#100883" class="date">12-Nov-2010 08:35</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+There is a much better way to count rows in SELECT queries for MSSQL. Just use T-SQL.<br />
+<br />
+Thus the function would be:<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">function </span><span class="default">odbc_mssql_num_rows</span><span class="keyword">(</span><span class="default">$dbh</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$res </span><span class="keyword">= </span><span class="default">odbc_exec</span><span class="keyword">(</span><span class="default">$dbh</span><span class="keyword">, </span><span class="string">'SELECT @@ROWCOUNT AS cnt'</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp;&nbsp; if ( @</span><span class="default">odbc_fetch_into</span><span class="keyword">(</span><span class="default">$res</span><span class="keyword">, </span><span class="default">$row</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$count </span><span class="keyword">= </span><span class="default">trim</span><span class="keyword">( </span><span class="default">$row</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">] );<br />
+&nbsp;&nbsp;&nbsp; } else {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$count </span><span class="keyword">= </span><span class="default">0</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">odbc_free_result</span><span class="keyword">(</span><span class="default">$res</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">$count</span><span class="keyword">;<br />
+}<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+Where $dbh is your database connection resource (see odbc_connect()). And make sure that your SELECT statement is a last query before your odbc_mssql_num_rows() call.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="98836""></a>
+  <div class="note">
+   <strong class="user">walt at brookhouse dot co dot uk</strong>
+   <a href="#98836" class="date">09-Jul-2010 02:45</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+The easy way to count the rows in an odbc resultset where the driver returns -1 is to let SQL do the work:<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+&nbsp;&nbsp;&nbsp; $conn </span><span class="keyword">= </span><span class="default">odbc_connect</span><span class="keyword">(</span><span class="string">"dsn"</span><span class="keyword">, </span><span class="string">""</span><span class="keyword">, </span><span class="string">""</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$rs </span><span class="keyword">= </span><span class="default">odbc_exec</span><span class="keyword">(</span><span class="default">$conn</span><span class="keyword">, </span><span class="string">"SELECT Count(*) AS counter FROM tablename WHERE fieldname='" </span><span class="keyword">. </span><span class="default">$value </span><span class="keyword">. </span><span class="string">"'"</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$arr </span><span class="keyword">= </span><span class="default">odbc_fetch_array</span><span class="keyword">(</span><span class="default">$rs</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; echo </span><span class="default">$arr</span><span class="keyword">[</span><span class="string">'counter'</span><span class="keyword">];<br />
+<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="97965""></a>
+  <div class="note">
+   <strong class="user">chew_baka at hotmail dot com</strong>
+   <a href="#97965" class="date">18-May-2010 02:44</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+None of these examples were working for me, so I came up with the following silly procedure that gives me the number of rows.&nbsp; This example is crude, but you should get the idea.<br />
+<br />
+<span class="default">&lt;?php<br />
+$cxn </span><span class="keyword">= </span><span class="default">odbc_connect</span><span class="keyword">(</span><span class="string">"ODBC_DSN_NAME"</span><span class="keyword">, </span><span class="string">""</span><span class="keyword">, </span><span class="string">""</span><span class="keyword">);<br />
+</span><span class="default">$sql </span><span class="keyword">= </span><span class="string">"SELECT * FROM some_table'"</span><span class="keyword">;<br />
+</span><span class="default">$res </span><span class="keyword">= </span><span class="default">odbc_exec</span><span class="keyword">(</span><span class="default">$cxn</span><span class="keyword">, </span><span class="default">$sql</span><span class="keyword">);<br />
+</span><span class="default">$items </span><span class="keyword">= </span><span class="default">0</span><span class="keyword">;<br />
+&nbsp;while (</span><span class="default">$row </span><span class="keyword">= </span><span class="default">odbc_fetch_array</span><span class="keyword">(</span><span class="default">$res</span><span class="keyword">)) <br />
+&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; </span><span class="default">$items</span><span class="keyword">++;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; }&nbsp; <br />
+&nbsp; </span><span class="default">odbc_free_result</span><span class="keyword">(</span><span class="default">$res</span><span class="keyword">);<br />
+&nbsp; echo </span><span class="string">"&lt;br&gt;total No. of rows: </span><span class="default">$items</span><span class="string">"</span><span class="keyword">;<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="87960""></a>
+  <div class="note">
+   <strong class="user">jeff at script-xs dot com</strong>
+   <a href="#87960" class="date">02-Jan-2009 11:34</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+After minutes of frustration, I realized why odbc_num_rows was not returning the number of affected rows on a prepared update query.&nbsp; I'm using ODBC to connect to Microsot SQL Server 2005.<br />
+<br />
+My corrected code:<br />
+<br />
+<span class="default">&lt;?php<br />
+$query </span><span class="keyword">= </span><span class="default">odbc_prepare</span><span class="keyword">(</span><span class="default">$conn</span><span class="keyword">, </span><span class="string">'UPDATE table SET cat = ? WHERE id = 1'</span><span class="keyword">);<br />
+</span><span class="default">$result </span><span class="keyword">= </span><span class="default">odbc_execute</span><span class="keyword">(</span><span class="default">$query</span><span class="keyword">, </span><span class="default">$category</span><span class="keyword">);<br />
+</span><span class="default">$affected </span><span class="keyword">= </span><span class="default">odbc_num_rows</span><span class="keyword">(</span><span class="default">$query</span><span class="keyword">);<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+This code works.&nbsp; I was frustrated that odbc_num_rows($result) didn't work as I expected, but instead required me to pass the original prepared query to this function.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="83900""></a>
+  <div class="note">
+   <strong class="user">sirio3mil at gmail dot com</strong>
+   <a href="#83900" class="date">17-Jun-2008 09:46</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+The diference between functions used here are consierable, for example for one table with 36 columns and 806 rows the time to execute two of those functions are this:<br />
+<br />
+function using odbc odbc_result_all take 2,6 seconds<br />
+function using odbc_fetch_row take 0,8 seconds</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="79505""></a>
+  <div class="note">
+   <strong class="user">areznik at survdata dot com</strong>
+   <a href="#79505" class="date">30-Nov-2007 10:04</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I could have been noted before in this thread but I couldnt find it on my first search.<br />
+<br />
+This function (odbc_num_rows) returns -1 when ODBCing to MS SQL and making it hard to get the number of rows in the returned recordset. <br />
+<br />
+Two workarounds:<br />
+&nbsp;&nbsp; 1. When you just need to verify that any rows returned from your query you can use select count(*) as cnt from table and then just get $row['cnt']<br />
+&nbsp;&nbsp; 2. When you need to actually loop through the records this function returns number of rows in the recordset if and only if you include ORDER BY clause in your query statement.<br />
+<br />
+That sounds a bit annoying but thats the work around when dealing with MS SQL odbc driver I guess.<br />
+<br />
+It would be beneficial if someone explained how the Order By clause makes the difference.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="78857""></a>
+  <div class="note">
+   <strong class="user">Nathaniel at comtel dot com dot au</strong>
+   <a href="#78857" class="date">30-Oct-2007 08:57</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+My development computer is running XP sql2005 while the production copy sits on a server 2003R2 sql2000 computer.<br />
+<br />
+In the course of trying to get this function to work (switching from mssql to odbc) I have discovered that the ODBC driver versions are different between the two OS and that while the newer version (release date 17/2/07) that is able to be installed on 2003 handles this function fine, the older version doesn't.<br />
+<br />
+Microsoft sites suggest that Vista might also handle it (ie have the newer driver). It also says that there are no plans to release the newer driver in a installable package.<br />
+<br />
+<a href="http://support.microsoft.com/kb/892854" rel="nofollow" target="_blank">http://support.microsoft.com/kb/892854</a><br />
+<br />
+Will hopefully test with the sql2005 on server 2003R2 in the near future to confirm it is the driver helping here.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="78522""></a>
+  <div class="note">
+   <strong class="user">pmo@raadvst-consetatDOTbe</strong>
+   <a href="#78522" class="date">16-Oct-2007 02:46</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+voland's function is simply great. <br />
+However, i would recommend the use of ob_end_clean(), to shut down completely the output buffer (can cause weird behaviour).</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="77736""></a>
+  <div class="note">
+   <strong class="user">nielsvandenberge at hotm dot  dot  dot  dot  dot com</strong>
+   <a href="#77736" class="date">11-Sep-2007 05:06</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I just tried to use the function best_odbc_num_rows($result) from voland at digitalshop dot ru, but it's not working quite well. After executing the function odbc_result_all(); the resultset has to be resetted again. <br />
+Resetting it with <br />
+<br />
+odbc_fetch_row($result, 0); <br />
+<br />
+is not working for me.<br />
+<br />
+I think the internal number-value of the odbc_result_all()-function is not resetted, but that's just a guess.<br />
+<br />
+when I execute the function 3 times with a resultset of 17 rows the values: 17, 34 and 51 are returned.<br />
+<br />
+His previous function useful_odbc_num_rows($result) works better (for me).</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="74125""></a>
+  <div class="note">
+   <strong class="user">voland at digitalshop dot ru</strong>
+   <a href="#74125" class="date">26-Mar-2007 07:50</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Today we find a BEST way to count number of rows with ODBC! <br />
+<br />
+function best_odbc_num_rows($r1)&nbsp; {<br />
+<br />
+ob_start(); // block printing table with results<br />
+<br />
+(int)$number=odbc_result_all($r1); <br />
+<br />
+ob_clean(); // block printing table with results<br />
+<br />
+return $number;<br />
+<br />
+}</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="73637""></a>
+  <div class="note">
+   <strong class="user">voland at digitalshop dot ru</strong>
+   <a href="#73637" class="date">05-Mar-2007 05:56</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+After a hour for a searching a good alter function of odbc_num_rows... i try to write it by mysels:<br />
+<br />
+function useful_odbc_num_rows($result){<br />
+<br />
+&nbsp;&nbsp; $num_rows=0;<br />
+<br />
+&nbsp;&nbsp; while($temp = odbc_fetch_into($result, &amp;$counter))<br />
+<br />
+&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; $num_rows++;<br />
+&nbsp;&nbsp; }<br />
+<br />
+@odbc_fetch_row($result, 0);&nbsp;&nbsp; // reset cursor<br />
+<br />
+&nbsp;&nbsp; return $num_rows;<br />
+}</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="73066""></a>
+  <div class="note">
+   <strong class="user">dm at personalcomputingsolutions dot co dot uk</strong>
+   <a href="#73066" class="date">07-Feb-2007 01:41</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+function db_get_row($cur, $rownum){<br />
+if (odbc_fetch_into($cur, $row, $rownum)){<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return ($row);<br />
+&nbsp;&nbsp;&nbsp; }else{<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return (FALSE);<br />
+}<br />
+<br />
+$i=1;<br />
+if (db_get_row($cur,1)){<br />
+while ($record=db_get_row($cur,$i++)){<br />
+do stuff<br />
+}else{<br />
+tell the user there are no results<br />
+}</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="68784""></a>
+  <div class="note">
+   <strong class="user">lechatthierry at hotmail dot com</strong>
+   <a href="#68784" class="date">10-Aug-2006 10:29</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+&lt;quote&gt;<br />
+ramon<br />
+27-Aug-2005 04:41<br />
+odbc_num_rows for access does return -1. I use count($resultset);<br />
+&nbsp;it seams to work.<br />
+&lt;/quote&gt;<br />
+<br />
+I taught it was a solution once but $resultset is a ressource and count() alwais return 1 since it considered it as a single object.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="64086""></a>
+  <div class="note">
+   <strong class="user">patx00 put_an_at_symbol_here gmail.com</strong>
+   <a href="#64086" class="date">07-Apr-2006 12:28</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+If you simply want to loop through the results of a query if there are some results a more efficient way to do it (without looping once for the count and another time for doing whatever you want to do ..) would be this:<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <br />
+$result2 = odbc_exec($vConn, $vSql);&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <br />
+if (odbc_fetch_row($result2, 1)) { //Some results<br />
+&nbsp;&nbsp;&nbsp; odbc_fetch_row($result2, 0); //Go back to 1st row<br />
+&nbsp;&nbsp;&nbsp; while ($vField = odbc_fetch_array($result2)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; ....<br />
+&nbsp;&nbsp;&nbsp; }<br />
+}<br />
+<br />
+I hope this helps.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="64008""></a>
+  <div class="note">
+   <strong class="user">michael dot buergi at gmx dot net</strong>
+   <a href="#64008" class="date">05-Apr-2006 05:14</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Look at the notes for odbc_fetch_row to find a custom num_rows() function which implements a binary search algorithm.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="56211""></a>
+  <div class="note">
+   <strong class="user">ramon</strong>
+   <a href="#56211" class="date">27-Aug-2005 01:41</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+odbc_num_rows for access does return -1. I use count($resultset);<br />
+&nbsp;it seams to work.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="55981""></a>
+  <div class="note">
+   <strong class="user">moogleii</strong>
+   <a href="#55981" class="date">19-Aug-2005 09:21</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+With MS SQL, I found if you add an ORDER BY to your SELECT statement, the function will return the correct number of rows.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="55652""></a>
+  <div class="note">
+   <strong class="user">Alain</strong>
+   <a href="#55652" class="date">09-Aug-2005 11:22</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I use ODBC on Windows to connect to Oracle on OpenVMS, and to execute a "select count(*)" I need to add the SQL_CUR_USE_ODBC parameter to odbc_connect.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="51297""></a>
+  <div class="note">
+   <strong class="user">tysonswing at hotmail dot com</strong>
+   <a href="#51297" class="date">26-Mar-2005 12:08</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Quick and easy way to return the number of rows:<br />
+<br />
+$query = "SELECT COUNT(*) FROM &lt;my database name&gt;";<br />
+$result = odbc_exec($dbc, $query);<br />
+odbc_fetch_into($result, $count, 1);<br />
+<br />
+where:<br />
+<br />
+$dbc = connection_id<br />
+$count =&nbsp; the total number of rows</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="47778""></a>
+  <div class="note">
+   <strong class="user">ashley at ashley-young dot com</strong>
+   <a href="#47778" class="date">29-Nov-2004 10:57</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+To add to the note about using odbc_num_rows with the Tandem Driver:<br />
+<br />
+As mentioned, the Tandem driver will return -1 until the last row. To use this to your advantage for formatting Tandem output, you can simply say:<br />
+<br />
+while(odbc_num_rows($rs) == -1)<br />
+{<br />
+&nbsp; $row = odbc_fetch_object($rs);<br />
+&nbsp; print $row-&gt;fieldname;<br />
+}<br />
+<br />
+From there, you can format Tandem output as you normally would with mssql or mysql.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="46138""></a>
+  <div class="note">
+   <strong class="user">paul at mNoOvSePtAoMiNcOeSlPaMnNdO dot ScPoAmM</strong>
+   <a href="#46138" class="date">30-Sep-2004 11:25</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Here's a quick and dirty function that *should* return the number of rows in a query even if the driver is being ornery.<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">function </span><span class="default">better_odbc_num_rows</span><span class="keyword">(</span><span class="default">$con</span><span class="keyword">,</span><span class="default">$sql</span><span class="keyword">){<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$result </span><span class="keyword">= </span><span class="default">odbc_exec</span><span class="keyword">(</span><span class="default">$con</span><span class="keyword">,</span><span class="default">$sql</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$count</span><span class="keyword">=</span><span class="default">0</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; while(</span><span class="default">$temp </span><span class="keyword">= </span><span class="default">odbc_fetch_into</span><span class="keyword">(</span><span class="default">$result</span><span class="keyword">, &amp;</span><span class="default">$counter</span><span class="keyword">)){<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$count</span><span class="keyword">++;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">$count</span><span class="keyword">;<br />
+}<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+$con is your ODBC connection, and $sql is your SQL query. Put it in your header and you should be good to go.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="38096""></a>
+  <div class="note">
+   <strong class="user">Lambert Antonio [ lamy ]</strong>
+   <a href="#38096" class="date">08-Dec-2003 09:30</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+It isnt the drivers actually that makes recordcount return -1, its because the recordcount property is a read-only property available to recordsets opened with one of two kinds of cursor types, opening it as static will return the actual value by default it is opened as forward only. FYI</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="36079""></a>
+  <div class="note">
+   <strong class="user">Saran</strong>
+   <a href="#36079" class="date">25-Sep-2003 12:16</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Using odbc_num_rows() against MS SQL Server will return correct number of result if you add 'TOP' modifier in the select statement, make it too big number to make sure they will cover all possible records, it doesn't effect any performance, for example:<br />
+<br />
+$query="select top 100000 * from employees where dept_id=$dept_id";<br />
+<br />
+instead of just:<br />
+<br />
+$query="select * from employees where dept_id=$dept_id";<br />
+<br />
+The first statement will return the correct number of records while the latter will always return -1 if there are any records or 0 if no record at all.<br />
+<br />
+However if you only want to examine whether there is a record, -1 is suffice.<br />
+<br />
+Another solution is to use odbc_next_result() function, count for the records in first statement and follow by select statement, for example:<br />
+<br />
+$query="select count(*)from employees where dept_id=$dept_id;select*from employees where dept_id=$dept_id"<br />
+<br />
+After execute this multiple statements in a single execution, it will return multiple recordsets: <br />
+<br />
+$result=odbc_exec($connection,$query);<br />
+# get number of records form count statement<br />
+if(odbc_fetch_row($result))$record_count=odbc_result($result,1);<br />
+# go to next result set<br />
+odbc_next_result($result);<br />
+# the code to handle next result set here...<br />
+<br />
+Hope this help...</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="35840""></a>
+  <div class="note">
+   <strong class="user">avodiez at hotmail dot com</strong>
+   <a href="#35840" class="date">16-Sep-2003 12:36</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I've found a little mistake while trying deejay_'s function against an ODBC SQL Server driver. <br />
+<br />
+If you work with that database, subqueries must be named. So if you are trying to get record number deejay_'s way, you must use AS statement when passing SELECT count(*) query as this:<br />
+<br />
+where is <br />
+<br />
+$countQueryString="SELECT count(*) as result FROM (".$query.")";<br />
+<br />
+might be<br />
+<br />
+$countQuerySrting="SELECT count(*) as result FROM (".$query.") AS anyNameYouLike ";<br />
+<br />
+As well, be carefull with ORDER BY statements in subqueries as they are not accepted unless they with TOP modifyers.<br />
+<br />
+Avo</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="31516""></a>
+  <div class="note">
+   <strong class="user">-/-/- Jag Alskar Carla och Sverige -/-/-</strong>
+   <a href="#31516" class="date">24-Apr-2003 12:08</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I solved the problem using two "while(odbc_fetch($result))", one for counting (on top of the table) and the other to populate the table:<br />
+<br />
+--- counting: ----<br />
+<br />
+$result_count = odbc_exec($connection, $sql);<br />
+<br />
+while (odbc_fetch_row($result_count))<br />
+{<br />
+&nbsp;&nbsp; $count++;<br />
+}<br />
+<br />
+echo "Title";<br />
+<br />
+if ($count)<br />
+{<br />
+&nbsp;&nbsp; echo "Total: &lt;b&gt;$count&lt;/b&gt;.";<br />
+}<br />
+else<br />
+{<br />
+&nbsp;&nbsp; echo "No Records Found.";<br />
+}<br />
+<br />
+---- populating: ----<br />
+<br />
+$result = odbc_exec($connection, $sql);<br />
+<br />
+while (odbc_fetch_row($result))<br />
+{<br />
+&nbsp;&nbsp; (...)<br />
+}<br />
+odbc_close ($connection);</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="31132""></a>
+  <div class="note">
+   <strong class="user">deejay_</strong>
+   <a href="#31132" class="date">10-Apr-2003 02:50</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+i modified the script of fergus a little bit so that you can give the whole query string to the function.<br />
+Maybe some find this one helpfull.<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">function </span><span class="default">odbc_record_count </span><span class="keyword">(</span><span class="default">$result</span><span class="keyword">, </span><span class="default">$odbcDbId</span><span class="keyword">, </span><span class="default">$query</span><span class="keyword">)<br />
+{<br />
+&nbsp; </span><span class="default">$numRecords </span><span class="keyword">= </span><span class="default">odbc_num_rows </span><span class="keyword">(</span><span class="default">$result</span><span class="keyword">);<br />
+&nbsp; if (</span><span class="default">$numRecords </span><span class="keyword">&lt; </span><span class="default">0</span><span class="keyword">)<br />
+&nbsp; {<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$countQueryString </span><span class="keyword">= </span><span class="string">"SELECT count(*) as results FROM ("</span><span class="keyword">.</span><span class="default">$query</span><span class="string">")"</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$count </span><span class="keyword">= </span><span class="default">odbc_exec </span><span class="keyword">(</span><span class="default">$odbcDbId</span><span class="keyword">, </span><span class="default">$countQueryString</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$numRecords </span><span class="keyword">= </span><span class="default">odbc_result </span><span class="keyword">(</span><span class="default">$count</span><span class="keyword">, </span><span class="string">"results"</span><span class="keyword">);<br />
+&nbsp; }<br />
+<br />
+&nbsp; return </span><span class="default">$numRecords</span><span class="keyword">;<br />
+} <br />
+</span><span class="default">?&gt;<br />
+</span><br />
+deejay_</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="30764""></a>
+  <div class="note">
+   <strong class="user">EC</strong>
+   <a href="#30764" class="date">27-Mar-2003 12:55</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+This is how I got odbc_num_rows to work...I was getting "-1" and "Resource id #3"&nbsp; for the result until I added the variable $rows<br />
+<br />
+(code)<br />
+$rows = odbc_result_all($sql_result, "border='1' bordercolor='#003636'");<br />
+odbc_num_rows($sql_result);<br />
+print "Number of rows:$rows";<br />
+odbc_free_result($sql_result);<br />
+odbc_close($connection);<br />
+?&gt;<br />
+(code)</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="27718""></a>
+  <div class="note">
+   <strong class="user">joef43065NOSPAM at yahoo dot NOSPAM dot com</strong>
+   <a href="#27718" class="date">16-Dec-2002 03:51</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+This function calls SQLRowCount, which according to the ODBC Specification returns "the number of rows affected by an UPDATE, INSERT, or DELETE statement;" This is not what odbc_num_rows is supposed to return, though it works with some ODBC drivers. Search for "ODBC reference sqlrowcount" (no quotes) on Google for more information (link is too long to post).</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="27117""></a>
+  <div class="note">
+   <strong class="user">webmaster at walia dot com</strong>
+   <a href="#27117" class="date">23-Nov-2002 07:09</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+if you are using ODBC you will get -1 as the answer to this command most of the time.&nbsp; I tried this on windows (sigh) and it did not work.<br />
+<br />
+If you are using ODBC with a DSN for MS ACCESS then the best method would be<br />
+<br />
+CODE:<br />
+--------<br />
+&nbsp;$connection = odbc_connect("DSN_name","userid","password") or die("ERROR");<br />
+&nbsp;$sql = "SELECT COUNT(*) FROM tablename";<br />
+&nbsp;$sql_result = odbc_prepare($connection,$sql) or die("ERROR");<br />
+&nbsp;odbc_execute($sql_result) or die("ERROR");<br />
+&nbsp;$rc = odbc_fetch_into($sql_result, $my_array);<br />
+&nbsp;echo ("Total rows: " . $my_array[0]);<br />
+&nbsp;odbc_free_result($sql_result);<br />
+&nbsp;odbc_close($connection);<br />
+<br />
+--------<br />
+<br />
+This way you do not have to go through loops and stuff. imagine if you had over 100,000 entried (rows) and you tried to count them using a loop with incrememnting counter. It would really screw up the CPU. specially if you get 100 people doing the same thing at the same time (which you never know)<br />
+<br />
+Using this method is fast and most convenient for me at least.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="26229""></a>
+  <div class="note">
+   <strong class="user">fergus at serif dot net</strong>
+   <a href="#26229" class="date">23-Oct-2002 08:21</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+building on masuod_a@hotmail.com's note, above, I made this function which is similar but uses the SQL count(*) recomended in other notes. I've tested this against masuod_a's function and this is much faster for me.<br />
+<br />
+function odbc_record_count($result, $conn, $db, $options) {<br />
+&nbsp;&nbsp;&nbsp; $numRecords=odbc_num_rows($result);<br />
+&nbsp;&nbsp;&nbsp; if ($numRecords&lt;0) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $countQueryString = "SELECT count(*) FROM $db $options";<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $count = odbc_exec($conn, $countQueryString);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $numRecords = odbc_result($count, 1);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; return $numRecords;<br />
+} <br />
+<br />
+called like this: odbc_record_count($result, $conn, $dsn, "myField='myValue'");<br />
+<br />
+where $result is the indicator to try first with odbc_num_rows, $conn is the result of your original odbc_connect, $dsn is the DSN used to get $conn and also works as the table name for the count(*), and $options is to add any WHERE this = 'that' SQL arguments.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="25982""></a>
+  <div class="note">
+   <strong class="user">Christian dot Schlager at t-online dot de</strong>
+   <a href="#25982" class="date">14-Oct-2002 05:21</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+odbc_num_rows returns -1 with the drivers i'm using, too.<br />
+<br />
+Using the keyword DISTINCT in the select-statement makes the function return the correct number of rows.<br />
+<br />
+Alas, this doesnt work if i want to select text from a table, because in this case, you cant use DISTINCT.<br />
+Anyway, i hope it helps.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="19309""></a>
+  <div class="note">
+   <strong class="user">masuod_a at hotmail dot com</strong>
+   <a href="#19309" class="date">22-Feb-2002 12:34</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+i wrote a function for counting odbc records , this function work for all odbc drivers :<br />
+<br />
+function odbc_record_count($sql_id, $CurrRow = 1)<br />
+{<br />
+if ($NumRecords=odbc_num_rows($sql_id)&lt;0) {<br />
+&nbsp;$NumRecords = 0;<br />
+&nbsp;odbc_fetch_row($sql_id,0);<br />
+&nbsp;while (odbc_fetch_row($sql_id))<br />
+&nbsp;{<br />
+&nbsp;&nbsp; $NumRecords++;<br />
+&nbsp;}<br />
+&nbsp;odbc_fetch_row($sql_id, $CurrRow);<br />
+}<br />
+&nbsp;return $NumRecords;<br />
+}</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="18553""></a>
+  <div class="note">
+   <strong class="user">oscaralvaro at correo dot udep dot edu dot pe</strong>
+   <a href="#18553" class="date">27-Jan-2002 06:27</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+There is another SQL stament to get the rows number:<br />
+SELECT COUNT(*) from Usuario where (UsrUsername = '$username') AND (UsrPassword = '$contrasena');<br />
+I think this is more fast.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="17168""></a>
+  <div class="note">
+   <strong class="user">mikeheald at streamgroup dot SPAMBGONE dot co dot uk</strong>
+   <a href="#17168" class="date">28-Nov-2001 11:14</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I have found the odbc functions to be unreliable with MSSQL 7. odbc_num_rows returns incorrect results, and specifying which row to return in odbc_result has no effect (this is with php4.0.6)</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="15772""></a>
+  <div class="note">
+   <strong class="user">t3singh at uwaterloo dot ca</strong>
+   <a href="#15772" class="date">02-Oct-2001 12:47</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Hi, had troubles with this as well and after quite a while and after reading several posts I came up with the following:<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp; $to_ret = 0;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; while(odbc_fetch_row($result))<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $to_ret++;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp; odbc_fetch_row($result,0);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; return $to_ret;<br />
+<br />
+just put it all in a function and I think it should do</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="14106""></a>
+  <div class="note">
+   <strong class="user">nlange at NOSPAM dot usb dot com</strong>
+   <a href="#14106" class="date">17-Jul-2001 04:44</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Quick note on buggy odbc drivers...&lt;BR&gt;<br />
+For the Tandem ODBC Driver &lt;BR&gt; odbc_num_rows() returns -1 up until the very last row fetched &lt;BR&gt;[for example, while(odbc_fetch_into()){} ]...&lt;BR&gt;&lt;BR&gt; So, you can at least tell which is the last row using odbc_num_rows(), which proves useful in HTML rendering situations...</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="12102""></a>
+  <div class="note">
+   <strong class="user">ntp at panda dot bg dot unv dot gda dot pl</strong>
+   <a href="#12102" class="date">22-Mar-2001 07:31</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+An alternative way of getting the number of rows if your driver returns -1 is to requery using the above query:<br />
+<br />
+SELECT Count(*) FROM (SELECT ... original query);<br />
+<br />
+I don't only know which solution is faster: to requery, or to fetch lot of rows (it depends on how does SQL engine does Count operation)</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="11278""></a>
+  <div class="note">
+   <strong class="user">shinelight at excite dot com</strong>
+   <a href="#11278" class="date">13-Feb-2001 09:23</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+A better method for calculating the record count (without being forced to use objects) is:<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">function </span><span class="default">RecordCount</span><span class="keyword">(</span><span class="default">$sql_id</span><span class="keyword">, </span><span class="default">$CurrRow </span><span class="keyword">= </span><span class="default">0</span><span class="keyword">) {<br />
+&nbsp; </span><span class="default">$NumRecords </span><span class="keyword">= </span><span class="default">0</span><span class="keyword">;<br />
+<br />
+&nbsp; </span><span class="default">odbc_fetch_row</span><span class="keyword">(</span><span class="default">$sql_id</span><span class="keyword">, </span><span class="default">0</span><span class="keyword">);<br />
+&nbsp; while (</span><span class="default">odbc_fetch_row</span><span class="keyword">(</span><span class="default">$sql_id</span><span class="keyword">))<br />
+&nbsp; {<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$NumRecords</span><span class="keyword">++;<br />
+&nbsp; }<br />
+&nbsp; </span><span class="default">odbc_fetch_row</span><span class="keyword">(</span><span class="default">$sql_id</span><span class="keyword">, </span><span class="default">$CurrRow</span><span class="keyword">);<br />
+&nbsp; return </span><span class="default">$NumRecords</span><span class="keyword">;<br />
+}<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+The only problem arises (in both this and the bit of code relying on objects) is when the driver does not support fetching a specific row number.&nbsp; In that case, the query will have to be run again (and cross your fingers that the data has not changed in the datasource).</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="function.odbc-num-fields.html">odbc_num_fields</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.odbc-pconnect.html">odbc_pconnect</a></div>
  <div class="up"><a href="ref.uodbc.html">ODBC Functions</a></div>

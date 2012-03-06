@@ -94,7 +94,823 @@ see <span class="function"><a href="function.odbc-connect.html" class="function"
   </p>
  </div>
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="83245""></a>
+  <div class="note">
+   <strong class="user">morten at nilsen dot com</strong>
+   <a href="#83245" class="date">16-May-2008 05:50</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Regarding the query-building for collecting large forms, this would be better:<br />
+<br />
+<span class="default">&lt;?php<br />
+&nbsp; </span><span class="keyword">foreach(</span><span class="default">$_POST </span><span class="keyword">as &amp;</span><span class="default">$v</span><span class="keyword">)<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$v </span><span class="keyword">= </span><span class="default">str_replace</span><span class="keyword">(</span><span class="string">"'"</span><span class="keyword">, </span><span class="string">''</span><span class="keyword">, </span><span class="default">$v</span><span class="keyword">);<br />
+<br />
+&nbsp; </span><span class="default">$sql </span><span class="keyword">= </span><span class="string">'INSERT INTO table (' </span><span class="keyword">. </span><span class="default">join</span><span class="keyword">(</span><span class="string">','</span><span class="keyword">,</span><span class="default">array_keys</span><span class="keyword">(</span><span class="default">$_POST</span><span class="keyword">)) . </span><span class="string">') VALUES (' </span><span class="keyword">. </span><span class="default">join</span><span class="keyword">(</span><span class="string">','</span><span class="keyword">, </span><span class="default">array_fill</span><span class="keyword">(</span><span class="default">0</span><span class="keyword">, </span><span class="default">count</span><span class="keyword">(</span><span class="default">$_POST</span><span class="keyword">), </span><span class="string">'?'</span><span class="keyword">)) . </span><span class="string">')'</span><span class="keyword">;<br />
+&nbsp; </span><span class="default">$query </span><span class="keyword">= </span><span class="default">odbc_prepare</span><span class="keyword">(</span><span class="default">$conn</span><span class="keyword">, </span><span class="default">$sql</span><span class="keyword">);<br />
+&nbsp; </span><span class="default">$result </span><span class="keyword">= </span><span class="default">odbc_execute</span><span class="keyword">(</span><span class="default">$query</span><span class="keyword">, </span><span class="default">$_POST</span><span class="keyword">);<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="77397""></a>
+  <div class="note">
+   <strong class="user">mir eder</strong>
+   <a href="#77397" class="date">28-Aug-2007 03:39</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+If you are having problems with truncated text fields from ODBC queries (pe. at 4096 characters), try some of the following:<br />
+<br />
+in php.ini:<br />
+- odbc.defaultlrl = 65536<br />
+<br />
+in your php code, before your queries:<br />
+- ini_set ( 'odbc.defaultlrl' , '65536' );</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="71615""></a>
+  <div class="note">
+   <strong class="user">bslorence</strong>
+   <a href="#71615" class="date">07-Dec-2006 12:38</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+A determined attacker will easily jump through whatever string-escaping hoops you can devise. A better way to protect yourself against SQL injection is to bind your parameters, which requires calling odbc_prepare() and odbc_execute():<br />
+<br />
+<span class="default">&lt;?php<br />
+$emp_id </span><span class="keyword">= </span><span class="default">$_GET</span><span class="keyword">[</span><span class="string">'emp_id'</span><span class="keyword">];<br />
+</span><span class="default">$stmt </span><span class="keyword">= </span><span class="default">odbc_prepare</span><span class="keyword">(</span><span class="default">$db_conn</span><span class="keyword">, </span><span class="string">"SELECT pwd FROM employees WHERE emp_id=?"</span><span class="keyword">);<br />
+</span><span class="default">$res </span><span class="keyword">= </span><span class="default">odbc_execute</span><span class="keyword">(</span><span class="default">$stmt</span><span class="keyword">, array(</span><span class="default">$emp_id</span><span class="keyword">));<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+This should compile the SELECT statement so that the parameter 'emp_id' is never included as part of your literal SQL query; i.e., it prevents your end users from "contributing" to your code.<br />
+<br />
+But of course even the above is not good enough; see particularly the warning about single-quote-delimited strings in odbc_execute()'s parameters array:<br />
+<br />
+<a href="http://www.php.net/manual/en/function.odbc-execute.php" rel="nofollow" target="_blank">http://www.php.net/manual/en/function.odbc-execute.php</a><br />
+<br />
+It's paramount that you validate user-supplied parameters, always and everywhere -- and keep in mind that every query-variable from a GET or POST should be considered "user-supplied", even if it's in a hidden input field on the front-end web page and the average browser user has no control over it.<br />
+<br />
+Take the above example, and suppose that the backend database uses a two-byte unsigned numeric field to store 'emp_id'.<br />
+<br />
+In that case, then you must make sure, before you do anything with ODBC, that 'emp_id' is indeed numeric, positive, and &lt;= 65535. If it's not, assume an attack and fail with an ambiguous error message.<br />
+<br />
+If you trust user input without checking it yourself, you're asking to be hacked.<br />
+<br />
+Here's a nice intro to SQL-injection:<br />
+<br />
+<a href="http://www.unixwiz.net/techtips/sql-injection.html" rel="nofollow" target="_blank">http://www.unixwiz.net/techtips/sql-injection.html</a></span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="69962""></a>
+  <div class="note">
+   <strong class="user">delowing gmail dot com</strong>
+   <a href="#69962" class="date">27-Sep-2006 08:19</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+It is easy to inject evil code into SQL statements. This wraps parameters in quotes so they are not executable. In your own stored procedures you can convert the string to numeric as needed.<br />
+<br />
+function sql_make_string($sin){<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; return "'".str_replace("'","''",$sin)."'";<br />
+}<br />
+<br />
+// this may delete all data from MYTABLE<br />
+$evil = "734'; DELETE FROM MYTABLE; print 'ha ha";<br />
+$sql = "SELECT * FROM MYTABLE WHERE mykey = '$evil'";<br />
+$rst = odbc_exec($connection,$sql);<br />
+<br />
+// this probably will not delete the data.<br />
+$good = sql_make_string($evil);<br />
+$sql = "SELECT * FROM MYTABLE WHERE mykey =".$good<br />
+$rst = odbc_exec($connection,$sql);</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="69137""></a>
+  <div class="note">
+   <strong class="user">denis at i39 dot ru</strong>
+   <a href="#69137" class="date">24-Aug-2006 05:24</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I've got an error on MS SQL Server 2000, when tryed to execute query which grants rights to user to connect to database:<br />
+<br />
+&lt;?<br />
+$Query = "<br />
+&nbsp;EXEC sp_grantdbaccess ".$_REQUEST['user'].";<br />
+&nbsp;EXEC sp_addrolemember&nbsp; 'db_owner','".$_REQUEST['user']."';<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; ";<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if (!@odbc_exec($db_Conn, $Query))<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $strErrorMessage = odbc_errormsg($db_Conn);<br />
+?&gt;<br />
+<br />
+The result was: Executing SQL directly; no cursor.<br />
+<br />
+This query executes fine in MS's sql console. So it seems that problem is in odbc driver.<br />
+I've found desicion by removing first "EXEC".<br />
+<br />
+It looks:<br />
+&lt;?<br />
+$Query = "<br />
+&nbsp;sp_grantdbaccess ".$_REQUEST['user'].";<br />
+&nbsp;EXEC sp_addrolemember&nbsp; 'db_owner','".$_REQUEST['user']."';<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; ";<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if (!@odbc_exec($db_Conn, $Query))<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $strErrorMessage = odbc_errormsg($db_Conn);<br />
+<br />
+?&gt;<br />
+<br />
+P.S. Don't remove the second 'exec', 'cos MS returns another error :)</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="66844""></a>
+  <div class="note">
+   
+   <a href="#66844" class="date">30-May-2006 05:02</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Wouldn't it be better to use the database itself to find out if an id doesn't exist. eg: SELECT COUNT(id) as idCount FROM [Table] WHERE id = [ID]<br />
+<br />
+Then check if idCount is zero or not.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="57027""></a>
+  <div class="note">
+   <strong class="user">joex444 at gmail dot com</strong>
+   <a href="#57027" class="date">21-Sep-2005 02:14</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Maybe not the best way, but here's how I find out if a row doesn't exist:<br />
+<br />
+$row=odbc_fetch_array($result);<br />
+$id=$row['id'];<br />
+if($id=="") {<br />
+//no rows<br />
+} else {<br />
+//rows<br />
+}<br />
+<br />
+Where the 'id' field is a required field in your table...</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="56311""></a>
+  <div class="note">
+   
+   <a href="#56311" class="date">30-Aug-2005 06:18</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+The following seems counterintuitive to me and so I am constantly getting burned by it.&nbsp; Just thought I'd add a note for anyone else who might also get burned.<br />
+<br />
+&nbsp; if (!odbc_exec("select MyValue from MyTable where Key1='x' and Key2='y'"))<br />
+<br />
+is not a good way to search for the existence of a record with Key1 = x and Key2 = y.&nbsp; The odbc_exec always returns a result handle, even though there aren't any records.<br />
+<br />
+Rather, you must use one of the fetch functions to find out that the record really doesn't exist.&nbsp; This should work:<br />
+<br />
+&nbsp; if (!($Selhand = odbc_exec("select MyValue from MyTable where Key1='x' and Key2='y'"))<br />
+&nbsp;&nbsp;&nbsp; || !odbc_result($Selhand, 1))</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="53126""></a>
+  <div class="note">
+   <strong class="user">fuadMD at gmail dot com</strong>
+   <a href="#53126" class="date">24-May-2005 12:34</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+<span class="default">&lt;?php<br />
+</span><span class="comment">// - This is a complete working dynamic example of using: <br />
+//&nbsp; &nbsp; odbc_connect, odbc_exec, getting col Names,<br />
+//&nbsp; &nbsp; odbc_fetch_row and no of rows. hope it helps<br />
+// - your driver should point to your MS access file<br />
+<br />
+</span><span class="default">$conn </span><span class="keyword">= </span><span class="default">odbc_connect</span><span class="keyword">(</span><span class="string">'MSAccessDriver'</span><span class="keyword">,</span><span class="string">''</span><span class="keyword">,</span><span class="string">''</span><span class="keyword">); <br />
+<br />
+</span><span class="default">$nrows</span><span class="keyword">=</span><span class="default">0</span><span class="keyword">; <br />
+<br />
+if (</span><span class="default">$conn</span><span class="keyword">)<br />
+{<br />
+</span><span class="default">$sql </span><span class="keyword">=&nbsp; </span><span class="string">"select * from </span><span class="default">$month</span><span class="string">"</span><span class="keyword">; <br />
+</span><span class="comment">//this function will execute the sql satament<br />
+</span><span class="default">$result</span><span class="keyword">=</span><span class="default">odbc_exec</span><span class="keyword">(</span><span class="default">$conn</span><span class="keyword">, </span><span class="default">$sql</span><span class="keyword">);<br />
+<br />
+echo </span><span class="string">"&lt;table&nbsp; align=\"center\" border=\"1\" borderColor=\"\" cellpadding=\"0\" cellspacing=\"0\"&gt;\n"</span><span class="keyword">;<br />
+echo </span><span class="string">"&lt;tr&gt; "</span><span class="keyword">;<br />
+</span><span class="comment">// -- print field name<br />
+</span><span class="default">$colName </span><span class="keyword">= </span><span class="default">odbc_num_fields</span><span class="keyword">(</span><span class="default">$result</span><span class="keyword">);<br />
+for (</span><span class="default">$j</span><span class="keyword">=</span><span class="default">1</span><span class="keyword">; </span><span class="default">$j</span><span class="keyword">&lt;= </span><span class="default">$colName</span><span class="keyword">; </span><span class="default">$j</span><span class="keyword">++)<br />
+{<br />
+echo </span><span class="string">"&lt;th&nbsp; align=\"left\" bgcolor=\"#CCCCCC\" &gt; &lt;font color=\"#990000\"&gt; "</span><span class="keyword">;<br />
+echo </span><span class="default">odbc_field_name </span><span class="keyword">(</span><span class="default">$result</span><span class="keyword">, </span><span class="default">$j </span><span class="keyword">);<br />
+echo </span><span class="string">"&lt;/font&gt; &lt;/th&gt;"</span><span class="keyword">;<br />
+}<br />
+</span><span class="default">$j</span><span class="keyword">=</span><span class="default">$j</span><span class="keyword">-</span><span class="default">1</span><span class="keyword">;<br />
+</span><span class="default">$c</span><span class="keyword">=</span><span class="default">0</span><span class="keyword">;<br />
+</span><span class="comment">// end of field names<br />
+</span><span class="keyword">while(</span><span class="default">odbc_fetch_row</span><span class="keyword">(</span><span class="default">$result</span><span class="keyword">)) </span><span class="comment">// getting data<br />
+</span><span class="keyword">{<br />
+&nbsp;</span><span class="default">$c</span><span class="keyword">=</span><span class="default">$c</span><span class="keyword">+</span><span class="default">1</span><span class="keyword">;<br />
+&nbsp;if ( </span><span class="default">$c</span><span class="keyword">%</span><span class="default">2 </span><span class="keyword">== </span><span class="default">0 </span><span class="keyword">) <br />
+&nbsp;echo </span><span class="string">"&lt;tr bgcolor=\"#d0d0d0\" &gt;\n"</span><span class="keyword">;<br />
+&nbsp;else <br />
+&nbsp;echo </span><span class="string">"&lt;tr bgcolor=\"#eeeeee\"&gt;\n"</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; for(</span><span class="default">$i</span><span class="keyword">=</span><span class="default">1</span><span class="keyword">;</span><span class="default">$i</span><span class="keyword">&lt;=</span><span class="default">odbc_num_fields</span><span class="keyword">(</span><span class="default">$result</span><span class="keyword">);</span><span class="default">$i</span><span class="keyword">++)<br />
+&nbsp;&nbsp; &nbsp;&nbsp; {&nbsp; &nbsp; &nbsp; &nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; echo </span><span class="string">"&lt;td&gt;"</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; echo </span><span class="default">odbc_result</span><span class="keyword">(</span><span class="default">$result</span><span class="keyword">,</span><span class="default">$i</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; echo </span><span class="string">"&lt;/td&gt;"</span><span class="keyword">;&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if ( </span><span class="default">$i</span><span class="keyword">%</span><span class="default">$j </span><span class="keyword">== </span><span class="default">0 </span><span class="keyword">)&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$nrows</span><span class="keyword">+=</span><span class="default">1</span><span class="keyword">; </span><span class="comment">// counting no of rows&nbsp; &nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">}&nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; echo </span><span class="string">"&lt;/tr&gt;"</span><span class="keyword">;<br />
+} <br />
+<br />
+echo </span><span class="string">"&lt;/td&gt; &lt;/tr&gt;\n"</span><span class="keyword">;<br />
+echo </span><span class="string">"&lt;/table &gt;\n"</span><span class="keyword">;<br />
+</span><span class="comment">// --end of table&nbsp; <br />
+</span><span class="keyword">if (</span><span class="default">$nrows</span><span class="keyword">==</span><span class="default">0</span><span class="keyword">) echo </span><span class="string">"&lt;br/&gt;&lt;center&gt; Nothing for </span><span class="default">$month</span><span class="string"> yet! Try back later&lt;/center&gt;&nbsp; &lt;br/&gt;"</span><span class="keyword">; <br />
+else echo </span><span class="string">"&lt;br/&gt;&lt;center&gt; Total Records:&nbsp; </span><span class="default">$nrows</span><span class="string"> &lt;/center&gt;&nbsp; &lt;br/&gt;"</span><span class="keyword">;<br />
+</span><span class="default">odbc_close </span><span class="keyword">(</span><span class="default">$conn</span><span class="keyword">);<br />
+<br />
+}<br />
+else echo </span><span class="string">"odbc not connected &lt;br&gt;"</span><span class="keyword">;<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="51057""></a>
+  <div class="note">
+   <strong class="user">james @ php-for-beginners co uk</strong>
+   <a href="#51057" class="date">18-Mar-2005 04:54</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+hi all, I managed to get this little snippet working, it's pretty useful if you have long forms to be inserted into a database.<br />
+<br />
+if ( ! empty ( $_POST ) ){<br />
+array_pop($_POST);<br />
+&nbsp;foreach($_POST as $key =&gt; $val){<br />
+&nbsp; $columns .= addslashes($key) . ", ";<br />
+&nbsp;&nbsp;&nbsp; $values .= "'" . addslashes($val) . "', ";<br />
+&nbsp;&nbsp; &nbsp;&nbsp; <br />
+&nbsp;}<br />
+&nbsp;$values = substr_replace($values, "", -2);<br />
+&nbsp;$columns = substr_replace($columns, "", -2);<br />
+&nbsp;<br />
+&nbsp;$sql = "INSERT INTO table ($columns) VALUES ($values)";<br />
+&nbsp;echo $sql;<br />
+&nbsp;$results = odbc_exec($conn, $sql);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; if ($results){<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; echo "Query Executed";<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }else {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; echo "Query failed " .odbc_error();<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }&nbsp; &nbsp; <br />
+}<br />
+<br />
+Not the most secure in the world but, speeds up collecting data from large forms.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="50453""></a>
+  <div class="note">
+   <strong class="user">mramirez at star-dev dot com</strong>
+   <a href="#50453" class="date">28-Feb-2005 04:23</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Hi, I was trying to execute an stored procedure with<br />
+PHP 4.3.10 and MS SQL Server 6.5 using PHP function<br />
+"odbc_exec" and ODBC.<br />
+<br />
+The problem was that it returned an ouput parameter<br />
+and didn't&nbsp; know the right PHP functions and SQL<br />
+syntax to call it.<br />
+<br />
+Finally after looking elsewhere, it worked this way:<br />
+<br />
+&lt;html&gt;<br />
+<br />
+&lt;title&gt;test.php&lt;/title&gt;<br />
+<br />
+&lt;body&gt;<br />
+<br />
+<span class="default">&lt;?php<br />
+&nbsp; $server&nbsp;&nbsp; </span><span class="keyword">= </span><span class="string">'myservername'</span><span class="keyword">;&nbsp; <br />
+&nbsp; </span><span class="default">$database </span><span class="keyword">= </span><span class="string">'mydatabasename'</span><span class="keyword">;<br />
+&nbsp; </span><span class="default">$username </span><span class="keyword">= </span><span class="string">'myusername'</span><span class="keyword">;<br />
+&nbsp; </span><span class="default">$password </span><span class="keyword">= </span><span class="string">'mypassword'</span><span class="keyword">;<br />
+<br />
+&nbsp; </span><span class="default">$connection_string </span><span class="keyword">=<br />
+&nbsp;&nbsp; </span><span class="string">'DRIVER={SQL SERVER};SERVER=' </span><span class="keyword">. </span><span class="default">$server </span><span class="keyword">. </span><span class="string">';DATABASE=' </span><span class="keyword">. </span><span class="default">$database</span><span class="keyword">;<br />
+<br />
+&nbsp; </span><span class="default">$connection </span><span class="keyword">= </span><span class="default">odbc_connect</span><span class="keyword">(</span><span class="default">$connection_string</span><span class="keyword">, </span><span class="default">$username</span><span class="keyword">, </span><span class="default">$password</span><span class="keyword">);<br />
+<br />
+&nbsp; </span><span class="default">$sql&nbsp; </span><span class="keyword">= </span><span class="string">"BEGIN "</span><span class="keyword">;<br />
+&nbsp; </span><span class="default">$sql </span><span class="keyword">.= </span><span class="string">"&nbsp; declare @MyOutputValue int "</span><span class="keyword">;<br />
+&nbsp; </span><span class="default">$sql </span><span class="keyword">.= </span><span class="string">"&nbsp; execute MyStoredProc @MyOutputValue output select @MyOutputValue "</span><span class="keyword">;<br />
+&nbsp; </span><span class="default">$sql </span><span class="keyword">.= </span><span class="string">"END "</span><span class="keyword">;<br />
+<br />
+&nbsp; echo </span><span class="string">'&lt;form&gt;' </span><span class="keyword">. </span><span class="default">chr</span><span class="keyword">(</span><span class="default">13</span><span class="keyword">);<br />
+&nbsp; echo </span><span class="string">'&lt;table border="1"&gt;' </span><span class="keyword">. </span><span class="default">chr</span><span class="keyword">(</span><span class="default">13</span><span class="keyword">) . </span><span class="default">chr</span><span class="keyword">(</span><span class="default">13</span><span class="keyword">);<br />
+&nbsp; echo </span><span class="string">'&lt;tr&gt;'</span><span class="keyword">;<br />
+&nbsp; echo </span><span class="string">'&lt;td&gt;&lt;b&gt;Valor&lt;/b&gt;&lt;/td&gt;'</span><span class="keyword">;<br />
+&nbsp; echo </span><span class="string">'&lt;/tr&gt;'</span><span class="keyword">;<br />
+<br />
+&nbsp; </span><span class="default">$query </span><span class="keyword">= </span><span class="default">odbc_exec</span><span class="keyword">(</span><span class="default">$connection</span><span class="keyword">, </span><span class="default">$sql</span><span class="keyword">);<br />
+<br />
+&nbsp; while(</span><span class="default">odbc_fetch_row</span><span class="keyword">(</span><span class="default">$query</span><span class="keyword">))<br />
+&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; echo </span><span class="string">'&lt;tr&gt;' </span><span class="keyword">. </span><span class="default">chr</span><span class="keyword">(</span><span class="default">13</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp; &nbsp; </span><span class="comment">// "odbc_result" = "FieldByNumber(Index)",<br />
+&nbsp;&nbsp; &nbsp; // "Index" starts with 1 not 0 !!! :<br />
+&nbsp;&nbsp; &nbsp; </span><span class="default">$returnvalue </span><span class="keyword">= </span><span class="default">odbc_result</span><span class="keyword">(</span><span class="default">$query</span><span class="keyword">, </span><span class="default">1</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp; &nbsp; echo </span><span class="string">'&lt;td&gt;' </span><span class="keyword">. </span><span class="default">$returnvalue </span><span class="keyword">. </span><span class="string">'&lt;/td&gt;'</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; echo </span><span class="string">'&lt;/tr&gt;' </span><span class="keyword">. </span><span class="default">chr</span><span class="keyword">(</span><span class="default">13</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; echo </span><span class="default">chr</span><span class="keyword">(</span><span class="default">13</span><span class="keyword">);<br />
+&nbsp; }<br />
+<br />
+&nbsp; echo </span><span class="string">'&lt;/table&gt;' </span><span class="keyword">. </span><span class="default">chr</span><span class="keyword">(</span><span class="default">13</span><span class="keyword">);<br />
+&nbsp; echo </span><span class="string">'&lt;/form&gt;' </span><span class="keyword">. </span><span class="default">chr</span><span class="keyword">(</span><span class="default">13</span><span class="keyword">);<br />
+<br />
+&nbsp; </span><span class="default">odbc_free_result</span><span class="keyword">(</span><span class="default">$query</span><span class="keyword">);<br />
+<br />
+&nbsp; </span><span class="default">odbc_close</span><span class="keyword">(</span><span class="default">$connection</span><span class="keyword">);<br />
+<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+&lt;/body&gt;<br />
+<br />
+&lt;/html&gt;<br />
+<br />
+Good Luck.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="50434""></a>
+  <div class="note">
+   <strong class="user">Tom Cully &lt;mail at tomcully dot com&gt;</strong>
+   <a href="#50434" class="date">28-Feb-2005 08:22</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+MS Access through ODBC doesn't just not like quotes (escape with '' - two single quotes), it also really hates newlines - chr(10)s - in LONGCHAR fields, and maybe in other BINARY based fields as well. Leave in a return character - chr(13) - to get a "new line" when working with LONGCHAR fields in ODBC/MS Access:<br />
+<br />
+Here's a function to do both for you:<br />
+<br />
+function odbc_access_escape_str($str) {<br />
+&nbsp;$out="";<br />
+&nbsp;for($a=0; $a&lt;strlen($str); $a++) {<br />
+&nbsp; if($str[$a]=="'") {<br />
+&nbsp;&nbsp; $out.="''";<br />
+&nbsp; } else<br />
+&nbsp; if($str[$a]!=chr(10)) {<br />
+&nbsp;&nbsp; $out.=$str[$a];<br />
+&nbsp; } <br />
+&nbsp;}<br />
+&nbsp;return $out; <br />
+}</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="49093""></a>
+  <div class="note">
+   <strong class="user">d dot soussan at sovereignls dot co dot uk</strong>
+   <a href="#49093" class="date">16-Jan-2005 08:19</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+re the note from: sk2xml at gmx dot net 21-Nov-2001 02:15 <br />
+<br />
+About [] not working with Access.<br />
+<br />
+if you use [] arount the field name then you must also use them around the table name, thus:<br />
+<br />
+select [table1].[field1] from table1<br />
+<br />
+That is standard Access syntax.<br />
+<br />
+sk2xml's example had:<br />
+<br />
+select table1.[field1] from table1<br />
+<br />
+which will always fail.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="45248""></a>
+  <div class="note">
+   <strong class="user">sameer dot kelkar at gmail dot com</strong>
+   <a href="#45248" class="date">31-Aug-2004 03:26</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+$callstore&nbsp; = odbc_exec($conn, "{CALL procedurename('" . $para1 . "','" . $para2 . "',1,'125478')}");<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; odbc_fetch_row($callstore);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; $returnmessage&nbsp; =&nbsp; odbc_result($callstore,1);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; echo $returnmessage;</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="42680""></a>
+  <div class="note">
+   <strong class="user">victor dot kirk at serco dot com</strong>
+   <a href="#42680" class="date">26-May-2004 05:47</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+rupix said above:<br />
+&gt; it does not work. However if I use single quotes instead of \" the thing runs smoothly<br />
+<br />
+SQL uses 'single quotes' to specify strings, thats why a \" does not work.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="41771""></a>
+  <div class="note">
+   <strong class="user">Sean Boulter</strong>
+   <a href="#41771" class="date">21-Apr-2004 05:50</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Update to my previous post... Another way to solve the problem with single quotes (at least in my environment (php 4.3.6, ODBC to MS Access db)), is to edit the php.ini file and set magic_quotes_gpc = On and magic_quotes_sybase = On.&nbsp; Note that this is a global setting, which may or may not be desirable.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="41770""></a>
+  <div class="note">
+   <strong class="user">Sean Boulter</strong>
+   <a href="#41770" class="date">21-Apr-2004 05:28</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+If a single quote exists within the field specified by your WHERE statement, ODBC fails because of a parsing error.&nbsp; Although it seems intuitive, using \" around the field does not work (\"$var\").&nbsp; The only solution I found was to replace all single quotes in my field with two single quotes.&nbsp; ODBC interprets the first single quote as an escape character and interprets the second single quote as a literal.&nbsp; Thanks to <a href="http://www.devguru.com/features/knowledge_base/A100206.html for this tip." rel="nofollow" target="_blank">http://www.devguru.com/features/knowledge_base/A100206.html for this tip.</a></span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="39286""></a>
+  <div class="note">
+   <strong class="user">christopherbyrne at hotmail dot com</strong>
+   <a href="#39286" class="date">23-Jan-2004 01:33</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+When you pass a parameter to an Access procedure all data types (seemingly) can be single quoted and dates do not need (and will not work when) surrounded by #'s.<br />
+<br />
+Hope this helps!</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="33112""></a>
+  <div class="note">
+   <strong class="user">rob at vendorpromotions dot com</strong>
+   <a href="#33112" class="date">17-Jun-2003 01:29</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+This opens select statements 'for update' by default in db2.&nbsp; If you're using db2, you have to tack on 'for read only' at the end to select from SYSCAT.TABLES, for example, without firing an error like<br />
+<br />
+Warning: SQL error: [IBM][CLI Driver][DB2/LINUX] SQL0151N The column "MAXFREESPACESEARCH" cannot be updated. SQLSTATE=42808 , SQL state 42808 in SQLExecDirect <br />
+<br />
+For example :<br />
+<br />
+$query = odbc_exec($conn, "select * from syscat.tables for read only");<br />
+odbc_result_all($query);<br />
+<br />
+will work (only for db2).&nbsp; I don't know about other databases.<br />
+<br />
+The select statement will work in the 'db2' command line, but not in php, because of this side effect.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="30986""></a>
+  <div class="note">
+   <strong class="user">rupix at rediffmail dot com</strong>
+   <a href="#30986" class="date">05-Apr-2003 07:05</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I tried the following line of code<br />
+<br />
+<span class="default">&lt;?php<br />
+$odbc</span><span class="keyword">=</span><span class="default">odbc_connect</span><span class="keyword">(</span><span class="string">"pbk"</span><span class="keyword">, </span><span class="string">"root"</span><span class="keyword">,</span><span class="string">""</span><span class="keyword">) or die(</span><span class="default">odbc_errormsg</span><span class="keyword">());<br />
+</span><span class="default">$q</span><span class="keyword">=</span><span class="string">"insert into pbk values(\"</span><span class="default">$name</span><span class="string">\", \"</span><span class="default">$phone</span><span class="string">\")"</span><span class="keyword">;<br />
+print </span><span class="default">$q</span><span class="keyword">;<br />
+</span><span class="default">odbc_exec</span><span class="keyword">(</span><span class="default">$odbc</span><span class="keyword">, </span><span class="default">$q</span><span class="keyword">) or die(</span><span class="string">"&lt;p&gt;"</span><span class="keyword">.</span><span class="default">odbc_errormsg</span><span class="keyword">());<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+it does not work. However if I use single quotes instead of \" the thing runs smoothly<br />
+<br />
+thus the following would work<br />
+<br />
+<span class="default">&lt;?php<br />
+$odbc</span><span class="keyword">=</span><span class="default">odbc_connect</span><span class="keyword">(</span><span class="string">"pbk"</span><span class="keyword">, </span><span class="string">"yourworstnightmare"</span><span class="keyword">,</span><span class="string">"abracadabra"</span><span class="keyword">) or die(</span><span class="default">odbc_errormsg</span><span class="keyword">());<br />
+</span><span class="default">$q</span><span class="keyword">=</span><span class="string">"insert into pbk values('</span><span class="default">$name</span><span class="string">', '</span><span class="default">$phone</span><span class="string">')"</span><span class="keyword">;<br />
+print </span><span class="default">$q</span><span class="keyword">;<br />
+</span><span class="default">odbc_exec</span><span class="keyword">(</span><span class="default">$odbc</span><span class="keyword">, </span><span class="default">$q</span><span class="keyword">) or die(</span><span class="string">"&lt;p&gt;"</span><span class="keyword">.</span><span class="default">odbc_errormsg</span><span class="keyword">());<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+Also having a user dsn is no good on win2k. Always have a System DSN. I don't know yet what are the implications of the same.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="30131""></a>
+  <div class="note">
+   <strong class="user">das_yrch at hotmail dot com</strong>
+   <a href="#30131" class="date">07-Mar-2003 03:17</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I tried this way to see the results of a query and it works!!<br />
+<br />
+$Conn = odbc_connect<br />
+("bbdd_usuaris","","",SQL_CUR_USE_ODBC );<br />
+<br />
+$result=odbc_exec($Conn,"select nom from usuaris;");<br />
+<br />
+while(odbc_fetch_row($result)){<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; for($i=1;$i&lt;=odbc_num_fields($result);$i++){<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; echo "Result is ".odbc_result($result,$i);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+}</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="23612""></a>
+  <div class="note">
+   <strong class="user">miguel dot erill at doymer dot com</strong>
+   <a href="#23612" class="date">23-Jul-2002 03:33</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+In a previous contribution it was told that if you're running NT/IIS with PHP 3.0.11 you can use MS Access dbs "stored procedures".<br />
+<br />
+That was right, but if those stores procedures have parameters you have to supply them in the command line like this:<br />
+<br />
+$conn_id = odbc_connect( "odbc_test_db", "","", SQL_CUR_USE_DRIVER );<br />
+$qry_id = odbc_do( $conn_id, "{CALL MyQuery(".$param.")}" );</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="18775""></a>
+  <div class="note">
+   <strong class="user">martin at NOSPAMkouba dot at</strong>
+   <a href="#18775" class="date">05-Feb-2002 08:37</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+"[Microsoft][ODBC Microsoft Access Driver] Too few<br />
+parameters. Expected 1."<br />
+<br />
+this not so clear to understand error comes when using access-odbc and a field name can't be found. check for correct spelling of fields.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="18406""></a>
+  <div class="note">
+   <strong class="user">lee200082 at hotmail dot com</strong>
+   <a href="#18406" class="date">21-Jan-2002 05:07</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+As an addition to the note about square brackets earlier:<br />
+<br />
+Enclosing sql field names in '[' and ']' also allows you to use MS Access reserved words like 'date' and 'field' and 'time' in your SQL query... it seems that the square brackets simply tell Access to ignore any other meaning whatever is inside them has and take them simply as field names.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="16989""></a>
+  <div class="note">
+   <strong class="user">sk2xml at gmx dot net</strong>
+   <a href="#16989" class="date">21-Nov-2001 06:15</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Problem: Fieldnames in SQL-Statement have blanks and [] don't work!<br />
+<br />
+Solution: Try "" instead<br />
+<br />
+Ex.: <br />
+<br />
+SELECT table2.first, table1.[last name] FROM tabel1, table2 -&gt; don't work<br />
+<br />
+SELECT table2.first, table1.\"last name\" FROM tabel1, table2 -&gt; Try this<br />
+<br />
+PS: Don't forget the espace characters !!!</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="14795""></a>
+  <div class="note">
+   <strong class="user">cfewer1 at home dot com</strong>
+   <a href="#14795" class="date">15-Aug-2001 02:25</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+If you're receiving a 'Syntax error in INSERT INTO ..&lt;snip&gt;.. SQL State 37000 in SQLExecDirect' error, try enclosing the field names between square brackets.<br />
+<br />
+ex:<br />
+<br />
+INSERT INTO whatever ([blah],[who],[what]) VALUES ('blah','blah','blah');<br />
+<br />
+I spent 4 hours tryin to get this insert statement (without the []'s) to work. This seems to have fixed it.<br />
+<br />
+[]'s, apparently according to MS, should be used with table/field names with spaces. Im not sure if this is an MS ODBC thing, or a PHP flaw.<br />
+<br />
+tested with: win32/php4.0.6/apache1.3.20/odbc/mdac2.6sp1</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="10499""></a>
+  <div class="note">
+   <strong class="user">akchu at  at ualberta dot ca</strong>
+   <a href="#10499" class="date">07-Jan-2001 08:41</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+ODBC/MS Access Date Fields:<br />
+<br />
+Matching dates in SELECT statements for MS Access requires the following format:<br />
+#Y-m-d H:i:s#<br />
+<br />
+for example:<br />
+<br />
+SELECT * FROM TableName WHERE Birthdate = #2001-01-07 00:00:00#<br />
+<br />
+or <br />
+<br />
+SELECT * FROM TableName WHERE Birthdate BETWEEN #2000-01-07 00:00:00# AND #2001-01-07 00:00:00#<br />
+<br />
+This took me forever to figure out.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="9484""></a>
+  <div class="note">
+   <strong class="user">vpil at retico dot com</strong>
+   <a href="#9484" class="date">06-Nov-2000 06:24</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Additional links to ODBC_exec:<br />
+How to actually write the SQL commands:<br />
+<a href="http://www.roth.net/perl/odbc/faq/" rel="nofollow" target="_blank">http://www.roth.net/perl/odbc/faq/</a><br />
+<a href="http://www.netaxs.com/~joc/perl/article/SQL.html" rel="nofollow" target="_blank">http://www.netaxs.com/~joc/perl/article/SQL.html</a><br />
+Demystifying SQL<br />
+BIG REF MANUAL:<br />
+<a href="http://w3.one.net/~jhoffman/sqltut.htm" rel="nofollow" target="_blank">http://w3.one.net/~jhoffman/sqltut.htm</a><br />
+Introduction to Structured Query Language<br />
+Covers read, add, modify &amp; delete of data.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="9417""></a>
+  <div class="note">
+   <strong class="user">phobo at  at  at paradise dot net dot nz</strong>
+   <a href="#9417" class="date">02-Nov-2000 06:26</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+If Openlink -&gt; MS Access Database fails and gives "Driver Not Capable" error or "No tuples available" warning, use the SQL_CUR_USE_ODBC cursor when using odbc_connect()...<br />
+<br />
+Siggy</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="6289""></a>
+  <div class="note">
+   <strong class="user">andreas dot brunner at rubner dot com</strong>
+   <a href="#6289" class="date">07-Jul-2000 04:54</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I wanted to access an MSAccess database via ODBC. The connection functioned without problems, but when I placed a SQL statement into my odbc_exec() i always got an error: <br />
+Warning: SQL error: [Microsoft][ODBC Driver Manager] Driver does not support that function, SQL state IM001 in SQLSetStmtOption in \\Server\directory/test.php3 on line 19. <br />
+<br />
+Resolved my problem by myself: i simply had to install a new odbc-driver from the microsoft homepage.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="2069""></a>
+  <div class="note">
+   <strong class="user">gross at arkana dot de</strong>
+   <a href="#2069" class="date">28-Oct-1999 06:03</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+If you're running NT/IIS with PHP 3.0.11 and want to use MS Access dbs with "stored procedures" you can send an ODBC SQL query like:<br />
+<span class="default">&lt;?php<br />
+$conn_id </span><span class="keyword">= </span><span class="default">odbc_connect</span><span class="keyword">( </span><span class="string">"odbc_test_db"</span><span class="keyword">, </span><span class="string">""</span><span class="keyword">, </span><span class="string">""</span><span class="keyword">, </span><span class="default">SQL_CUR_USE_DRIVER </span><span class="keyword">);<br />
+</span><span class="default">$qry_id </span><span class="keyword">= </span><span class="default">odbc_do</span><span class="keyword">( </span><span class="default">$conn_id</span><span class="keyword">, </span><span class="string">"{CALL MyQuery}" </span><span class="keyword">);<br />
+</span><span class="default">?&gt;<br />
+</span>This way you don't need to integrate query strings like <br />
+<br />
+SELECT * FROM TblObject WHERE (((TblObject.something) Like "blahblahblah"));<br />
+<br />
+in the php file. You directly call the query "MyQuery" that was generated by MS Access.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="1435""></a>
+  <div class="note">
+   <strong class="user">rmkim at uwaterloo dot ca</strong>
+   <a href="#1435" class="date">25-Aug-1999 11:13</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+for Win32(NT) and MSAcess 2000, whenever you retrieve a date column/field, php will automatically convert it to 'yyyy/mm/dd hh:mm:ss' format regardless of the style of date you've denoted in Access.<br />
+This seems to pose a problem when you exec SELECT, UPDATE, or DELETE queries, but strangley INSERT works fine. I've tried parsing the date into the desired format, but php still yells criteria mismatch.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="function.odbc-errormsg.html">odbc_errormsg</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.odbc-execute.html">odbc_execute</a></div>
  <div class="up"><a href="ref.uodbc.html">ODBC Functions</a></div>

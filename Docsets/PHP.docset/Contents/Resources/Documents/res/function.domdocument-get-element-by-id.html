@@ -41,7 +41,114 @@
     </p>
    </div>
 
-  </div><hr /><div class="manualnavbar" style="text-align: center;">
+  </div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="27362""></a>
+  <div class="note">
+   <strong class="user">etienne dot anken at eivd dot ch</strong>
+   <a href="#27362" class="date">03-Dec-2002 07:51</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+This class is useful for people who haven't the latest release of PHP and would like to search an element with a known ID through a collection of nodes.<br />
+<br />
+Example to use it :<br />
+<br />
+$domDoc = xmldoc("&lt;root&gt;&lt;entity id='e1'&gt;&lt;/entity&gt;&lt;entity id='e2'&gt;&lt;titi id='e5'&gt;&lt;/titi&gt;&lt;/entity&gt;&lt;/root&gt;");<br />
+&nbsp;&nbsp;&nbsp; <br />
+$root = $domDoc-&gt;root();<br />
+$children = $root-&gt;child_nodes();<br />
+&nbsp;&nbsp;&nbsp; <br />
+$researchObject = new searchElementById("e5", $children);<br />
+$resultElement = $researchObject-&gt;beginSearching();<br />
+<br />
+The source of the class :<br />
+<br />
+class searchElementById {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp; //Class which can find and return an XML node with a specified ID<br />
+&nbsp; var $numberElements=0;<br />
+&nbsp; var $numberAttributes=0;<br />
+&nbsp; var $idToFind;<br />
+&nbsp; var $tabElements;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp; //Initialization function which accept 2 parameters :<br />
+&nbsp; //$paramIdToFind : value of the ID to find<br />
+&nbsp; //$paramTabElements : array of nodes which contains the element to find<br />
+&nbsp; function searchElementById($paramIdToFind, $paramTabElements) {<br />
+&nbsp;&nbsp;&nbsp; //Initialization of class variables<br />
+&nbsp;&nbsp;&nbsp; $this-&gt;idToFind = $paramIdToFind;<br />
+&nbsp;&nbsp;&nbsp; $this-&gt;tabElements = $paramTabElements;<br />
+&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp; //Function starting the research<br />
+&nbsp; function beginSearching() {<br />
+&nbsp;&nbsp;&nbsp; //Search and return the element found<br />
+&nbsp;&nbsp;&nbsp; return $this-&gt;searchID($this-&gt;tabElements);<br />
+&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp; //Recursive function searching the desired node<br />
+&nbsp; function searchID($tabElements) {<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; //Variable of the number of elements<br />
+&nbsp;&nbsp;&nbsp; $i = 0;<br />
+&nbsp;&nbsp;&nbsp; //Variable of the number of attributes<br />
+&nbsp;&nbsp;&nbsp; $j = 0;<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; //Number of nodes in the elements' array<br />
+&nbsp;&nbsp;&nbsp; $nbreNoeuds = count($tabElements);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; //Loop on all elements<br />
+&nbsp;&nbsp;&nbsp; for ($i=0;$i&lt;$nbreNoeuds;$i++) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp;&nbsp; //Incrementation of the class variable couting the total number of elements<br />
+&nbsp;&nbsp; &nbsp;&nbsp; $this-&gt;compteurElements++;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp;&nbsp; //Extraction of the attributes of the current element<br />
+&nbsp;&nbsp; &nbsp;&nbsp; $tabAttributs = $tabElements[$i]-&gt;attributes();<br />
+&nbsp;&nbsp; &nbsp;&nbsp; //Number of attributes in the current element<br />
+&nbsp;&nbsp; &nbsp;&nbsp; $nbreAttributs = count($tabAttributs);<br />
+&nbsp;&nbsp; &nbsp;&nbsp; //Loop on all attributes<br />
+&nbsp;&nbsp; &nbsp;&nbsp; for ($j=0;$j&lt;$nbreAttributs;$j++) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; //Incrementation of the class variable couting the total number of attributes<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $this-&gt;numberAttributes++;<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; //Test if the current attribute is the attribute to find<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if ($tabAttributs[$j]-&gt;value==$this-&gt;idToFind) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; //If yes, return the current element<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; return $tabElements[$i];<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp;&nbsp; //Search children nodes of the current element<br />
+&nbsp;&nbsp; &nbsp;&nbsp; $children = $tabElements[$i]-&gt;child_nodes();<br />
+&nbsp;&nbsp; &nbsp;&nbsp; if (!is_bool($children)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; //If the current element has children, call recursively this function<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $result = $this-&gt;searchID($children);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; //If the result is not boolean, return the array<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if (!is_bool($result)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; return $result;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <br />
+&nbsp;&nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; return false;<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; <br />
+}</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="function.domdocument-dump-mem.html">DomDocument::dump_mem</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.domdocument-get-elements-by-tagname.html">DomDocument::get_elements_by_tagname</a></div>
  <div class="up"><a href="ref.domxml.html">DOM XML (PHP 4) Functions</a></div>

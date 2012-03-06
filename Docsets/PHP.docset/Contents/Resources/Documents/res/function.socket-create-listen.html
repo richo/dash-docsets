@@ -115,7 +115,261 @@
   </p>
  </div>
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="99259""></a>
+  <div class="note">
+   <strong class="user">danf at speet dot com</strong>
+   <a href="#99259" class="date">06-Aug-2010 05:50</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+A simple Class for Socket Server.<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+</span><span class="comment">/**<br />
+&nbsp;* Description of socketclass<br />
+&nbsp;*<br />
+&nbsp;* @author daniell<br />
+&nbsp;*/<br />
+</span><span class="keyword">class </span><span class="default">Socket </span><span class="keyword">{<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// Sockets<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">private </span><span class="default">$sock</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; private </span><span class="default">$lister</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// Wait, Porta, Ack<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">private </span><span class="default">$wait</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; private </span><span class="default">$porta</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; private </span><span class="default">$ack</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// Usuario<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">private </span><span class="default">$user</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; function </span><span class="default">__construct</span><span class="keyword">(</span><span class="default">$wait</span><span class="keyword">, </span><span class="default">$porta</span><span class="keyword">, </span><span class="default">$ack</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">wait&nbsp; </span><span class="keyword">= </span><span class="default">$wait</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">porta </span><span class="keyword">= </span><span class="default">$porta</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">ack&nbsp;&nbsp; </span><span class="keyword">= </span><span class="default">$ack</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">user</span><span class="keyword">[</span><span class="string">'ip'</span><span class="keyword">] = </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">user</span><span class="keyword">[</span><span class="string">'port'</span><span class="keyword">] = </span><span class="default">NULL</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// Cria o servidor<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">socketListen</span><span class="keyword">();<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; function&nbsp; </span><span class="default">__destruct</span><span class="keyword">() {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">close</span><span class="keyword">();<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// Cria o Servidor<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">public function </span><span class="default">socketListen</span><span class="keyword">(){<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; while( !( </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">lister </span><span class="keyword">= @</span><span class="default">socket_create_listen</span><span class="keyword">(</span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">porta</span><span class="keyword">) ) ){<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; echo </span><span class="string">'Aguarde..'</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">sleep</span><span class="keyword">(</span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">wait</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// Aguarda um Cliente conectar.<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">public function </span><span class="default">waitClient</span><span class="keyword">(){<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$r </span><span class="keyword">= array(</span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">lister</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if( </span><span class="default">socket_select</span><span class="keyword">(</span><span class="default">$r</span><span class="keyword">,</span><span class="default">$w </span><span class="keyword">= </span><span class="default">NULL</span><span class="keyword">,</span><span class="default">$e </span><span class="keyword">= </span><span class="default">NULL</span><span class="keyword">, </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">wait</span><span class="keyword">) ){<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// Conectado<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">sock </span><span class="keyword">= </span><span class="default">socket_accept</span><span class="keyword">(</span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">lister</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">socket_getpeername</span><span class="keyword">(</span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">sock</span><span class="keyword">, </span><span class="default">$raddr</span><span class="keyword">, </span><span class="default">$rport</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">user </span><span class="keyword">= array(</span><span class="string">'ip'</span><span class="keyword">=&gt;</span><span class="default">$raddr</span><span class="keyword">,</span><span class="string">'port'</span><span class="keyword">=&gt;</span><span class="default">$rport</span><span class="keyword">);&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">true</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; } else {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// [Time out] - Ṇo conectado a tempo.<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">return </span><span class="default">false</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// Fecha a conex̣o<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">public function </span><span class="default">close</span><span class="keyword">(){<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if( </span><span class="default">is_resource</span><span class="keyword">(</span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">lister</span><span class="keyword">) )<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">socket_close</span><span class="keyword">(</span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">lister</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// Obtem as informa̵̤es do usu��rio<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">public function </span><span class="default">getUserInfo</span><span class="keyword">(){<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">user</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// Le todo o sock a cada 1 Byte.<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">public function </span><span class="default">write</span><span class="keyword">(</span><span class="default">$message</span><span class="keyword">){<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$num </span><span class="keyword">= </span><span class="default">0</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$length </span><span class="keyword">= </span><span class="default">strlen</span><span class="keyword">(</span><span class="default">$message</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; do{<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$buff </span><span class="keyword">= </span><span class="default">substr</span><span class="keyword">(</span><span class="default">$message</span><span class="keyword">, </span><span class="default">$num</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$num </span><span class="keyword">+= </span><span class="default">socket_write</span><span class="keyword">(</span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">sock</span><span class="keyword">,</span><span class="default">$buff</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }while( </span><span class="default">$num </span><span class="keyword">!= </span><span class="default">$length </span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// Envia o ACK<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">public function </span><span class="default">sendAck</span><span class="keyword">(){<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; do{<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$num </span><span class="keyword">= </span><span class="default">socket_write</span><span class="keyword">(</span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">sock</span><span class="keyword">,</span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">ack</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }while( </span><span class="default">$num </span><span class="keyword">== </span><span class="default">0 </span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// Recebe o ACK<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">public function </span><span class="default">waitAck</span><span class="keyword">(){<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; do {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$buff </span><span class="keyword">= </span><span class="default">socket_read</span><span class="keyword">(</span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">sock</span><span class="keyword">,</span><span class="default">1</span><span class="keyword">,</span><span class="default">PHP_BINARY_READ</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }while( </span><span class="default">$buff </span><span class="keyword">!= </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">ack </span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// Le todo o sock a cada 1 Byte.<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">public function </span><span class="default">read</span><span class="keyword">(){<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$message </span><span class="keyword">= </span><span class="string">''</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; do {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$buff&nbsp; &nbsp;&nbsp; </span><span class="keyword">= </span><span class="default">socket_read</span><span class="keyword">(</span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">sock</span><span class="keyword">,</span><span class="default">1</span><span class="keyword">,</span><span class="default">PHP_BINARY_READ</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$message </span><span class="keyword">.= </span><span class="default">$buff</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }while( </span><span class="default">$buff </span><span class="keyword">!= </span><span class="string">"\n" </span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">$message</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+}<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="92509""></a>
+  <div class="note">
+   <strong class="user">vicente dot lopez at caixadesoft dot es</strong>
+   <a href="#92509" class="date">27-Jul-2009 02:29</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I use this script to listen on 3 ports, but with 'netstat -a' in other console reports only the last one is 'LISTEN'.<br />
+<br />
+#!/usr/bin/php -q<br />
+<span class="default">&lt;?php<br />
+&nbsp;&nbsp;&nbsp; $services </span><span class="keyword">= array(<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">56700&nbsp; &nbsp; </span><span class="keyword">=&gt;&nbsp; &nbsp; </span><span class="string">'daemon1'</span><span class="keyword">,<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">56701&nbsp; &nbsp; </span><span class="keyword">=&gt;&nbsp; &nbsp; </span><span class="string">'daemon2'</span><span class="keyword">,<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">56703&nbsp; &nbsp; </span><span class="keyword">=&gt;&nbsp; &nbsp; </span><span class="string">'daemon3'</span><span class="keyword">,<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; );<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// --- Marca el Tiempo Ilimitado para pararse ---<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">set_time_limit </span><span class="keyword">(</span><span class="default">0</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$sockets </span><span class="keyword">= array();<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; foreach(</span><span class="default">$services </span><span class="keyword">as </span><span class="default">$port </span><span class="keyword">=&gt; </span><span class="default">$daemon</span><span class="keyword">)<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// --- Abre el socket ---<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">if (</span><span class="default">$sock </span><span class="keyword">= @</span><span class="default">socket_create_listen</span><span class="keyword">(</span><span class="default">$port</span><span class="keyword">))<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$sockets</span><span class="keyword">[</span><span class="default">$sock</span><span class="keyword">] = </span><span class="default">$daemon</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; else<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; echo(</span><span class="string">"error\n"</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">print_r</span><span class="keyword">(</span><span class="default">$sockets</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; while (</span><span class="default">1</span><span class="keyword">)<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; echo </span><span class="string">""</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }&nbsp; &nbsp; <br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="84084""></a>
+  <div class="note">
+   <strong class="user">aeolianmeson at ifacfchi dot blitzeclipse dot com</strong>
+   <a href="#84084" class="date">26-Jun-2008 03:34</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I believe that on some systems this may not bind to some or all public interfaces.<br />
+<br />
+On my Windows system, I could not connect on the public interface using this, but could when I made the individual calls to create, bind, and listen.<br />
+<br />
+Dustin Oprea</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="81623""></a>
+  <div class="note">
+   <strong class="user">sysspoof at ng-lab dot org</strong>
+   <a href="#81623" class="date">06-Mar-2008 11:03</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Please note that port 1 to and with 1024 on linux and bsd system require root privileges. So it is recommended to choose a higher port for your own application.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="44187""></a>
+  <div class="note">
+   <strong class="user">jdittmer at ppp0 dot net</strong>
+   <a href="#44187" class="date">17-Jul-2004 04:42</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+If you specify no port number, or 0, a random free port will be chosen.<br />
+To use ports for ipc between client/server on the same machine you can use (minus error checking)<br />
+<br />
+server.php:<br />
+<span class="default">&lt;?php<br />
+$sock </span><span class="keyword">= </span><span class="default">socket_create_listen</span><span class="keyword">(</span><span class="default">0</span><span class="keyword">);<br />
+</span><span class="default">socket_getsockname</span><span class="keyword">(</span><span class="default">$sock</span><span class="keyword">, </span><span class="default">$addr</span><span class="keyword">, </span><span class="default">$port</span><span class="keyword">);<br />
+print </span><span class="string">"Server Listening on </span><span class="default">$addr</span><span class="string">:</span><span class="default">$port</span><span class="string">\n"</span><span class="keyword">;<br />
+</span><span class="default">$fp </span><span class="keyword">= </span><span class="default">fopen</span><span class="keyword">(</span><span class="default">$port_file</span><span class="keyword">, </span><span class="string">'w'</span><span class="keyword">);<br />
+</span><span class="default">fwrite</span><span class="keyword">(</span><span class="default">$fp</span><span class="keyword">, </span><span class="default">$port</span><span class="keyword">);<br />
+</span><span class="default">fclose</span><span class="keyword">(</span><span class="default">$fp</span><span class="keyword">);<br />
+while(</span><span class="default">$c </span><span class="keyword">= </span><span class="default">socket_accept</span><span class="keyword">(</span><span class="default">$sock</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; </span><span class="comment">/* do something useful */<br />
+&nbsp;&nbsp; </span><span class="default">socket_getpeername</span><span class="keyword">(</span><span class="default">$c</span><span class="keyword">, </span><span class="default">$raddr</span><span class="keyword">, </span><span class="default">$rport</span><span class="keyword">);<br />
+&nbsp;&nbsp; print </span><span class="string">"Received Connection from </span><span class="default">$raddr</span><span class="string">:</span><span class="default">$rport</span><span class="string">\n"</span><span class="keyword">;<br />
+}<br />
+</span><span class="default">socket_close</span><span class="keyword">(</span><span class="default">$sock</span><span class="keyword">);<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+client.php:<br />
+<span class="default">&lt;?php<br />
+$fp </span><span class="keyword">= </span><span class="default">fopen</span><span class="keyword">(</span><span class="default">$port_file</span><span class="keyword">, </span><span class="string">'r'</span><span class="keyword">);<br />
+</span><span class="default">$port </span><span class="keyword">= </span><span class="default">fgets</span><span class="keyword">(</span><span class="default">$fp</span><span class="keyword">, </span><span class="default">1024</span><span class="keyword">);<br />
+</span><span class="default">fclose</span><span class="keyword">(</span><span class="default">$fp</span><span class="keyword">);<br />
+</span><span class="default">$sock </span><span class="keyword">= </span><span class="default">socket_create</span><span class="keyword">(</span><span class="default">AF_INET</span><span class="keyword">, </span><span class="default">SOCK_STREAM</span><span class="keyword">, </span><span class="default">SOL_TCP</span><span class="keyword">);<br />
+</span><span class="default">socket_connect</span><span class="keyword">(</span><span class="default">$sock</span><span class="keyword">, </span><span class="string">'127.0.0.1'</span><span class="keyword">, </span><span class="default">$port</span><span class="keyword">);<br />
+</span><span class="default">socket_close</span><span class="keyword">(</span><span class="default">$sock</span><span class="keyword">);<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="39669""></a>
+  <div class="note">
+   <strong class="user">basim at baassiri dot com</strong>
+   <a href="#39669" class="date">06-Feb-2004 02:50</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Remember that ports are only valid from 1 - 65536</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="function.socket-connect.html">socket_connect</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.socket-create-pair.html">socket_create_pair</a></div>
  <div class="up"><a href="ref.sockets.html">Socket Functions</a></div>

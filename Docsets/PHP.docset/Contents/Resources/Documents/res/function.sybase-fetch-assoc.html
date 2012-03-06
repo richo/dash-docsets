@@ -92,7 +92,86 @@ using the CT library interface to Sybase, and not with the DB library.
  </div>
 
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="42169""></a>
+  <div class="note">
+   <strong class="user">elektrotechnik at onlinehome dot de</strong>
+   <a href="#42169" class="date">06-May-2004 04:33</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Very often you see constructs like this to loop thru a result set:<br />
+<br />
+while ($row = sybase_fetch_assoc($result))<br />
+{<br />
+&nbsp;&nbsp;&nbsp; while (current($row)) // or&nbsp; while (current($row) != false)<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $data = current($row);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $key = key($row);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; //<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; // do stuff here<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; //<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; next($row);&nbsp; &nbsp; <br />
+&nbsp;&nbsp;&nbsp; }<br />
+}<br />
+<br />
+Do not use it in this way! You have to write the inner while loop this way:<br />
+<br />
+while (current($row) !== false)<br />
+<br />
+If you just use <br />
+while (current($row) != false)<br />
+or<br />
+while (current($row))<br />
+<br />
+you could be in trouble and loose some data. In my case I had a query which contained the following statement:<br />
+<br />
+datediff(dd, date1, date2) as days<br />
+<br />
+Now if days computes to 0 then the two while loop examples from above will exit (because the 0 is 'seen' as false). Therefore you must use while (current($row) !== false) which will not exit if one of you data contains 0.<br />
+<br />
+Hth,<br />
+rgds,<br />
+Marcus</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="33600""></a>
+  <div class="note">
+   <strong class="user">jpeterso at moody dot edu</strong>
+   <a href="#33600" class="date">01-Jul-2003 12:51</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+For users that want this function in other applications, use this function.&nbsp; I have been using it for over a year with great success.<br />
+<br />
+function sybase_fetch_assoc($query_result){<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $row = sybase_fetch_array($query_result);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $values = "";<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if(is_array($row))<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; while(list($key, $val) = each($row))<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $values[$key] = $val;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; return $values;<br />
+}</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="function.sybase-fetch-array.html">sybase_fetch_array</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.sybase-fetch-field.html">sybase_fetch_field</a></div>
  <div class="up"><a href="ref.sybase.html">Sybase Functions</a></div>

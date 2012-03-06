@@ -74,7 +74,125 @@
  </div>
 
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="92729""></a>
+  <div class="note">
+   <strong class="user">highcode at yahoo dot com</strong>
+   <a href="#92729" class="date">06-Aug-2009 04:09</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+if your goal is to pre-compile PHP script into bytecode and then transparently loaded the script, better use monas, its a free php extension to encode/decode PHP 4 and PHP 5. check it at <a href="http://ombudi.com, i" rel="nofollow" target="_blank">http://ombudi.com, i</a>'ve try using it to encode phpmyadmin and works nicely</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="89979""></a>
+  <div class="note">
+   <strong class="user">Glen</strong>
+   <a href="#89979" class="date">31-Mar-2009 02:44</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+There are reasons to use this routine.&nbsp; I can think of two:<br />
+<br />
+- a busy website will have multiple web servers, and before one is brought online (via load balancer), the cache is built.&nbsp; This prevents problems of having too many cache misses in a short period on your entire code base, which could be massive, and cause problems.<br />
+<br />
+- a website where the apc.stat flag is set to zero.&nbsp; That setting provides significant performance savings because no 'stat' needs to be performed on PHP code files.&nbsp; But they are not automatically rebuilt when changed.&nbsp; So what do you do when your code changes?&nbsp; Restart Apache, or manually clearing the APC cache with apc_clear_cache() - but both will clear the entire cache.&nbsp; There may be cases where it is much better to recompile select files instead.&nbsp; Some sites store data (that rarely changes) in PHP code to make good use of the opcode cache, updating that file and selectively compiling it would make writes efficient too.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="89767""></a>
+  <div class="note">
+   <strong class="user">A.R.</strong>
+   <a href="#89767" class="date">22-Mar-2009 07:15</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+It should be noted, that the above suggestion to "compile your entire project", or for any web developer to ever call this apc_compile_file function at all, is superfluous, because APC will automatically compile pages for you on demand. This function does not do anything useful.<br />
+<br />
+I had actually avoided installing APC for a long time because I thought it would be very complex, partly because of this manual page which tells you how to compile but doesn't tell you how to execute a compiled page.<br />
+<br />
+After installing APC, you can tell if it's working, by adding this to one of your webpages:<br />
+<br />
+<span class="default">&lt;?php<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">echo(</span><span class="string">"&lt;pre&gt;"</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">print_r</span><span class="keyword">(</span><span class="default">apc_cache_info</span><span class="keyword">());<br />
+&nbsp;&nbsp;&nbsp; echo(</span><span class="string">"&lt;/pre&gt;"</span><span class="keyword">);<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+Run this before and after hitting a few pages on the site, to see the compiled files automatically show up in the list.<br />
+<br />
+Again, there is no need to ever call apc_compile_file explicitly. This function is probably available for some sort of very advanced use.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="81146""></a>
+  <div class="note">
+   <strong class="user">Andrea Giammarchi</strong>
+   <a href="#81146" class="date">15-Feb-2008 07:40</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+This is a simple way to cache a project entirely.<br />
+<br />
+<span class="default">&lt;?php </span><span class="comment">// apc_compile_dir.php<br />
+</span><span class="keyword">function </span><span class="default">apc_compile_dir</span><span class="keyword">(</span><span class="default">$root</span><span class="keyword">, </span><span class="default">$recursively </span><span class="keyword">= </span><span class="default">true</span><span class="keyword">){<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$compiled&nbsp;&nbsp; </span><span class="keyword">= </span><span class="default">true</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; switch(</span><span class="default">$recursively</span><span class="keyword">){<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; case&nbsp; &nbsp; </span><span class="default">true</span><span class="keyword">:<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; foreach(</span><span class="default">glob</span><span class="keyword">(</span><span class="default">$root</span><span class="keyword">.</span><span class="default">DIRECTORY_SEPARATOR</span><span class="keyword">.</span><span class="string">'*'</span><span class="keyword">, </span><span class="default">GLOB_ONLYDIR</span><span class="keyword">) as </span><span class="default">$dir</span><span class="keyword">)<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$compiled&nbsp;&nbsp; </span><span class="keyword">= </span><span class="default">$compiled </span><span class="keyword">&amp;&amp; </span><span class="default">apc_compile_dir</span><span class="keyword">(</span><span class="default">$dir</span><span class="keyword">, </span><span class="default">$recursively</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; case&nbsp; &nbsp; </span><span class="default">false</span><span class="keyword">:<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; foreach(</span><span class="default">glob</span><span class="keyword">(</span><span class="default">$root</span><span class="keyword">.</span><span class="default">DIRECTORY_SEPARATOR</span><span class="keyword">.</span><span class="string">'*.php'</span><span class="keyword">) as </span><span class="default">$file</span><span class="keyword">)<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$compiled&nbsp;&nbsp; </span><span class="keyword">= </span><span class="default">$compiled </span><span class="keyword">&amp;&amp; </span><span class="default">apc_compile_file</span><span class="keyword">(</span><span class="default">$file</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; break;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; return&nbsp; </span><span class="default">$compiled</span><span class="keyword">;<br />
+}<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+This is an example on how to use the function to compile your project.<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">echo&nbsp; &nbsp; </span><span class="string">'&lt;pre&gt;'</span><span class="keyword">.</span><span class="default">PHP_EOL</span><span class="keyword">;<br />
+if(</span><span class="default">function_exists</span><span class="keyword">(</span><span class="string">'apc_compile_file'</span><span class="keyword">)){<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">define</span><span class="keyword">(</span><span class="string">'APC_CLEAR_CACHE'</span><span class="keyword">,&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">true</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">define</span><span class="keyword">(</span><span class="string">'APC_COMPILE_RECURSIVELY'</span><span class="keyword">,&nbsp;&nbsp; </span><span class="default">true</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">define</span><span class="keyword">(</span><span class="string">'APC_COMPILE_DIR'</span><span class="keyword">,&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="string">'.'</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; require </span><span class="string">'apc_compile_dir.php'</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; echo&nbsp; &nbsp; </span><span class="string">'APC Directory Compiler '</span><span class="keyword">.</span><span class="default">gmdate</span><span class="keyword">(</span><span class="string">'Y-m-d H:i:s'</span><span class="keyword">).</span><span class="default">PHP_EOL</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; echo&nbsp; &nbsp; </span><span class="default">PHP_EOL</span><span class="keyword">.</span><span class="string">'-------------------------'</span><span class="keyword">.</span><span class="default">PHP_EOL</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; if(</span><span class="default">APC_CLEAR_CACHE</span><span class="keyword">){<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; echo&nbsp; &nbsp; (</span><span class="default">apc_clear_cache</span><span class="keyword">() ? </span><span class="string">'Cache Cleaned' </span><span class="keyword">: </span><span class="string">'Cache Not Cleaned'</span><span class="keyword">).</span><span class="default">PHP_EOL</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">var_dump</span><span class="keyword">(</span><span class="default">apc_cache_info</span><span class="keyword">());<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; echo&nbsp; &nbsp; </span><span class="default">PHP_EOL</span><span class="keyword">.</span><span class="string">'-------------------------'</span><span class="keyword">.</span><span class="default">PHP_EOL</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; echo&nbsp; &nbsp; </span><span class="string">'Runtime Errors'</span><span class="keyword">.</span><span class="default">PHP_EOL</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; echo&nbsp; &nbsp; (</span><span class="default">apc_compile_dir</span><span class="keyword">(</span><span class="default">APC_COMPILE_DIR</span><span class="keyword">, </span><span class="default">APC_COMPILE_RECURSIVELY</span><span class="keyword">) ? </span><span class="string">'Cache Created' </span><span class="keyword">: </span><span class="string">'Cache Not Created'</span><span class="keyword">).</span><span class="default">PHP_EOL</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; echo&nbsp; &nbsp; </span><span class="default">PHP_EOL</span><span class="keyword">.</span><span class="string">'-------------------------'</span><span class="keyword">.</span><span class="default">PHP_EOL</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">var_dump</span><span class="keyword">(</span><span class="default">apc_cache_info</span><span class="keyword">());<br />
+}<br />
+else<br />
+&nbsp;&nbsp;&nbsp; echo&nbsp; &nbsp; </span><span class="string">'APC is not present, nothing to do.'</span><span class="keyword">.</span><span class="default">PHP_EOL</span><span class="keyword">;<br />
+echo&nbsp; &nbsp; </span><span class="string">'&lt;/pre&gt;'</span><span class="keyword">;<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="function.apc-clear-cache.html">apc_clear_cache</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.apc-dec.html">apc_dec</a></div>
  <div class="up"><a href="ref.apc.html">APC Functions</a></div>

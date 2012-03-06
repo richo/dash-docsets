@@ -148,7 +148,146 @@ HWB: 33
    </p>
   </div>
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="91664""></a>
+  <div class="note">
+   <strong class="user">Xong</strong>
+   <a href="#91664" class="date">22-Jun-2009 03:56</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I have written a function which uses the deltaE-function of the CMC.<br />
+It returns much better results than imagecolorclosestHWB() or imageColorClosest().<br />
+<br />
+A test-script is online on <a href="http://www.fuhrpark-software.de/spielwiese/color.php?color=ffff00" rel="nofollow" target="_blank">http://www.fuhrpark-software.de/spielwiese/color.php?color=ffff00</a><br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="comment">/*<br />
+&nbsp;* Returns the index of the palette-color which is most similar<br />
+&nbsp;* to $givenColor.<br />
+&nbsp;* <br />
+&nbsp;* $givenColor and the colors in $palette should be either<br />
+&nbsp;* formatted as (#)rrggbb<br />
+&nbsp;* (e. g. "ff0000", "4da4f3" or "#b5d7f3")<br />
+&nbsp;* or arrays with values for red, green and blue<br />
+&nbsp;* (e. g. $givenColor = array( 0xff, 0x00, 0x00 ) )<br />
+&nbsp;*<br />
+&nbsp;* References:<br />
+&nbsp;* function rgb2lab<br />
+&nbsp;*&nbsp;&nbsp; - <a href="http://www.f4.fhtw-berlin.de/~barthel/ImageJ/ImageJ.htm" rel="nofollow" target="_blank">http://www.f4.fhtw-berlin.de/~barthel/ImageJ/ImageJ.htm</a><br />
+&nbsp;* <br />
+&nbsp;* function rgb2lab &amp; function deltaE<br />
+&nbsp;*&nbsp;&nbsp; - <a href="http://www.brucelindbloom.com" rel="nofollow" target="_blank">http://www.brucelindbloom.com</a><br />
+&nbsp;*/<br />
+</span><span class="keyword">function </span><span class="default">getNearestColor</span><span class="keyword">(<br />
+&nbsp; </span><span class="default">$givenColor</span><span class="keyword">,<br />
+&nbsp; </span><span class="default">$palette </span><span class="keyword">= array( </span><span class="string">'blue' </span><span class="keyword">=&gt; </span><span class="string">'43aafd'</span><span class="keyword">,</span><span class="string">'red' </span><span class="keyword">=&gt; </span><span class="string">'fe6256'</span><span class="keyword">,</span><span class="string">'green' </span><span class="keyword">=&gt; </span><span class="string">'64b949'</span><span class="keyword">,</span><span class="string">'yellow' </span><span class="keyword">=&gt; </span><span class="string">'fcf357'</span><span class="keyword">,<br />
+&nbsp;&nbsp;&nbsp; </span><span class="string">'black' </span><span class="keyword">=&gt; </span><span class="string">'656565'</span><span class="keyword">,</span><span class="string">'white' </span><span class="keyword">=&gt; </span><span class="string">'fdfdfd'</span><span class="keyword">,</span><span class="string">'orange' </span><span class="keyword">=&gt; </span><span class="string">'fea800'</span><span class="keyword">,</span><span class="string">'purple' </span><span class="keyword">=&gt; </span><span class="string">'9773fe'</span><span class="keyword">)<br />
+) {<br />
+&nbsp; if(!</span><span class="default">function_exists</span><span class="keyword">(</span><span class="string">'rgb2lab'</span><span class="keyword">)) {<br />
+&nbsp;&nbsp;&nbsp; function </span><span class="default">rgb2lab</span><span class="keyword">(</span><span class="default">$rgb</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">$eps </span><span class="keyword">= </span><span class="default">216</span><span class="keyword">/</span><span class="default">24389</span><span class="keyword">; </span><span class="default">$k </span><span class="keyword">= </span><span class="default">24389</span><span class="keyword">/</span><span class="default">27</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="comment">// reference white D50<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">$xr </span><span class="keyword">= </span><span class="default">0.964221</span><span class="keyword">; </span><span class="default">$yr </span><span class="keyword">= </span><span class="default">1.0</span><span class="keyword">; </span><span class="default">$zr </span><span class="keyword">= </span><span class="default">0.825211</span><span class="keyword">;<br />
+<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">$rgb</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">] = </span><span class="default">$rgb</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">]/</span><span class="default">255</span><span class="keyword">; </span><span class="comment">//R 0..1<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">$rgb</span><span class="keyword">[</span><span class="default">1</span><span class="keyword">] = </span><span class="default">$rgb</span><span class="keyword">[</span><span class="default">1</span><span class="keyword">]/</span><span class="default">255</span><span class="keyword">; </span><span class="comment">//G 0..1<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">$rgb</span><span class="keyword">[</span><span class="default">2</span><span class="keyword">] = </span><span class="default">$rgb</span><span class="keyword">[</span><span class="default">2</span><span class="keyword">]/</span><span class="default">255</span><span class="keyword">; </span><span class="comment">//B 0..1<br />
+<br />
+&nbsp;&nbsp; &nbsp;&nbsp; // assuming sRGB (D65)<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">$rgb</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">] = (</span><span class="default">$rgb</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">] &lt;= </span><span class="default">0.04045</span><span class="keyword">)?(</span><span class="default">$rgb</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">]/</span><span class="default">12.92</span><span class="keyword">):</span><span class="default">pow</span><span class="keyword">((</span><span class="default">$rgb</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">]+</span><span class="default">0.055</span><span class="keyword">)/</span><span class="default">1.055</span><span class="keyword">,</span><span class="default">2.4</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">$rgb</span><span class="keyword">[</span><span class="default">1</span><span class="keyword">] = (</span><span class="default">$rgb</span><span class="keyword">[</span><span class="default">1</span><span class="keyword">] &lt;= </span><span class="default">0.04045</span><span class="keyword">)?(</span><span class="default">$rgb</span><span class="keyword">[</span><span class="default">1</span><span class="keyword">]/</span><span class="default">12.92</span><span class="keyword">):</span><span class="default">pow</span><span class="keyword">((</span><span class="default">$rgb</span><span class="keyword">[</span><span class="default">1</span><span class="keyword">]+</span><span class="default">0.055</span><span class="keyword">)/</span><span class="default">1.055</span><span class="keyword">,</span><span class="default">2.4</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">$rgb</span><span class="keyword">[</span><span class="default">2</span><span class="keyword">] = (</span><span class="default">$rgb</span><span class="keyword">[</span><span class="default">2</span><span class="keyword">] &lt;= </span><span class="default">0.04045</span><span class="keyword">)?(</span><span class="default">$rgb</span><span class="keyword">[</span><span class="default">2</span><span class="keyword">]/</span><span class="default">12.92</span><span class="keyword">):</span><span class="default">pow</span><span class="keyword">((</span><span class="default">$rgb</span><span class="keyword">[</span><span class="default">2</span><span class="keyword">]+</span><span class="default">0.055</span><span class="keyword">)/</span><span class="default">1.055</span><span class="keyword">,</span><span class="default">2.4</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="comment">// sRGB D50<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">$x </span><span class="keyword">=&nbsp; </span><span class="default">0.4360747</span><span class="keyword">*</span><span class="default">$rgb</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">] + </span><span class="default">0.3850649</span><span class="keyword">*</span><span class="default">$rgb</span><span class="keyword">[</span><span class="default">1</span><span class="keyword">] + </span><span class="default">0.1430804 </span><span class="keyword">*</span><span class="default">$rgb</span><span class="keyword">[</span><span class="default">2</span><span class="keyword">];<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">$y </span><span class="keyword">=&nbsp; </span><span class="default">0.2225045</span><span class="keyword">*</span><span class="default">$rgb</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">] + </span><span class="default">0.7168786</span><span class="keyword">*</span><span class="default">$rgb</span><span class="keyword">[</span><span class="default">1</span><span class="keyword">] + </span><span class="default">0.0606169 </span><span class="keyword">*</span><span class="default">$rgb</span><span class="keyword">[</span><span class="default">2</span><span class="keyword">];<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">$z </span><span class="keyword">=&nbsp; </span><span class="default">0.0139322</span><span class="keyword">*</span><span class="default">$rgb</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">] + </span><span class="default">0.0971045</span><span class="keyword">*</span><span class="default">$rgb</span><span class="keyword">[</span><span class="default">1</span><span class="keyword">] + </span><span class="default">0.7141733 </span><span class="keyword">*</span><span class="default">$rgb</span><span class="keyword">[</span><span class="default">2</span><span class="keyword">];<br />
+<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">$xr </span><span class="keyword">= </span><span class="default">$x</span><span class="keyword">/</span><span class="default">$xr</span><span class="keyword">; </span><span class="default">$yr </span><span class="keyword">= </span><span class="default">$y</span><span class="keyword">/</span><span class="default">$yr</span><span class="keyword">; </span><span class="default">$zr </span><span class="keyword">= </span><span class="default">$z</span><span class="keyword">/</span><span class="default">$zr</span><span class="keyword">;<br />
+<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">$fx </span><span class="keyword">= (</span><span class="default">$xr </span><span class="keyword">&gt; </span><span class="default">$eps</span><span class="keyword">)?</span><span class="default">pow</span><span class="keyword">(</span><span class="default">$xr</span><span class="keyword">, </span><span class="default">1</span><span class="keyword">/</span><span class="default">3</span><span class="keyword">):(</span><span class="default">$fx </span><span class="keyword">= (</span><span class="default">$k </span><span class="keyword">* </span><span class="default">$xr </span><span class="keyword">+ </span><span class="default">16</span><span class="keyword">) / </span><span class="default">116</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">$fy </span><span class="keyword">= (</span><span class="default">$yr </span><span class="keyword">&gt; </span><span class="default">$eps</span><span class="keyword">)?</span><span class="default">pow</span><span class="keyword">(</span><span class="default">$yr</span><span class="keyword">, </span><span class="default">1</span><span class="keyword">/</span><span class="default">3</span><span class="keyword">):(</span><span class="default">$fy </span><span class="keyword">= (</span><span class="default">$k </span><span class="keyword">* </span><span class="default">$yr </span><span class="keyword">+ </span><span class="default">16</span><span class="keyword">) / </span><span class="default">116</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">$fz </span><span class="keyword">= (</span><span class="default">$zr </span><span class="keyword">&gt; </span><span class="default">$eps</span><span class="keyword">)?</span><span class="default">pow</span><span class="keyword">(</span><span class="default">$zr</span><span class="keyword">, </span><span class="default">1</span><span class="keyword">/</span><span class="default">3</span><span class="keyword">):(</span><span class="default">$fz </span><span class="keyword">= (</span><span class="default">$k </span><span class="keyword">* </span><span class="default">$zr </span><span class="keyword">+ </span><span class="default">16</span><span class="keyword">) / </span><span class="default">116</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">$lab </span><span class="keyword">= array();<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">$lab</span><span class="keyword">[] = </span><span class="default">round</span><span class="keyword">(( </span><span class="default">116 </span><span class="keyword">* </span><span class="default">$fy </span><span class="keyword">) - </span><span class="default">16</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">$lab</span><span class="keyword">[] = </span><span class="default">round</span><span class="keyword">(</span><span class="default">500</span><span class="keyword">*(</span><span class="default">$fx</span><span class="keyword">-</span><span class="default">$fy</span><span class="keyword">));<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">$lab</span><span class="keyword">[] = </span><span class="default">round</span><span class="keyword">(</span><span class="default">200</span><span class="keyword">*(</span><span class="default">$fy</span><span class="keyword">-</span><span class="default">$fz</span><span class="keyword">));&nbsp; &nbsp; &nbsp; <br />
+&nbsp;&nbsp; &nbsp;&nbsp; return </span><span class="default">$lab</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp; }<br />
+&nbsp; <br />
+&nbsp; if(!</span><span class="default">function_exists</span><span class="keyword">(</span><span class="string">'deltaE'</span><span class="keyword">)) {<br />
+&nbsp;&nbsp;&nbsp; function </span><span class="default">deltaE</span><span class="keyword">(</span><span class="default">$lab1</span><span class="keyword">, </span><span class="default">$lab2</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="comment">// CMC 1:1<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">$l </span><span class="keyword">= </span><span class="default">1</span><span class="keyword">; </span><span class="default">$c </span><span class="keyword">= </span><span class="default">1</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">$c1 </span><span class="keyword">= </span><span class="default">sqrt</span><span class="keyword">(</span><span class="default">$lab1</span><span class="keyword">[</span><span class="default">1</span><span class="keyword">]*</span><span class="default">$lab1</span><span class="keyword">[</span><span class="default">1</span><span class="keyword">]+</span><span class="default">$lab1</span><span class="keyword">[</span><span class="default">2</span><span class="keyword">]*</span><span class="default">$lab1</span><span class="keyword">[</span><span class="default">2</span><span class="keyword">]);<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">$c2 </span><span class="keyword">= </span><span class="default">sqrt</span><span class="keyword">(</span><span class="default">$lab2</span><span class="keyword">[</span><span class="default">1</span><span class="keyword">]*</span><span class="default">$lab2</span><span class="keyword">[</span><span class="default">1</span><span class="keyword">]+</span><span class="default">$lab2</span><span class="keyword">[</span><span class="default">2</span><span class="keyword">]*</span><span class="default">$lab2</span><span class="keyword">[</span><span class="default">2</span><span class="keyword">]);<br />
+&nbsp;&nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">$h1 </span><span class="keyword">= (((</span><span class="default">180000000</span><span class="keyword">/</span><span class="default">M_PI</span><span class="keyword">) * </span><span class="default">atan2</span><span class="keyword">(</span><span class="default">$lab1</span><span class="keyword">[</span><span class="default">1</span><span class="keyword">],</span><span class="default">$lab1</span><span class="keyword">[</span><span class="default">2</span><span class="keyword">]) + </span><span class="default">360000000</span><span class="keyword">) % </span><span class="default">360000000</span><span class="keyword">)/</span><span class="default">1000000</span><span class="keyword">;<br />
+<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">$t </span><span class="keyword">= (</span><span class="default">164 </span><span class="keyword">&lt;= </span><span class="default">$h1 </span><span class="keyword">AND </span><span class="default">$h1 </span><span class="keyword">&lt;= </span><span class="default">345</span><span class="keyword">)?(</span><span class="default">0.56 </span><span class="keyword">+ </span><span class="default">abs</span><span class="keyword">(</span><span class="default">0.2 </span><span class="keyword">* </span><span class="default">cos</span><span class="keyword">(</span><span class="default">$h1</span><span class="keyword">+</span><span class="default">168</span><span class="keyword">))):(</span><span class="default">0.36 </span><span class="keyword">+ </span><span class="default">abs</span><span class="keyword">(</span><span class="default">0.4 </span><span class="keyword">* </span><span class="default">cos</span><span class="keyword">(</span><span class="default">$h1</span><span class="keyword">+</span><span class="default">35</span><span class="keyword">)));<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">$f </span><span class="keyword">= </span><span class="default">sqrt</span><span class="keyword">(</span><span class="default">pow</span><span class="keyword">(</span><span class="default">$c1</span><span class="keyword">,</span><span class="default">4</span><span class="keyword">)/(</span><span class="default">pow</span><span class="keyword">(</span><span class="default">$c1</span><span class="keyword">,</span><span class="default">4</span><span class="keyword">) + </span><span class="default">1900</span><span class="keyword">));<br />
+&nbsp;&nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">$sl </span><span class="keyword">= (</span><span class="default">$lab1</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">] &lt; </span><span class="default">16</span><span class="keyword">)?(</span><span class="default">0.511</span><span class="keyword">):((</span><span class="default">0.040975</span><span class="keyword">*</span><span class="default">$lab1</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">])/(</span><span class="default">1 </span><span class="keyword">+ </span><span class="default">0.01765</span><span class="keyword">*</span><span class="default">$lab1</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">]));<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">$sc </span><span class="keyword">= (</span><span class="default">0.0638 </span><span class="keyword">* </span><span class="default">$c1</span><span class="keyword">)/(</span><span class="default">1 </span><span class="keyword">+ </span><span class="default">0.0131 </span><span class="keyword">* </span><span class="default">$c1</span><span class="keyword">) + </span><span class="default">0.638</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">$sh </span><span class="keyword">= </span><span class="default">$sc </span><span class="keyword">* (</span><span class="default">$f </span><span class="keyword">* </span><span class="default">$t </span><span class="keyword">+ </span><span class="default">1 </span><span class="keyword">-</span><span class="default">$f</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp;&nbsp; return </span><span class="default">sqrt</span><span class="keyword">(<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">pow</span><span class="keyword">((</span><span class="default">$lab1</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">]-</span><span class="default">$lab2</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">])/(</span><span class="default">$l </span><span class="keyword">* </span><span class="default">$sl</span><span class="keyword">),</span><span class="default">2</span><span class="keyword">) + <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">pow</span><span class="keyword">((</span><span class="default">$c1</span><span class="keyword">-</span><span class="default">$c2</span><span class="keyword">)/(</span><span class="default">$c </span><span class="keyword">* </span><span class="default">$sc</span><span class="keyword">),</span><span class="default">2</span><span class="keyword">) + <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">pow</span><span class="keyword">(</span><span class="default">sqrt</span><span class="keyword">(<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; (</span><span class="default">$lab1</span><span class="keyword">[</span><span class="default">1</span><span class="keyword">]-</span><span class="default">$lab2</span><span class="keyword">[</span><span class="default">1</span><span class="keyword">])*(</span><span class="default">$lab1</span><span class="keyword">[</span><span class="default">1</span><span class="keyword">]-</span><span class="default">$lab2</span><span class="keyword">[</span><span class="default">1</span><span class="keyword">]) + <br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; (</span><span class="default">$lab1</span><span class="keyword">[</span><span class="default">2</span><span class="keyword">]-</span><span class="default">$lab2</span><span class="keyword">[</span><span class="default">2</span><span class="keyword">])*(</span><span class="default">$lab1</span><span class="keyword">[</span><span class="default">2</span><span class="keyword">]-</span><span class="default">$lab2</span><span class="keyword">[</span><span class="default">2</span><span class="keyword">]) + <br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; (</span><span class="default">$c1</span><span class="keyword">-</span><span class="default">$c2</span><span class="keyword">)*(</span><span class="default">$c1</span><span class="keyword">-</span><span class="default">$c2</span><span class="keyword">)<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; )/</span><span class="default">$sh</span><span class="keyword">,</span><span class="default">2</span><span class="keyword">)<br />
+&nbsp;&nbsp; &nbsp;&nbsp; );<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp; }<br />
+&nbsp; <br />
+&nbsp; if(!</span><span class="default">function_exists</span><span class="keyword">(</span><span class="string">'str2rgb'</span><span class="keyword">)) {<br />
+&nbsp;&nbsp;&nbsp; function </span><span class="default">str2rgb</span><span class="keyword">(</span><span class="default">$str</span><span class="keyword">)<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">$str </span><span class="keyword">= </span><span class="default">preg_replace</span><span class="keyword">(</span><span class="string">'~[^0-9a-f]~'</span><span class="keyword">,</span><span class="string">''</span><span class="keyword">,</span><span class="default">$str</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">$rgb </span><span class="keyword">= </span><span class="default">str_split</span><span class="keyword">(</span><span class="default">$str</span><span class="keyword">,</span><span class="default">2</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp;&nbsp; for(</span><span class="default">$i</span><span class="keyword">=</span><span class="default">0</span><span class="keyword">;</span><span class="default">$i</span><span class="keyword">&lt;</span><span class="default">3</span><span class="keyword">;</span><span class="default">$i</span><span class="keyword">++)<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$rgb</span><span class="keyword">[</span><span class="default">$i</span><span class="keyword">] = </span><span class="default">intval</span><span class="keyword">(</span><span class="default">$rgb</span><span class="keyword">[</span><span class="default">$i</span><span class="keyword">],</span><span class="default">16</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp; &nbsp;&nbsp; return </span><span class="default">$rgb</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp; }<br />
+&nbsp; <br />
+&nbsp; </span><span class="default">$givenColorRGB </span><span class="keyword">= </span><span class="default">is_array</span><span class="keyword">(</span><span class="default">$givenColor</span><span class="keyword">?</span><span class="default">$givenColor</span><span class="keyword">:</span><span class="default">str2rgb</span><span class="keyword">(</span><span class="default">$givenColor</span><span class="keyword">);<br />
+<br />
+&nbsp; </span><span class="default">$min </span><span class="keyword">= </span><span class="default">0xffff</span><span class="keyword">;<br />
+&nbsp; </span><span class="default">$return </span><span class="keyword">= </span><span class="default">NULL</span><span class="keyword">;<br />
+&nbsp; <br />
+&nbsp; foreach(</span><span class="default">$palette </span><span class="keyword">as </span><span class="default">$key </span><span class="keyword">=&gt; </span><span class="default">$color</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$color </span><span class="keyword">= </span><span class="default">is_array</span><span class="keyword">(</span><span class="default">$color</span><span class="keyword">)?</span><span class="default">$color</span><span class="keyword">:</span><span class="default">str2rgb</span><span class="keyword">(</span><span class="default">$color</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; if(</span><span class="default">$min </span><span class="keyword">&gt;= (</span><span class="default">$deltaE </span><span class="keyword">= </span><span class="default">deltaE</span><span class="keyword">(</span><span class="default">rgb2lab</span><span class="keyword">(</span><span class="default">$color</span><span class="keyword">),</span><span class="default">rgb2lab</span><span class="keyword">(</span><span class="default">$givenColorRGB</span><span class="keyword">))))<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">$min </span><span class="keyword">= </span><span class="default">$deltaE</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">$return </span><span class="keyword">= </span><span class="default">$key</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp; }<br />
+&nbsp; <br />
+&nbsp; return </span><span class="default">$return</span><span class="keyword">;<br />
+}<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="function.imagecolorclosestalpha.html">imagecolorclosestalpha</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.imagecolordeallocate.html">imagecolordeallocate</a></div>
  <div class="up"><a href="ref.image.html">GD and Image Functions</a></div>

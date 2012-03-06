@@ -303,6 +303,97 @@
 
 <h2>Table of Contents</h2><ul class="chunklist chunklist_reference"><li><a href="reflectionfunction.construct.html">ReflectionFunction::__construct</a> â€” Constructs a ReflectionFunction object</li><li><a href="reflectionfunction.export.html">ReflectionFunction::export</a> â€” Exports function</li><li><a href="reflectionfunction.getclosure.html">ReflectionFunction::getClosure</a> â€” Returns a dynamically created closure for the function</li><li><a href="reflectionfunction.invoke.html">ReflectionFunction::invoke</a> â€” Invokes function</li><li><a href="reflectionfunction.invokeargs.html">ReflectionFunction::invokeArgs</a> â€” Invokes function args</li><li><a href="reflectionfunction.isdisabled.html">ReflectionFunction::isDisabled</a> â€” Checks if function is disabled</li><li><a href="reflectionfunction.tostring.html">ReflectionFunction::__toString</a> â€” To string</li></ul>
 </div>
+<div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="105367""></a>
+  <div class="note">
+   <strong class="user">Lorenz R.S.</strong>
+   <a href="#105367" class="date">12-Aug-2011 01:24</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Here is a concise example of ReflectionFunction usage for Parameter Reflection / introspection (e.g. to automatically generate API descriptions)<br />
+<br />
+<span class="default">&lt;?php<br />
+$properties </span><span class="keyword">= </span><span class="default">$reflector</span><span class="keyword">-&gt;</span><span class="default">getProperties</span><span class="keyword">();<br />
+</span><span class="default">$refFunc </span><span class="keyword">= new </span><span class="default">ReflectionFunction</span><span class="keyword">(</span><span class="string">'preg_replace'</span><span class="keyword">);<br />
+foreach( </span><span class="default">$refFunc</span><span class="keyword">-&gt;</span><span class="default">getParameters</span><span class="keyword">() as </span><span class="default">$param </span><span class="keyword">){<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">//invokes â– ReflectionParameter::__toString<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">print </span><span class="default">$param</span><span class="keyword">;<br />
+}<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+prints:<br />
+<br />
+Parameter #0 [ &lt;required&gt; $regex ]<br />
+Parameter #1 [ &lt;required&gt; $replace ]<br />
+Parameter #2 [ &lt;required&gt; $subject ]<br />
+Parameter #3 [ &lt;optional&gt; $limit ]<br />
+Parameter #4 [ &lt;optional&gt; &amp;$count ]</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="100570""></a>
+  <div class="note">
+   <strong class="user">uramihsayibok, gmail, com</strong>
+   <a href="#100570" class="date">24-Oct-2010 03:00</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+ReflectionFunction will not work on class methods - instance or static. That is,<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+</span><span class="keyword">class </span><span class="default">A </span><span class="keyword">{<br />
+&nbsp;&nbsp;&nbsp; function </span><span class="default">B</span><span class="keyword">() {}<br />
+&nbsp;&nbsp;&nbsp; static function </span><span class="default">C</span><span class="keyword">() {}<br />
+}<br />
+<br />
+new </span><span class="default">ReflectionFunction</span><span class="keyword">(</span><span class="string">"A::B"</span><span class="keyword">); </span><span class="comment">// throws "does not exist" ReflectionException<br />
+</span><span class="keyword">new </span><span class="default">ReflectionFunction</span><span class="keyword">(</span><span class="string">"A::C"</span><span class="keyword">); </span><span class="comment">// ditto<br />
+<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+The array syntax for method callbacks does not work either but throws a warning instead (__construct wants a string, not an array).<br />
+Since I don't know ahead of time whether something is a function or a class method, I have this:<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+</span><span class="keyword">function </span><span class="default">ReflectionFunctionFactory</span><span class="keyword">(</span><span class="default">$callback</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; if (</span><span class="default">is_array</span><span class="keyword">(</span><span class="default">$callback</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// must be a class method<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">list(</span><span class="default">$class</span><span class="keyword">, </span><span class="default">$method</span><span class="keyword">) = </span><span class="default">$callback</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return new </span><span class="default">ReflectionMethod</span><span class="keyword">(</span><span class="default">$class</span><span class="keyword">, </span><span class="default">$method</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// class::method syntax<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">if (</span><span class="default">is_string</span><span class="keyword">(</span><span class="default">$callback</span><span class="keyword">) &amp;&amp; </span><span class="default">strpos</span><span class="keyword">(</span><span class="default">$callback</span><span class="keyword">, </span><span class="string">"::"</span><span class="keyword">) !== </span><span class="default">false</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; list(</span><span class="default">$class</span><span class="keyword">, </span><span class="default">$method</span><span class="keyword">) = </span><span class="default">explode</span><span class="keyword">(</span><span class="string">"::"</span><span class="keyword">, </span><span class="default">$callback</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return new </span><span class="default">ReflectionMethod</span><span class="keyword">(</span><span class="default">$class</span><span class="keyword">, </span><span class="default">$method</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// objects as functions (PHP 5.3+)<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">if (</span><span class="default">version_compare</span><span class="keyword">(</span><span class="default">PHP_VERSION</span><span class="keyword">, </span><span class="string">"5.3.0"</span><span class="keyword">, </span><span class="string">"&gt;="</span><span class="keyword">) &amp;&amp; </span><span class="default">method_exists</span><span class="keyword">(</span><span class="default">$callback</span><span class="keyword">, </span><span class="string">"__invoke"</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return new </span><span class="default">ReflectionMethod</span><span class="keyword">(</span><span class="default">$callback</span><span class="keyword">, </span><span class="string">"__invoke"</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// assume it's a function<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">return new </span><span class="default">ReflectionFunction</span><span class="keyword">(</span><span class="default">$callback</span><span class="keyword">);<br />
+}<br />
+<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
 <hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="reflectionextension.tostring.html">ReflectionExtension::__toString</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="reflectionfunction.construct.html">ReflectionFunction::__construct</a></div>

@@ -92,7 +92,72 @@ this string is chunked encoded
  
 
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="89786""></a>
+  <div class="note">
+   <strong class="user">Marques Johansson</strong>
+   <a href="#89786" class="date">23-Mar-2009 08:48</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Here's a PHP implementation for those less interested in installing a pecl module.&nbsp; It's a bit naive (doesn't handle multiple byte encodings), but it works.&nbsp; I'm also including my is_hex() implementation at no additional cost.<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">if (!</span><span class="default">function_exists</span><span class="keyword">(</span><span class="string">'http-chunked-decode'</span><span class="keyword">)) {<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">/**<br />
+&nbsp;&nbsp; &nbsp; * dechunk an http 'transfer-encoding: chunked' message<br />
+&nbsp;&nbsp; &nbsp; *<br />
+&nbsp;&nbsp; &nbsp; * @param string $chunk the encoded message<br />
+&nbsp;&nbsp; &nbsp; * @return string the decoded message.&nbsp; If $chunk wasn't encoded properly it will be returned unmodified.<br />
+&nbsp;&nbsp; &nbsp; */<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">function </span><span class="default">http_chunked_decode</span><span class="keyword">(</span><span class="default">$chunk</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$pos </span><span class="keyword">= </span><span class="default">0</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$len </span><span class="keyword">= </span><span class="default">strlen</span><span class="keyword">(</span><span class="default">$chunk</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$dechunk </span><span class="keyword">= </span><span class="default">null</span><span class="keyword">;<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; while((</span><span class="default">$pos </span><span class="keyword">&lt; </span><span class="default">$len</span><span class="keyword">)<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &amp;&amp; (</span><span class="default">$chunkLenHex </span><span class="keyword">= </span><span class="default">substr</span><span class="keyword">(</span><span class="default">$chunk</span><span class="keyword">,</span><span class="default">$pos</span><span class="keyword">, (</span><span class="default">$newlineAt </span><span class="keyword">= </span><span class="default">strpos</span><span class="keyword">(</span><span class="default">$chunk</span><span class="keyword">,</span><span class="string">"\n"</span><span class="keyword">,</span><span class="default">$pos</span><span class="keyword">+</span><span class="default">1</span><span class="keyword">))-</span><span class="default">$pos</span><span class="keyword">)))<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if (! </span><span class="default">is_hex</span><span class="keyword">(</span><span class="default">$chunkLenHex</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">trigger_error</span><span class="keyword">(</span><span class="string">'Value is not properly chunk encoded'</span><span class="keyword">, </span><span class="default">E_USER_WARNING</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">$chunk</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$pos </span><span class="keyword">= </span><span class="default">$newlineAt </span><span class="keyword">+ </span><span class="default">1</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$chunkLen </span><span class="keyword">= </span><span class="default">hexdec</span><span class="keyword">(</span><span class="default">rtrim</span><span class="keyword">(</span><span class="default">$chunkLenHex</span><span class="keyword">,</span><span class="string">"\r\n"</span><span class="keyword">));<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$dechunk </span><span class="keyword">.= </span><span class="default">substr</span><span class="keyword">(</span><span class="default">$chunk</span><span class="keyword">, </span><span class="default">$pos</span><span class="keyword">, </span><span class="default">$chunkLen</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$pos </span><span class="keyword">= </span><span class="default">strpos</span><span class="keyword">(</span><span class="default">$chunk</span><span class="keyword">, </span><span class="string">"\n"</span><span class="keyword">, </span><span class="default">$pos </span><span class="keyword">+ </span><span class="default">$chunkLen</span><span class="keyword">) + </span><span class="default">1</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">$dechunk</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+}<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">/**<br />
+&nbsp;&nbsp; &nbsp; * determine if a string can represent a number in hexadecimal<br />
+&nbsp;&nbsp; &nbsp; *<br />
+&nbsp;&nbsp; &nbsp; * @param string $hex<br />
+&nbsp;&nbsp; &nbsp; * @return boolean true if the string is a hex, otherwise false<br />
+&nbsp;&nbsp; &nbsp; */<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">function </span><span class="default">is_hex</span><span class="keyword">(</span><span class="default">$hex</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// regex is for weenies<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$hex </span><span class="keyword">= </span><span class="default">strtolower</span><span class="keyword">(</span><span class="default">trim</span><span class="keyword">(</span><span class="default">ltrim</span><span class="keyword">(</span><span class="default">$hex</span><span class="keyword">,</span><span class="string">"0"</span><span class="keyword">)));<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if (empty(</span><span class="default">$hex</span><span class="keyword">)) { </span><span class="default">$hex </span><span class="keyword">= </span><span class="default">0</span><span class="keyword">; };<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$dec </span><span class="keyword">= </span><span class="default">hexdec</span><span class="keyword">(</span><span class="default">$hex</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return (</span><span class="default">$hex </span><span class="keyword">== </span><span class="default">dechex</span><span class="keyword">(</span><span class="default">$dec</span><span class="keyword">));<br />
+&nbsp;&nbsp;&nbsp; }<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="function.http-cache-last-modified.html">http_cache_last_modified</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.http-deflate.html">http_deflate</a></div>
  <div class="up"><a href="ref.http.html">HTTP Functions</a></div>

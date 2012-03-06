@@ -130,7 +130,162 @@
  </div>
 
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="106786""></a>
+  <div class="note">
+   <strong class="user">tom at all dash community dot de</strong>
+   <a href="#106786" class="date">06-Dec-2011 07:52</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+There is a not-so-obvious way to check whether or not a MemCache-Server is available.<br />
+<br />
+Using ($memCache-&gt;connect() == false) will wait for a timeout if it can't connect. If you got a high-traffic site this may not be an option. So when the server is down, you may want to avoid waiting for this timeout on every request and instead try to reconnect only once every X seconds.<br />
+<br />
+If so, this code may help:<br />
+<br />
+<span class="default">&lt;?php<br />
+$memCache </span><span class="keyword">= new \</span><span class="default">Memcache</span><span class="keyword">();<br />
+</span><span class="default">$memCache</span><span class="keyword">-&gt;</span><span class="default">addServer</span><span class="keyword">(</span><span class="default">$host</span><span class="keyword">, </span><span class="default">$port</span><span class="keyword">);<br />
+</span><span class="default">$stats </span><span class="keyword">= @</span><span class="default">$memCache</span><span class="keyword">-&gt;</span><span class="default">getExtendedStats</span><span class="keyword">();<br />
+</span><span class="default">$available </span><span class="keyword">= (bool) </span><span class="default">$stats</span><span class="keyword">[</span><span class="string">"</span><span class="default">$host</span><span class="string">:</span><span class="default">$port</span><span class="string">"</span><span class="keyword">];<br />
+if (</span><span class="default">$available </span><span class="keyword">&amp;&amp; @</span><span class="default">$memCache</span><span class="keyword">-&gt;</span><span class="default">connect</span><span class="keyword">(</span><span class="default">$host</span><span class="keyword">, </span><span class="default">$port</span><span class="keyword">))<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// MemCache is there<br />
+</span><span class="keyword">else<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// go on without MemCache<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+The result of getExtendedStats() is an array. The information is cached and maintained by MemCache itself. If the server is not available, the result will be FALSE.<br />
+<br />
+Even if the result is not false, the server may still not be available. Thus you need to check for connect() != false too, but only if the first check returns TRUE, thus avoiding the 1 second timeout in most cases.<br />
+Both getExtendedStats() and connect() issue notices/warnings if the server is not there. Thus you have to mute both calls.<br />
+<br />
+Do NOT use getServerStatus() for this purpose: the result is cached on server-start and will not recognize when the connection to the server is lost (or reestablished) in between.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="103928""></a>
+  <div class="note">
+   <strong class="user">djbrd</strong>
+   <a href="#103928" class="date">11-May-2011 11:48</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+To suppress (or handle) the warning and notice thrown by a failed attempt to connect, you can use a custom error handler function, like this:<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">function </span><span class="default">myErrorHandler</span><span class="keyword">(</span><span class="default">$errno</span><span class="keyword">, </span><span class="default">$errstr</span><span class="keyword">, </span><span class="default">$errfile</span><span class="keyword">, </span><span class="default">$errline</span><span class="keyword">)<br />
+{<br />
+<br />
+&nbsp;&nbsp;&nbsp; if (</span><span class="default">E_WARNING </span><span class="keyword">=== </span><span class="default">$errno</span><span class="keyword">)<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">Log</span><span class="keyword">(</span><span class="string">"PHP Warning: </span><span class="default">$errstr</span><span class="string">, </span><span class="default">$errfile</span><span class="string">, </span><span class="default">$errline</span><span class="string">"</span><span class="keyword">, </span><span class="default">Logging</span><span class="keyword">::</span><span class="default">WARN</span><span class="keyword">); <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">true</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; if (</span><span class="default">E_NOTICE </span><span class="keyword">=== </span><span class="default">$errno</span><span class="keyword">)<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">Log</span><span class="keyword">(</span><span class="string">"PHP Notic: </span><span class="default">$errstr</span><span class="string">, </span><span class="default">$errfile</span><span class="string">, </span><span class="default">$errline</span><span class="string">"</span><span class="keyword">, </span><span class="default">Logging</span><span class="keyword">::</span><span class="default">NOTICE</span><span class="keyword">); <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">true</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }&nbsp; &nbsp; <br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">false</span><span class="keyword">;<br />
+}<br />
+<br />
+</span><span class="default">set_error_handler</span><span class="keyword">(</span><span class="string">'myErrorHandler'</span><span class="keyword">);<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="99461""></a>
+  <div class="note">
+   <strong class="user">geoffrey dot hoffman at gmail dot com</strong>
+   <a href="#99461" class="date">18-Aug-2010 12:32</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+If memcached is working, calling memcache_connect( ) returns an Object instance, not a boolean. If memcached is not working, calling memcache_connect( ) throws a notice AND a warning (and returns false as expected). <br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="comment">/* memcache is running */<br />
+</span><span class="default">$test1 </span><span class="keyword">= </span><span class="default">memcache_connect</span><span class="keyword">(</span><span class="string">'127.0.0.1'</span><span class="keyword">,</span><span class="default">11211</span><span class="keyword">);<br />
+echo </span><span class="default">gettype</span><span class="keyword">(</span><span class="default">$test1</span><span class="keyword">);<br />
+</span><span class="comment">// object<br />
+</span><span class="keyword">echo </span><span class="default">get_class</span><span class="keyword">(</span><span class="default">$test1</span><span class="keyword">);<br />
+</span><span class="comment">// Memcache<br />
+<br />
+/* memcached is stopped */<br />
+</span><span class="default">$test2 </span><span class="keyword">= </span><span class="default">memcache_connect</span><span class="keyword">(</span><span class="string">'127.0.0.1'</span><span class="keyword">,</span><span class="default">11211</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">/*<br />
+Notice: memcache_connect(): Server 127.0.0.1 (tcp 11211) failed with: A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond.<br />
+&nbsp;(10060) in C:\Program Files\Support Tools\- on line 1<br />
+<br />
+Warning: memcache_connect(): Can't connect to 127.0.0.1:11211, A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond.<br />
+&nbsp;(10060) in C:\Program Files\Support Tools\- on line 1<br />
+*/<br />
+<br />
+</span><span class="keyword">echo </span><span class="default">gettype</span><span class="keyword">(</span><span class="default">$test2</span><span class="keyword">);<br />
+</span><span class="comment">// boolean<br />
+</span><span class="keyword">echo </span><span class="default">$test2</span><span class="keyword">===</span><span class="default">false</span><span class="keyword">;<br />
+</span><span class="comment">// 1<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+There appears to be no way to check whether memcached is actually running without resorting to error suppression:<br />
+<br />
+<span class="default">&lt;?php<br />
+$test3 </span><span class="keyword">= @</span><span class="default">memcache_connect</span><span class="keyword">(</span><span class="string">'127.0.0.1'</span><span class="keyword">,</span><span class="default">11211</span><span class="keyword">);<br />
+if( </span><span class="default">$test3</span><span class="keyword">===</span><span class="default">false </span><span class="keyword">){<br />
+&nbsp;&nbsp; </span><span class="comment">// memcached is _probably_ not running<br />
+</span><span class="keyword">}<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="69405""></a>
+  <div class="note">
+   <strong class="user">chrisn at allipo dot com</strong>
+   <a href="#69405" class="date">05-Sep-2006 01:39</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+The behavior of Memcache::connect() is to always reinitialize the pool from scratch regardless of any previous calls to addServer().<br />
+<br />
+E.g.<br />
+<br />
+<span class="default">&lt;?php<br />
+$mmc </span><span class="keyword">= new </span><span class="default">Memcache</span><span class="keyword">()<br />
+</span><span class="default">$mmc</span><span class="keyword">-&gt;</span><span class="default">addServer</span><span class="keyword">(</span><span class="string">'node1'</span><span class="keyword">, </span><span class="default">11211</span><span class="keyword">);<br />
+</span><span class="default">$mmc</span><span class="keyword">-&gt;</span><span class="default">addServer</span><span class="keyword">(</span><span class="string">'node2'</span><span class="keyword">, </span><span class="default">11211</span><span class="keyword">);<br />
+</span><span class="default">$mmc</span><span class="keyword">-&gt;</span><span class="default">addServer</span><span class="keyword">(</span><span class="string">'node3'</span><span class="keyword">, </span><span class="default">11211</span><span class="keyword">);<br />
+<br />
+</span><span class="default">$mmc</span><span class="keyword">-&gt;</span><span class="default">connect</span><span class="keyword">(</span><span class="string">'node1'</span><span class="keyword">, </span><span class="default">11211</span><span class="keyword">);<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+The last connect() call clears out the pool and then add and connect node1:11211 making it the only server.<br />
+<br />
+If you want a pool of memcache servers, do not use the connect() function.<br />
+<br />
+If you only want a single memcache server then there is no need to use the addServer() function.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="memcache.close.html">Memcache::close</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="memcache.decrement.html">Memcache::decrement</a></div>
  <div class="up"><a href="class.memcache.html">Memcache</a></div>

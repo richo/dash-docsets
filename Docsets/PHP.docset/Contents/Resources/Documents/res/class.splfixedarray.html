@@ -253,6 +253,213 @@ RuntimeException: Index invalid or out of range
  
 <h2>Table of Contents</h2><ul class="chunklist chunklist_reference"><li><a href="splfixedarray.construct.html">SplFixedArray::__construct</a> â€” Constructs a new fixed array</li><li><a href="splfixedarray.count.html">SplFixedArray::count</a> â€” Returns the size of the array</li><li><a href="splfixedarray.current.html">SplFixedArray::current</a> â€” Return current array entry</li><li><a href="splfixedarray.fromarray.html">SplFixedArray::fromArray</a> â€” Import a PHP array in a SplFixedArray instance</li><li><a href="splfixedarray.getsize.html">SplFixedArray::getSize</a> â€” Gets the size of the array</li><li><a href="splfixedarray.key.html">SplFixedArray::key</a> â€” Return current array index</li><li><a href="splfixedarray.next.html">SplFixedArray::next</a> â€” Move to next entry</li><li><a href="splfixedarray.offsetexists.html">SplFixedArray::offsetExists</a> â€” Returns whether the requested index exists</li><li><a href="splfixedarray.offsetget.html">SplFixedArray::offsetGet</a> â€” Returns the value at the specified index</li><li><a href="splfixedarray.offsetset.html">SplFixedArray::offsetSet</a> â€” Sets a new value at a specified index</li><li><a href="splfixedarray.offsetunset.html">SplFixedArray::offsetUnset</a> â€” Unsets the value at the specified $index</li><li><a href="splfixedarray.rewind.html">SplFixedArray::rewind</a> â€” Rewind iterator back to the start</li><li><a href="splfixedarray.setsize.html">SplFixedArray::setSize</a> â€” Change the size of an array</li><li><a href="splfixedarray.toarray.html">SplFixedArray::toArray</a> â€” Returns a PHP array from the fixed array</li><li><a href="splfixedarray.valid.html">SplFixedArray::valid</a> â€” Check whether the array contains more elements</li></ul>
 </div>
+<div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="100916""></a>
+  <div class="note">
+   <strong class="user">alex dot andrienko at gmail dot com</strong>
+   <a href="#100916" class="date">15-Nov-2010 02:13</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Memory footprint of splFixedArray is about 37% of a regular "array" of the same size. <br />
+I was hoping for more, but that's also significant, and that's where you should expect to see difference, not in "performance".</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="95125""></a>
+  <div class="note">
+   <strong class="user">randallgirard at hotmail dot com</strong>
+   <a href="#95125" class="date">14-Dec-2009 01:08</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+NOTE: This only affects CREATION time, NOT access time.<br />
+<br />
+It does NOT create a true indexed array (which is what I was hoping for) but is still associative like all PHP arrays. The class requires a numeric key because it builds the array with a set number of items but still operates under the hood associatively. (or this is my assumption, as I performed benchmarks comparing 100,000 reads on a standard array and an SplFixedArray: Results were the same, while a true indexed array SHOULD in theory be faster than an associative)<br />
+<br />
+The only performance gain is that you are not building the array piece by piece; Rather, the entire array is built at once and you can then fill it's values by numeric indexes... Therefor it is only reducing the creation overhead.<br />
+<br />
+This is only useful in a situation when you know the size your array will be, for example filling it with items from a database query.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="94179""></a>
+  <div class="note">
+   <strong class="user">nairbv AT yahoo DOT com</strong>
+   <a href="#94179" class="date">21-Oct-2009 02:08</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Though, object creation overhead means this method is slower for small arrays.<br />
+<br />
+for example, if the other posters benchmark script is changed to a more realistic:<br />
+<br />
+<span class="default">&lt;?php<br />
+$elements </span><span class="keyword">= </span><span class="default">20</span><span class="keyword">;<br />
+for(</span><span class="default">$size </span><span class="keyword">= </span><span class="default">1000</span><span class="keyword">; </span><span class="default">$size </span><span class="keyword">&lt; </span><span class="default">50000000</span><span class="keyword">; </span><span class="default">$size </span><span class="keyword">*= </span><span class="default">2</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; echo </span><span class="default">PHP_EOL </span><span class="keyword">. </span><span class="string">"Testing size: </span><span class="default">$size</span><span class="string">" </span><span class="keyword">. </span><span class="default">PHP_EOL</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; for(</span><span class="default">$s </span><span class="keyword">= </span><span class="default">microtime</span><span class="keyword">(</span><span class="default">true</span><span class="keyword">), </span><span class="default">$i </span><span class="keyword">= </span><span class="default">0</span><span class="keyword">; </span><span class="default">$i </span><span class="keyword">&lt; </span><span class="default">$size</span><span class="keyword">; </span><span class="default">$i</span><span class="keyword">++) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; for(</span><span class="default">$j</span><span class="keyword">=</span><span class="default">0</span><span class="keyword">,</span><span class="default">$container</span><span class="keyword">=array();</span><span class="default">$j </span><span class="keyword">&lt; </span><span class="default">$elements</span><span class="keyword">; </span><span class="default">$j</span><span class="keyword">++ ) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$container</span><span class="keyword">[</span><span class="default">$i</span><span class="keyword">] = </span><span class="default">NULL</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; echo </span><span class="string">"Array(): " </span><span class="keyword">. (</span><span class="default">microtime</span><span class="keyword">(</span><span class="default">true</span><span class="keyword">) - </span><span class="default">$s</span><span class="keyword">) . </span><span class="default">PHP_EOL</span><span class="keyword">;<br />
+<br />
+&nbsp;&nbsp;&nbsp; for(</span><span class="default">$s </span><span class="keyword">= </span><span class="default">microtime</span><span class="keyword">(</span><span class="default">true</span><span class="keyword">), </span><span class="default">$i </span><span class="keyword">= </span><span class="default">0</span><span class="keyword">; </span><span class="default">$i </span><span class="keyword">&lt; </span><span class="default">$size</span><span class="keyword">; </span><span class="default">$i</span><span class="keyword">++) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; for( </span><span class="default">$j</span><span class="keyword">=</span><span class="default">0</span><span class="keyword">,</span><span class="default">$container</span><span class="keyword">=new </span><span class="default">SplFixedArray</span><span class="keyword">(</span><span class="default">$elements</span><span class="keyword">);</span><span class="default">$j</span><span class="keyword">&lt;</span><span class="default">$elements</span><span class="keyword">;</span><span class="default">$j</span><span class="keyword">++) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$container</span><span class="keyword">[</span><span class="default">$i</span><span class="keyword">] = </span><span class="default">NULL</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; echo </span><span class="string">"SplArray(): " </span><span class="keyword">. (</span><span class="default">microtime</span><span class="keyword">(</span><span class="default">true</span><span class="keyword">) - </span><span class="default">$s</span><span class="keyword">) . </span><span class="default">PHP_EOL</span><span class="keyword">;<br />
+}<br />
+<br />
+</span><span class="default">we get</span><span class="keyword">:<br />
+<br />
+</span><span class="default">Testing size</span><span class="keyword">: </span><span class="default">1000<br />
+</span><span class="keyword">Array(): </span><span class="default">0.0030221939086914<br />
+SplArray</span><span class="keyword">(): </span><span class="default">0.0041899681091309<br />
+<br />
+Testing size</span><span class="keyword">: </span><span class="default">2000<br />
+</span><span class="keyword">Array(): </span><span class="default">0.0060598850250244<br />
+SplArray</span><span class="keyword">(): </span><span class="default">0.0083701610565186<br />
+<br />
+Testing size</span><span class="keyword">: </span><span class="default">4000<br />
+</span><span class="keyword">Array(): </span><span class="default">0.012003898620605<br />
+SplArray</span><span class="keyword">(): </span><span class="default">0.016681909561157<br />
+<br />
+Testing size</span><span class="keyword">: </span><span class="default">8000<br />
+</span><span class="keyword">Array(): </span><span class="default">0.024173021316528<br />
+SplArray</span><span class="keyword">(): </span><span class="default">0.033347129821777<br />
+<br />
+Testing size</span><span class="keyword">: </span><span class="default">16000<br />
+</span><span class="keyword">Array(): </span><span class="default">0.048118829727173<br />
+SplArray</span><span class="keyword">(): </span><span class="default">0.066897869110107<br />
+<br />
+Testing size</span><span class="keyword">: </span><span class="default">32000<br />
+</span><span class="keyword">Array(): </span><span class="default">0.096546173095703<br />
+SplArray</span><span class="keyword">(): </span><span class="default">0.13370203971863<br />
+<br />
+Testing size</span><span class="keyword">: </span><span class="default">64000<br />
+</span><span class="keyword">Array(): </span><span class="default">0.1932430267334<br />
+SplArray</span><span class="keyword">(): </span><span class="default">0.26755595207214<br />
+<br />
+Testing size</span><span class="keyword">: </span><span class="default">128000<br />
+</span><span class="keyword">Array(): </span><span class="default">0.38473010063171<br />
+SplArray</span><span class="keyword">(): </span><span class="default">0.5374698638916<br />
+<br />
+Testing size</span><span class="keyword">: </span><span class="default">256000<br />
+</span><span class="keyword">Array(): </span><span class="default">0.77228307723999<br />
+SplArray</span><span class="keyword">(): </span><span class="default">1.0708079338074<br />
+<br />
+Testing size</span><span class="keyword">: </span><span class="default">512000<br />
+</span><span class="keyword">Array(): </span><span class="default">1.5438990592957<br />
+SplArray</span><span class="keyword">(): </span><span class="default">2.1406710147858<br />
+<br />
+Testing size</span><span class="keyword">: </span><span class="default">1024000<br />
+</span><span class="keyword">Array(): </span><span class="default">3.0910761356354<br />
+SplArray</span><span class="keyword">(): </span><span class="default">4.3108429908752<br />
+<br />
+Testing size</span><span class="keyword">: </span><span class="default">2048000<br />
+</span><span class="keyword">Array(): </span><span class="default">6.1561989784241<br />
+SplArray</span><span class="keyword">(): </span><span class="default">8.612802028656<br />
+<br />
+</span><span class="keyword">......</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="92214""></a>
+  <div class="note">
+   <strong class="user">chrisstocktonaz at gmail dot com</strong>
+   <a href="#92214" class="date">14-Jul-2009 11:07</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Note, that this is considerably faster and should be used when the size of the array is known. Here are some very basic bench marks:<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">for(</span><span class="default">$size </span><span class="keyword">= </span><span class="default">1000</span><span class="keyword">; </span><span class="default">$size </span><span class="keyword">&lt; </span><span class="default">50000000</span><span class="keyword">; </span><span class="default">$size </span><span class="keyword">*= </span><span class="default">2</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; echo </span><span class="default">PHP_EOL </span><span class="keyword">. </span><span class="string">"Testing size: </span><span class="default">$size</span><span class="string">" </span><span class="keyword">. </span><span class="default">PHP_EOL</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; for(</span><span class="default">$s </span><span class="keyword">= </span><span class="default">microtime</span><span class="keyword">(</span><span class="default">true</span><span class="keyword">), </span><span class="default">$container </span><span class="keyword">= Array(), </span><span class="default">$i </span><span class="keyword">= </span><span class="default">0</span><span class="keyword">; </span><span class="default">$i </span><span class="keyword">&lt; </span><span class="default">$size</span><span class="keyword">; </span><span class="default">$i</span><span class="keyword">++) </span><span class="default">$container</span><span class="keyword">[</span><span class="default">$i</span><span class="keyword">] = </span><span class="default">NULL</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; echo </span><span class="string">"Array(): " </span><span class="keyword">. (</span><span class="default">microtime</span><span class="keyword">(</span><span class="default">true</span><span class="keyword">) - </span><span class="default">$s</span><span class="keyword">) . </span><span class="default">PHP_EOL</span><span class="keyword">;<br />
+<br />
+&nbsp;&nbsp;&nbsp; for(</span><span class="default">$s </span><span class="keyword">= </span><span class="default">microtime</span><span class="keyword">(</span><span class="default">true</span><span class="keyword">), </span><span class="default">$container </span><span class="keyword">= new </span><span class="default">SplFixedArray</span><span class="keyword">(</span><span class="default">$size</span><span class="keyword">), </span><span class="default">$i </span><span class="keyword">= </span><span class="default">0</span><span class="keyword">; </span><span class="default">$i </span><span class="keyword">&lt; </span><span class="default">$size</span><span class="keyword">; </span><span class="default">$i</span><span class="keyword">++) </span><span class="default">$container</span><span class="keyword">[</span><span class="default">$i</span><span class="keyword">] = </span><span class="default">NULL</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; echo </span><span class="string">"SplArray(): " </span><span class="keyword">. (</span><span class="default">microtime</span><span class="keyword">(</span><span class="default">true</span><span class="keyword">) - </span><span class="default">$s</span><span class="keyword">) . </span><span class="default">PHP_EOL</span><span class="keyword">;<br />
+}<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+OUTPUT<br />
+Testing size: 1000<br />
+Array(): 0.00046396255493164<br />
+SplArray(): 0.00023293495178223<br />
+<br />
+Testing size: 2000<br />
+Array(): 0.00057101249694824<br />
+SplArray(): 0.0003058910369873<br />
+<br />
+Testing size: 4000<br />
+Array(): 0.0015869140625<br />
+SplArray(): 0.00086307525634766<br />
+<br />
+Testing size: 8000<br />
+Array(): 0.0024251937866211<br />
+SplArray(): 0.00211501121521<br />
+<br />
+Testing size: 16000<br />
+Array(): 0.0057680606842041<br />
+SplArray(): 0.0041120052337646<br />
+<br />
+Testing size: 32000<br />
+Array(): 0.011334896087646<br />
+SplArray(): 0.007631778717041<br />
+<br />
+Testing size: 64000<br />
+Array(): 0.021990060806274<br />
+SplArray(): 0.013560056686401<br />
+<br />
+Testing size: 128000<br />
+Array(): 0.053267002105713<br />
+SplArray(): 0.030976057052612<br />
+<br />
+Testing size: 256000<br />
+Array(): 0.10280108451843<br />
+SplArray(): 0.056283950805664<br />
+<br />
+Testing size: 512000<br />
+Array(): 0.20657992362976<br />
+SplArray(): 0.11510300636292<br />
+<br />
+Testing size: 1024000<br />
+Array(): 0.4138810634613<br />
+SplArray(): 0.21826505661011<br />
+<br />
+Testing size: 2048000<br />
+Array(): 0.85640096664429<br />
+SplArray(): 0.46247816085815<br />
+<br />
+Testing size: 4096000<br />
+Array(): 1.7242450714111<br />
+SplArray(): 0.95304894447327<br />
+<br />
+Testing size: 8192000<br />
+Array(): 3.448086977005<br />
+SplArray(): 1.96746301651</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
 <hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="splpriorityqueue.valid.html">SplPriorityQueue::valid</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="splfixedarray.construct.html">SplFixedArray::__construct</a></div>

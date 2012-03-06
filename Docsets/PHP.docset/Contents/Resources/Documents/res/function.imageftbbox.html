@@ -242,7 +242,260 @@ PHP is compiled with freetype support (<strong class="option configure">--with-f
   </p>
  </div>
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="79280""></a>
+  <div class="note">
+   <strong class="user">Johan</strong>
+   <a href="#79280" class="date">19-Nov-2007 07:38</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+For alignment i used this method:<br />
+<br />
+if($align == "center" || $align == "right")<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $verticaltxtspace = $backwidth - (2 * $posx);&nbsp; &nbsp; &nbsp; &nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $spacepositions = imagettfbbox($size, $angle, "fonts/verdanaz.ttf", " ");&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $spacepx = $spacepositions[4] - $spacepositions[0];&nbsp; &nbsp; &nbsp; &nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; // Split text in lines<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $lines = split("[\r][\n]", $text);&nbsp; &nbsp; &nbsp; &nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; for($count = 0; $count &lt; count($lines); $count++)<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $textpositions = imagettfbbox($size, $angle, "fonts/verdanaz.ttf", $lines[$count]);&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $textpx = $textpositions[2] - $textpositions[0];<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if($align == "right")<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $spaces = ($verticaltxtspace - $textpx) / $spacepx;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; else if($align == "center")<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $spaces = (($verticaltxtspace - $textpx)/2) / $spacepx;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; // Add spaces<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $line = $lines[$count];<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; for($i = 0; $i &lt; $spaces; $i++)<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $line = " " . $line;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $lines[$count] = $line;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; // Create new text of lines<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $text = "";<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; for($count = 0; $count &lt; count($lines); $count++)<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $text .= $lines[$count] . "\r\n";<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }&nbsp; &nbsp; &nbsp; &nbsp; <br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; //&nbsp; &nbsp; Draw the shadow text on de shadow<br />
+&nbsp;&nbsp;&nbsp; imagettftext($background, $size, $angle, $posx, $posy, $textcolor, "fonts/verdanaz.ttf",&nbsp; $text);</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="60166""></a>
+  <div class="note">
+   <strong class="user">theo v e -2</strong>
+   <a href="#60166" class="date">28-Dec-2005 07:10</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+ah... the problem between imageftbbox() and imagefttext() lies in the mirroring of the y-axes.<br />
+Below you see, for a font-size 16 the boudingboxes of "b", "p" and "bp":<br />
+&lt; b: w=9 h=15<br />
+b(0,-1)<br />
+b(9,-1)<br />
+b(9,-16)<br />
+b(0,-16)<br />
+&lt; p: w=9 h=16<br />
+p(0,4)<br />
+p(9,4)<br />
+p(9,-12)<br />
+p(0,-12)<br />
+&lt; bp: w=20 h=20<br />
+bp(0,4)<br />
+bp(20,4)<br />
+bp(20,-16)<br />
+bp(0,-16)<br />
+If drawing "bp" using imagefttext() at y=0, the the top of "bp" indeed is at y=-16, and the bottom of "bp" at y=4. (Plus or minus a pixel here and there, because at y=0 there actually is a vissible pixel.)</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="60161""></a>
+  <div class="note">
+   <strong class="user">theo v e</strong>
+   <a href="#60161" class="date">28-Dec-2005 06:20</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+IF we accept the idea that a bouding box is returned then:<br />
+&nbsp;&nbsp;&nbsp; $bbox= imageftbbox ( $size, $angle, $font, $txt);<br />
+&nbsp;&nbsp;&nbsp; $width = abs($bbox[4] - $bbox[0]);<br />
+&nbsp;&nbsp;&nbsp; $height = abs($bbox[1] - $bbox[5]);<br />
+may be a better kind of math. But it depends... You may want to subtract yet another '1' from both the width and the height.<br />
+But try drawing a "p" and next try a "d". Their bounding boxes differ 1 px in height. Of course the respective boxes, by&nbsp; imagefttext(), are placed at a different y coordinate. I noticed that if a "p" or a "b" is drawn at (0, 30) the first character of the string actually starts on, fills, the third horizontal pixel. Also: if your image is only 30 pixels in heigth, drawing text at (0, 30) means that the bottoms parts of "p", "q", "y" and alike are somewhere else...</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="54781""></a>
+  <div class="note">
+   <strong class="user">fernando</strong>
+   <a href="#54781" class="date">14-Jul-2005 01:20</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+imagettfbbox() returns an array with 8 elements representing four points making the bounding box of the text: <br />
+<br />
+0 lower left corner, X position <br />
+1 lower left corner, Y position <br />
+2 lower right corner, X position <br />
+3 lower right corner, Y position <br />
+4 upper right corner, X position <br />
+5 upper right corner, Y position <br />
+6 upper left corner, X position <br />
+7 upper left corner, Y position <br />
+<br />
+The points are relative to the text regardless of the angle, so "upper left" means in the top left-hand corner seeing the text horizontally.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="42737""></a>
+  <div class="note">
+   <strong class="user">groomed at users dot sf dot net</strong>
+   <a href="#42737" class="date">27-May-2004 12:38</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+ImageFTBBox returns a bounding box, not metrics, as some (most?) of the notes above seem to assume. The 8 values it returns specify the 4 corners of this bounding box. So to properly determine the width and height of a string you need to do:<br />
+<br />
+$bbox = ImageFTBBox(...);<br />
+$width = abs($bbox[0]) + abs($bbox[2]); // distance from left to right<br />
+$height = abs($bbox[1]) + abs($bbox[5]); // distance from top to bottom</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="41787""></a>
+  <div class="note">
+   <strong class="user">sectionthirty1 at yahoo dot com</strong>
+   <a href="#41787" class="date">22-Apr-2004 02:50</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Here is a handy example I used to center "dynamic text" onto an image.&nbsp; <br />
+<br />
+Ex. Say you want to center a clients IP Address onto a picture.&nbsp; <br />
+<br />
+$ip=$_SERVER['REMOTE_ADDR'];&nbsp; &nbsp; <br />
+<br />
+$details = imageftbbox($fontsize, 0, $font, $ip, array("linespacing" =&gt; 1));<br />
+<br />
+$xcoord = ($imgwidth - $details[4]) / 2;&nbsp; // this will return the x coordinate centered to your specific image.&nbsp; Make sure&nbsp; you set $imgwidth to the width of the image you are using.&nbsp; &nbsp; &nbsp; <br />
+<br />
+imagettftext($image, $fontsize, 0, $xcoord, $ycoord, $fontcolor, $font, $ip);</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="30123""></a>
+  <div class="note">
+   <strong class="user">Brian at PrintsMadeEasy dot com</strong>
+   <a href="#30123" class="date">06-Mar-2003 07:54</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I noticed that PHP's True Type functions do not allow you to create text blocks with multiple lines that automatically adjust for alignment.&nbsp; I wrote a function that will allow you to generate images with multiple lines, control the alignment, and handle rotation.&nbsp; I hope it helps someone.<br />
+<br />
+There was too much code to paste on this message post so you can grab it off of my webserver.&nbsp; I also created an example page so that you can see the code in action.<br />
+<br />
+Example Page:<br />
+<a href="http://www.PrintsMadeEasy.com/code_samples/php/text_generation.php" rel="nofollow" target="_blank">http://www.PrintsMadeEasy.com/code_samples/php/text_generation.php</a><br />
+<br />
+Download the Text file:<br />
+<a href="http://www.PrintsMadeEasy.com /code_samples/php/text_generation.txt" rel="nofollow" target="_blank">http://www.PrintsMadeEasy.com /code_samples/php/text_generation.txt</a></span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="24977""></a>
+  <div class="note">
+   <strong class="user">ta at NOSPAM dot magicsquare dot info</strong>
+   <a href="#24977" class="date">06-Sep-2002 09:37</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+i've found a work around for this situation<br />
+<br />
+it seems that height is directly proportional to line spacing so you just have to apply the same factor to image height<br />
+<br />
+for example :<br />
+<br />
+$spacing = 0.7;<br />
+$params = array("linespacing" =&gt; $spacing);<br />
+<br />
+$box = imageftbbox ($size, 0, $font, $text, $params);<br />
+$tw=$box[4]-$box[0]; //image width<br />
+$th=($box[1]-$box[5])*$spacing; //image height</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="21489""></a>
+  <div class="note">
+   <strong class="user">phpimageftbbox at juggernaut dot com dot au</strong>
+   <a href="#21489" class="date">14-May-2002 09:56</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+This function can be used to generate right-aligned text. Just work out how wide the text image is and position it accordingly. Example:<br />
+<br />
+$i_width&nbsp; = 200;<br />
+$i_height = 40;<br />
+<br />
+$string = "Hello World!";<br />
+$pointsize = 10;<br />
+$fontfile = "/usr/local/lib/ttf/Helve.ttf";<br />
+<br />
+$im = imagecreate($i_width, $i_height);<br />
+$black = imagecolorallocate ($im, 0, 0, 0);<br />
+$white = imagecolorallocate ($im, 255, 255, 255);<br />
+<br />
+$string_size = ImageFtBbox($pointsize, 0, $fontfile, $string, array("linespacing" =&gt; 1));<br />
+$s_width&nbsp; = $string_size[4];<br />
+$s_height = $string_size[5];<br />
+<br />
+ImageFtText($im, $pointsize, 0, $i_width - $s_width - 1,&nbsp; 0 - $s_height, $white, $fontfile, $string, array("linespacing" =&gt; 1));<br />
+<br />
+Header ("Content-type: image/png");<br />
+ImagePNG ($im);<br />
+ImageDestroy ($im);</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="function.imagefontwidth.html">imagefontwidth</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.imagefttext.html">imagefttext</a></div>
  <div class="up"><a href="ref.image.html">GD and Image Functions</a></div>

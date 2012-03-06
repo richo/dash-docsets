@@ -144,7 +144,120 @@
   </p>
  </div>
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="48517""></a>
+  <div class="note">
+   <strong class="user">jascha at bluestatedigital dot com</strong>
+   <a href="#48517" class="date">27-Dec-2004 06:45</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+There is an easy way to check progress while uploading a file.&nbsp; Just use the ftell function to watch the position in the file handle.&nbsp; ftp_nb_fput will increment the position as the file is transferred.<br />
+<br />
+Example:<br />
+<br />
+&lt;?<br />
+<br />
+&nbsp;&nbsp;&nbsp; $fh = fopen ($file_name, "r");<br />
+&nbsp;&nbsp;&nbsp; $ret = ftp_nb_fput ($ftp, $file_name, $fh, FTP_BINARY);<br />
+&nbsp;&nbsp;&nbsp; while ($ret == FTP_MOREDATA) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; print ftell ($fh)."\n";<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $ret = ftp_nb_continue($ftp);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; if ($ret != FTP_FINISHED) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; print ("error uploading\n");<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; exit(1);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; fclose($fh);<br />
+<br />
+?&gt;<br />
+<br />
+This will print out the number of bytes transferred thus far, every time the loop runs.&nbsp; Coverting this into a percentage is simply a matter of dividing the number of bytes transferred by the total size of the file.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="47920""></a>
+  <div class="note">
+   <strong class="user">pain at ziodex dot com</strong>
+   <a href="#47920" class="date">05-Dec-2004 11:44</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+While trying to create a progress bar for uploading files with the ftp_nb_fput() function<br />
+I've noticed that the ftp_size() function will not work during the upload&nbsp; progess if you are using the<br />
+same resource handle. <br />
+<br />
+<span class="default">&lt;?php<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// This will not work<br />
+&nbsp;&nbsp;&nbsp; // ...<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$ret </span><span class="keyword">= </span><span class="default">ftp_nb_fput</span><span class="keyword">(</span><span class="default">$conn_id</span><span class="keyword">, </span><span class="default">$remote_file</span><span class="keyword">, </span><span class="default">$fp</span><span class="keyword">, </span><span class="default">FTP_BINARY</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; while (</span><span class="default">$ret </span><span class="keyword">== </span><span class="default">FTP_MOREDATA</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// ...<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$remote_file_size </span><span class="keyword">= </span><span class="default">ftp_size</span><span class="keyword">(</span><span class="default">$conn_id</span><span class="keyword">, </span><span class="default">$remote_file</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// ...<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$ret </span><span class="keyword">= </span><span class="default">ftp_nb_continue</span><span class="keyword">(</span><span class="default">$conn_id</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// ...<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+However, by creating a new connection to the server you can retrieve current file size of the uploaded file, then<br />
+compare it with your local file to calculate the progress. A full example follows:<br />
+<br />
+<span class="default">&lt;?php<br />
+&nbsp;&nbsp;&nbsp; ob_end_flush</span><span class="keyword">();<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$remote_file </span><span class="keyword">= </span><span class="string">'remote.txt'</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$local_file </span><span class="keyword">= </span><span class="string">'local.txt'</span><span class="keyword">;<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$fp </span><span class="keyword">= </span><span class="default">fopen</span><span class="keyword">(</span><span class="default">$local_file</span><span class="keyword">, </span><span class="string">'r'</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$conn_id </span><span class="keyword">= </span><span class="default">ftp_connect</span><span class="keyword">(</span><span class="default">$ftp_server</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$login_result </span><span class="keyword">= </span><span class="default">ftp_login</span><span class="keyword">(</span><span class="default">$conn_id</span><span class="keyword">, </span><span class="default">$ftp_user_name</span><span class="keyword">, </span><span class="default">$ftp_user_pass</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$ret </span><span class="keyword">= </span><span class="default">ftp_nb_fput</span><span class="keyword">(</span><span class="default">$conn_id</span><span class="keyword">, </span><span class="default">$remote_file</span><span class="keyword">, </span><span class="default">$fp</span><span class="keyword">, </span><span class="default">FTP_BINARY</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; while (</span><span class="default">$ret </span><span class="keyword">== </span><span class="default">FTP_MOREDATA</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// Establish a new connection to FTP server<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">if(!isset(</span><span class="default">$conn_id2</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$conn_id2 </span><span class="keyword">= </span><span class="default">ftp_connect</span><span class="keyword">(</span><span class="default">$ftp_server</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$login_result2 </span><span class="keyword">= </span><span class="default">ftp_login</span><span class="keyword">(</span><span class="default">$conn_id2</span><span class="keyword">, </span><span class="default">$ftp_user_name</span><span class="keyword">, </span><span class="default">$ftp_user_pass</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// Retreive size of uploaded file.<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">if(isset(</span><span class="default">$conn_id2</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">clearstatcache</span><span class="keyword">(); </span><span class="comment">// &lt;- this must be included!!<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$remote_file_size </span><span class="keyword">= </span><span class="default">ftp_size</span><span class="keyword">(</span><span class="default">$conn_id2</span><span class="keyword">, </span><span class="default">$remote_file</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp; </span><span class="comment">// Calculate upload progress<br />
+&nbsp;&nbsp; &nbsp; &nbsp; </span><span class="default">$local_file_size&nbsp; </span><span class="keyword">= </span><span class="default">filesize</span><span class="keyword">(</span><span class="default">$local_file</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; if (isset(</span><span class="default">$remote_file_size</span><span class="keyword">) &amp;&amp; </span><span class="default">$remote_file_size </span><span class="keyword">&gt; </span><span class="default">0 </span><span class="keyword">){<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span class="default">$i </span><span class="keyword">= (</span><span class="default">$remote_file_size</span><span class="keyword">/</span><span class="default">$local_file_size</span><span class="keyword">)*</span><span class="default">100</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span class="default">printf</span><span class="keyword">(</span><span class="string">"%d%% uploaded&lt;br&gt;"</span><span class="keyword">, </span><span class="default">$i</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span class="default">flush</span><span class="keyword">();<br />
+&nbsp;&nbsp; &nbsp; &nbsp; }&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$ret </span><span class="keyword">= </span><span class="default">ftp_nb_continue</span><span class="keyword">(</span><span class="default">$conn_id</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; if (</span><span class="default">$ret </span><span class="keyword">!= </span><span class="default">FTP_FINISHED</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; print(</span><span class="string">"There was an error uploading the file...&lt;br&gt;"</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; exit(</span><span class="default">1</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; else {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; print(</span><span class="string">"Done.&lt;br&gt;"</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">fclose</span><span class="keyword">(</span><span class="default">$fp</span><span class="keyword">);<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="function.ftp-nb-fget.html">ftp_nb_fget</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.ftp-nb-get.html">ftp_nb_get</a></div>
  <div class="up"><a href="ref.ftp.html">FTP Functions</a></div>

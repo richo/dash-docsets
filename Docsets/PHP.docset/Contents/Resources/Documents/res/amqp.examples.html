@@ -25,6 +25,90 @@
 
  </div>
 </div>
+<div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="104117""></a>
+  <div class="note">
+   <strong class="user">kurt at surfmerchants dot com</strong>
+   <a href="#104117" class="date">24-May-2011 09:05</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+The docs for this extension are a little vague, so I'm adding a few things I found helpful in getting this to work.<br />
+<br />
+Helpful reading:<br />
+* <a href="http://en.wikipedia.org/wiki/AMQP" rel="nofollow" target="_blank">http://en.wikipedia.org/wiki/AMQP</a><br />
+* <a href="http://www.rabbitmq.com/getstarted.html" rel="nofollow" target="_blank">http://www.rabbitmq.com/getstarted.html</a><br />
+<br />
+Helpful tool:<br />
+/usr/sbin/rabbitmqctl list_queues<br />
+<br />
+Here I've split the usage example into a sender and receiver, because that is much more useful (at least to me):<br />
+<br />
+send.php :<br />
+#!/usr/bin/php -q<br />
+<span class="default">&lt;?php<br />
+</span><span class="comment">// config<br />
+</span><span class="default">$exchangeName </span><span class="keyword">= </span><span class="string">'myexchange'</span><span class="keyword">;<br />
+</span><span class="default">$routingKey </span><span class="keyword">= </span><span class="string">'routing.key'</span><span class="keyword">;<br />
+</span><span class="default">$message </span><span class="keyword">= </span><span class="default">$argv</span><span class="keyword">[</span><span class="default">1</span><span class="keyword">];<br />
+<br />
+</span><span class="comment">// connect<br />
+</span><span class="default">$connection </span><span class="keyword">= new </span><span class="default">AMQPConnection</span><span class="keyword">();<br />
+</span><span class="default">$connection</span><span class="keyword">-&gt;</span><span class="default">connect</span><span class="keyword">();<br />
+<br />
+</span><span class="comment">// setup exchange<br />
+</span><span class="default">$ex </span><span class="keyword">= new </span><span class="default">AMQPExchange</span><span class="keyword">(</span><span class="default">$connection</span><span class="keyword">);<br />
+</span><span class="default">$ex</span><span class="keyword">-&gt;</span><span class="default">declare</span><span class="keyword">(</span><span class="default">$exchangeName</span><span class="keyword">, </span><span class="default">AMQP_EX_TYPE_FANOUT</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">// Publish a message to the exchange with our routing key<br />
+</span><span class="default">$ex</span><span class="keyword">-&gt;</span><span class="default">publish</span><span class="keyword">(</span><span class="default">$message</span><span class="keyword">, </span><span class="default">$routingKey</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">// disconnect<br />
+</span><span class="default">$connection</span><span class="keyword">-&gt;</span><span class="default">disconnect</span><span class="keyword">();<br />
+<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+receive.php:<br />
+#!/usr/bin/php -q<br />
+<span class="default">&lt;?php<br />
+</span><span class="comment">// config<br />
+</span><span class="default">$exchangeName </span><span class="keyword">= </span><span class="string">'myexchange'</span><span class="keyword">;<br />
+</span><span class="default">$routingKey </span><span class="keyword">= </span><span class="string">'routing.key'</span><span class="keyword">;<br />
+</span><span class="default">$queueName </span><span class="keyword">= </span><span class="string">'myqueue'</span><span class="keyword">;<br />
+<br />
+</span><span class="comment">// connect<br />
+</span><span class="default">$connection </span><span class="keyword">= new </span><span class="default">AMQPConnection</span><span class="keyword">();<br />
+</span><span class="default">$connection</span><span class="keyword">-&gt;</span><span class="default">connect</span><span class="keyword">();<br />
+<br />
+</span><span class="comment">// setup our queue<br />
+</span><span class="default">$q </span><span class="keyword">= new </span><span class="default">AMQPQueue</span><span class="keyword">(</span><span class="default">$connection</span><span class="keyword">);<br />
+</span><span class="default">$q</span><span class="keyword">-&gt;</span><span class="default">declare</span><span class="keyword">(</span><span class="default">$queueName</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">// Bind it on the exchange to routing.key<br />
+</span><span class="default">$q</span><span class="keyword">-&gt;</span><span class="default">bind</span><span class="keyword">(</span><span class="default">$exchangeName</span><span class="keyword">, </span><span class="default">$routingKey</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">// show the message<br />
+</span><span class="default">print_r</span><span class="keyword">(</span><span class="default">$q</span><span class="keyword">-&gt;</span><span class="default">get</span><span class="keyword">());<br />
+<br />
+</span><span class="comment">// disconnect<br />
+</span><span class="default">$connection</span><span class="keyword">-&gt;</span><span class="default">disconnect</span><span class="keyword">();<br />
+<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+The first time you run "./send.php 'hello world'", then "./receive.php", you will not get the message, because the receiver creates the queue. That's OK. While you *can* create the queue in the sender, this is not so useful, because it's really the receivers that read the queue, and I've found that various clients are very picky about the details of how the queue was created (for example, if I create the queue in my php sender, then try to listen with a python receiver, it throws errors, but if I let the python receiver create the queue, all is well).<br />
+So, the second time you send a message (after running receive.php once), the queue will exist, and you will then get the message the next time you run receive.<br />
+<br />
+Another thing I noticed is that I'm using $q-&gt;get() instead of $q-&gt;consume(), because the latter seems to segfault (at least on my CentOS 5.5 system).</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
 <hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="amqp.constants.html">Predefined Constants</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="class.amqpconnection.html">AMQPConnection</a></div>

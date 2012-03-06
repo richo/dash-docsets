@@ -97,7 +97,415 @@
   </p>
  </div>
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="103519""></a>
+  <div class="note">
+   <strong class="user">Anonymous</strong>
+   <a href="#103519" class="date">18-Apr-2011 05:32</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+get_defined_vars() returns ALL the vars (in the current scope), what if you just want all YOUR vars, not PHP's super-globals?<br />
+<br />
+<span class="default">&lt;?php<br />
+&nbsp;&nbsp;&nbsp; var_export</span><span class="keyword">(</span><span class="default">array_diff</span><span class="keyword">(</span><span class="default">get_defined_vars</span><span class="keyword">(), array(array())));<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+Example...<br />
+<br />
+<span class="default">&lt;?php<br />
+&nbsp;&nbsp;&nbsp; $TOP_LEVEL_VAR</span><span class="keyword">=</span><span class="default">1</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">var_export</span><span class="keyword">(</span><span class="default">array_diff</span><span class="keyword">(</span><span class="default">get_defined_vars</span><span class="keyword">(), array(array())));<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+The output (with register_globals off) should be...<br />
+<br />
+array (<br />
+&nbsp; 'TOP_LEVEL_VAR' =&gt; 1,<br />
+)<br />
+<br />
+...it perfectly eliminated all the super-globals, without me having to specify them! (note with register_globals on, the output includes those globals, then TOP_LEVEL_VAR).<br />
+<br />
+Here it is, as a function...(it's the best I could do {I can't call get_defined_vars() inside get_user_defined_vars() cuz of the scope issue}).<br />
+<br />
+<span class="default">&lt;?php<br />
+&nbsp;&nbsp;&nbsp; header</span><span class="keyword">(</span><span class="string">'Content-type: text/plain'</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$TOP_LEVEL_VAR</span><span class="keyword">=</span><span class="default">1</span><span class="keyword">;<br />
+<br />
+&nbsp;&nbsp;&nbsp; echo </span><span class="string">'register_globals('</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; echo </span><span class="default">ini_get</span><span class="keyword">(</span><span class="string">'register_globals'</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; echo </span><span class="string">') '</span><span class="keyword">.</span><span class="default">phpversion</span><span class="keyword">().</span><span class="string">"\n"</span><span class="keyword">;<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">var_export</span><span class="keyword">(</span><span class="default">get_user_defined_vars</span><span class="keyword">(</span><span class="default">get_defined_vars</span><span class="keyword">()));<br />
+<br />
+&nbsp;&nbsp;&nbsp; function </span><span class="default">get_user_defined_vars</span><span class="keyword">(</span><span class="default">$vars</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">array_diff</span><span class="keyword">(</span><span class="default">$vars</span><span class="keyword">, array(array()));<br />
+&nbsp;&nbsp;&nbsp; }<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+Note that originally I had an array of the super-globals I wanted removed from get_defined_vars()'s array, then I noticed even an empty double-array, array(array()), made it give me the correct result. Weird.<br />
+<br />
+This was tested on PHP 5.2.9.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="101797""></a>
+  <div class="note">
+   <strong class="user">meint at meint dot net</strong>
+   <a href="#101797" class="date">11-Jan-2011 12:46</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Please be aware that function_get_vars only returns the variables defined at the point before you call the function_get_vars function, it does not scan the entire function for you, only the lines before you call it.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="98467""></a>
+  <div class="note">
+   <strong class="user">Johan de Vries</strong>
+   <a href="#98467" class="date">17-Jun-2010 08:09</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Note that this only returns things you've used. See <a href="http://bugs.php.net/bug.php?id=52110 . So don" rel="nofollow" target="_blank">http://bugs.php.net/bug.php?id=52110 . So don</a>'t expect this to have the $this entry, unless you assign $this to return $this.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="86475""></a>
+  <div class="note">
+   <strong class="user">donovan at example dot com</strong>
+   <a href="#86475" class="date">21-Oct-2008 09:15</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+As a note, get_defined_vars() does not return a set of variable references (as I hoped). For example:<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+</span><span class="comment">// define a variable<br />
+</span><span class="default">$my_var </span><span class="keyword">= </span><span class="string">"foo"</span><span class="keyword">;<br />
+<br />
+</span><span class="comment">// get our list of defined variables<br />
+</span><span class="default">$defined_vars </span><span class="keyword">= </span><span class="default">get_defined_vars</span><span class="keyword">();<br />
+<br />
+</span><span class="comment">// now try to change the value through the returned array<br />
+</span><span class="default">$defined_vars</span><span class="keyword">[</span><span class="string">"my_var"</span><span class="keyword">] = </span><span class="string">"bar"</span><span class="keyword">;<br />
+<br />
+echo </span><span class="default">$my_var</span><span class="keyword">, </span><span class="string">"\n"</span><span class="keyword">;<br />
+<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+will output "foo" (the original value). It'd be nice if get_defined_vars() had an optional argument to make them references, but I imagine its a rather specialized request. You can do it yourself (less conveniently) with something like:<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+$defined_vars </span><span class="keyword">= array();<br />
+</span><span class="default">$var_names </span><span class="keyword">= </span><span class="default">array_keys</span><span class="keyword">(</span><span class="default">get_defined_vars</span><span class="keyword">());<br />
+<br />
+foreach (</span><span class="default">$var_names </span><span class="keyword">as </span><span class="default">$var_name</span><span class="keyword">)<br />
+{<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$defined_vars</span><span class="keyword">[</span><span class="default">$var_name</span><span class="keyword">] =&amp; $</span><span class="default">$var_name</span><span class="keyword">;<br />
+}<br />
+<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="85249""></a>
+  <div class="note">
+   <strong class="user">SyCo</strong>
+   <a href="#85249" class="date">21-Aug-2008 03:52</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Here's a very simple function for debugging. It's far from perfect but I find it very handy. It outputs the var value and the var name on a new line. The problem is it'll echo any vars and their name if they share the same value. No big deal when debugging and saves the hassle of writing the HTML and var name when echoing a variable. (ev=echo variable). Using get_defined_vars() inside a function renames the var name to the functions variable so isn't as useful for debugging. Of course, you'll need access to the $GLOBALS array<br />
+&lt;?<br />
+function ev($variable){<br />
+&nbsp;&nbsp;&nbsp; foreach($GLOBALS as $key =&gt; $value){<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if($variable===$value){<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; echo '&lt;p&gt;'.$key.' - '.$value.'&lt;/p&gt;';<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; }<br />
+}<br />
+<br />
+$a=0;<br />
+ev($a);<br />
+$b=0;<br />
+ev($b);<br />
+$c=0;<br />
+ev($c);<br />
+?&gt;<br />
+Will output<br />
+a - 0<br />
+<br />
+a - 0<br />
+b - 0<br />
+<br />
+a - 0<br />
+b - 0<br />
+c - 0</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="73608""></a>
+  <div class="note">
+   <strong class="user">kailashbadu at hotmail dot com</strong>
+   <a href="#73608" class="date">03-Mar-2007 03:09</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+After a fruitless attempt find a built-in function whic did this, I wrote this functions to find out all the variables (well, those I wanted) in current scope and their values. I believe this is going to be handy in debugging.<br />
+<br />
+<span class="default">&lt;?php<br />
+&nbsp; </span><span class="comment">/**<br />
+&nbsp;&nbsp; * @desc&nbsp;&nbsp; works out the variables in the current scope(from where function was called).<br />
+&nbsp;&nbsp; *&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; Returns an array with variable name as key and vaiable value as value<br />
+&nbsp;&nbsp; * @param&nbsp; $varList: variables returned by get_defined_vars() in desired scope.<br />
+&nbsp;&nbsp; *&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $excludeList: variables to be excluded from the list.<br />
+&nbsp;&nbsp; * @return array<br />
+&nbsp;&nbsp; */<br />
+&nbsp; </span><span class="keyword">function </span><span class="default">getDefinedVars</span><span class="keyword">(</span><span class="default">$varList</span><span class="keyword">, </span><span class="default">$excludeList</span><span class="keyword">)<br />
+&nbsp; {<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">$temp1 </span><span class="keyword">= </span><span class="default">array_values</span><span class="keyword">(</span><span class="default">array_diff</span><span class="keyword">(</span><span class="default">array_keys</span><span class="keyword">(</span><span class="default">$varList</span><span class="keyword">), </span><span class="default">$excludeList</span><span class="keyword">));<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">$temp2 </span><span class="keyword">= array();<br />
+&nbsp;&nbsp; &nbsp;&nbsp; while (list(</span><span class="default">$key</span><span class="keyword">, </span><span class="default">$value</span><span class="keyword">) = </span><span class="default">each</span><span class="keyword">(</span><span class="default">$temp1</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; global $</span><span class="default">$value</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$temp2</span><span class="keyword">[</span><span class="default">$value</span><span class="keyword">] = $</span><span class="default">$value</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp;&nbsp; return </span><span class="default">$temp2</span><span class="keyword">;<br />
+&nbsp; }<br />
+&nbsp; <br />
+&nbsp; </span><span class="comment">/**<br />
+&nbsp;&nbsp; * @desc&nbsp;&nbsp; holds the variable that are to be excluded from the list.<br />
+&nbsp;&nbsp; *&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; Add or drop new elements as per your preference.<br />
+&nbsp;&nbsp; * @var&nbsp; &nbsp; array<br />
+&nbsp;&nbsp; */<br />
+&nbsp; </span><span class="default">$excludeList </span><span class="keyword">= array(</span><span class="string">'GLOBALS'</span><span class="keyword">, </span><span class="string">'_FILES'</span><span class="keyword">, </span><span class="string">'_COOKIE'</span><span class="keyword">, </span><span class="string">'_POST'</span><span class="keyword">, </span><span class="string">'_GET'</span><span class="keyword">, </span><span class="string">'excludeList'</span><span class="keyword">);<br />
+&nbsp; <br />
+&nbsp; </span><span class="comment">//some dummy variables; add your own or include a file.<br />
+&nbsp; </span><span class="default">$firstName </span><span class="keyword">= </span><span class="string">'kailash'</span><span class="keyword">;<br />
+&nbsp; </span><span class="default">$lastName </span><span class="keyword">= </span><span class="string">'Badu'</span><span class="keyword">;<br />
+&nbsp; </span><span class="default">$test </span><span class="keyword">= array(</span><span class="string">'Pratistha'</span><span class="keyword">, </span><span class="string">'sanu'</span><span class="keyword">, </span><span class="string">'fuchhi'</span><span class="keyword">);<br />
+&nbsp; <br />
+&nbsp; </span><span class="comment">//get all variables defined in current scope<br />
+&nbsp; </span><span class="default">$varList </span><span class="keyword">= </span><span class="default">get_defined_vars</span><span class="keyword">();<br />
+&nbsp; <br />
+&nbsp; </span><span class="comment">//Time to call the function<br />
+&nbsp; </span><span class="keyword">print </span><span class="string">"&lt;pre&gt;"</span><span class="keyword">;<br />
+&nbsp; </span><span class="default">print_r</span><span class="keyword">(</span><span class="default">getDefinedVars</span><span class="keyword">(</span><span class="default">$varList</span><span class="keyword">, </span><span class="default">$excludeList</span><span class="keyword">));<br />
+&nbsp; print </span><span class="string">"&lt;/pre&gt;"</span><span class="keyword">;<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="69337""></a>
+  <div class="note">
+   <strong class="user">zabmilenko at hotmail dot com</strong>
+   <a href="#69337" class="date">31-Aug-2006 07:32</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+A little gotcha to watch out for:<br />
+<br />
+If you turn off RegisterGlobals and related, then use get_defined_vars(), you may see something like the following:<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">Array<br />
+(<br />
+&nbsp;&nbsp;&nbsp; [</span><span class="default">GLOBALS</span><span class="keyword">] =&gt; Array<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; (<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [</span><span class="default">GLOBALS</span><span class="keyword">] =&gt; Array<br />
+&nbsp;*</span><span class="default">RECURSION</span><span class="keyword">*<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [</span><span class="default">_POST</span><span class="keyword">] =&gt; Array()<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [</span><span class="default">_GET</span><span class="keyword">] =&gt; Array()<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [</span><span class="default">_COOKIE</span><span class="keyword">] =&gt; Array()<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [</span><span class="default">_FILES</span><span class="keyword">] =&gt; Array()<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; )<br />
+<br />
+&nbsp;&nbsp;&nbsp; [</span><span class="default">_POST</span><span class="keyword">] =&gt; Array()<br />
+&nbsp;&nbsp;&nbsp; [</span><span class="default">_GET</span><span class="keyword">] =&gt; Array()<br />
+&nbsp;&nbsp;&nbsp; [</span><span class="default">_COOKIE</span><span class="keyword">] =&gt; Array()<br />
+&nbsp;&nbsp;&nbsp; [</span><span class="default">_FILES</span><span class="keyword">] =&gt; Array()<br />
+<br />
+)<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+Notice that $_SERVER isn't there.&nbsp; It seems that php only loads the superglobal $_SERVER if it is used somewhere.&nbsp; You could do this:<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">print </span><span class="string">'&lt;pre&gt;' </span><span class="keyword">. </span><span class="default">htmlspecialchars</span><span class="keyword">(</span><span class="default">print_r</span><span class="keyword">(</span><span class="default">get_defined_vars</span><span class="keyword">(), </span><span class="default">true</span><span class="keyword">)) . </span><span class="string">'&lt;/pre&gt;'</span><span class="keyword">;<br />
+print </span><span class="string">'&lt;pre&gt;' </span><span class="keyword">. </span><span class="default">htmlspecialchars</span><span class="keyword">(</span><span class="default">print_r</span><span class="keyword">(</span><span class="default">$_SERVER</span><span class="keyword">, </span><span class="default">true</span><span class="keyword">)) . </span><span class="string">'&lt;/pre&gt;'</span><span class="keyword">;<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+And then $_SERVER will appear in both lists.&nbsp; I guess it's not really a gotcha, because nothing bad will happen either way, but it's an interesting curiosity nonetheless.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="42969""></a>
+  <div class="note">
+   <strong class="user">lbowerh at adelphia dot net</strong>
+   <a href="#42969" class="date">04-Jun-2004 08:19</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Here is a function which generates a debug report for display or email<br />
+using get_defined_vars. Great for getting a detailed snapshot without<br />
+relying on user input.<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">function </span><span class="default">generateDebugReport</span><span class="keyword">(</span><span class="default">$method</span><span class="keyword">,</span><span class="default">$defined_vars</span><span class="keyword">,</span><span class="default">$email</span><span class="keyword">=</span><span class="string">"undefined"</span><span class="keyword">){<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// Function to create a debug report to display or email.<br />
+&nbsp;&nbsp;&nbsp; // Usage: generateDebugReport(method,get_defined_vars(),email[optional]);<br />
+&nbsp;&nbsp;&nbsp; // Where method is "browser" or "email".<br />
+<br />
+&nbsp;&nbsp;&nbsp; // Create an ignore list for keys returned by 'get_defined_vars'.<br />
+&nbsp;&nbsp;&nbsp; // For example, HTTP_POST_VARS, HTTP_GET_VARS and others are <br />
+&nbsp;&nbsp;&nbsp; // redundant (same as _POST, _GET)<br />
+&nbsp;&nbsp;&nbsp; // Also include vars you want ignored for security reasons - i.e. PHPSESSID.<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$ignorelist</span><span class="keyword">=array(</span><span class="string">"HTTP_POST_VARS"</span><span class="keyword">,</span><span class="string">"HTTP_GET_VARS"</span><span class="keyword">,<br />
+&nbsp;&nbsp;&nbsp; </span><span class="string">"HTTP_COOKIE_VARS"</span><span class="keyword">,</span><span class="string">"HTTP_SERVER_VARS"</span><span class="keyword">,<br />
+&nbsp;&nbsp;&nbsp; </span><span class="string">"HTTP_ENV_VARS"</span><span class="keyword">,</span><span class="string">"HTTP_SESSION_VARS"</span><span class="keyword">,<br />
+&nbsp;&nbsp;&nbsp; </span><span class="string">"_ENV"</span><span class="keyword">,</span><span class="string">"PHPSESSID"</span><span class="keyword">,</span><span class="string">"SESS_DBUSER"</span><span class="keyword">,<br />
+&nbsp;&nbsp;&nbsp; </span><span class="string">"SESS_DBPASS"</span><span class="keyword">,</span><span class="string">"HTTP_COOKIE"</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$timestamp</span><span class="keyword">=</span><span class="default">date</span><span class="keyword">(</span><span class="string">"m/d/y h:m:s"</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$message</span><span class="keyword">=</span><span class="string">"Debug report created </span><span class="default">$timestamp</span><span class="string">\n"</span><span class="keyword">;<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// Get the last SQL error for good measure, where $link is the resource identifier<br />
+&nbsp;&nbsp;&nbsp; // for mysql_connect. Comment out or modify for your database or abstraction setup.<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">global </span><span class="default">$link</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$sql_error</span><span class="keyword">=</span><span class="default">mysql_error</span><span class="keyword">(</span><span class="default">$link</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; if(</span><span class="default">$sql_error</span><span class="keyword">){<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">$message</span><span class="keyword">.=</span><span class="string">"\nMysql Messages:\n"</span><span class="keyword">.</span><span class="default">mysql_error</span><span class="keyword">(</span><span class="default">$link</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// End MySQL<br />
+<br />
+&nbsp;&nbsp;&nbsp; // Could use a recursive function here. You get the idea ;-)<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">foreach(</span><span class="default">$defined_vars </span><span class="keyword">as </span><span class="default">$key</span><span class="keyword">=&gt;</span><span class="default">$val</span><span class="keyword">){<br />
+&nbsp;&nbsp; &nbsp;&nbsp; if(</span><span class="default">is_array</span><span class="keyword">(</span><span class="default">$val</span><span class="keyword">) &amp;&amp; !</span><span class="default">in_array</span><span class="keyword">(</span><span class="default">$key</span><span class="keyword">,</span><span class="default">$ignorelist</span><span class="keyword">) &amp;&amp; </span><span class="default">count</span><span class="keyword">(</span><span class="default">$val</span><span class="keyword">) &gt; </span><span class="default">0</span><span class="keyword">){<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$message</span><span class="keyword">.=</span><span class="string">"\n</span><span class="default">$key</span><span class="string"> array (key=value):\n"</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; foreach(</span><span class="default">$val </span><span class="keyword">as </span><span class="default">$subkey</span><span class="keyword">=&gt;</span><span class="default">$subval</span><span class="keyword">){<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if(!</span><span class="default">in_array</span><span class="keyword">(</span><span class="default">$subkey</span><span class="keyword">,</span><span class="default">$ignorelist</span><span class="keyword">) &amp;&amp; !</span><span class="default">is_array</span><span class="keyword">(</span><span class="default">$subval</span><span class="keyword">)){<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$message</span><span class="keyword">.=</span><span class="default">$subkey</span><span class="keyword">.</span><span class="string">" = "</span><span class="keyword">.</span><span class="default">$subval</span><span class="keyword">.</span><span class="string">"\n"</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; elseif(!</span><span class="default">in_array</span><span class="keyword">(</span><span class="default">$subkey</span><span class="keyword">,</span><span class="default">$ignorelist</span><span class="keyword">) &amp;&amp; </span><span class="default">is_array</span><span class="keyword">(</span><span class="default">$subval</span><span class="keyword">)){<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; foreach(</span><span class="default">$subval </span><span class="keyword">as </span><span class="default">$subsubkey</span><span class="keyword">=&gt;</span><span class="default">$subsubval</span><span class="keyword">){<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if(!</span><span class="default">in_array</span><span class="keyword">(</span><span class="default">$subsubkey</span><span class="keyword">,</span><span class="default">$ignorelist</span><span class="keyword">)){<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$message</span><span class="keyword">.=</span><span class="default">$subsubkey</span><span class="keyword">.</span><span class="string">" = "</span><span class="keyword">.</span><span class="default">$subsubval</span><span class="keyword">.</span><span class="string">"\n"</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp;&nbsp; elseif(!</span><span class="default">is_array</span><span class="keyword">(</span><span class="default">$val</span><span class="keyword">) &amp;&amp; !</span><span class="default">in_array</span><span class="keyword">(</span><span class="default">$key</span><span class="keyword">,</span><span class="default">$ignorelist</span><span class="keyword">) &amp;&amp; </span><span class="default">$val</span><span class="keyword">){<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$message</span><span class="keyword">.=</span><span class="string">"\nVariable "</span><span class="keyword">.</span><span class="default">$key</span><span class="keyword">.</span><span class="string">" = "</span><span class="keyword">.</span><span class="default">$val</span><span class="keyword">.</span><span class="string">"\n"</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; if(</span><span class="default">$method</span><span class="keyword">==</span><span class="string">"browser"</span><span class="keyword">){<br />
+&nbsp;&nbsp; &nbsp;&nbsp; echo </span><span class="default">nl2br</span><span class="keyword">(</span><span class="default">$message</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; elseif(</span><span class="default">$method</span><span class="keyword">==</span><span class="string">"email"</span><span class="keyword">){<br />
+&nbsp;&nbsp; &nbsp;&nbsp; if(</span><span class="default">$email</span><span class="keyword">==</span><span class="string">"undefined"</span><span class="keyword">){<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$email</span><span class="keyword">=</span><span class="default">$_SERVER</span><span class="keyword">[</span><span class="string">"SERVER_ADMIN"</span><span class="keyword">];<br />
+&nbsp;&nbsp; &nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">$mresult</span><span class="keyword">=</span><span class="default">mail</span><span class="keyword">(</span><span class="default">$email</span><span class="keyword">,</span><span class="string">"Debug Report for "</span><span class="keyword">.</span><span class="default">$_ENV</span><span class="keyword">[</span><span class="string">"HOSTNAME"</span><span class="keyword">].</span><span class="string">""</span><span class="keyword">,</span><span class="default">$message</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp;&nbsp; if(</span><span class="default">$mresult</span><span class="keyword">==</span><span class="default">1</span><span class="keyword">){<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; echo </span><span class="string">"Debug Report sent successfully.\n"</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp;&nbsp; else{<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; echo </span><span class="string">"Failed to send Debug Report.\n"</span><span class="keyword">;&nbsp; &nbsp; &nbsp; <br />
+&nbsp;&nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; }<br />
+}<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="19322""></a>
+  <div class="note">
+   <strong class="user">jgettys at gnuvox dot com</strong>
+   <a href="#19322" class="date">22-Feb-2002 07:09</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Simple routine to convert a get_defined_vars object to XML.<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">function </span><span class="default">obj2xml</span><span class="keyword">(</span><span class="default">$v</span><span class="keyword">, </span><span class="default">$indent</span><span class="keyword">=</span><span class="string">''</span><span class="keyword">) {<br />
+&nbsp; while (list(</span><span class="default">$key</span><span class="keyword">, </span><span class="default">$val</span><span class="keyword">) = </span><span class="default">each</span><span class="keyword">(</span><span class="default">$v</span><span class="keyword">)) {<br />
+&nbsp;&nbsp;&nbsp; if (</span><span class="default">$key </span><span class="keyword">== </span><span class="string">'__attr'</span><span class="keyword">) continue;<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// Check for __attr<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">if (</span><span class="default">is_object</span><span class="keyword">(</span><span class="default">$val</span><span class="keyword">-&gt;</span><span class="default">__attr</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp;&nbsp; while (list(</span><span class="default">$key2</span><span class="keyword">, </span><span class="default">$val2</span><span class="keyword">) = </span><span class="default">each</span><span class="keyword">(</span><span class="default">$val</span><span class="keyword">-&gt;</span><span class="default">__attr</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$attr </span><span class="keyword">.= </span><span class="string">" </span><span class="default">$key2</span><span class="string">=\"</span><span class="default">$val2</span><span class="string">\""</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; else </span><span class="default">$attr </span><span class="keyword">= </span><span class="string">''</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; if (</span><span class="default">is_array</span><span class="keyword">(</span><span class="default">$val</span><span class="keyword">) || </span><span class="default">is_object</span><span class="keyword">(</span><span class="default">$val</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp;&nbsp; print(</span><span class="string">"</span><span class="default">$indent</span><span class="string">&lt;</span><span class="default">$key$attr</span><span class="string">&gt;\n"</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">obj2xml</span><span class="keyword">(</span><span class="default">$val</span><span class="keyword">, </span><span class="default">$indent</span><span class="keyword">.</span><span class="string">'&nbsp; '</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp;&nbsp; print(</span><span class="string">"</span><span class="default">$indent</span><span class="string">&lt;/</span><span class="default">$key</span><span class="string">&gt;\n"</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; else print(</span><span class="string">"</span><span class="default">$indent</span><span class="string">&lt;</span><span class="default">$key$attr</span><span class="string">&gt;</span><span class="default">$val</span><span class="string">&lt;/</span><span class="default">$key</span><span class="string">&gt;\n"</span><span class="keyword">);<br />
+&nbsp; }<br />
+}<br />
+<br />
+</span><span class="comment">//Example object<br />
+</span><span class="default">$x</span><span class="keyword">-&gt;</span><span class="default">name</span><span class="keyword">-&gt;</span><span class="default">first </span><span class="keyword">= </span><span class="string">"John"</span><span class="keyword">;<br />
+</span><span class="default">$x</span><span class="keyword">-&gt;</span><span class="default">name</span><span class="keyword">-&gt;</span><span class="default">last </span><span class="keyword">= </span><span class="string">"Smith"</span><span class="keyword">;<br />
+</span><span class="default">$x</span><span class="keyword">-&gt;</span><span class="default">arr</span><span class="keyword">[</span><span class="string">'Fruit'</span><span class="keyword">] = </span><span class="string">'Bannana'</span><span class="keyword">;<br />
+</span><span class="default">$x</span><span class="keyword">-&gt;</span><span class="default">arr</span><span class="keyword">[</span><span class="string">'Veg'</span><span class="keyword">] = </span><span class="string">'Carrot'</span><span class="keyword">;<br />
+</span><span class="default">$y</span><span class="keyword">-&gt;</span><span class="default">customer </span><span class="keyword">= </span><span class="default">$x</span><span class="keyword">;<br />
+</span><span class="default">$y</span><span class="keyword">-&gt;</span><span class="default">customer</span><span class="keyword">-&gt;</span><span class="default">__attr</span><span class="keyword">-&gt;</span><span class="default">id</span><span class="keyword">=</span><span class="string">'176C4'</span><span class="keyword">;<br />
+<br />
+</span><span class="default">$z </span><span class="keyword">= </span><span class="default">get_defined_vars</span><span class="keyword">();<br />
+</span><span class="default">obj2xml</span><span class="keyword">(</span><span class="default">$z</span><span class="keyword">[</span><span class="string">'y'</span><span class="keyword">]);<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+will output:<br />
+&lt;customer id="176C4"&gt;<br />
+&nbsp; &lt;name&gt;<br />
+&nbsp;&nbsp;&nbsp; &lt;first&gt;John&lt;/first&gt;<br />
+&nbsp;&nbsp;&nbsp; &lt;last&gt;Smith&lt;/last&gt;<br />
+&nbsp; &lt;/name&gt;<br />
+&nbsp; &lt;arr&gt;<br />
+&nbsp;&nbsp;&nbsp; &lt;Fruit&gt;Bannana&lt;/Fruit&gt;<br />
+&nbsp;&nbsp;&nbsp; &lt;Veg&gt;Carrot&lt;/Veg&gt;<br />
+&nbsp; &lt;/arr&gt;<br />
+&lt;/customer&gt;</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="function.floatval.html">floatval</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.get-resource-type.html">get_resource_type</a></div>
  <div class="up"><a href="ref.var.html">Variable handling Functions</a></div>

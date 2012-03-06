@@ -117,7 +117,121 @@ returned by <span class="function"><a href="function.mysqli-connect.html" class=
  </div>
 
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="96048""></a>
+  <div class="note">
+   <strong class="user">mitchind</strong>
+   <a href="#96048" class="date">04-Feb-2010 08:28</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+After reading through original notes and example above as well as wading through the documentation, I finally got a loop to work with two stored procedures.<br />
+<br />
+Using the results of the first one as a parameter for the second one. Easier to do this way than a huge modified sequence of Inner Join queries.<br />
+<br />
+Hope this helps others...<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="comment">// Connect to server and database<br />
+</span><span class="default">$mysqli&nbsp; &nbsp; &nbsp; &nbsp; </span><span class="keyword">= new </span><span class="default">mysqli</span><span class="keyword">(</span><span class="string">"</span><span class="default">$dbServer</span><span class="string">"</span><span class="keyword">, </span><span class="string">"</span><span class="default">$dbUser</span><span class="string">"</span><span class="keyword">, </span><span class="string">"</span><span class="default">$dbPass</span><span class="string">"</span><span class="keyword">, </span><span class="string">"</span><span class="default">$dbName</span><span class="string">"</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">// Open First Stored Procedure using MYSQLI_STORE_RESULT to retain for looping<br />
+</span><span class="default">$resultPicks </span><span class="keyword">= </span><span class="default">$mysqli</span><span class="keyword">-&gt;</span><span class="default">query</span><span class="keyword">(</span><span class="string">"CALL </span><span class="default">$proc</span><span class="string"> (</span><span class="default">$searchDate</span><span class="string">, </span><span class="default">$maxRSI</span><span class="string">, </span><span class="default">$incRSI</span><span class="string">, </span><span class="default">$minMACD</span><span class="string">, </span><span class="default">$minVol</span><span class="string">, </span><span class="default">$minTrades</span><span class="string">, </span><span class="default">$minClose</span><span class="string">, </span><span class="default">$maxClose</span><span class="string">)"</span><span class="keyword">, </span><span class="default">MYSQLI_STORE_RESULT</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">// process one row at a time from first SP<br />
+</span><span class="keyword">while(</span><span class="default">$picksRow </span><span class="keyword">= </span><span class="default">$resultPicks</span><span class="keyword">-&gt;</span><span class="default">fetch_array</span><span class="keyword">(</span><span class="default">MYSQLI_ASSOC</span><span class="keyword">)) {<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// Get Parameter for next SP<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$symbol&nbsp; &nbsp;&nbsp; </span><span class="keyword">= </span><span class="default">$picksRow</span><span class="keyword">[</span><span class="string">'Symbol'</span><span class="keyword">];<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// Free stored results<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">clearStoredResults</span><span class="keyword">(</span><span class="default">$mysqli</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// Execute second SP using value from first as a parameter (MYSQLI_USE_RESULT and free result right away)<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$resultData&nbsp; &nbsp; </span><span class="keyword">= </span><span class="default">$mysqli</span><span class="keyword">-&gt;</span><span class="default">query</span><span class="keyword">(</span><span class="string">"CALL prcGetLastMACDDatesBelowZero('</span><span class="default">$symbol</span><span class="string">', </span><span class="default">$searchDate</span><span class="string">)"</span><span class="keyword">, </span><span class="default">MYSQLI_USE_RESULT</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$dataRow&nbsp; &nbsp; </span><span class="keyword">= </span><span class="default">$resultData</span><span class="keyword">-&gt;</span><span class="default">fetch_array</span><span class="keyword">(</span><span class="default">MYSQLI_ASSOC</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// Dump result from both related queries<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">echo </span><span class="string">"&lt;p&gt;</span><span class="default">$symbol</span><span class="string"> ... Num Dates: " </span><span class="keyword">. </span><span class="default">$dataRow</span><span class="keyword">[</span><span class="string">'NumDates'</span><span class="keyword">];<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// Free results from second SP<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$resultData</span><span class="keyword">-&gt;</span><span class="default">free</span><span class="keyword">();<br />
+<br />
+}<br />
+<br />
+</span><span class="comment">// Free results from first SP<br />
+</span><span class="default">$resultPicks</span><span class="keyword">-&gt;</span><span class="default">free</span><span class="keyword">();<br />
+<br />
+</span><span class="comment">// close connections<br />
+</span><span class="default">$mysqli</span><span class="keyword">-&gt;</span><span class="default">close</span><span class="keyword">();<br />
+<br />
+</span><span class="comment">#------------------------------------------<br />
+</span><span class="keyword">function </span><span class="default">clearStoredResults</span><span class="keyword">(</span><span class="default">$mysqli_link</span><span class="keyword">){<br />
+</span><span class="comment">#------------------------------------------<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">while(</span><span class="default">$mysqli_link</span><span class="keyword">-&gt;</span><span class="default">next_result</span><span class="keyword">()){<br />
+&nbsp;&nbsp; &nbsp;&nbsp; if(</span><span class="default">$l_result </span><span class="keyword">= </span><span class="default">$mysqli_link</span><span class="keyword">-&gt;</span><span class="default">store_result</span><span class="keyword">()){<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$l_result</span><span class="keyword">-&gt;</span><span class="default">free</span><span class="keyword">();<br />
+&nbsp;&nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; }<br />
+}<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="92352""></a>
+  <div class="note">
+   <strong class="user">Warner</strong>
+   <a href="#92352" class="date">21-Jul-2009 02:45</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+It also seems, that executing a SET statement in multi_query() returns an extra recordset too, which one would not expect.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="74478""></a>
+  <div class="note">
+   <strong class="user">lau at goldenweb dot com dot au</strong>
+   <a href="#74478" class="date">13-Apr-2007 01:29</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Beware when using stored procedures:<br />
+If you connect to the database and then call dbproc A followed by a call to db proc B and then close the connection to the db, the second procedure call will not work.<br />
+<br />
+It looks like there is a bug in MYSQL or mysqli that returns an extra recordset than you would expect. It then doesn't let you call another stored procedure until you finish processing all the recordsets from the first stored procedure call. <br />
+<br />
+The solution is to simply loop through the additional recordsets between calls to db procs. Here is a function that I call between db proc calls:<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="comment">#--------------------------------<br />
+</span><span class="keyword">function </span><span class="default">ClearRecordsets</span><span class="keyword">(</span><span class="default">$p_Result</span><span class="keyword">){<br />
+</span><span class="comment">#--------------------------------<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$p_Result</span><span class="keyword">-&gt;</span><span class="default">free</span><span class="keyword">();&nbsp; &nbsp; <br />
+&nbsp;&nbsp;&nbsp; while(</span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">Mysqli</span><span class="keyword">-&gt;</span><span class="default">next_result</span><span class="keyword">()){<br />
+&nbsp;&nbsp; &nbsp;&nbsp; if(</span><span class="default">$l_result </span><span class="keyword">= </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">Mysqli</span><span class="keyword">-&gt;</span><span class="default">store_result</span><span class="keyword">()){<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$l_result</span><span class="keyword">-&gt;</span><span class="default">free</span><span class="keyword">();<br />
+&nbsp;&nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; }<br />
+}<br />
+<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="mysqli.stmt-init.html">mysqli::stmt_init</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="mysqli.thread-id.html">mysqli::$thread_id</a></div>
  <div class="up"><a href="class.mysqli.html">mysqli</a></div>

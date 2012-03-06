@@ -167,7 +167,117 @@
   </p>
  </div>
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="86107""></a>
+  <div class="note">
+   <strong class="user">broom at alturnanetworks dot com</strong>
+   <a href="#86107" class="date">03-Oct-2008 04:49</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+<span class="default">&lt;?php<br />
+</span><span class="comment">/** <br />
+&nbsp;* Function returns contents via FTP connection and returns it as string (right version...)<br />
+&nbsp;*/<br />
+</span><span class="keyword">function </span><span class="default">ftp_get_contents </span><span class="keyword">(</span><span class="default">$conn_id</span><span class="keyword">, </span><span class="default">$filename</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">//Create temp handler:<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$tempHandle </span><span class="keyword">= </span><span class="default">fopen</span><span class="keyword">(</span><span class="string">'php://temp'</span><span class="keyword">, </span><span class="string">'r+'</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">//Get file from FTP:<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">if (@</span><span class="default">ftp_fget</span><span class="keyword">(</span><span class="default">$conn_id</span><span class="keyword">, </span><span class="default">$tempHandle</span><span class="keyword">, </span><span class="default">$filename</span><span class="keyword">, </span><span class="default">FTP_ASCII</span><span class="keyword">, </span><span class="default">0</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">rewind</span><span class="keyword">(</span><span class="default">$tempHandle</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">stream_get_contents</span><span class="keyword">(</span><span class="default">$tempHandle</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; } else {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">false</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+}<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="86106""></a>
+  <div class="note">
+   <strong class="user">broom at alturnanetworks dot com</strong>
+   <a href="#86106" class="date">03-Oct-2008 04:18</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Another ftp_get_contents approach, using a temperary stream handler. Returns file contents as string. <br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">function </span><span class="default">ftp_get_contents </span><span class="keyword">(</span><span class="default">$conn_id</span><span class="keyword">, </span><span class="default">$filename</span><span class="keyword">,<br />
+</span><span class="comment">//Create temp handler:<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$tempHandle </span><span class="keyword">= </span><span class="default">fopen</span><span class="keyword">(</span><span class="string">'php://temp'</span><span class="keyword">, </span><span class="string">'r+'</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">//Get file from FTP assuming that it exists:<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">ftp_fget</span><span class="keyword">(</span><span class="default">$conn_id</span><span class="keyword">, </span><span class="default">$tempHandle</span><span class="keyword">, </span><span class="default">$filename</span><span class="keyword">, </span><span class="default">FTP_ASCII</span><span class="keyword">, </span><span class="default">0</span><span class="keyword">));<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">//Getting detailed stats to check filesize:<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$fstats </span><span class="keyword">= </span><span class="default">fstat</span><span class="keyword">(</span><span class="default">$tempHandle</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">fread</span><span class="keyword">(</span><span class="default">$tempHandle</span><span class="keyword">, </span><span class="default">$fstats</span><span class="keyword">[</span><span class="string">'size'</span><span class="keyword">]);<br />
+}<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="80912""></a>
+  <div class="note">
+   <strong class="user">justrafi at gmail dot com</strong>
+   <a href="#80912" class="date">06-Feb-2008 08:44</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I was in need to synchronize two folders on two separate servers, one is a Windows server, and the other is a Linux server. I created this short and sweet function to help me do this. PLEASE NOTICE: This will not copy folders, and probably will fail if remote folder contains anything else than files.<br />
+<br />
+function sync_folders($host, $port, $username, $password, $remote_dir, $local_dir, $passive_mode = true) {<br />
+&nbsp;&nbsp;&nbsp; $conn_id = ftp_connect($host, $port);<br />
+&nbsp;&nbsp;&nbsp; if (!$conn_id) return false; # fail to connect<br />
+&nbsp;&nbsp;&nbsp; if (!ftp_login($conn_id, $username, $password)) { ftp_close($conn_id); return false; }&nbsp; # fail to login<br />
+&nbsp;&nbsp;&nbsp; ftp_pasv($conn_id, $passive_mode);<br />
+&nbsp;&nbsp;&nbsp; if (!ftp_chdir($conn_id, $remote_dir)) { ftp_close($conn_id); return false; } # fail to change dir<br />
+&nbsp;&nbsp;&nbsp; if (substr($local_dir, -1) != '/') $local_dir .= '/';<br />
+<br />
+&nbsp;&nbsp;&nbsp; $list = ftp_nlist($conn_id, '.');<br />
+&nbsp;&nbsp;&nbsp; sort($list);<br />
+&nbsp;&nbsp;&nbsp; foreach ($list as $file) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if (!file_exists($local_dir . $file)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $is_copied = ftp_get($conn_id, $local_dir . $file, $file, FTP_BINARY);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; ftp_close($conn_id);<br />
+&nbsp;&nbsp;&nbsp; return true;<br />
+}</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="24974""></a>
+  <div class="note">
+   <strong class="user">rodrigo-rocha at oi dot net dot br</strong>
+   <a href="#24974" class="date">06-Sep-2002 07:56</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+If you suply only a filename to the second parameter of function the ftp_get will open a pointer to the local file creating it and write to it.It's ok if your server dont execute for to mutch time and you dont get too many files but if you do it too many times the pointers created by ftp_get will not be closed and will end your opened files capacity at your server making it to do not open any more files until you restart it.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="function.ftp-exec.html">ftp_exec</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.ftp-fput.html">ftp_fput</a></div>
  <div class="up"><a href="ref.ftp.html">FTP Functions</a></div>

@@ -44,7 +44,113 @@ line3
     </div>
    </div>
   </p>
- </div><hr /><div class="manualnavbar" style="text-align: center;">
+ </div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="99283""></a>
+  <div class="note">
+   <strong class="user">pfe dot skh at gmail dot com</strong>
+   <a href="#99283" class="date">08-Aug-2010 09:47</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Example of stream used with databases :<br />
+<br />
+Requirement :<br />
+A MySQL database with a table named data structured as follow :<br />
+CREATE TABLE IF NOT EXISTS `data` (<br />
+&nbsp; `id` int(10) unsigned NOT NULL AUTO_INCREMENT,<br />
+&nbsp; `data` varchar(255) NOT NULL,<br />
+&nbsp; `when_inserted` datetime NOT NULL,<br />
+&nbsp; PRIMARY KEY (`id`)<br />
+) ENGINE=MyISAM&nbsp; DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;<br />
+<br />
+Now with the stream implementation :<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+</span><span class="keyword">class </span><span class="default">DBStream </span><span class="keyword">{<br />
+&nbsp;&nbsp;&nbsp; private </span><span class="default">$_pdo</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; private </span><span class="default">$_ps</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; private </span><span class="default">$_rowId </span><span class="keyword">= </span><span class="default">0</span><span class="keyword">;<br />
+<br />
+&nbsp;&nbsp;&nbsp; function </span><span class="default">stream_open</span><span class="keyword">(</span><span class="default">$path</span><span class="keyword">, </span><span class="default">$mode</span><span class="keyword">, </span><span class="default">$options</span><span class="keyword">, &amp;</span><span class="default">$opath</span><span class="keyword">)<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$url </span><span class="keyword">= </span><span class="default">parse_url</span><span class="keyword">(</span><span class="default">$path</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$url</span><span class="keyword">[</span><span class="string">'path'</span><span class="keyword">] = </span><span class="default">substr</span><span class="keyword">(</span><span class="default">$url</span><span class="keyword">[</span><span class="string">'path'</span><span class="keyword">], </span><span class="default">1</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; try{<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">_pdo </span><span class="keyword">= new </span><span class="default">PDO</span><span class="keyword">(</span><span class="string">"mysql:host=</span><span class="keyword">{</span><span class="default">$url</span><span class="keyword">[</span><span class="string">'host'</span><span class="keyword">]}</span><span class="string">;dbname=</span><span class="keyword">{</span><span class="default">$url</span><span class="keyword">[</span><span class="string">'path'</span><span class="keyword">]}</span><span class="string">"</span><span class="keyword">, </span><span class="default">$url</span><span class="keyword">[</span><span class="string">'user'</span><span class="keyword">], isset(</span><span class="default">$url</span><span class="keyword">[</span><span class="string">'pass'</span><span class="keyword">])? </span><span class="default">$url</span><span class="keyword">[</span><span class="string">'pass'</span><span class="keyword">] : </span><span class="string">''</span><span class="keyword">, array());<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; } catch(</span><span class="default">PDOException $e</span><span class="keyword">){ return </span><span class="default">false</span><span class="keyword">; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; switch (</span><span class="default">$mode</span><span class="keyword">){<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; case </span><span class="string">'w' </span><span class="keyword">: <br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">_ps </span><span class="keyword">= </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">_pdo</span><span class="keyword">-&gt;</span><span class="default">prepare</span><span class="keyword">(</span><span class="string">'INSERT INTO data VALUES(null, ?, NOW())'</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; break;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; case </span><span class="string">'r' </span><span class="keyword">: <br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">_ps </span><span class="keyword">= </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">_pdo</span><span class="keyword">-&gt;</span><span class="default">prepare</span><span class="keyword">(</span><span class="string">'SELECT id, data FROM data WHERE id &gt; ? LIMIT 1'</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; break;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; default&nbsp; : return </span><span class="default">false</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">true</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; function </span><span class="default">stream_read</span><span class="keyword">()<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">_ps</span><span class="keyword">-&gt;</span><span class="default">execute</span><span class="keyword">(array(</span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">_rowId</span><span class="keyword">));<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; if(</span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">_ps</span><span class="keyword">-&gt;</span><span class="default">rowCount</span><span class="keyword">() == </span><span class="default">0</span><span class="keyword">) return </span><span class="default">false</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">_ps</span><span class="keyword">-&gt;</span><span class="default">bindcolumn</span><span class="keyword">(</span><span class="default">1</span><span class="keyword">, </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">_rowId</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">_ps</span><span class="keyword">-&gt;</span><span class="default">bindcolumn</span><span class="keyword">(</span><span class="default">2</span><span class="keyword">, </span><span class="default">$ret</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">_ps</span><span class="keyword">-&gt;</span><span class="default">fetch</span><span class="keyword">();<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; return </span><span class="default">$ret</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; function </span><span class="default">stream_write</span><span class="keyword">(</span><span class="default">$data</span><span class="keyword">)<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">_ps</span><span class="keyword">-&gt;</span><span class="default">execute</span><span class="keyword">(array(</span><span class="default">$data</span><span class="keyword">));<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">strlen</span><span class="keyword">(</span><span class="default">$data</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; function </span><span class="default">stream_tell</span><span class="keyword">()<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">_rowId</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; function </span><span class="default">stream_eof</span><span class="keyword">()<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">_ps</span><span class="keyword">-&gt;</span><span class="default">execute</span><span class="keyword">(array(</span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">_rowId</span><span class="keyword">));<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return (bool) </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">_ps</span><span class="keyword">-&gt;</span><span class="default">rowCount</span><span class="keyword">();<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; function </span><span class="default">stream_seek</span><span class="keyword">(</span><span class="default">$offset</span><span class="keyword">, </span><span class="default">$step</span><span class="keyword">)<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">//No need to be implemented<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">}<br />
+}<br />
+<br />
+</span><span class="default">stream_register_wrapper</span><span class="keyword">(</span><span class="string">'db'</span><span class="keyword">, </span><span class="string">'DBStream'</span><span class="keyword">);<br />
+<br />
+</span><span class="default">$fr </span><span class="keyword">= </span><span class="default">fopen</span><span class="keyword">(</span><span class="string">'db://testuser@localhost/testdb'</span><span class="keyword">, </span><span class="string">'r'</span><span class="keyword">);<br />
+</span><span class="default">$fw </span><span class="keyword">= </span><span class="default">fopen</span><span class="keyword">(</span><span class="string">'db://testuser:testpassword@localhost/testdb'</span><span class="keyword">, </span><span class="string">'w'</span><span class="keyword">);<br />
+</span><span class="comment">//The two forms above are accepted : for the former, the default password "" will be used<br />
+<br />
+</span><span class="default">$alg </span><span class="keyword">= </span><span class="default">hash_algos</span><span class="keyword">();<br />
+</span><span class="default">$al </span><span class="keyword">= </span><span class="default">$alg</span><span class="keyword">[</span><span class="default">array_rand</span><span class="keyword">(</span><span class="default">$alg</span><span class="keyword">)];<br />
+</span><span class="default">$data </span><span class="keyword">= </span><span class="default">hash</span><span class="keyword">(</span><span class="default">$al</span><span class="keyword">, </span><span class="default">rand</span><span class="keyword">(</span><span class="default">rand</span><span class="keyword">(</span><span class="default">0</span><span class="keyword">, </span><span class="default">9</span><span class="keyword">), </span><span class="default">rand</span><span class="keyword">(</span><span class="default">10</span><span class="keyword">, </span><span class="default">999</span><span class="keyword">))); </span><span class="comment">// Some random data to be written<br />
+</span><span class="default">fwrite</span><span class="keyword">(</span><span class="default">$fw</span><span class="keyword">, </span><span class="default">$data</span><span class="keyword">); </span><span class="comment">// Writing the data to the wrapper<br />
+</span><span class="keyword">while(</span><span class="default">$a </span><span class="keyword">= </span><span class="default">fread</span><span class="keyword">(</span><span class="default">$fr</span><span class="keyword">, </span><span class="default">256</span><span class="keyword">)){ </span><span class="comment">//A loop for reading from the wrapper<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">echo </span><span class="default">$a </span><span class="keyword">. </span><span class="string">'&lt;br /&gt;'</span><span class="keyword">;<br />
+}<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+Hope it helps, cheers ;)</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="stream.examples.html">Examples</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="class.streamwrapper.html">streamWrapper</a></div>
  <div class="up"><a href="stream.examples.html">Examples</a></div>

@@ -208,7 +208,528 @@ Array
   </p>
  </div>
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="93395""></a>
+  <div class="note">
+   <strong class="user">moshe at unirgy dot com</strong>
+   <a href="#93395" class="date">07-Sep-2009 04:47</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+A function/method to calculate the next workday, taking into account US federal holidays:<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">function </span><span class="default">getNextWorkDayTime</span><span class="keyword">(</span><span class="default">$date</span><span class="keyword">=</span><span class="default">null</span><span class="keyword">)<br />
+{<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$time </span><span class="keyword">= </span><span class="default">is_string</span><span class="keyword">(</span><span class="default">$date</span><span class="keyword">) ? </span><span class="default">strtotime</span><span class="keyword">(</span><span class="default">$date</span><span class="keyword">) : (</span><span class="default">is_int</span><span class="keyword">(</span><span class="default">$date</span><span class="keyword">) ? </span><span class="default">$date </span><span class="keyword">: </span><span class="default">time</span><span class="keyword">());<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$y </span><span class="keyword">= </span><span class="default">date</span><span class="keyword">(</span><span class="string">'Y'</span><span class="keyword">, </span><span class="default">$time</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// calculate federal holidays<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$holidays </span><span class="keyword">= array();<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// month/day (jan 1st). iteration/wday/month (3rd monday in january)<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$hdata </span><span class="keyword">= array(</span><span class="string">'1/1'</span><span class="comment">/*newyr*/</span><span class="keyword">, </span><span class="string">'7/4'</span><span class="comment">/*jul4*/</span><span class="keyword">, </span><span class="string">'11/11'</span><span class="comment">/*vet*/</span><span class="keyword">, </span><span class="string">'12/25'</span><span class="comment">/*xmas*/</span><span class="keyword">, </span><span class="string">'3/1/1'</span><span class="comment">/*mlk*/</span><span class="keyword">, </span><span class="string">'3/1/2'</span><span class="comment">/*pres*/</span><span class="keyword">, </span><span class="string">'5/1/5'</span><span class="comment">/*memo*/</span><span class="keyword">, </span><span class="string">'1/1/9'</span><span class="comment">/*labor*/</span><span class="keyword">, </span><span class="string">'2/1/10'</span><span class="comment">/*col*/</span><span class="keyword">, </span><span class="string">'4/4/11'</span><span class="comment">/*thanks*/</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; foreach (</span><span class="default">$hdata </span><span class="keyword">as </span><span class="default">$h1</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$h </span><span class="keyword">= </span><span class="default">explode</span><span class="keyword">(</span><span class="string">'/'</span><span class="keyword">, </span><span class="default">$h1</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if (</span><span class="default">sizeof</span><span class="keyword">(</span><span class="default">$h</span><span class="keyword">)==</span><span class="default">2</span><span class="keyword">) { </span><span class="comment">// by date<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$htime </span><span class="keyword">= </span><span class="default">mktime</span><span class="keyword">(</span><span class="default">0</span><span class="keyword">, </span><span class="default">0</span><span class="keyword">, </span><span class="default">0</span><span class="keyword">, </span><span class="default">$h</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">], </span><span class="default">$h</span><span class="keyword">[</span><span class="default">1</span><span class="keyword">], </span><span class="default">$y</span><span class="keyword">); </span><span class="comment">// time of holiday<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$w </span><span class="keyword">= </span><span class="default">date</span><span class="keyword">(</span><span class="string">'w'</span><span class="keyword">, </span><span class="default">$htime</span><span class="keyword">); </span><span class="comment">// get weekday of holiday<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$htime </span><span class="keyword">+= </span><span class="default">$w</span><span class="keyword">==</span><span class="default">0 </span><span class="keyword">? </span><span class="default">86400 </span><span class="keyword">: (</span><span class="default">$w</span><span class="keyword">==</span><span class="default">6 </span><span class="keyword">? -</span><span class="default">86400 </span><span class="keyword">: </span><span class="default">0</span><span class="keyword">); </span><span class="comment">// if weekend, adjust<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">} else { </span><span class="comment">// by weekday<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$htime </span><span class="keyword">= </span><span class="default">mktime</span><span class="keyword">(</span><span class="default">0</span><span class="keyword">, </span><span class="default">0</span><span class="keyword">, </span><span class="default">0</span><span class="keyword">, </span><span class="default">$h</span><span class="keyword">[</span><span class="default">2</span><span class="keyword">], </span><span class="default">1</span><span class="keyword">, </span><span class="default">$y</span><span class="keyword">); </span><span class="comment">// get 1st day of month<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$w </span><span class="keyword">= </span><span class="default">date</span><span class="keyword">(</span><span class="string">'w'</span><span class="keyword">, </span><span class="default">$htime</span><span class="keyword">); </span><span class="comment">// weekday of first day of month<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$d </span><span class="keyword">= </span><span class="default">1</span><span class="keyword">+(</span><span class="default">$h</span><span class="keyword">[</span><span class="default">1</span><span class="keyword">]-</span><span class="default">$w</span><span class="keyword">+</span><span class="default">7</span><span class="keyword">)%</span><span class="default">7</span><span class="keyword">; </span><span class="comment">// get to the 1st weekday<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">for (</span><span class="default">$t</span><span class="keyword">=</span><span class="default">$htime</span><span class="keyword">, </span><span class="default">$i</span><span class="keyword">=</span><span class="default">1</span><span class="keyword">; </span><span class="default">$i</span><span class="keyword">&lt;=</span><span class="default">$h</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">]; </span><span class="default">$i</span><span class="keyword">++, </span><span class="default">$d</span><span class="keyword">+=</span><span class="default">7</span><span class="keyword">) { </span><span class="comment">// iterate to nth weekday<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span class="default">$t </span><span class="keyword">= </span><span class="default">mktime</span><span class="keyword">(</span><span class="default">0</span><span class="keyword">, </span><span class="default">0</span><span class="keyword">, </span><span class="default">0</span><span class="keyword">, </span><span class="default">$h</span><span class="keyword">[</span><span class="default">2</span><span class="keyword">], </span><span class="default">$d</span><span class="keyword">, </span><span class="default">$y</span><span class="keyword">); </span><span class="comment">// get next weekday<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span class="keyword">if (</span><span class="default">date</span><span class="keyword">(</span><span class="string">'n'</span><span class="keyword">, </span><span class="default">$t</span><span class="keyword">)&gt;</span><span class="default">$h</span><span class="keyword">[</span><span class="default">2</span><span class="keyword">]) break; </span><span class="comment">// check that it's still in the same month<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span class="default">$htime </span><span class="keyword">= </span><span class="default">$t</span><span class="keyword">; </span><span class="comment">// valid<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">}<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$holidays</span><span class="keyword">[] = </span><span class="default">$htime</span><span class="keyword">; </span><span class="comment">// save the holiday<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">}<br />
+&nbsp;&nbsp;&nbsp; for (</span><span class="default">$i</span><span class="keyword">=</span><span class="default">0</span><span class="keyword">; </span><span class="default">$i</span><span class="keyword">&lt;</span><span class="default">5</span><span class="keyword">; </span><span class="default">$i</span><span class="keyword">++, </span><span class="default">$time</span><span class="keyword">+=</span><span class="default">86400</span><span class="keyword">) { </span><span class="comment">// 5 days should be enough to get to workday<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">if (</span><span class="default">in_array</span><span class="keyword">(</span><span class="default">date</span><span class="keyword">(</span><span class="string">'w'</span><span class="keyword">, </span><span class="default">$time</span><span class="keyword">), array(</span><span class="default">0</span><span class="keyword">, </span><span class="default">6</span><span class="keyword">))) continue; </span><span class="comment">// skip weekends<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">foreach (</span><span class="default">$holidays </span><span class="keyword">as </span><span class="default">$h</span><span class="keyword">) { </span><span class="comment">// iterate through holidays<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">if (</span><span class="default">$time</span><span class="keyword">&gt;=</span><span class="default">$h </span><span class="keyword">&amp;&amp; </span><span class="default">$time</span><span class="keyword">&lt;</span><span class="default">$h</span><span class="keyword">+</span><span class="default">86400</span><span class="keyword">) continue </span><span class="default">2</span><span class="keyword">; </span><span class="comment">// skip holidays<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">}<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; break; </span><span class="comment">// found the workday<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">}<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">$time</span><span class="keyword">;<br />
+}<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+<br />
+[EDIT BY danbrown AT php DOT net: Contains a bugfix by (yhbeh888 AT yahoo DOT com) on 24-FEB-2010 to address a bug in the "7th line counted from the bottom."]</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="93130""></a>
+  <div class="note">
+   <strong class="user">binupillai2003 at yahoo dot com(Binu V Pillai)</strong>
+   <a href="#93130" class="date">25-Aug-2009 12:32</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+<span class="default">&lt;?php<br />
+</span><span class="comment">/* Function to find the first and last day of the month from the given date.<br />
+*<br />
+* Author Binu v Pillai&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; binupillai2003@yahoo.com<br />
+* @Param&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; String&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; yyyy-mm-dd<br />
+*<br />
+*/<br />
+</span><span class="keyword">function </span><span class="default">findFirstAndLastDay</span><span class="keyword">(</span><span class="default">$anyDate</span><span class="keyword">)<br />
+{<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">//$anyDate&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; =&nbsp; &nbsp; '2009-08-25';&nbsp; &nbsp; // date format should be yyyy-mm-dd<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">list(</span><span class="default">$yr</span><span class="keyword">,</span><span class="default">$mn</span><span class="keyword">,</span><span class="default">$dt</span><span class="keyword">)&nbsp; &nbsp; =&nbsp; &nbsp; </span><span class="default">split</span><span class="keyword">(</span><span class="string">'-'</span><span class="keyword">,</span><span class="default">$anyDate</span><span class="keyword">);&nbsp; &nbsp; </span><span class="comment">// separate year, month and date<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$timeStamp&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span class="keyword">=&nbsp; &nbsp; </span><span class="default">mktime</span><span class="keyword">(</span><span class="default">0</span><span class="keyword">,</span><span class="default">0</span><span class="keyword">,</span><span class="default">0</span><span class="keyword">,</span><span class="default">$mn</span><span class="keyword">,</span><span class="default">1</span><span class="keyword">,</span><span class="default">$yr</span><span class="keyword">);&nbsp; &nbsp; </span><span class="comment">//Create time stamp of the first day from the give date.<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$firstDay&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span class="keyword">=&nbsp; &nbsp;&nbsp; </span><span class="default">date</span><span class="keyword">(</span><span class="string">'D'</span><span class="keyword">,</span><span class="default">$timeStamp</span><span class="keyword">);&nbsp; &nbsp; </span><span class="comment">//get first day of the given month<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">list(</span><span class="default">$y</span><span class="keyword">,</span><span class="default">$m</span><span class="keyword">,</span><span class="default">$t</span><span class="keyword">)&nbsp; &nbsp; &nbsp; &nbsp; =&nbsp; &nbsp;&nbsp; </span><span class="default">split</span><span class="keyword">(</span><span class="string">'-'</span><span class="keyword">,</span><span class="default">date</span><span class="keyword">(</span><span class="string">'Y-m-t'</span><span class="keyword">,</span><span class="default">$timeStamp</span><span class="keyword">)); </span><span class="comment">//Find the last date of the month and separating it<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$lastDayTimeStamp&nbsp; &nbsp; </span><span class="keyword">=&nbsp; &nbsp; </span><span class="default">mktime</span><span class="keyword">(</span><span class="default">0</span><span class="keyword">,</span><span class="default">0</span><span class="keyword">,</span><span class="default">0</span><span class="keyword">,</span><span class="default">$m</span><span class="keyword">,</span><span class="default">$t</span><span class="keyword">,</span><span class="default">$y</span><span class="keyword">);</span><span class="comment">//create time stamp of the last date of the give month<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$lastDay&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span class="keyword">=&nbsp; &nbsp; </span><span class="default">date</span><span class="keyword">(</span><span class="string">'D'</span><span class="keyword">,</span><span class="default">$lastDayTimeStamp</span><span class="keyword">);</span><span class="comment">// Find last day of the month<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$arrDay&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span class="keyword">=&nbsp; &nbsp; array(</span><span class="string">"</span><span class="default">$firstDay</span><span class="string">"</span><span class="keyword">,</span><span class="string">"</span><span class="default">$lastDay</span><span class="string">"</span><span class="keyword">); </span><span class="comment">// return the result in an array format.<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">return </span><span class="default">$arrDay</span><span class="keyword">;<br />
+}<br />
+<br />
+</span><span class="comment">//Usage<br />
+</span><span class="default">$dayArray</span><span class="keyword">=array();<br />
+</span><span class="default">$dayArray</span><span class="keyword">=</span><span class="default">findFirstAndLastDay</span><span class="keyword">(</span><span class="string">'2009-02-25'</span><span class="keyword">);<br />
+print </span><span class="default">$dayArray</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">];<br />
+print </span><span class="default">$dayArray</span><span class="keyword">[</span><span class="default">1</span><span class="keyword">];<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="87691""></a>
+  <div class="note">
+   <strong class="user">eric dot schultz at NOSPAM dot CyVon dot com</strong>
+   <a href="#87691" class="date">16-Dec-2008 06:33</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Here is another gmgetdate that is a little faster/suscint (no loops). <br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">function </span><span class="default">gmgetdate2</span><span class="keyword">(</span><span class="default">$ts </span><span class="keyword">= </span><span class="default">null</span><span class="keyword">){<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$k </span><span class="keyword">= array(</span><span class="string">'seconds'</span><span class="keyword">,</span><span class="string">'minutes'</span><span class="keyword">,</span><span class="string">'hours'</span><span class="keyword">,</span><span class="string">'mday'</span><span class="keyword">,<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="string">'wday'</span><span class="keyword">,</span><span class="string">'mon'</span><span class="keyword">,</span><span class="string">'year'</span><span class="keyword">,</span><span class="string">'yday'</span><span class="keyword">,</span><span class="string">'weekday'</span><span class="keyword">,</span><span class="string">'month'</span><span class="keyword">,</span><span class="default">0</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return(</span><span class="default">array_combine</span><span class="keyword">(</span><span class="default">$k</span><span class="keyword">,</span><span class="default">split</span><span class="keyword">(</span><span class="string">":"</span><span class="keyword">,<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">gmdate</span><span class="keyword">(</span><span class="string">'s:i:G:j:w:n:Y:z:l:F:U'</span><span class="keyword">,</span><span class="default">is_null</span><span class="keyword">(</span><span class="default">$ts</span><span class="keyword">)?</span><span class="default">time</span><span class="keyword">():</span><span class="default">$ts</span><span class="keyword">))));<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+It also returns the values in the same order as getdate.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="86395""></a>
+  <div class="note">
+   <strong class="user">Anonymous</strong>
+   <a href="#86395" class="date">16-Oct-2008 07:01</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I couldn't get the last 2 examples of gmgetdate() to work, so here's a modification that did work for me that behaves exactly like getdate() :<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">function </span><span class="default">gmgetdate</span><span class="keyword">(</span><span class="default">$timestamp </span><span class="keyword">= </span><span class="default">null</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; if (</span><span class="default">is_null</span><span class="keyword">(</span><span class="default">$timestamp</span><span class="keyword">)) { </span><span class="default">$timestamp </span><span class="keyword">= </span><span class="default">time</span><span class="keyword">(); }<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$dateParts </span><span class="keyword">= array(<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="string">'mday'&nbsp; &nbsp; </span><span class="keyword">=&gt; </span><span class="string">'j'</span><span class="keyword">,<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="string">'wday'&nbsp; &nbsp; </span><span class="keyword">=&gt; </span><span class="string">'w'</span><span class="keyword">,<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="string">'yday'&nbsp; &nbsp; </span><span class="keyword">=&gt; </span><span class="string">'z'</span><span class="keyword">,<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="string">'mon'&nbsp; &nbsp;&nbsp; </span><span class="keyword">=&gt; </span><span class="string">'n'</span><span class="keyword">,<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="string">'year'&nbsp; &nbsp; </span><span class="keyword">=&gt; </span><span class="string">'Y'</span><span class="keyword">,<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="string">'hours'&nbsp;&nbsp; </span><span class="keyword">=&gt; </span><span class="string">'G'</span><span class="keyword">,<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="string">'minutes' </span><span class="keyword">=&gt; </span><span class="string">'i'</span><span class="keyword">,<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="string">'seconds' </span><span class="keyword">=&gt; </span><span class="string">'s'</span><span class="keyword">,<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="string">'weekday' </span><span class="keyword">=&gt; </span><span class="string">'l'</span><span class="keyword">,<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="string">'month'&nbsp;&nbsp; </span><span class="keyword">=&gt; </span><span class="string">'F'</span><span class="keyword">,<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">0&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">=&gt; </span><span class="string">'U'<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp;&nbsp; while (list(</span><span class="default">$part</span><span class="keyword">, </span><span class="default">$format</span><span class="keyword">) = </span><span class="default">each</span><span class="keyword">(</span><span class="default">$dateParts</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$GMdateParts</span><span class="keyword">[</span><span class="default">$part</span><span class="keyword">] = </span><span class="default">gmdate</span><span class="keyword">(</span><span class="default">$format</span><span class="keyword">, </span><span class="default">$timestamp</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">$GMdateParts</span><span class="keyword">;<br />
+}<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="84986""></a>
+  <div class="note">
+   <strong class="user">chris AT cmbuckley DOT co DOT uk</strong>
+   <a href="#84986" class="date">08-Aug-2008 07:08</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+For those who want the gmgetdate function that matches the behaviour of getdate:<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">function </span><span class="default">gmgetdate</span><span class="keyword">(</span><span class="default">$timestamp </span><span class="keyword">= </span><span class="default">null</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; if (</span><span class="default">is_null</span><span class="keyword">(</span><span class="default">$timestamp</span><span class="keyword">)) { </span><span class="default">$timestamp </span><span class="keyword">= </span><span class="default">time</span><span class="keyword">(); }<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$dateParts </span><span class="keyword">= array(<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="string">'mday'&nbsp; &nbsp; </span><span class="keyword">=&gt; </span><span class="string">'j'</span><span class="keyword">,<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="string">'wday'&nbsp; &nbsp; </span><span class="keyword">=&gt; </span><span class="string">'w'</span><span class="keyword">,<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="string">'yday'&nbsp; &nbsp; </span><span class="keyword">=&gt; </span><span class="string">'z'</span><span class="keyword">,<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="string">'mon'&nbsp; &nbsp;&nbsp; </span><span class="keyword">=&gt; </span><span class="string">'n'</span><span class="keyword">,<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="string">'year'&nbsp; &nbsp; </span><span class="keyword">=&gt; </span><span class="string">'Y'</span><span class="keyword">,<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="string">'hours'&nbsp;&nbsp; </span><span class="keyword">=&gt; </span><span class="string">'G'</span><span class="keyword">,<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="string">'minutes' </span><span class="keyword">=&gt; </span><span class="string">'i'</span><span class="keyword">,<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="string">'seconds' </span><span class="keyword">=&gt; </span><span class="string">'s'</span><span class="keyword">,<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="string">'weekday' </span><span class="keyword">=&gt; </span><span class="string">'l'</span><span class="keyword">,<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="string">'month'&nbsp;&nbsp; </span><span class="keyword">=&gt; </span><span class="string">'F'</span><span class="keyword">,<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">0&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">=&gt; </span><span class="string">'U'<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp;&nbsp; while (list(, </span><span class="default">$value</span><span class="keyword">) = </span><span class="default">each</span><span class="keyword">(</span><span class="default">$dateParts</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$value </span><span class="keyword">= </span><span class="default">gmdate</span><span class="keyword">(</span><span class="default">$value</span><span class="keyword">, </span><span class="default">$timestamp</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if (</span><span class="default">is_numeric</span><span class="keyword">(</span><span class="default">$value</span><span class="keyword">)) { </span><span class="default">$value </span><span class="keyword">= (int)</span><span class="default">$value</span><span class="keyword">; }<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">$dateParts</span><span class="keyword">;<br />
+}<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="80333""></a>
+  <div class="note">
+   <strong class="user">timforte at gmail dot com</strong>
+   <a href="#80333" class="date">10-Jan-2008 08:07</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+It's worth noting that this is local time, not UTC/GMT - gmgetdate doesn't exist :(.<br />
+<br />
+The most logical way to handle date arithmetic without hitting DST problems is to work in UTC...<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">function </span><span class="default">add_days</span><span class="keyword">(</span><span class="default">$my_date</span><span class="keyword">,</span><span class="default">$numdays</span><span class="keyword">) {<br />
+&nbsp; </span><span class="default">$date_t </span><span class="keyword">= </span><span class="default">strtotime</span><span class="keyword">(</span><span class="default">$my_date</span><span class="keyword">.</span><span class="string">' UTC'</span><span class="keyword">);<br />
+&nbsp; return </span><span class="default">gmdate</span><span class="keyword">(</span><span class="string">'Y-m-d'</span><span class="keyword">,</span><span class="default">$date_t </span><span class="keyword">+ (</span><span class="default">$numdays</span><span class="keyword">*</span><span class="default">86400</span><span class="keyword">));<br />
+}<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+[it's even faster if you use gmmktime instead of strtotime]</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="71722""></a>
+  <div class="note">
+   <strong class="user">andre at anlex dot co dot za</strong>
+   <a href="#71722" class="date">13-Dec-2006 04:38</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I thought best to show a posseble way to go about bypassing the end month issue where the first day in a new month will have the monday of the week that it falls in - in the old month. Use the numbering of days as the constant and work you way from there.<br />
+<br />
+Example:<br />
+<span class="default">&lt;?php<br />
+</span><span class="comment">//-----------------------------<br />
+</span><span class="default">$now </span><span class="keyword">= </span><span class="default">time</span><span class="keyword">();<br />
+</span><span class="default">$num </span><span class="keyword">= </span><span class="default">date</span><span class="keyword">(</span><span class="string">"w"</span><span class="keyword">);<br />
+if (</span><span class="default">$num </span><span class="keyword">== </span><span class="default">0</span><span class="keyword">)<br />
+{ </span><span class="default">$sub </span><span class="keyword">= </span><span class="default">6</span><span class="keyword">; }<br />
+else { </span><span class="default">$sub </span><span class="keyword">= (</span><span class="default">$num</span><span class="keyword">-</span><span class="default">1</span><span class="keyword">); }<br />
+</span><span class="default">$WeekMon&nbsp; </span><span class="keyword">= </span><span class="default">mktime</span><span class="keyword">(</span><span class="default">0</span><span class="keyword">, </span><span class="default">0</span><span class="keyword">, </span><span class="default">0</span><span class="keyword">, </span><span class="default">date</span><span class="keyword">(</span><span class="string">"m"</span><span class="keyword">, </span><span class="default">$now</span><span class="keyword">)&nbsp; , </span><span class="default">date</span><span class="keyword">(</span><span class="string">"d"</span><span class="keyword">, </span><span class="default">$now</span><span class="keyword">)-</span><span class="default">$sub</span><span class="keyword">, </span><span class="default">date</span><span class="keyword">(</span><span class="string">"Y"</span><span class="keyword">, </span><span class="default">$now</span><span class="keyword">));&nbsp; &nbsp; </span><span class="comment">//monday week begin calculation<br />
+</span><span class="default">$todayh </span><span class="keyword">= </span><span class="default">getdate</span><span class="keyword">(</span><span class="default">$WeekMon</span><span class="keyword">); </span><span class="comment">//monday week begin reconvert<br />
+<br />
+</span><span class="default">$d </span><span class="keyword">= </span><span class="default">$todayh</span><span class="keyword">[</span><span class="default">mday</span><span class="keyword">];<br />
+</span><span class="default">$m </span><span class="keyword">= </span><span class="default">$todayh</span><span class="keyword">[</span><span class="default">mon</span><span class="keyword">];<br />
+</span><span class="default">$y </span><span class="keyword">= </span><span class="default">$todayh</span><span class="keyword">[</span><span class="default">year</span><span class="keyword">];<br />
+echo </span><span class="string">"</span><span class="default">$d</span><span class="string">-</span><span class="default">$m</span><span class="string">-</span><span class="default">$y</span><span class="string">"</span><span class="keyword">; </span><span class="comment">//getdate converted day<br />
+<br />
+</span><span class="default">?&gt;</span> <br />
+<br />
+Allot less code makes everyone happy..</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="71650""></a>
+  <div class="note">
+   <strong class="user">Jared Armstrong</strong>
+   <a href="#71650" class="date">09-Dec-2006 10:05</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+A nice little function I wrote to determine what number occurrence weekday it is of the month for a given timestamp. (I.e. 2nd Friday, or the 3rd Thursday)<br />
+<br />
+Eg: print_r(getWeekdayOccurrence(mktime(0, 0, 0, 12, 1, 2006)));<br />
+Outputs: Array ( [0] =&gt; 1 [1] =&gt; Friday )&nbsp; [The first friday]<br />
+<br />
+Eg. print_r(getWeekdayOccurrence(mktime(0, 0, 0, 8, 17, 2009)));<br />
+Outputs: Array ( [0] =&gt; 3 [1] =&gt; Monday ) [The third Monday]<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">function </span><span class="default">getWeekdayOccurrence</span><span class="keyword">(</span><span class="default">$time</span><span class="keyword">) { <br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$month </span><span class="keyword">= </span><span class="default">intval</span><span class="keyword">(</span><span class="default">date</span><span class="keyword">(</span><span class="string">"m"</span><span class="keyword">, </span><span class="default">$time</span><span class="keyword">)); </span><span class="default">$day </span><span class="keyword">= </span><span class="default">intval</span><span class="keyword">(</span><span class="default">date</span><span class="keyword">(</span><span class="string">"d"</span><span class="keyword">, </span><span class="default">$time</span><span class="keyword">));<br />
+&nbsp;&nbsp;&nbsp; for (</span><span class="default">$i </span><span class="keyword">= </span><span class="default">0</span><span class="keyword">; </span><span class="default">$i </span><span class="keyword">&lt; </span><span class="default">7</span><span class="keyword">; </span><span class="default">$i</span><span class="keyword">++) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$days</span><span class="keyword">[] = </span><span class="default">date</span><span class="keyword">(</span><span class="string">"l"</span><span class="keyword">, </span><span class="default">mktime</span><span class="keyword">(</span><span class="default">0</span><span class="keyword">, </span><span class="default">0</span><span class="keyword">, </span><span class="default">0</span><span class="keyword">, </span><span class="default">$month</span><span class="keyword">, (</span><span class="default">$i</span><span class="keyword">+</span><span class="default">1</span><span class="keyword">), </span><span class="default">date</span><span class="keyword">(</span><span class="string">"Y"</span><span class="keyword">, </span><span class="default">$time</span><span class="keyword">)));&nbsp; &nbsp; <br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$posd&nbsp; </span><span class="keyword">= </span><span class="default">array_search</span><span class="keyword">(</span><span class="default">date</span><span class="keyword">(</span><span class="string">"l"</span><span class="keyword">, </span><span class="default">$time</span><span class="keyword">), </span><span class="default">$days</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$posdm </span><span class="keyword">= </span><span class="default">array_search</span><span class="keyword">(</span><span class="default">$days</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">], </span><span class="default">$days</span><span class="keyword">) - </span><span class="default">$posd</span><span class="keyword">; /<br />
+<br />
+&nbsp;&nbsp;&nbsp; return array(((</span><span class="default">$day</span><span class="keyword">+</span><span class="default">$posdm</span><span class="keyword">+</span><span class="default">6</span><span class="keyword">)/</span><span class="default">7</span><span class="keyword">), </span><span class="default">$days</span><span class="keyword">[</span><span class="default">$posd</span><span class="keyword">]);&nbsp; &nbsp; &nbsp; &nbsp; <br />
+}<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="70633""></a>
+  <div class="note">
+   <strong class="user">cesar at nixar dot org</strong>
+   <a href="#70633" class="date">22-Oct-2006 08:49</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+<span class="default">&lt;?php<br />
+<br />
+&nbsp; </span><span class="comment">/**<br />
+&nbsp;&nbsp; *&nbsp; This function is similar to getdate() but it returns<br />
+&nbsp;&nbsp; * the month information.<br />
+&nbsp;&nbsp; *<br />
+&nbsp;&nbsp; *&nbsp; Returns an associative array containing the month<br />
+&nbsp;&nbsp; * information of the parameters, or the current month<br />
+&nbsp;&nbsp; * if no parameters are given.<br />
+&nbsp;&nbsp; *<br />
+&nbsp;&nbsp; */<br />
+<br />
+&nbsp; </span><span class="keyword">function </span><span class="default">getmonth </span><span class="keyword">(</span><span class="default">$month </span><span class="keyword">= </span><span class="default">null</span><span class="keyword">, </span><span class="default">$year </span><span class="keyword">= </span><span class="default">null</span><span class="keyword">)<br />
+&nbsp; {<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="comment">// The current month is used if none is supplied.<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="keyword">if (</span><span class="default">is_null</span><span class="keyword">(</span><span class="default">$month</span><span class="keyword">))<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$month </span><span class="keyword">= </span><span class="default">date</span><span class="keyword">(</span><span class="string">'n'</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="comment">// The current year is used if none is supplied.<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="keyword">if (</span><span class="default">is_null</span><span class="keyword">(</span><span class="default">$year</span><span class="keyword">))<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$year </span><span class="keyword">= </span><span class="default">date</span><span class="keyword">(</span><span class="string">'Y'</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="comment">// Verifying if the month exist<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="keyword">if (!</span><span class="default">checkdate</span><span class="keyword">(</span><span class="default">$month</span><span class="keyword">, </span><span class="default">1</span><span class="keyword">, </span><span class="default">$year</span><span class="keyword">))<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">null</span><span class="keyword">;<br />
+<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="comment">// Calculating the days of the month<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">$first_of_month </span><span class="keyword">= </span><span class="default">mktime</span><span class="keyword">(</span><span class="default">0</span><span class="keyword">, </span><span class="default">0</span><span class="keyword">, </span><span class="default">0</span><span class="keyword">, </span><span class="default">$month</span><span class="keyword">, </span><span class="default">1</span><span class="keyword">, </span><span class="default">$year</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">$days_in_month </span><span class="keyword">= </span><span class="default">date</span><span class="keyword">(</span><span class="string">'t'</span><span class="keyword">, </span><span class="default">$first_of_month</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">$last_of_month </span><span class="keyword">= </span><span class="default">mktime</span><span class="keyword">(</span><span class="default">0</span><span class="keyword">, </span><span class="default">0</span><span class="keyword">, </span><span class="default">0</span><span class="keyword">, </span><span class="default">$month</span><span class="keyword">, </span><span class="default">$days_in_month</span><span class="keyword">, </span><span class="default">$year</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">$m </span><span class="keyword">= array();<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">$m</span><span class="keyword">[</span><span class="string">'first_mday'</span><span class="keyword">] = </span><span class="default">1</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">$m</span><span class="keyword">[</span><span class="string">'first_wday'</span><span class="keyword">] = </span><span class="default">date</span><span class="keyword">(</span><span class="string">'w'</span><span class="keyword">, </span><span class="default">$first_of_month</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">$m</span><span class="keyword">[</span><span class="string">'first_weekday'</span><span class="keyword">] = </span><span class="default">strftime</span><span class="keyword">(</span><span class="string">'%A'</span><span class="keyword">, </span><span class="default">$first_of_month</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">$m</span><span class="keyword">[</span><span class="string">'first_yday'</span><span class="keyword">] = </span><span class="default">date</span><span class="keyword">(</span><span class="string">'z'</span><span class="keyword">, </span><span class="default">$first_of_month</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">$m</span><span class="keyword">[</span><span class="string">'first_week'</span><span class="keyword">] = </span><span class="default">date</span><span class="keyword">(</span><span class="string">'W'</span><span class="keyword">, </span><span class="default">$first_of_month</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">$m</span><span class="keyword">[</span><span class="string">'last_mday'</span><span class="keyword">] = </span><span class="default">$days_in_month</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">$m</span><span class="keyword">[</span><span class="string">'last_wday'</span><span class="keyword">] = </span><span class="default">date</span><span class="keyword">(</span><span class="string">'w'</span><span class="keyword">, </span><span class="default">$last_of_month</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">$m</span><span class="keyword">[</span><span class="string">'last_weekday'</span><span class="keyword">] = </span><span class="default">strftime</span><span class="keyword">(</span><span class="string">'%A'</span><span class="keyword">, </span><span class="default">$last_of_month</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">$m</span><span class="keyword">[</span><span class="string">'last_yday'</span><span class="keyword">] = </span><span class="default">date</span><span class="keyword">(</span><span class="string">'z'</span><span class="keyword">, </span><span class="default">$last_of_month</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">$m</span><span class="keyword">[</span><span class="string">'last_week'</span><span class="keyword">] = </span><span class="default">date</span><span class="keyword">(</span><span class="string">'W'</span><span class="keyword">, </span><span class="default">$last_of_month</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">$m</span><span class="keyword">[</span><span class="string">'mon'</span><span class="keyword">] = </span><span class="default">$month</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">$m</span><span class="keyword">[</span><span class="string">'month'</span><span class="keyword">] = </span><span class="default">strftime</span><span class="keyword">(</span><span class="string">'%B'</span><span class="keyword">, </span><span class="default">$first_of_month</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">$m</span><span class="keyword">[</span><span class="string">'year'</span><span class="keyword">] = </span><span class="default">$year</span><span class="keyword">;<br />
+<br />
+&nbsp;&nbsp; &nbsp;&nbsp; return </span><span class="default">$m</span><span class="keyword">;<br />
+&nbsp; }<br />
+<br />
+&nbsp; </span><span class="comment">// Output<br />
+&nbsp; </span><span class="default">print_r</span><span class="keyword">(</span><span class="default">getmonth</span><span class="keyword">(</span><span class="default">11</span><span class="keyword">, </span><span class="default">1978</span><span class="keyword">));<br />
+&nbsp; </span><span class="default">print_r</span><span class="keyword">(</span><span class="default">getmonth</span><span class="keyword">());<br />
+<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="62598""></a>
+  <div class="note">
+   <strong class="user">Cas_AT_NUY_DOT_INFO</strong>
+   <a href="#62598" class="date">04-Mar-2006 05:47</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+<span class="default">&lt;?php<br />
+</span><span class="comment">// This functions calculates the next date only using business days<br />
+// 2 parameters, the startdate and the number of businessdays to add<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">function </span><span class="default">calcduedate</span><span class="keyword">(</span><span class="default">$datecalc</span><span class="keyword">,</span><span class="default">$duedays</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$i </span><span class="keyword">= </span><span class="default">1</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; while (</span><span class="default">$i </span><span class="keyword">&lt;= </span><span class="default">$duedays</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$datecalc </span><span class="keyword">+= </span><span class="default">86400</span><span class="keyword">; </span><span class="comment">// Add a day.<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$date_info&nbsp; </span><span class="keyword">= </span><span class="default">getdate</span><span class="keyword">( </span><span class="default">$datecalc </span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if ((</span><span class="default">$date_info</span><span class="keyword">[</span><span class="string">"wday"</span><span class="keyword">] == </span><span class="default">0</span><span class="keyword">) or (</span><span class="default">$date_info</span><span class="keyword">[</span><span class="string">"wday"</span><span class="keyword">] == </span><span class="default">6</span><span class="keyword">) )&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$datecalc </span><span class="keyword">+= </span><span class="default">86400</span><span class="keyword">; </span><span class="comment">// Add a day.<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">continue;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$i</span><span class="keyword">++;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">$datecalc </span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="52737""></a>
+  <div class="note">
+   <strong class="user">leo25in at yahoo dot com</strong>
+   <a href="#52737" class="date">11-May-2005 05:17</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+getting weekday(actual date) from any give date.<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">function </span><span class="default">cal_date</span><span class="keyword">(</span><span class="default">$wday</span><span class="keyword">,</span><span class="default">$tstamp</span><span class="keyword">)<br />
+{<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">$tstamp</span><span class="keyword">-(</span><span class="default">$wday</span><span class="keyword">*(</span><span class="default">24</span><span class="keyword">*</span><span class="default">3600</span><span class="keyword">));<br />
+}<br />
+<br />
+function </span><span class="default">getweekday</span><span class="keyword">(</span><span class="default">$m</span><span class="keyword">,</span><span class="default">$d</span><span class="keyword">,</span><span class="default">$y</span><span class="keyword">)<br />
+{<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$tstamp</span><span class="keyword">=</span><span class="default">mktime</span><span class="keyword">(</span><span class="default">0</span><span class="keyword">,</span><span class="default">0</span><span class="keyword">,</span><span class="default">0</span><span class="keyword">,</span><span class="default">$m</span><span class="keyword">,</span><span class="default">$d</span><span class="keyword">,</span><span class="default">$y</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$Tdate </span><span class="keyword">= </span><span class="default">getdate</span><span class="keyword">(</span><span class="default">$tstamp</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$wday</span><span class="keyword">=</span><span class="default">$Tdate</span><span class="keyword">[</span><span class="string">"wday"</span><span class="keyword">];<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; switch(</span><span class="default">$wday</span><span class="keyword">)<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; case </span><span class="default">0</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$wstamp</span><span class="keyword">=</span><span class="default">cal_date</span><span class="keyword">(</span><span class="default">$wday</span><span class="keyword">,</span><span class="default">$tstamp</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">//echo date("Y-m-d",$wstamp);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">break;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; case </span><span class="default">1</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$wstamp</span><span class="keyword">=</span><span class="default">cal_date</span><span class="keyword">(</span><span class="default">$wday</span><span class="keyword">,</span><span class="default">$tstamp</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">//echo date("Y-m-d",$wstamp);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">break;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; case </span><span class="default">2</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$wstamp</span><span class="keyword">=</span><span class="default">cal_date</span><span class="keyword">(</span><span class="default">$wday</span><span class="keyword">,</span><span class="default">$tstamp</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">//echo date("Y-m-d",$wstamp);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">break;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; case </span><span class="default">3</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$wstamp</span><span class="keyword">=</span><span class="default">cal_date</span><span class="keyword">(</span><span class="default">$wday</span><span class="keyword">,</span><span class="default">$tstamp</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">//echo date("Y-m-d",$wstamp);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">break;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; case </span><span class="default">4</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$wstamp</span><span class="keyword">=</span><span class="default">cal_date</span><span class="keyword">(</span><span class="default">$wday</span><span class="keyword">,</span><span class="default">$tstamp</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">//echo date("Y-m-d",$wstamp);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">break;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; case </span><span class="default">5</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$wstamp</span><span class="keyword">=</span><span class="default">cal_date</span><span class="keyword">(</span><span class="default">$wday</span><span class="keyword">,</span><span class="default">$tstamp</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">//echo date("Y-m-d",$wstamp);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">break;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; case </span><span class="default">6</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$wstamp</span><span class="keyword">=</span><span class="default">cal_date</span><span class="keyword">(</span><span class="default">$wday</span><span class="keyword">,</span><span class="default">$tstamp</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">//echo date("Y-m-d",$wstamp);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">break;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; </span><span class="default">$w</span><span class="keyword">[</span><span class="string">"day"</span><span class="keyword">]=</span><span class="default">date</span><span class="keyword">(</span><span class="string">"d"</span><span class="keyword">,</span><span class="default">$wstamp</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; </span><span class="default">$w</span><span class="keyword">[</span><span class="string">"month"</span><span class="keyword">]=</span><span class="default">date</span><span class="keyword">(</span><span class="string">"m"</span><span class="keyword">,</span><span class="default">$wstamp</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; </span><span class="default">$w</span><span class="keyword">[</span><span class="string">"year"</span><span class="keyword">]=</span><span class="default">date</span><span class="keyword">(</span><span class="string">"Y"</span><span class="keyword">,</span><span class="default">$wstamp</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; <br />
+&nbsp;&nbsp; &nbsp; return </span><span class="default">$w</span><span class="keyword">;<br />
+<br />
+}<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="41758""></a>
+  <div class="note">
+   <strong class="user">getisomonday($year, $week)</strong>
+   <a href="#41758" class="date">21-Apr-2004 02:58</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+getdate does not convert week numbers. this function relies on strftime to find a timestamp that falls on the monday of specified year and ISO week:<br />
+<br />
+<span class="default">&lt;?php </span><span class="keyword">function </span><span class="default">getisomonday</span><span class="keyword">(</span><span class="default">$year</span><span class="keyword">, </span><span class="default">$week</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment"># check input<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$year </span><span class="keyword">= </span><span class="default">min </span><span class="keyword">(</span><span class="default">$year</span><span class="keyword">, </span><span class="default">2038</span><span class="keyword">); </span><span class="default">$year </span><span class="keyword">= </span><span class="default">max </span><span class="keyword">(</span><span class="default">$year</span><span class="keyword">, </span><span class="default">1970</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$week </span><span class="keyword">= </span><span class="default">min </span><span class="keyword">(</span><span class="default">$week</span><span class="keyword">, </span><span class="default">53</span><span class="keyword">); </span><span class="default">$week </span><span class="keyword">= </span><span class="default">max </span><span class="keyword">(</span><span class="default">$week</span><span class="keyword">, </span><span class="default">1</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment"># make a guess<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$monday </span><span class="keyword">= </span><span class="default">mktime </span><span class="keyword">(</span><span class="default">1</span><span class="keyword">,</span><span class="default">1</span><span class="keyword">,</span><span class="default">1</span><span class="keyword">,</span><span class="default">1</span><span class="keyword">,</span><span class="default">7</span><span class="keyword">*</span><span class="default">$week</span><span class="keyword">,</span><span class="default">$year</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment"># count down to week<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">while (</span><span class="default">strftime</span><span class="keyword">(</span><span class="string">'%V'</span><span class="keyword">, </span><span class="default">$monday</span><span class="keyword">) != </span><span class="default">$week</span><span class="keyword">)<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$monday </span><span class="keyword">-= </span><span class="default">60</span><span class="keyword">*</span><span class="default">60</span><span class="keyword">*</span><span class="default">24</span><span class="keyword">*</span><span class="default">7</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment"># count down to monday<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">while (</span><span class="default">strftime</span><span class="keyword">(</span><span class="string">'%u'</span><span class="keyword">, </span><span class="default">$monday</span><span class="keyword">) != </span><span class="default">1</span><span class="keyword">)<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$monday </span><span class="keyword">-= </span><span class="default">60</span><span class="keyword">*</span><span class="default">60</span><span class="keyword">*</span><span class="default">24</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment"># got it<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">return </span><span class="default">$monday</span><span class="keyword">;<br />
+} </span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="35799""></a>
+  <div class="note">
+   <strong class="user">Yura Pylypenko (plyrvt at mail dot ru)</strong>
+   <a href="#35799" class="date">15-Sep-2003 06:29</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+In addition to canby23 at ms19 post:<br />
+It's a very bad idea to consider day having 24 hours (86400 secs), because some days have 23, some - 25 hours due to daylight saving changes. Using of mkdate() and strtotime() is always preferred. strtotime() also has a very nice behaviour of datetime manipulations:<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">echo </span><span class="default">strtotime </span><span class="keyword">(</span><span class="string">"+1 day"</span><span class="keyword">), </span><span class="string">"\n"</span><span class="keyword">;<br />
+echo </span><span class="default">strtotime </span><span class="keyword">(</span><span class="string">"+1 week"</span><span class="keyword">), </span><span class="string">"\n"</span><span class="keyword">;<br />
+echo </span><span class="default">strtotime </span><span class="keyword">(</span><span class="string">"+1 week 2 days 4 hours 2 seconds"</span><span class="keyword">), </span><span class="string">"\n"</span><span class="keyword">;<br />
+echo </span><span class="default">strtotime </span><span class="keyword">(</span><span class="string">"next Thursday"</span><span class="keyword">), </span><span class="string">"\n"</span><span class="keyword">;<br />
+echo </span><span class="default">strtotime </span><span class="keyword">(</span><span class="string">"last Monday"</span><span class="keyword">), </span><span class="string">"\n"</span><span class="keyword">; <br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="function.date.html">date</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.gettimeofday.html">gettimeofday</a></div>
  <div class="up"><a href="ref.datetime.html">Date/Time Functions</a></div>

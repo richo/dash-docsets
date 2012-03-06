@@ -146,7 +146,236 @@
   </p>
  </div>
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="105290""></a>
+  <div class="note">
+   <strong class="user">strata_ranger at hotmail dot com</strong>
+   <a href="#105290" class="date">07-Aug-2011 08:20</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+This may seem obvious, but remember that pg_escape_string escapes values for use as string literals in an SQL query -- if you need to escape arbitrary strings for use as SQL identifiers (column names, etc.), there doesn't seem to be a PHP function for that so you'll have to do that escaping yourself.&nbsp; (PostgreSQL has an in-database function, quote_ident(), that does this.)<br />
+<br />
+This can be an issue if your database contains mixed-case (or otherwise unusual) column names and you have a class interface managing your database/query interactions (for connecting to different types of databases).&nbsp; If you don't double-quote your column names then postgreSQL will match them case-insensitively, but will label the results in all-lowercase (which differs from MySQL).<br />
+<br />
+For example:<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="comment">// Plain column identifier<br />
+</span><span class="default">$res </span><span class="keyword">= </span><span class="default">pg_query</span><span class="keyword">(</span><span class="string">"Select columnName from table"</span><span class="keyword">);<br />
+</span><span class="default">$row </span><span class="keyword">= </span><span class="default">pg_fetch_assoc</span><span class="keyword">(</span><span class="default">$res</span><span class="keyword">);<br />
+<br />
+</span><span class="default">var_dump</span><span class="keyword">(</span><span class="default">$row</span><span class="keyword">[</span><span class="string">'columnName'</span><span class="keyword">]); </span><span class="comment">// Doesn't work (throws E_NOTICE)<br />
+</span><span class="default">var_dump</span><span class="keyword">(</span><span class="default">$row</span><span class="keyword">[</span><span class="string">'columnname'</span><span class="keyword">]); </span><span class="comment">// Works<br />
+<br />
+// Escaped column identifier<br />
+</span><span class="default">$res </span><span class="keyword">= </span><span class="default">pg_query</span><span class="keyword">(</span><span class="string">"Select \"columnName\" from table"</span><span class="keyword">);<br />
+</span><span class="default">$row </span><span class="keyword">= </span><span class="default">pg_fetch_assoc</span><span class="keyword">(</span><span class="default">$res</span><span class="keyword">);<br />
+<br />
+</span><span class="default">var_dump</span><span class="keyword">(</span><span class="default">$row</span><span class="keyword">[</span><span class="string">'columnName'</span><span class="keyword">]); </span><span class="comment">// Works<br />
+</span><span class="default">var_dump</span><span class="keyword">(</span><span class="default">$row</span><span class="keyword">[</span><span class="string">'columnname'</span><span class="keyword">]); </span><span class="comment">// Doesn't<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="104690""></a>
+  <div class="note">
+   <strong class="user">ppp</strong>
+   <a href="#104690" class="date">30-Jun-2011 12:55</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+pg_escape_string() won't cast array arguments to the "Array" string like php usually does; it returns NULL instead. The following statements all evaluate to true:<br />
+<br />
+<span class="default">&lt;?php<br />
+$a </span><span class="keyword">= array(</span><span class="string">'foo'</span><span class="keyword">, </span><span class="string">'bar'</span><span class="keyword">);<br />
+<br />
+</span><span class="string">"</span><span class="default">$a</span><span class="string">" </span><span class="keyword">== </span><span class="string">'Array'</span><span class="keyword">;<br />
+(string)</span><span class="default">$a </span><span class="keyword">== </span><span class="string">'Array'</span><span class="keyword">;<br />
+</span><span class="default">$a </span><span class="keyword">. </span><span class="string">'' </span><span class="keyword">== </span><span class="string">'Array'</span><span class="keyword">;<br />
+<br />
+</span><span class="default">is_null</span><span class="keyword">(</span><span class="default">pg_escape_string</span><span class="keyword">(</span><span class="default">$a</span><span class="keyword">));<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="99023""></a>
+  <div class="note">
+   <strong class="user">strata_ranger at hotmail dot com</strong>
+   <a href="#99023" class="date">22-Jul-2010 10:40</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Forthose curious, the exact escaping performed on the string may vary slightly depending on your database configuration.<br />
+<br />
+For example, if your database's standard_conforming_strings variable is OFF, backslashes are treated as a special character and pg_escape_string() will ensure they are properly escaped.&nbsp; If this variable is ON, backslashes will be treated as ordinary characters, and pg_escape_string() will leave them as-is.&nbsp; In either case, the behavior matches the configuration of the database connection.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="80975""></a>
+  <div class="note">
+   <strong class="user">Nathan Bruer</strong>
+   <a href="#80975" class="date">08-Feb-2008 01:23</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+If your database is a UTF-8 database, you will run into problems trying to add some data into your database...<br />
+<br />
+for securty issues and/or compatability you may need to use the: utf_encode() (<a href="http://php.net/utf8-encode" rel="nofollow" target="_blank">http://php.net/utf8-encode</a>) function.<br />
+<br />
+for example:<br />
+<span class="default">&lt;?php<br />
+$my_data </span><span class="keyword">= </span><span class="default">pg_escape_string</span><span class="keyword">(</span><span class="default">utf8_encode</span><span class="keyword">(</span><span class="default">$_POST</span><span class="keyword">[</span><span class="string">'my_data'</span><span class="keyword">]));<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="77426""></a>
+  <div class="note">
+   <strong class="user">Gautam Khanna</strong>
+   <a href="#77426" class="date">29-Aug-2007 07:55</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Security methods which you use depend on the specific purpose. For those who dont know, take a look at the following built-in PHP functions:<br />
+<br />
+strip_tags()&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; to remove HTML characters<br />
+(also see htmlspecialchars)<br />
+<br />
+escapeshellarg()&nbsp; &nbsp; &nbsp; to escape shell commands etc<br />
+escapeshellcmd()<br />
+<br />
+mysql_real_escape_string()&nbsp; &nbsp;&nbsp; to escape mySQL commands.<br />
+<br />
+Enjoy!<br />
+<br />
+web dot expert dot panel at gmail dot com</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="66827""></a>
+  <div class="note">
+   <strong class="user">johniskew2 at yahoo dot com</strong>
+   <a href="#66827" class="date">30-May-2006 09:43</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+For those who escape their single quotes with a backslash (ie \') instead of two single quotes in a row (ie '') there has recently been a SERIOUS sql injection vulnerability that can be employed taking advantage of your chosen escaping method.&nbsp; More info here: <a href="http://www.postgresql.org/docs/techdocs.50" rel="nofollow" target="_blank">http://www.postgresql.org/docs/techdocs.50</a><br />
+Even after the postgre update, you may still be limited to what you can do with your queries if you still insist on backslash escaping. It's a lesson to always use the PHP functions to do proper escaping instead of adhoc addslashes or magic quotes escaping.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="66750""></a>
+  <div class="note">
+   <strong class="user">meng</strong>
+   <a href="#66750" class="date">27-May-2006 04:21</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Since php 5.1 the new function pg_query_params() was introduced. With this function you can use bind variables and don't have to escape strings. If you can use it, do so. If unsure why, check the changelog for Postgres 8.0.8.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="65130""></a>
+  <div class="note">
+   <strong class="user">otix</strong>
+   <a href="#65130" class="date">24-Apr-2006 03:43</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Creating a double-tick is just fine. It works the same as the backslash-tick syntax. From the PostgreSQL docs:<br />
+<br />
+The fact that string constants are bound by single quotes presents an obvious semantic problem, however, in that if the sequence itself contains a single quote, the literal bounds of the constant are made ambiguous. To escape (make literal) a single quote within the string, you may type two adjacent single quotes. The parser will interpret the two adjacent single quotes within the string constant as a single, literal single quote. PostgreSQL will also allow single quotes to be embedded by using a C-style backslash.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="54907""></a>
+  <div class="note">
+   <strong class="user">rich at dicksonlife dot com</strong>
+   <a href="#54907" class="date">19-Jul-2005 05:38</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Here's some code I knocked up to turn an array of values into a string representation of an array. Note that I also add the external single quotes to make it a full string literal.<br />
+<br />
+&nbsp; //$t is array to be escaped. $u will be string literal.<br />
+&nbsp; $tv=array();<br />
+&nbsp; foreach($t as $key=&gt;$val){<br />
+&nbsp;&nbsp;&nbsp; $tv[$key]="\"" . <br />
+&nbsp;&nbsp; &nbsp;&nbsp; str_replace("\"",'\\"', str_replace('\\','\\\\',$val)) . "\"<br />
+";<br />
+&nbsp; }<br />
+&nbsp; $u= implode(",",$tv) ;<br />
+&nbsp; $u="'{" . pg_escape_string($u) . "}'";<br />
+<br />
+There's probably a better way of doing this. That's why I'm posting this here :)</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="50512""></a>
+  <div class="note">
+   <strong class="user">tsharek at o2 dot pl</strong>
+   <a href="#50512" class="date">02-Mar-2005 03:34</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+IMO the stripslashes in this case is not very usefull. Because pg_escape_string change ' into '' (double ' - not "). I use in add to database this:<br />
+pg_escape_string(stripslashes($_GET['var'])) and is in 100% safe (i hope).<br />
+<br />
+If I use addslashes in this case that well be lost space in database (\''' - this is 3 bytes)<br />
+<br />
+ps. sorry for my english:)</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="34119""></a>
+  <div class="note">
+   
+   <a href="#34119" class="date">16-Jul-2003 11:30</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Here with 'abc'efg'&nbsp; the middle ' terminates the string, however 'abc\'def' is one big string with a ' character in the middle.<br />
+<br />
+If the user can terminate the string he can then put in the bad sql.&nbsp; When prompted for Barcode the user could put in&nbsp; DROP TABLE foo; SELECT '1<br />
+<br />
+$query = sprintf ("SELECT * FROM a.tblcards WHERE barcode='%s'", pg_escape_string($barcode)); <br />
+<br />
+So you have to "clean" your variable coming in to prevent that.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="function.pg-escape-literal.html">pg_escape_literal</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.pg-execute.html">pg_execute</a></div>
  <div class="up"><a href="ref.pgsql.html">PostgreSQL Functions</a></div>

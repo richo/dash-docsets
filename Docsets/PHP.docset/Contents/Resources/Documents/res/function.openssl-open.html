@@ -134,7 +134,112 @@
  </div>
 
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="104610""></a>
+  <div class="note">
+   <strong class="user">sdc</strong>
+   <a href="#104610" class="date">25-Jun-2011 02:31</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+PHP compiled without OpenSSL support? Here's how you can call the openssl command-line utility to achieve the same goal:<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="comment">// $sealed and $env_key are assumed to contain the sealed data<br />
+// and our envelope key, both given to us by the sealer.<br />
+<br />
+// specify private key file and passphrase<br />
+</span><span class="default">$pkey_file</span><span class="keyword">=</span><span class="string">'key.pem'</span><span class="keyword">;<br />
+</span><span class="default">$pkey_pp</span><span class="keyword">=</span><span class="string">'netsvc'</span><span class="keyword">;<br />
+<br />
+</span><span class="comment">// call openssl to decrypt envelope key<br />
+</span><span class="default">$ph</span><span class="keyword">=</span><span class="default">proc_open</span><span class="keyword">(</span><span class="string">'openssl rsautl -decrypt -inkey '</span><span class="keyword">.<br />
+&nbsp;</span><span class="default">escapeshellarg</span><span class="keyword">(</span><span class="default">$pkey_file</span><span class="keyword">).</span><span class="string">' -passin fd:3'</span><span class="keyword">,array(<br />
+&nbsp; </span><span class="default">0 </span><span class="keyword">=&gt; array(</span><span class="string">'pipe'</span><span class="keyword">,</span><span class="string">'r'</span><span class="keyword">), </span><span class="comment">// stdin &lt; envelope key<br />
+&nbsp; </span><span class="default">1 </span><span class="keyword">=&gt; array(</span><span class="string">'pipe'</span><span class="keyword">,</span><span class="string">'w'</span><span class="keyword">), </span><span class="comment">// stdout &gt; decoded envelope key<br />
+&nbsp; </span><span class="default">2 </span><span class="keyword">=&gt; </span><span class="default">STDERR</span><span class="keyword">,<br />
+&nbsp; </span><span class="default">3 </span><span class="keyword">=&gt; array(</span><span class="string">'pipe'</span><span class="keyword">,</span><span class="string">'r'</span><span class="keyword">), </span><span class="comment">// &lt; passphrase<br />
+&nbsp;</span><span class="keyword">),</span><span class="default">$pipes</span><span class="keyword">);<br />
+</span><span class="comment">// write envelope key<br />
+</span><span class="default">fwrite</span><span class="keyword">(</span><span class="default">$pipes</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">],</span><span class="default">$env_key</span><span class="keyword">);<br />
+</span><span class="default">fclose</span><span class="keyword">(</span><span class="default">$pipes</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">]);<br />
+</span><span class="comment">// write private key passphrase<br />
+</span><span class="default">fwrite</span><span class="keyword">(</span><span class="default">$pipes</span><span class="keyword">[</span><span class="default">3</span><span class="keyword">],</span><span class="default">$pkey_pp</span><span class="keyword">);<br />
+</span><span class="default">fclose</span><span class="keyword">(</span><span class="default">$pipes</span><span class="keyword">[</span><span class="default">3</span><span class="keyword">]);<br />
+</span><span class="comment">// read decoded key, convert to hexadecimal<br />
+</span><span class="default">$env_key</span><span class="keyword">=</span><span class="string">''</span><span class="keyword">;<br />
+while(!</span><span class="default">feof</span><span class="keyword">(</span><span class="default">$pipes</span><span class="keyword">[</span><span class="default">1</span><span class="keyword">])){<br />
+&nbsp; </span><span class="default">$env_key</span><span class="keyword">.=</span><span class="default">sprintf</span><span class="keyword">(</span><span class="string">"%02x"</span><span class="keyword">,</span><span class="default">ord</span><span class="keyword">(</span><span class="default">fgetc</span><span class="keyword">(</span><span class="default">$pipes</span><span class="keyword">[</span><span class="default">1</span><span class="keyword">])));<br />
+}<br />
+</span><span class="default">fclose</span><span class="keyword">(</span><span class="default">$pipes</span><span class="keyword">[</span><span class="default">1</span><span class="keyword">]);<br />
+if(</span><span class="default">$xc</span><span class="keyword">=</span><span class="default">proc_close</span><span class="keyword">(</span><span class="default">$ph</span><span class="keyword">)){<br />
+&nbsp; echo </span><span class="string">"Exit code: </span><span class="default">$xc</span><span class="string">\n"</span><span class="keyword">;<br />
+}<br />
+<br />
+</span><span class="comment">// call openssl to decryp<br />
+</span><span class="default">$ph</span><span class="keyword">=</span><span class="default">proc_open</span><span class="keyword">(</span><span class="string">'openssl rc4 -d -iv 0 -K '</span><span class="keyword">.</span><span class="default">$env_key</span><span class="keyword">,array(<br />
+&nbsp; </span><span class="default">0 </span><span class="keyword">=&gt; array(</span><span class="string">'pipe'</span><span class="keyword">,</span><span class="string">'r'</span><span class="keyword">), </span><span class="comment">// stdin &lt; sealed data<br />
+&nbsp; </span><span class="default">1 </span><span class="keyword">=&gt; array(</span><span class="string">'pipe'</span><span class="keyword">,</span><span class="string">'w'</span><span class="keyword">), </span><span class="comment">// stdout &gt; opened data<br />
+&nbsp; </span><span class="default">2 </span><span class="keyword">=&gt; </span><span class="default">STDERR</span><span class="keyword">,<br />
+&nbsp;),</span><span class="default">$pipes</span><span class="keyword">);<br />
+</span><span class="comment">// write sealed data<br />
+</span><span class="default">fwrite</span><span class="keyword">(</span><span class="default">$pipes</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">],</span><span class="default">$sealed</span><span class="keyword">);<br />
+</span><span class="default">fclose</span><span class="keyword">(</span><span class="default">$pipes</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">]);<br />
+</span><span class="comment">// read opened data<br />
+//$open=stream_get_contents($pipes[1]);<br />
+</span><span class="default">$open</span><span class="keyword">=</span><span class="string">''</span><span class="keyword">;<br />
+while(!</span><span class="default">feof</span><span class="keyword">(</span><span class="default">$pipes</span><span class="keyword">[</span><span class="default">1</span><span class="keyword">])){<br />
+&nbsp; </span><span class="default">$open</span><span class="keyword">.=</span><span class="default">fgets</span><span class="keyword">(</span><span class="default">$pipes</span><span class="keyword">[</span><span class="default">1</span><span class="keyword">]);<br />
+}<br />
+</span><span class="default">fclose</span><span class="keyword">(</span><span class="default">$pipes</span><span class="keyword">[</span><span class="default">1</span><span class="keyword">]);<br />
+if(</span><span class="default">$xc</span><span class="keyword">=</span><span class="default">proc_close</span><span class="keyword">(</span><span class="default">$ph</span><span class="keyword">)){<br />
+&nbsp; echo </span><span class="string">"Exit code: </span><span class="default">$xc</span><span class="string">\n"</span><span class="keyword">;<br />
+}<br />
+<br />
+</span><span class="comment">// display the decrypted data<br />
+</span><span class="keyword">echo </span><span class="default">$open</span><span class="keyword">;<br />
+<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="88988""></a>
+  <div class="note">
+   <strong class="user">Gareth Owen</strong>
+   <a href="#88988" class="date">17-Feb-2009 08:20</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Example code, assume mycert.pem is a certificate containing both private and public key.<br />
+<br />
+$cert = file_get_contents("mycert.pem");<br />
+<br />
+$public = openssl_get_publickey($cert);<br />
+$private = openssl_get_privatekey($cert);<br />
+<br />
+$data = "I'm a lumberjack and I'm okay.";<br />
+<br />
+echo "Data before: {$data}\n";<br />
+openssl_seal($data, $cipher, $e, array($public));<br />
+<br />
+echo "Ciphertext: {$cipher}\n";<br />
+<br />
+openssl_open($cipher, $open, $e[0], $private);<br />
+echo "Decrypted: {$open}\n";</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="function.openssl-get-publickey.html">openssl_get_publickey</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.openssl-pkcs12-export-to-file.html">openssl_pkcs12_export_to_file</a></div>
  <div class="up"><a href="ref.openssl.html">OpenSSL Functions</a></div>

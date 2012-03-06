@@ -78,7 +78,140 @@ it is inserted with (e.g.) <span class="function"><a href="domnode.appendchild.h
   </p>
  </div>
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="102819""></a>
+  <div class="note">
+   <strong class="user">Marc info[at]braincast.nl</strong>
+   <a href="#102819" class="date">08-Mar-2011 01:55</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Here's some code that takes an associative array and prints it asXML() but creates CDATA sections for each string<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">class </span><span class="default">SimpleXMLExtended </span><span class="keyword">extends </span><span class="default">SimpleXMLElement</span><span class="keyword">{ <br />
+&nbsp;&nbsp;&nbsp; public function </span><span class="default">addCData</span><span class="keyword">(</span><span class="default">$string</span><span class="keyword">){ <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$dom </span><span class="keyword">= </span><span class="default">dom_import_simplexml</span><span class="keyword">(</span><span class="default">$this</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$cdata </span><span class="keyword">= </span><span class="default">$dom</span><span class="keyword">-&gt;</span><span class="default">ownerDocument</span><span class="keyword">-&gt;</span><span class="default">createCDATASection</span><span class="keyword">(</span><span class="default">$string</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$dom</span><span class="keyword">-&gt;</span><span class="default">appendChild</span><span class="keyword">(</span><span class="default">$cdata</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; } <br />
+}<br />
+function </span><span class="default">assocArrayToXML</span><span class="keyword">(</span><span class="default">$root_element_name</span><span class="keyword">,</span><span class="default">$ar</span><span class="keyword">){<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$xml </span><span class="keyword">= new </span><span class="default">SimpleXMLExtended</span><span class="keyword">(</span><span class="string">"&lt;?xml version=\"1.0\"?&gt;&lt;</span><span class="keyword">{</span><span class="default">$root_element_name</span><span class="keyword">}</span><span class="string">&gt;&lt;/</span><span class="keyword">{</span><span class="default">$root_element_name</span><span class="keyword">}</span><span class="string">&gt;"</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$f </span><span class="keyword">= </span><span class="default">create_function</span><span class="keyword">(</span><span class="string">'$f,$c,$a'</span><span class="keyword">,</span><span class="string">'<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; foreach($a as $k=&gt;$v) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if(is_array($v)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if (!is_numeric($k))$ch=$c-&gt;addChild($k);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; else $ch = $c-&gt;addChild(substr($c-&gt;getName(),0,-1));<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $f($f,$ch,$v);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; } else {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if (is_numeric($v)){ $c-&gt;addChild($k, $v);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }else{$n = $c-&gt;addChild($k); $n-&gt;addCData($v);}<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }'</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$f</span><span class="keyword">(</span><span class="default">$f</span><span class="keyword">,</span><span class="default">$xml</span><span class="keyword">,</span><span class="default">$ar</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">$xml</span><span class="keyword">-&gt;</span><span class="default">asXML</span><span class="keyword">();<br />
+} <br />
+<br />
+</span><span class="comment">/* sample */<br />
+</span><span class="default">$result </span><span class="keyword">= array(</span><span class="string">"title"</span><span class="keyword">=&gt;</span><span class="string">"CDATA Sample"</span><span class="keyword">);<br />
+</span><span class="default">$result</span><span class="keyword">[</span><span class="string">'items'</span><span class="keyword">] = array();<br />
+</span><span class="default">$result</span><span class="keyword">[</span><span class="string">'items'</span><span class="keyword">][] = array(</span><span class="string">'title'</span><span class="keyword">=&gt;</span><span class="string">'Some string'</span><span class="keyword">, </span><span class="string">'number' </span><span class="keyword">=&gt; </span><span class="default">1</span><span class="keyword">);<br />
+</span><span class="default">$result</span><span class="keyword">[</span><span class="string">'items'</span><span class="keyword">][] = array(</span><span class="string">'title'</span><span class="keyword">=&gt;</span><span class="string">'Some string'</span><span class="keyword">, </span><span class="string">'number' </span><span class="keyword">=&gt; </span><span class="default">2</span><span class="keyword">);<br />
+</span><span class="default">$result</span><span class="keyword">[</span><span class="string">'items'</span><span class="keyword">][] = array(</span><span class="string">'title'</span><span class="keyword">=&gt;</span><span class="string">'Some string'</span><span class="keyword">, </span><span class="string">'number' </span><span class="keyword">=&gt; </span><span class="default">3</span><span class="keyword">);<br />
+<br />
+echo </span><span class="default">assocArrayToXML</span><span class="keyword">(</span><span class="string">'result'</span><span class="keyword">,</span><span class="default">$result</span><span class="keyword">);<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+The is_numeric check could be changed by a more elaborate regular expression to check if the string is actually xml unsafe but this worked for me.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="98798""></a>
+  <div class="note">
+   <strong class="user">jesdisciple dot FOO at gmail dot BAR dot com</strong>
+   <a href="#98798" class="date">08-Jul-2010 04:44</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+If you would like to refer to the documentation for the class of the returned object, see <a href="http://www.php.net/manual/en/class.domcharacterdata.php" rel="nofollow" target="_blank">http://www.php.net/manual/en/class.domcharacterdata.php</a></span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="82021""></a>
+  <div class="note">
+   <strong class="user">info at troptoek dot com</strong>
+   <a href="#82021" class="date">24-Mar-2008 09:40</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+A common issue seems to be adding javascript to CDATA and the browser throwing a javascript error. To ensure the javascript works use the following code when adding CDATA:<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="comment">/**<br />
+&nbsp;* Append Caracter Data to a node and check for a javascript node<br />
+&nbsp;* <br />
+&nbsp;* @param DOMElement $appendToNode<br />
+&nbsp;* @param string $text<br />
+&nbsp;*/<br />
+</span><span class="keyword">function </span><span class="default">appendCdata</span><span class="keyword">(</span><span class="default">$appendToNode</span><span class="keyword">, </span><span class="default">$text</span><span class="keyword">) <br />
+{<br />
+&nbsp;&nbsp;&nbsp; if (</span><span class="default">strtolower</span><span class="keyword">(</span><span class="default">$appendToNode</span><span class="keyword">-&gt;</span><span class="default">nodeName</span><span class="keyword">) == </span><span class="string">'script'</span><span class="keyword">) {&nbsp; </span><span class="comment">// Javascript hack<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$cm </span><span class="keyword">= </span><span class="default">$appendToNode</span><span class="keyword">-&gt;</span><span class="default">ownerDocument</span><span class="keyword">-&gt;</span><span class="default">createTextNode</span><span class="keyword">(</span><span class="string">"\n//"</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$ct </span><span class="keyword">= </span><span class="default">$appendToNode</span><span class="keyword">-&gt;</span><span class="default">ownerDocument</span><span class="keyword">-&gt;</span><span class="default">createCDATASection</span><span class="keyword">(</span><span class="string">"\n" </span><span class="keyword">. </span><span class="default">$text </span><span class="keyword">. </span><span class="string">"\n//"</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$appendToNode</span><span class="keyword">-&gt;</span><span class="default">appendChild</span><span class="keyword">(</span><span class="default">$cm</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$appendToNode</span><span class="keyword">-&gt;</span><span class="default">appendChild</span><span class="keyword">(</span><span class="default">$ct</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; } else {&nbsp; </span><span class="comment">// Normal CDATA node<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$ct </span><span class="keyword">= </span><span class="default">$appendToNode</span><span class="keyword">-&gt;</span><span class="default">ownerDocument</span><span class="keyword">-&gt;</span><span class="default">createCDATASection</span><span class="keyword">(</span><span class="default">$text</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$appendToNode</span><span class="keyword">-&gt;</span><span class="default">appendChild</span><span class="keyword">(</span><span class="default">$ct</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+}<br />
+</span><span class="default">?&gt;<br />
+</span>The result should be:<br />
+<br />
+&lt;script type="text/javascript"&gt;<br />
+//&lt;![CDATA[<br />
+function someJsText() {<br />
+&nbsp;&nbsp; document.write('Some js with &lt;a href="#"&gt;HTML&lt;/a&gt; content');<br />
+}<br />
+//]]&gt;&lt;/script&gt;</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="76905""></a>
+  <div class="note">
+   <strong class="user">loathsome</strong>
+   <a href="#76905" class="date">04-Aug-2007 02:28</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Here's a function that will create a CDATA-section around a string coming from SimpleXML.<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">function </span><span class="default">sxml_cdata</span><span class="keyword">(</span><span class="default">$path</span><span class="keyword">, </span><span class="default">$string</span><span class="keyword">){<br />
+&nbsp; </span><span class="default">$dom </span><span class="keyword">= </span><span class="default">dom_import_simplexml</span><span class="keyword">(</span><span class="default">$path</span><span class="keyword">);<br />
+&nbsp; </span><span class="default">$cdata </span><span class="keyword">= </span><span class="default">$dom</span><span class="keyword">-&gt;</span><span class="default">ownerDocument</span><span class="keyword">-&gt;</span><span class="default">createCDATASection</span><span class="keyword">(</span><span class="default">$string</span><span class="keyword">);<br />
+&nbsp; </span><span class="default">$dom</span><span class="keyword">-&gt;</span><span class="default">appendChild</span><span class="keyword">(</span><span class="default">$cdata</span><span class="keyword">);<br />
+}<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="domdocument.createattributens.html">DOMDocument::createAttributeNS</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="domdocument.createcomment.html">DOMDocument::createComment</a></div>
  <div class="up"><a href="class.domdocument.html">DOMDocument</a></div>

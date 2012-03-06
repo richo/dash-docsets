@@ -120,7 +120,107 @@
 implemented on Windows platforms.</span></p></blockquote>
  </div>
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="54346""></a>
+  <div class="note">
+   <strong class="user">daniel widyanto (kunilkuda at gmail dot com)</strong>
+   <a href="#54346" class="date">30-Jun-2005 06:34</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I'm using PHP to interface my AVR microcontroller in /dev/ttyS0. I bet someone else does the same. <br />
+<br />
+Here's some hint : <br />
+- dio_tcsetattr -&gt; is set to enable : <br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; - RTS / CTS hardware control<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; - ICANON mode <br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; (means that dio_read will wait until 0x0A/LF or other control character is entered in /dev/ttyS0 before it returns reading result, when you use dio_write it will also send 0x0A/LF automatically in the end of the message to your device).<br />
+<br />
+For those who dont need RTS/CTS and/or ICANON, you can use linux command : stty.<br />
+<br />
+Here's mine :<br />
+<br />
+<span class="default">&lt;?php<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; exec</span><span class="keyword">(</span><span class="string">'stty -F /dev/ttyS0 4800 raw'</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$fd</span><span class="keyword">=</span><span class="default">dio_open</span><span class="keyword">(</span><span class="string">'/dev/ttyS0'</span><span class="keyword">,</span><span class="default">O_RDWR </span><span class="keyword">| </span><span class="default">O_NOCTTY </span><span class="keyword">| </span><span class="default">O_NDELAY</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">dio_fcntl</span><span class="keyword">(</span><span class="default">$fd</span><span class="keyword">,</span><span class="default">F_SETFL</span><span class="keyword">,</span><span class="default">0</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">dio_write</span><span class="keyword">(</span><span class="default">$fd</span><span class="keyword">,</span><span class="string">"\x41"</span><span class="keyword">,</span><span class="default">1</span><span class="keyword">);&nbsp; </span><span class="comment">// write 0x41 or 'A' to /dev/ttyS0<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; // Replace result_length with your expected command result length<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">for (</span><span class="default">$i</span><span class="keyword">=</span><span class="default">0</span><span class="keyword">;</span><span class="default">$i </span><span class="keyword">&lt; </span><span class="default">result_length</span><span class="keyword">;</span><span class="default">$i</span><span class="keyword">++) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span class="default">$result </span><span class="keyword">.=</span><span class="default">dio_read</span><span class="keyword">(</span><span class="default">$fd</span><span class="keyword">, </span><span class="default">1</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; echo </span><span class="default">$result</span><span class="keyword">;<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+Refer to :<br />
+- Serial Programming Guide for POSIX Operating Systems, <a href="http://www.easysw.com/~mike/serial/" rel="nofollow" target="_blank">http://www.easysw.com/~mike/serial/</a><br />
+- stty man pages</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="51509""></a>
+  <div class="note">
+   <strong class="user">fherrero at noticiasdenavarra dot com</strong>
+   <a href="#51509" class="date">01-Apr-2005 04:30</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+For Windows the Example 1 looks same this one:<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+exec</span><span class="keyword">(</span><span class="string">'mode com1: baud=9600 data=8 stop=1 parity=n xon=on'</span><span class="keyword">);<br />
+</span><span class="comment">// execute 'help mode' in command line of Windows for help<br />
+<br />
+</span><span class="default">$fd </span><span class="keyword">= </span><span class="default">dio_open</span><span class="keyword">(</span><span class="string">'com1:'</span><span class="keyword">, </span><span class="default">O_RDWR</span><span class="keyword">);<br />
+<br />
+while (</span><span class="default">1</span><span class="keyword">) {<br />
+<br />
+&nbsp; </span><span class="default">$data </span><span class="keyword">= </span><span class="default">dio_read</span><span class="keyword">(</span><span class="default">$fd</span><span class="keyword">, </span><span class="default">256</span><span class="keyword">);<br />
+<br />
+&nbsp; if (</span><span class="default">$data</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; echo </span><span class="default">$data</span><span class="keyword">;<br />
+&nbsp; }<br />
+}<br />
+<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="34250""></a>
+  <div class="note">
+   <strong class="user">healer at colorado dot edu</strong>
+   <a href="#34250" class="date">19-Jul-2003 03:37</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+It was frustrating at first because I was trying to get my Linux box to talk to an external serial device (a PIC18F452 programmable chip) and the example provided here refers to fcntl() and open() parameters that aren't in the PHP documentation.<br />
+<br />
+I finally found out what does what through the man pages:<br />
+<br />
+man open<br />
+man fcntl<br />
+<br />
+still haven't gotten it to work, or how to reset the ttySx, but thought it may help someone...</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="function.dio-stat.html">dio_stat</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.dio-truncate.html">dio_truncate</a></div>
  <div class="up"><a href="ref.dio.html">Direct IO Functions</a></div>

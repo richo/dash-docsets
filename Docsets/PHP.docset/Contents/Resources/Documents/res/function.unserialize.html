@@ -176,7 +176,2107 @@
  </div>
 
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="106411""></a>
+  <div class="note">
+   <strong class="user">dcz at phpbb-seo dot com</strong>
+   <a href="#106411" class="date">08-Nov-2011 06:00</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+If you are unserializing content from user input and you don't expect objects to be passed (which should be the most common case), you can use this to prevent any object reviving threat :<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="comment">/**<br />
+* mixed safe_unserialize(string $serialized)<br />
+* Safely unserialize, that is only unserialize string, numbers and arrays, not objects<br />
+*<br />
+* @license Public Domain<br />
+* @author dcz (at) phpbb-seo (dot) com<br />
+*/<br />
+</span><span class="keyword">function </span><span class="default">safe_unserialize</span><span class="keyword">(</span><span class="default">$serialized</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// unserialize will return false for object declared with small cap o<br />
+&nbsp;&nbsp;&nbsp; // as well as if there is any ws between O and :<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">if (</span><span class="default">is_string</span><span class="keyword">(</span><span class="default">$serialized</span><span class="keyword">) &amp;&amp; </span><span class="default">strpos</span><span class="keyword">(</span><span class="default">$serialized</span><span class="keyword">, </span><span class="string">"\0"</span><span class="keyword">) === </span><span class="default">false</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if (</span><span class="default">strpos</span><span class="keyword">(</span><span class="default">$serialized</span><span class="keyword">, </span><span class="string">'O:'</span><span class="keyword">) === </span><span class="default">false</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// the easy case, nothing to worry about<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; // let unserialize do the job<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">return @</span><span class="default">unserialize</span><span class="keyword">(</span><span class="default">$serialized</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; } else if (!</span><span class="default">preg_match</span><span class="keyword">(</span><span class="string">'/(^|;|{|})O:[0-9]+:"/'</span><span class="keyword">, </span><span class="default">$serialized</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// in case we did have a string with O: in it,<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; // but it was not a true serialized object<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">return @</span><span class="default">unserialize</span><span class="keyword">(</span><span class="default">$serialized</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">false</span><span class="keyword">;<br />
+}<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+Will simply return false if the serialized input contains an object or is not valid.<br />
+<br />
+Example of a successful use of the object reviving threat : <a href="http://www.suspekt.org/2009/12/09/advisory-032009-piwik-cookie-unserialize-vulnerability/" rel="nofollow" target="_blank">http://www.suspekt.org/2009/12/09/advisory-032009-piwik-cookie-unserialize-vulnerability/</a></span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="105588""></a>
+  <div class="note">
+   <strong class="user">frank at interactinet dot com</strong>
+   <a href="#105588" class="date">30-Aug-2011 09:32</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+When dealing with sessions, try session_decode($data) instead of unserialize($data).</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="105500""></a>
+  <div class="note">
+   <strong class="user">walf</strong>
+   <a href="#105500" class="date">22-Aug-2011 08:22</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+a replacement for unserialize that returns whether it worked and populates the unserialized variable by reference:<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">function </span><span class="default">funserialize</span><span class="keyword">(</span><span class="default">$serialized</span><span class="keyword">, &amp;</span><span class="default">$into</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; static </span><span class="default">$sfalse</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; if (</span><span class="default">$sfalse </span><span class="keyword">=== </span><span class="default">null</span><span class="keyword">)<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$sfalse </span><span class="keyword">= </span><span class="default">serialize</span><span class="keyword">(</span><span class="default">false</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$into </span><span class="keyword">= @</span><span class="default">unserialize</span><span class="keyword">(</span><span class="default">$serialized</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">$into </span><span class="keyword">!== </span><span class="default">false </span><span class="keyword">|| </span><span class="default">rtrim</span><span class="keyword">(</span><span class="default">$serialized</span><span class="keyword">) === </span><span class="default">$sfalse</span><span class="keyword">;</span><span class="comment">//whitespace at end of serialized var is ignored by PHP<br />
+</span><span class="keyword">}<br />
+<br />
+</span><span class="default">$s_foo </span><span class="keyword">= </span><span class="string">'b:0;'</span><span class="keyword">;<br />
+</span><span class="default">var_dump</span><span class="keyword">(</span><span class="default">funserialize</span><span class="keyword">(</span><span class="default">$s_foo</span><span class="keyword">, </span><span class="default">$foo</span><span class="keyword">), </span><span class="default">$foo</span><span class="keyword">);<br />
+<br />
+</span><span class="default">$s_bar </span><span class="keyword">= </span><span class="string">'bar'</span><span class="keyword">;<br />
+</span><span class="default">var_dump</span><span class="keyword">(</span><span class="default">funserialize</span><span class="keyword">(</span><span class="default">$s_bar</span><span class="keyword">, </span><span class="default">$bar</span><span class="keyword">), </span><span class="default">$bar</span><span class="keyword">);<br />
+<br />
+</span><span class="default">$s_foo </span><span class="keyword">= </span><span class="string">'a:0:{};'</span><span class="keyword">;<br />
+</span><span class="default">var_dump</span><span class="keyword">(</span><span class="default">funserialize</span><span class="keyword">(</span><span class="default">$s_foo</span><span class="keyword">, </span><span class="default">$foo</span><span class="keyword">), </span><span class="default">$foo</span><span class="keyword">);<br />
+<br />
+</span><span class="default">?&gt;<br />
+</span>gives:<br />
+<br />
+bool(true)<br />
+bool(false)<br />
+<br />
+bool(false)<br />
+bool(false)<br />
+<br />
+bool(true)<br />
+array(0) {<br />
+}</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="105190""></a>
+  <div class="note">
+   <strong class="user">MBa</strong>
+   <a href="#105190" class="date">02-Aug-2011 03:49</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+To check if a string is serialized:<br />
+<br />
+$blSerialized=(@unserialize($sText)||$sText=='b:0;');</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="104479""></a>
+  <div class="note">
+   <strong class="user">chris at colourlovers dot com</strong>
+   <a href="#104479" class="date">16-Jun-2011 05:31</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Anyone having trouble serializing data with SimpleXMLElement objects stored within it, check this out:<br />
+<br />
+This will traverse $data looking for any children which are instances of SimpleXMLElement, and will run -&gt;asXML() on them, turning them into a string and making them serializable. Other data will be left alone.<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">function </span><span class="default">exportNestedSimpleXML</span><span class="keyword">(</span><span class="default">$data</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; if (</span><span class="default">is_scalar</span><span class="keyword">(</span><span class="default">$data</span><span class="keyword">) === </span><span class="default">false</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; foreach (</span><span class="default">$data </span><span class="keyword">as </span><span class="default">$k </span><span class="keyword">=&gt; </span><span class="default">$v</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if (</span><span class="default">$v </span><span class="keyword">instanceof </span><span class="default">SimpleXMLElement</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$v </span><span class="keyword">= </span><span class="default">str_replace</span><span class="keyword">(</span><span class="string">"&amp;#13;"</span><span class="keyword">,</span><span class="string">"\r"</span><span class="keyword">,</span><span class="default">$v</span><span class="keyword">-&gt;</span><span class="default">asXML</span><span class="keyword">());<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; } else {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$v </span><span class="keyword">= </span><span class="default">exportNestedSimpleXML</span><span class="keyword">(</span><span class="default">$v</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if (</span><span class="default">is_array</span><span class="keyword">(</span><span class="default">$data</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$data</span><span class="keyword">[</span><span class="default">$k</span><span class="keyword">] = </span><span class="default">$v</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; } else if (</span><span class="default">is_object</span><span class="keyword">(</span><span class="default">$data</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$data</span><span class="keyword">-&gt;</span><span class="default">$k </span><span class="keyword">= </span><span class="default">$v</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">$data</span><span class="keyword">;<br />
+}<br />
+<br />
+</span><span class="default">$data </span><span class="keyword">= array (<br />
+&nbsp;&nbsp;&nbsp; </span><span class="string">"baz" </span><span class="keyword">=&gt; array (<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="string">"foo" </span><span class="keyword">=&gt; new </span><span class="default">stdClass</span><span class="keyword">(),<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="string">"int" </span><span class="keyword">=&gt; </span><span class="default">123</span><span class="keyword">,<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="string">"str" </span><span class="keyword">=&gt; </span><span class="string">"asdf"</span><span class="keyword">,<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="string">"bar" </span><span class="keyword">=&gt; new </span><span class="default">SimpleXMLElement</span><span class="keyword">(</span><span class="string">'&lt;?xml version="1.0" encoding="UTF-8"?&gt;&lt;foo&gt;bar&lt;/foo&gt;'</span><span class="keyword">),<br />
+&nbsp;&nbsp;&nbsp; )<br />
+);<br />
+<br />
+</span><span class="default">var_dump</span><span class="keyword">(</span><span class="default">$data</span><span class="keyword">);<br />
+</span><span class="comment">/*array(1) {<br />
+&nbsp; ["baz"]=&gt;<br />
+&nbsp; array(4) {<br />
+&nbsp;&nbsp;&nbsp; ["foo"]=&gt;<br />
+&nbsp;&nbsp;&nbsp; object(stdClass)#3 (0) {<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; ["int"]=&gt;<br />
+&nbsp;&nbsp;&nbsp; int(123)<br />
+&nbsp;&nbsp;&nbsp; ["str"]=&gt;<br />
+&nbsp;&nbsp;&nbsp; string(4) "asdf"<br />
+&nbsp;&nbsp;&nbsp; ["bar"]=&gt;<br />
+&nbsp;&nbsp;&nbsp; object(SimpleXMLElement)#4 (1) {<br />
+&nbsp;&nbsp; &nbsp;&nbsp; [0]=&gt;<br />
+&nbsp;&nbsp; &nbsp;&nbsp; string(3) "bar"<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp; }<br />
+}*/<br />
+<br />
+</span><span class="default">var_dump</span><span class="keyword">(</span><span class="default">exportNestedSimpleXML</span><span class="keyword">(</span><span class="default">$data</span><span class="keyword">));<br />
+</span><span class="comment">/*array(1) {<br />
+&nbsp; ["baz"]=&gt;<br />
+&nbsp; array(4) {<br />
+&nbsp;&nbsp;&nbsp; ["foo"]=&gt;<br />
+&nbsp;&nbsp;&nbsp; object(stdClass)#3 (0) {<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; ["int"]=&gt;<br />
+&nbsp;&nbsp;&nbsp; int(123)<br />
+&nbsp;&nbsp;&nbsp; ["str"]=&gt;<br />
+&nbsp;&nbsp;&nbsp; string(4) "asdf"<br />
+&nbsp;&nbsp;&nbsp; ["bar"]=&gt;<br />
+&nbsp;&nbsp;&nbsp; string(54) "&lt;?xml version="1.0" encoding="UTF-8"?&gt;<br />
+&lt;foo&gt;bar&lt;/foo&gt;<br />
+"<br />
+&nbsp; }<br />
+}<br />
+*/<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="104324""></a>
+  <div class="note">
+   <strong class="user">martijntje at martijnotto dot nl</strong>
+   <a href="#104324" class="date">09-Jun-2011 01:50</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+If you are storing serialized objects that persists between pageviews and you are using an autoloader, things may fall apart.<br />
+<br />
+By default, when unserializing PHP will not call the autoloader when it discovers an unknown class. This can be fixed easily with the following directive in php.ini<br />
+<br />
+unserialize_callback_func = 'spl_autoload_call'</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="103744""></a>
+  <div class="note">
+   <strong class="user">i dot chiriac at yahoo dot com</strong>
+   <a href="#103744" class="date">01-May-2011 10:14</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Hi,<br />
+<br />
+I'm working with serialized objects stored on files and I've found a problem and his fix when you modify the serialized object subclassing. When you serialize a class with a private property, the subclassing of this private property will simply not work because each private property is attached to it's class level.<br />
+<br />
+For example, you start to implement and serialize this class :<br />
+<br />
+<span class="default">&lt;?php<br />
+&nbsp; </span><span class="keyword">class </span><span class="default">bar </span><span class="keyword">{<br />
+&nbsp;&nbsp;&nbsp; private </span><span class="default">$var </span><span class="keyword">= </span><span class="string">'bar value'</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; public function </span><span class="default">getValue</span><span class="keyword">() {<br />
+&nbsp;&nbsp; &nbsp;&nbsp; return </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">var</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp; }<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+You store an instance of the bar class into a file as a serialized string.<br />
+<br />
+After some code refactoring you prefer to store the value in a subclass like this :<br />
+<br />
+<span class="default">&lt;?php<br />
+&nbsp; </span><span class="keyword">class </span><span class="default">foo </span><span class="keyword">{<br />
+&nbsp;&nbsp;&nbsp; private </span><span class="default">$var </span><span class="keyword">= </span><span class="string">'bar value'</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; public function </span><span class="default">getValue</span><span class="keyword">() {<br />
+&nbsp;&nbsp; &nbsp;&nbsp; return </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">var</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp; }<br />
+&nbsp; class </span><span class="default">bar </span><span class="keyword">extends </span><span class="default">foo </span><span class="keyword">{<br />
+&nbsp; }<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+When you retrieve the stored bar instance from the srialized file, you have lose the $var value.<br />
+<br />
+The only solution is to store private vars as protected properties and not private ones. <br />
+<br />
+If you want to migrate/convert serialized private values as protected values you can use the following code :<br />
+<br />
+<span class="default">&lt;?php<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">function </span><span class="default">setProtected</span><span class="keyword">(</span><span class="default">$serialized</span><span class="keyword">, </span><span class="default">$vars</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp;&nbsp; if (</span><span class="default">$serialized</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">] != </span><span class="string">'O'</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; throw new </span><span class="default">Exception</span><span class="keyword">(</span><span class="string">'The serialized string is not representing a class'</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">$size </span><span class="keyword">= </span><span class="string">''</span><span class="keyword">;&nbsp; &nbsp; &nbsp; &nbsp; <br />
+&nbsp;&nbsp; &nbsp;&nbsp; for(</span><span class="default">$i </span><span class="keyword">= </span><span class="default">2</span><span class="keyword">; </span><span class="default">$i </span><span class="keyword">&lt; </span><span class="default">strlen</span><span class="keyword">(</span><span class="default">$serialized</span><span class="keyword">); </span><span class="default">$i</span><span class="keyword">++) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if (</span><span class="default">$serialized</span><span class="keyword">[</span><span class="default">$i</span><span class="keyword">] == </span><span class="string">':'</span><span class="keyword">) break;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$size </span><span class="keyword">.= </span><span class="default">$serialized</span><span class="keyword">[</span><span class="default">$i</span><span class="keyword">]; <br />
+&nbsp;&nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">$class </span><span class="keyword">= </span><span class="default">substr</span><span class="keyword">(</span><span class="default">$serialized</span><span class="keyword">, </span><span class="default">$i </span><span class="keyword">+ </span><span class="default">2</span><span class="keyword">, </span><span class="default">$size</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">$find </span><span class="keyword">= array();<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">$replace </span><span class="keyword">= array();<br />
+&nbsp;&nbsp; &nbsp;&nbsp; foreach(</span><span class="default">$vars </span><span class="keyword">as </span><span class="default">$name</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$from </span><span class="keyword">= </span><span class="default">chr</span><span class="keyword">(</span><span class="default">0</span><span class="keyword">).</span><span class="default">$class</span><span class="keyword">.</span><span class="default">chr</span><span class="keyword">(</span><span class="default">0</span><span class="keyword">).</span><span class="default">$name</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$to </span><span class="keyword">= </span><span class="default">chr</span><span class="keyword">(</span><span class="default">0</span><span class="keyword">).</span><span class="string">'*'</span><span class="keyword">.</span><span class="default">chr</span><span class="keyword">(</span><span class="default">0</span><span class="keyword">).</span><span class="default">$name</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$find</span><span class="keyword">[] = </span><span class="string">'s:'</span><span class="keyword">.</span><span class="default">strlen</span><span class="keyword">(</span><span class="default">$from</span><span class="keyword">).</span><span class="string">':"'</span><span class="keyword">.</span><span class="default">$from</span><span class="keyword">.</span><span class="string">'";'</span><span class="keyword">;&nbsp; &nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$replace</span><span class="keyword">[] = </span><span class="string">'s:'</span><span class="keyword">.</span><span class="default">strlen</span><span class="keyword">(</span><span class="default">$to</span><span class="keyword">).</span><span class="string">':"'</span><span class="keyword">.</span><span class="default">$to</span><span class="keyword">.</span><span class="string">'";'</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">str_replace</span><span class="keyword">(</span><span class="default">$find</span><span class="keyword">, </span><span class="default">$replace</span><span class="keyword">, </span><span class="default">$serialized</span><span class="keyword">);<br />
+&nbsp; }<br />
+&nbsp; </span><span class="comment">// example of use<br />
+&nbsp; </span><span class="default">$obj </span><span class="keyword">= </span><span class="default">unserialize</span><span class="keyword">(<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">setProtected</span><span class="keyword">(<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">file_get_contents</span><span class="keyword">(</span><span class="string">'object.ser'</span><span class="keyword">),<br />
+&nbsp;&nbsp; &nbsp;&nbsp; array(</span><span class="string">'property1'</span><span class="keyword">, </span><span class="string">'propetyN'</span><span class="keyword">)<br />
+&nbsp;&nbsp;&nbsp; )<br />
+&nbsp; );<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+Hope this will helps someone,<br />
+aKhEnAtHoN</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="102688""></a>
+  <div class="note">
+   <strong class="user">frank at interactinet dot com</strong>
+   <a href="#102688" class="date">28-Feb-2011 02:19</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+When using a custom session handler to store sessions in a database,&nbsp; loss of session data is probably not from unserializing data.<br />
+<br />
+It is common to use regenerate_session_id() when a user logs in to prevent session fixation.<br />
+<br />
+It turns out regenerate_session_id() does not automatically update the database. You need to do this manually:<br />
+<br />
+<span class="default">&lt;?php<br />
+$old </span><span class="keyword">= </span><span class="default">session_id</span><span class="keyword">();<br />
+</span><span class="default">regenerate_session_id</span><span class="keyword">();<br />
+</span><span class="default">$new </span><span class="keyword">= </span><span class="default">session_id<br />
+<br />
+$sql </span><span class="keyword">= </span><span class="string">"update session_table set session_id = '</span><span class="default">$new</span><span class="string">' where session_id = '</span><span class="default">$old</span><span class="string">'"</span><span class="keyword">;<br />
+<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+Hope this saves you some time.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="96938""></a>
+  <div class="note">
+   <strong class="user">daniel at fourstaples dot com</strong>
+   <a href="#96938" class="date">23-Mar-2010 08:46</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Here's a simple function to get the class of a serialized string (that is, the type of object that will be returned if it's unserialized):<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">function </span><span class="default">get_serial_class</span><span class="keyword">(</span><span class="default">$serial</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$types </span><span class="keyword">= array(</span><span class="string">'s' </span><span class="keyword">=&gt; </span><span class="string">'string'</span><span class="keyword">, </span><span class="string">'a' </span><span class="keyword">=&gt; </span><span class="string">'array'</span><span class="keyword">, </span><span class="string">'b' </span><span class="keyword">=&gt; </span><span class="string">'bool'</span><span class="keyword">, </span><span class="string">'i' </span><span class="keyword">=&gt; </span><span class="string">'int'</span><span class="keyword">, </span><span class="string">'d' </span><span class="keyword">=&gt; </span><span class="string">'float'</span><span class="keyword">, </span><span class="string">'N;' </span><span class="keyword">=&gt; </span><span class="string">'NULL'</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$parts </span><span class="keyword">= </span><span class="default">explode</span><span class="keyword">(</span><span class="string">':'</span><span class="keyword">, </span><span class="default">$serial</span><span class="keyword">, </span><span class="default">4</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; return isset(</span><span class="default">$types</span><span class="keyword">[</span><span class="default">$parts</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">]]) ? </span><span class="default">$types</span><span class="keyword">[</span><span class="default">$parts</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">]] : </span><span class="default">trim</span><span class="keyword">(</span><span class="default">$parts</span><span class="keyword">[</span><span class="default">2</span><span class="keyword">], </span><span class="string">'"'</span><span class="keyword">); <br />
+}<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+I use this when saving a serialized object to a cookie, to make sure it is the right type when I go to unserialize it.<br />
+<br />
+The type names are the same format/case as you would see if you did a var_dump().</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="96641""></a>
+  <div class="note">
+   <strong class="user">Fagzal</strong>
+   <a href="#96641" class="date">09-Mar-2010 10:10</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+To all who have problem with quoting and slashes when storing serialized data in MySQL: you are probably doing it wrong.<br />
+<br />
+Use e.g. PDO with placeholders and the blob column type, and it will Just Work.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="94190""></a>
+  <div class="note">
+   <strong class="user">VladSavitsky</strong>
+   <a href="#94190" class="date">21-Oct-2009 09:57</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+To avoid data loss (problem with '\r\n') you can convert string to array and serialize an array.<br />
+<br />
+Example:<br />
+<span class="default">&lt;?php<br />
+</span><span class="comment">//Store data:<br />
+</span><span class="default">$array </span><span class="keyword">= </span><span class="default">explode</span><span class="keyword">(</span><span class="string">'\r\n'</span><span class="keyword">, </span><span class="default">$string</span><span class="keyword">);<br />
+</span><span class="default">$serialized </span><span class="keyword">= </span><span class="default">serialize</span><span class="keyword">(</span><span class="default">$array</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">//Restore data:<br />
+</span><span class="default">$array </span><span class="keyword">= </span><span class="default">unserialize</span><span class="keyword">(</span><span class="default">$serialized</span><span class="keyword">);<br />
+</span><span class="default">$text </span><span class="keyword">= </span><span class="default">implode</span><span class="keyword">(</span><span class="string">'\r\n'</span><span class="keyword">, </span><span class="default">$array</span><span class="keyword">);<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="93649""></a>
+  <div class="note">
+   <strong class="user">matty dot burke75 at gmail dot com</strong>
+   <a href="#93649" class="date">21-Sep-2009 03:18</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I've been having horrendous problems getting my saved to mysql serialized data to unserialize. All I got back was false.<br />
+<br />
+However, one handy tip saved the day.<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="comment">//to safely serialize<br />
+</span><span class="default">$safe_string_to_store </span><span class="keyword">= </span><span class="default">base64_encode</span><span class="keyword">(</span><span class="default">serialize</span><span class="keyword">(</span><span class="default">$multidimensional_array</span><span class="keyword">));<br />
+<br />
+</span><span class="comment">//to unserialize...<br />
+</span><span class="default">$array_restored_from_db </span><span class="keyword">= </span><span class="default">unserialize</span><span class="keyword">(</span><span class="default">base64_decode</span><span class="keyword">(</span><span class="default">$encoded_serialized_string</span><span class="keyword">));<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="93606""></a>
+  <div class="note">
+   <strong class="user">chaos</strong>
+   <a href="#93606" class="date">17-Sep-2009 07:15</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+The methods here for correcting string lengths in UTF-8 encoded serialized data weren't reliable for me; various of the data I had stored broke them.&nbsp; This is the method that handled all of my cases:<br />
+<br />
+<span class="default">&lt;?php<br />
+$serialized </span><span class="keyword">= </span><span class="default">preg_replace_callback</span><span class="keyword">(<br />
+&nbsp;&nbsp;&nbsp; </span><span class="string">'!(?&lt;=^|;)s:(\d+)(?=:"(.*?)";(?:}|a:|s:|b:|d:|i:|o:|N;))!s'</span><span class="keyword">,<br />
+&nbsp;&nbsp;&nbsp; </span><span class="string">'serialize_fix_callback'</span><span class="keyword">,<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$serialized<br />
+</span><span class="keyword">);<br />
+<br />
+function </span><span class="default">serialize_fix_callback</span><span class="keyword">(</span><span class="default">$match</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="string">'s:' </span><span class="keyword">. </span><span class="default">strlen</span><span class="keyword">(</span><span class="default">$match</span><span class="keyword">[</span><span class="default">2</span><span class="keyword">]);<br />
+}<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+[EDITOR thiago NOTE: This note has fixes from user "w33ble"]</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="93582""></a>
+  <div class="note">
+   <strong class="user">TBag</strong>
+   <a href="#93582" class="date">17-Sep-2009 02:39</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+With regard to might_serialize(), might_unserialize()&nbsp; - which I posted about a week ago on this page. I've found that empy arrays will be serialized, but not unserialized.&nbsp; To patch...<br />
+<br />
+in: is_serialized()<br />
+change: preg_match("/^(i|s|a|o|d):(.*);/si",$val)<br />
+to: preg_match("/^(i|s|a|o|d):(.*);/si",$val) !== false</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="93451""></a>
+  <div class="note">
+   <strong class="user">arbie samong</strong>
+   <a href="#93451" class="date">10-Sep-2009 07:42</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+__PHP_Incomplete_Class Object Demystified<br />
+<br />
+1. First take note of the output. A simple example:<br />
+<br />
+__PHP_Incomplete_Class Object (<br />
+[__PHP_Incomplete_Class_Name] =&gt; SomeObject1<br />
+[obj1property1] =&gt; somevalue1 [obj1property2] =&gt; __PHP_Incomplete_Class Object ( [__PHP_Incomplete_Class_Name] =&gt; SomeObject2 [obj2property1] =&gt; somevalue1 [obj2property2] =&gt; Array (<br />
+['key1'] =&gt; somevalue3, ['key2'] =&gt; somevalue4 ) ) )<br />
+<br />
+2. We analyze this and break it down. <br />
+__PHP_Incomplete_Class Object tells you there is an object that needs to be declared somehow. <br />
+__PHP_Incomplete_Class_Name simply tells you the expected class name. It is just one of the properties for now.<br />
+<br />
+So we have:<br />
+a) an unknown object that has a class name SomeObject1 (first class)<br />
+b) it has 2 properties, namely obj1property1 and obj2property2<br />
+c) obj2property2 is itself an object whose class name is SomeObject2 (the second class)<br />
+d) SomeObject2 has two properties, obj2property1 and obj2property2<br />
+e) obj2property2 is an array that contains two elements<br />
+<br />
+3. Now that we have an idea of the structure, we shall create class definitions based from it. We will just create properties for now, methods are not required as a minimum.<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">class </span><span class="default">SomeObject1 </span><span class="keyword">{<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; public </span><span class="default">$obj1property1</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; public </span><span class="default">$obj1property2</span><span class="keyword">;<br />
+}<br />
+class </span><span class="default">SomeObject2 </span><span class="keyword">{<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; public </span><span class="default">$obj2property1</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; public </span><span class="default">$obj2property2</span><span class="keyword">;<br />
+}<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+4. Have that accessible to your script and it will solve the __PHP_Incomplete_Class Object problem as far as the output is concerned. Now you will have:<br />
+<br />
+SomeObject1 ( [obj1property1] =&gt; somevalue1 [obj1property2] =&gt; SomeObject2 ( [obj2property1] =&gt; somevalue1 [obj2property2] =&gt; Array ( ['key1'] =&gt; somevalue3, ['key2'] =&gt; somevalue4 ) ) )<br />
+<br />
+As you will notice, __PHP_Incomplete_Class Object is gone and replaced by the class name. The property __PHP_Incomplete_Class_Name is also removed.<br />
+<br />
+5. As for the array property obj2property2, we can directly access that and just assume that it is an array and loop through it:<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+</span><span class="comment">// this will be SomeObject1 <br />
+</span><span class="default">$data </span><span class="keyword">= </span><span class="default">unserialize</span><span class="keyword">(</span><span class="default">$serialized_data</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">// this will be SomeObject2<br />
+</span><span class="default">$data2 </span><span class="keyword">= </span><span class="default">$data</span><span class="keyword">-&gt;</span><span class="default">obj1property2</span><span class="keyword">();<br />
+<br />
+foreach(</span><span class="default">$data2</span><span class="keyword">-&gt;</span><span class="default">obj2property2 </span><span class="keyword">as </span><span class="default">$key </span><span class="keyword">=&gt; </span><span class="default">$value</span><span class="keyword">):<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; print </span><span class="default">$key</span><span class="keyword">.</span><span class="string">' : '</span><span class="keyword">. </span><span class="default">$value </span><span class="keyword">.</span><span class="string">'&lt;br&gt;'</span><span class="keyword">; <br />
+endforeach;<br />
+<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+Outputs:<br />
+key1 : somevalue3<br />
+key2 : somevalue4<br />
+<br />
+That's it. You can add more methods on the class declarations for the given properties, provided you keep your original output as basis for the data types.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="93389""></a>
+  <div class="note">
+   <strong class="user">TBag</strong>
+   <a href="#93389" class="date">07-Sep-2009 12:46</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+My first post on php.net.&nbsp; Hope someone finds it helpfull.&nbsp; These few functions will serialize and unserialize arrays and objects.&nbsp; It works recursively too.&nbsp; I call them "might_..." because they test to see if any action is required.<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">function </span><span class="default">might_serialize</span><span class="keyword">(</span><span class="default">$val</span><span class="keyword">){<br />
+&nbsp;&nbsp;&nbsp; if(</span><span class="default">is_object</span><span class="keyword">(</span><span class="default">$val</span><span class="keyword">)){<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$obj_keys </span><span class="keyword">= </span><span class="default">array_keys</span><span class="keyword">(</span><span class="default">get_object_vars</span><span class="keyword">(</span><span class="default">$val</span><span class="keyword">));<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; foreach(</span><span class="default">$obj_keys </span><span class="keyword">as </span><span class="default">$k</span><span class="keyword">){ </span><span class="default">$val</span><span class="keyword">-&gt;</span><span class="default">$k </span><span class="keyword">= </span><span class="default">might_serialize</span><span class="keyword">(</span><span class="default">$val</span><span class="keyword">-&gt;</span><span class="default">$k</span><span class="keyword">); }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$val </span><span class="keyword">= </span><span class="default">serialize</span><span class="keyword">(</span><span class="default">$val</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; if(</span><span class="default">is_array</span><span class="keyword">(</span><span class="default">$val</span><span class="keyword">)){<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; foreach(</span><span class="default">$val </span><span class="keyword">as &amp;</span><span class="default">$v</span><span class="keyword">){ </span><span class="default">$v </span><span class="keyword">= </span><span class="default">might_serialize</span><span class="keyword">(</span><span class="default">$v</span><span class="keyword">); }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$val </span><span class="keyword">= </span><span class="default">serialize</span><span class="keyword">(</span><span class="default">$val</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">$val</span><span class="keyword">;<br />
+}<br />
+function </span><span class="default">might_unserialized</span><span class="keyword">(</span><span class="default">$val</span><span class="keyword">){<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">//$pattern = "/.*\{(.*)\}/";<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">if(</span><span class="default">is_serialized</span><span class="keyword">(</span><span class="default">$val</span><span class="keyword">)){<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$ret </span><span class="keyword">= </span><span class="default">unserialize</span><span class="keyword">(</span><span class="default">$val</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; foreach(</span><span class="default">$ret </span><span class="keyword">as &amp;</span><span class="default">$r</span><span class="keyword">){<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$r </span><span class="keyword">= </span><span class="default">might_unserialized</span><span class="keyword">(</span><span class="default">$r</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">$ret</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }else { return </span><span class="default">$val</span><span class="keyword">; }<br />
+}<br />
+function </span><span class="default">is_serialized</span><span class="keyword">(</span><span class="default">$val</span><span class="keyword">){<br />
+&nbsp;&nbsp;&nbsp; if (!</span><span class="default">is_string</span><span class="keyword">(</span><span class="default">$val</span><span class="keyword">)){ return </span><span class="default">false</span><span class="keyword">; }<br />
+&nbsp;&nbsp;&nbsp; if (</span><span class="default">trim</span><span class="keyword">(</span><span class="default">$val</span><span class="keyword">) == </span><span class="string">""</span><span class="keyword">) { return </span><span class="default">false</span><span class="keyword">; }<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">//if (preg_match("/^(i|s|a|o|d)(.*);/si",$val)) { return true; }<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">if (</span><span class="default">preg_match</span><span class="keyword">(</span><span class="string">"/^(i|s|a|o|d):(.*);/si"</span><span class="keyword">,</span><span class="default">$val</span><span class="keyword">) !== </span><span class="default">false</span><span class="keyword">) { return </span><span class="default">true</span><span class="keyword">; }<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">false</span><span class="keyword">;<br />
+}<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="90520""></a>
+  <div class="note">
+   <strong class="user">CEO at CarPool2Camp dot org</strong>
+   <a href="#90520" class="date">26-Apr-2009 09:12</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Be aware that this function may not play nicely with SimpleXML<br />
+<br />
+<span class="default">&lt;?php </span><span class="comment">// RAY_serialize.php<br />
+</span><span class="default">error_reporting</span><span class="keyword">(</span><span class="default">E_ALL</span><span class="keyword">);<br />
+echo </span><span class="string">"&lt;pre&gt;"</span><span class="keyword">;<br />
+<br />
+</span><span class="comment">// SOME TEST DATA<br />
+</span><span class="default">$xml </span><span class="keyword">= </span><span class="string">'&lt;?xml version="1.0" encoding="ISO-8859-1"?&gt;<br />
+&lt;books&gt;<br />
+&nbsp; &lt;book&gt;Book 1&lt;/book&gt;<br />
+&nbsp; &lt;book&gt;Book 2&lt;/book&gt;<br />
+&nbsp; &lt;book&gt;Book 3&lt;/book&gt;<br />
+&lt;/books&gt;'</span><span class="keyword">;<br />
+<br />
+</span><span class="comment">// MAKE OBJECT<br />
+</span><span class="default">$obj </span><span class="keyword">= </span><span class="default">SimpleXML_Load_String</span><span class="keyword">(</span><span class="default">$xml</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">// HAVE A LOOK AT THE OBJECT<br />
+</span><span class="default">var_dump</span><span class="keyword">(</span><span class="default">$obj</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">// SERIALIZE THE OBJECT<br />
+</span><span class="default">$txt </span><span class="keyword">= </span><span class="default">serialize</span><span class="keyword">(</span><span class="default">$obj</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">// SHOW THE TEXT FORM OF THE SERIALIZED OBJECT<br />
+</span><span class="default">var_dump</span><span class="keyword">(</span><span class="default">$txt</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">// TRY TO RETURN IT TO OBJECT STATUS<br />
+</span><span class="default">$new </span><span class="keyword">= </span><span class="default">unserialize</span><span class="keyword">(</span><span class="default">$txt</span><span class="keyword">); </span><span class="comment">// Warning: unserialize() [function.unserialize]: Node no longer exists in /home/www/public_html/RAY_serialize.php on line 38<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="90120""></a>
+  <div class="note">
+   <strong class="user">w dot laurencine at teknoa dot net</strong>
+   <a href="#90120" class="date">07-Apr-2009 05:54</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+When dealing with a string which contain "\r", it seems that the length is not evaluated correctly. The following solves the problem for me :<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="comment">// remove the \r caracters from the $unserialized string<br />
+</span><span class="default">$unserialized </span><span class="keyword">= </span><span class="default">str_replace</span><span class="keyword">(</span><span class="string">"\r"</span><span class="keyword">,</span><span class="string">""</span><span class="keyword">,</span><span class="default">$unserialized</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">// and then unserialize()<br />
+</span><span class="default">unserialize</span><span class="keyword">(</span><span class="default">$unserialized</span><span class="keyword">);<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="90035""></a>
+  <div class="note">
+   <strong class="user">Gary</strong>
+   <a href="#90035" class="date">02-Apr-2009 05:49</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Removing __PHP_Incomplete_Class Object<br />
+<br />
+this code will remove the __PHP_Incomplete_Class Object error when trying to pull data from a text sql file you dont know the class name of. i am simply using the data to generate a report<br />
+i have looked for something like this so hopefully this example will help someone the basic php to call the function is<br />
+<br />
+$session_data = base64_decode($YOURSERIALIZEDDATA);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; $decodedtext=unserializeUnknownObject($session_data);<br />
+<br />
+if base64 encoded<br />
+<br />
+or <br />
+&nbsp;&nbsp; &nbsp; &nbsp; $decodedtext=unserializeUnknownObject($YOURSERIALIZEDDATA);<br />
+<br />
+if simply serialized<br />
+<br />
+include_once 'include\phperrorclass.php';<br />
+<span class="default">&lt;?php<br />
+&nbsp;&nbsp; </span><span class="keyword">class </span><span class="default">MyClass </span><span class="keyword">{}<br />
+&nbsp;&nbsp; </span><span class="default">$object </span><span class="keyword">= </span><span class="default">unserialize</span><span class="keyword">(</span><span class="default">$serializedData</span><span class="keyword">);<br />
+</span><span class="default">?&gt;<br />
+</span>include_once 'include\phperrorfunction.php';<br />
+<span class="default">&lt;?php<br />
+&nbsp;&nbsp; </span><span class="keyword">function </span><span class="default">unserializeUnknownObject</span><span class="keyword">(</span><span class="default">$text</span><span class="keyword">)<br />
+&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; </span><span class="default">$matches </span><span class="keyword">= Array();<br />
+&nbsp;&nbsp; &nbsp; &nbsp; </span><span class="default">preg_match_all</span><span class="keyword">(</span><span class="string">'/O:(\d)*:"([^":]*)":/'</span><span class="keyword">, </span><span class="default">$text</span><span class="keyword">, </span><span class="default">$matches</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; foreach (</span><span class="default">$matches</span><span class="keyword">[</span><span class="default">2</span><span class="keyword">] as </span><span class="default">$class</span><span class="keyword">)<br />
+&nbsp;&nbsp; &nbsp; &nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; if (!</span><span class="default">class_exists</span><span class="keyword">(</span><span class="default">$class</span><span class="keyword">, </span><span class="default">False</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; eval(</span><span class="string">'class '</span><span class="keyword">.</span><span class="default">$class</span><span class="keyword">.</span><span class="string">' { }'</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; return </span><span class="default">unserialize</span><span class="keyword">(</span><span class="default">$text</span><span class="keyword">);<br />
+&nbsp;&nbsp; }<br />
+&nbsp;&nbsp; </span><span class="default">$object </span><span class="keyword">= </span><span class="default">unserializeUnknownObject</span><span class="keyword">(</span><span class="default">$serializedData</span><span class="keyword">);<br />
+</span><span class="default">?&gt;<br />
+</span>sample code<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="comment">//declare the unknown object<br />
+</span><span class="keyword">include_once </span><span class="string">'include\phperrorclass.php'</span><span class="keyword">;<br />
+include_once </span><span class="string">'include\phperrorfunction.php'</span><span class="keyword">;<br />
+</span><span class="comment">//declare the unserialize function&nbsp;&nbsp; <br />
+</span><span class="default">$abs_path </span><span class="keyword">= </span><span class="default">dirname</span><span class="keyword">(</span><span class="default">dirname</span><span class="keyword">(</span><span class="default">__FILE__</span><span class="keyword">));<br />
+include </span><span class="default">$abs_path</span><span class="keyword">.</span><span class="string">'\sunshop_reports\include\config.php'</span><span class="keyword">;<br />
+</span><span class="comment">// Connects to your Database<br />
+</span><span class="default">$connection</span><span class="keyword">=</span><span class="default">mysql_connect</span><span class="keyword">(</span><span class="default">$servername</span><span class="keyword">, </span><span class="default">$dbusername</span><span class="keyword">, </span><span class="default">$dbpassword</span><span class="keyword">) or die(</span><span class="default">mysql_error</span><span class="keyword">());<br />
+</span><span class="default">mysql_select_db</span><span class="keyword">(</span><span class="default">$dbname</span><span class="keyword">) or die(</span><span class="default">mysql_error</span><span class="keyword">());<br />
+</span><span class="default">$sql_query</span><span class="keyword">=</span><span class="string">" SELECT * FROM `ss_orders_products` LIMIT 0 , 30"</span><span class="keyword">;<br />
+</span><span class="default">$result</span><span class="keyword">=</span><span class="default">mysql_query</span><span class="keyword">(</span><span class="default">$sql_query</span><span class="keyword">,</span><span class="default">$connection</span><span class="keyword">);<br />
+if (!</span><span class="default">$result</span><span class="keyword">)<br />
+{ <br />
+die(</span><span class="string">'Invalid query: ' </span><span class="keyword">. </span><span class="default">mysql_error</span><span class="keyword">());<br />
+}<br />
+&nbsp;</span><span class="default">$session_data </span><span class="keyword">= array();<br />
+&nbsp;&nbsp; while(</span><span class="default">$row</span><span class="keyword">=</span><span class="default">mysql_fetch_array</span><span class="keyword">(</span><span class="default">$result</span><span class="keyword">)) <br />
+&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; </span><span class="default">$return</span><span class="keyword">[] = </span><span class="default">$row</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; echo(</span><span class="string">"&nbsp; OrderID - "</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; </span><span class="default">print_r</span><span class="keyword">(</span><span class="default">$row</span><span class="keyword">[</span><span class="default">1</span><span class="keyword">]);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; echo(</span><span class="string">"&nbsp; Data Array - "</span><span class="keyword">); <br />
+&nbsp;&nbsp; &nbsp; &nbsp; </span><span class="default">$pulledata</span><span class="keyword">=(</span><span class="default">$row</span><span class="keyword">[</span><span class="default">4</span><span class="keyword">]);&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp; </span><span class="default">$session_data </span><span class="keyword">= </span><span class="default">base64_decode</span><span class="keyword">(</span><span class="default">$row</span><span class="keyword">[</span><span class="default">4</span><span class="keyword">]);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; </span><span class="default">$decodedtext</span><span class="keyword">=</span><span class="default">unserializeUnknownObject</span><span class="keyword">(</span><span class="default">$session_data</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; echo </span><span class="default">nl2br</span><span class="keyword">(</span><span class="string">"\n"</span><span class="keyword">); <br />
+&nbsp;&nbsp; &nbsp; &nbsp; </span><span class="default">print_r</span><span class="keyword">(</span><span class="default">$decodedtext</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; echo </span><span class="default">nl2br</span><span class="keyword">(</span><span class="string">"\n"</span><span class="keyword">); <br />
+&nbsp;&nbsp; &nbsp; &nbsp; echo </span><span class="default">nl2br</span><span class="keyword">(</span><span class="string">"\n"</span><span class="keyword">);<br />
+&nbsp;&nbsp; }<br />
+<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="88824""></a>
+  <div class="note">
+   <strong class="user">John Smart</strong>
+   <a href="#88824" class="date">09-Feb-2009 04:35</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I also had a problem unserializing UTF-8 TEXT data from mysql.&nbsp; However, the problem isn't with the text as much as it is from the connection layer.&nbsp; Make sure you are connecting to mysql with the default-character-set optional set to utf8. Otherwise, you'll get back a bunch of ???? characters for UTF-8 text.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="86197""></a>
+  <div class="note">
+   <strong class="user">Ariz JAcinto</strong>
+   <a href="#86197" class="date">07-Oct-2008 11:47</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Here's another way of removing the&nbsp; "__PHP_Incomplete_Class" notice especially if you're fetching the serialized object from a remote web service meaning, you don't have local copy of the class defining the object.<br />
+<br />
+You can fix this by creating a class on the local machine that would define the object (*methods wouldn't be necessary).<br />
+<br />
+Ex.<br />
+<br />
+Object (Before):<br />
+<br />
+object(__PHP_Incomplete_Class)#123 (3) {<br />
+&nbsp; ["__PHP_Incomplete_Class_Name"]=&gt;<br />
+&nbsp;&nbsp;&nbsp; string(10) "SomeObject"<br />
+&nbsp; ["property_one"]=&gt;<br />
+&nbsp;&nbsp;&nbsp; string(5) "Hello"<br />
+&nbsp; ["property_two"]=&gt;<br />
+&nbsp;&nbsp;&nbsp; string(5) "World"<br />
+}<br />
+<br />
+Class:<br />
+<br />
+class SomeObject{<br />
+<br />
+&nbsp;public $property_one;<br />
+&nbsp;public $property_two;<br />
+<br />
+}<br />
+<br />
+Object (After):<br />
+<br />
+object(SomeObject)#31 (2) {<br />
+&nbsp; ["property_one"]=&gt;<br />
+&nbsp;&nbsp;&nbsp; string(5) "Hello"<br />
+&nbsp; ["property_two"]=&gt;<br />
+&nbsp;&nbsp;&nbsp; string(5) "World"<br />
+}</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="85744""></a>
+  <div class="note">
+   <strong class="user">ogjuiceloc at yahoo dot com</strong>
+   <a href="#85744" class="date">15-Sep-2008 10:32</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Good time saving post by campbell at vertesi dot com on 24-May-2008 01:52 for how base64_encode is needed before storing as mySQL text.&nbsp; <br />
+<br />
+The order of unserializing is reversed however as you need to call base64_decode before unserialize.&nbsp; Example:<br />
+<br />
+<span class="default">&lt;?php<br />
+$unserialized_array </span><span class="keyword">= </span><span class="default">unserialize </span><span class="keyword">(</span><span class="default">base64_decode</span><span class="keyword">(</span><span class="default">$serialized_array</span><span class="keyword">));<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="85097""></a>
+  <div class="note">
+   <strong class="user">chris AT cmbuckley DOT co DOT uk</strong>
+   <a href="#85097" class="date">14-Aug-2008 06:47</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+As mentioned in the notes, unserialize returns false in the event of an error and for boolean false. Here is the first solution mentioned, without using error handling:<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">function </span><span class="default">isSerialized</span><span class="keyword">(</span><span class="default">$str</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; return (</span><span class="default">$str </span><span class="keyword">== </span><span class="default">serialize</span><span class="keyword">(</span><span class="default">false</span><span class="keyword">) || @</span><span class="default">unserialize</span><span class="keyword">(</span><span class="default">$str</span><span class="keyword">) !== </span><span class="default">false</span><span class="keyword">);<br />
+}<br />
+<br />
+</span><span class="default">var_dump</span><span class="keyword">(</span><span class="default">isSerialized</span><span class="keyword">(</span><span class="string">'s:6:"foobar";'</span><span class="keyword">)); </span><span class="comment">// bool(true)<br />
+</span><span class="default">var_dump</span><span class="keyword">(</span><span class="default">isSerialized</span><span class="keyword">(</span><span class="string">'foobar'</span><span class="keyword">));&nbsp; &nbsp; &nbsp; &nbsp; </span><span class="comment">// bool(false)<br />
+</span><span class="default">var_dump</span><span class="keyword">(</span><span class="default">isSerialized</span><span class="keyword">(</span><span class="string">'b:0;'</span><span class="keyword">));&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span class="comment">// bool(true)<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="84730""></a>
+  <div class="note">
+   <strong class="user">chris at r3i dot it</strong>
+   <a href="#84730" class="date">27-Jul-2008 04:24</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+@ Igor for single quote trouble:<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">function </span><span class="default">mb_unserialize</span><span class="keyword">(</span><span class="default">$serial_str</span><span class="keyword">) {<br />
+</span><span class="default">$out </span><span class="keyword">= </span><span class="default">preg_replace</span><span class="keyword">(</span><span class="string">'!s:(\d+):"(.*?)";!se'</span><span class="keyword">, </span><span class="string">"'s:'.strlen('$2').':\"$2\";'"</span><span class="keyword">, </span><span class="default">$serial_str </span><span class="keyword">);<br />
+return </span><span class="default">unserialize</span><span class="keyword">(</span><span class="default">$out</span><span class="keyword">); <br />
+}<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+Unserialize with utf8 content get trouble and the code provided by the guy works fine.<br />
+<br />
+Code isn't mine: thanks to <a href="http://www.lastfm.pl/user/TheMariner" rel="nofollow" target="_blank">http://www.lastfm.pl/user/TheMariner</a></span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="83997""></a>
+  <div class="note">
+   <strong class="user">pierre dot spring at liip dot ch</strong>
+   <a href="#83997" class="date">23-Jun-2008 05:18</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+props to steve at bluearena dot com and getmequick at gmail dot com<br />
+<br />
+when using the regex proposed by steve at bluearena dot com when working with serialized objects that have been utf-8 encoded, i ran into a problem... <br />
+<br />
+"\0" became 2 characters, instead of the zero ascii character.<br />
+<br />
+the solution is pretty subtle:<br />
+&lt;? php<br />
+# zero ascii "\0" becomes '\0'<br />
+$error = preg_replace('!s:(\d+):"(.*?)";!se', "'s:'.strlen('$2').':\"$2\";'", $unserialized );<br />
+$works = preg_replace('!s:(\d+):"(.*?)";!se', '"s:".strlen("$2").":\"$2\";"', $unserialized );<br />
+?&gt;</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="83415""></a>
+  <div class="note">
+   <strong class="user">campbell at vertesi dot com</strong>
+   <a href="#83415" class="date">24-May-2008 01:52</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+One thing to note - if you're storing your serialized string in a MySQL TEXT field, it will remove the {s and }s that make your string valid for unserialization.<br />
+<br />
+I almost killed myself figuring this out - I'm sure it's basic but I had to post my solution - encode the serialized string in base 64.<br />
+<br />
+$mood = array('angry','sad','happy');<br />
+<br />
+$storable = base64_encode(serialize($mood));<br />
+<br />
+then when you retrieve it from the database, you can access the string with<br />
+<br />
+$mood=base64_decode(unserialize($storable));</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="81784""></a>
+  <div class="note">
+   <strong class="user">dev at atshop3d dot com</strong>
+   <a href="#81784" class="date">13-Mar-2008 04:19</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Thanks to Igor who helped provide the solution to this. Serialize is very strict when it comes to quotes, and I spent _days_ figuring out why MySQL/PostgreSQL/etc. and locally set serialized strings returned a blank array, testing with both double and single quotes to see which one works.<br />
+<br />
+Changing literal single quotes to "&amp;#039" (I'm using numeric reference since &amp;rsquo; and &amp;lsquo; are different) and double quotes to "&amp;quot;" cures all problems, while changing only one at a time only remedies a few of them. I'm interested to hear if other people have different experiences.<br />
+<br />
+For example, the following string works:<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="comment">//--------------------------------------------<br />
+// Set the example value. It doesn't matter if the string is from<br />
+// a database query or locally set - the side-effects are the same.<br />
+</span><span class="default">$heightoptionslist </span><span class="keyword">= &lt;&lt;&lt;HEIGHTEND<br />
+</span><span class="string">a:3:{s:37:"Hands/inches (eg. 13&amp;#039; 2&amp;quot;HH)";s:6:"option";s:25:"Inches only (eg.39&amp;quot;)";s:6:"option";s:24:"Centimeters (eg. 153cms)";s:6:"option";}<br />
+</span><span class="keyword">HEIGHTEND;<br />
+</span><span class="comment">//--------------------------------------------<br />
+// Change the serialized string back to an array.<br />
+</span><span class="default">$heightoptionslist </span><span class="keyword">= </span><span class="default">unserialize</span><span class="keyword">(</span><span class="default">$heightoptionslist</span><span class="keyword">);<br />
+</span><span class="comment">//--------------------------------------------<br />
+// Output the value in a format we can understand.<br />
+</span><span class="keyword">echo </span><span class="string">"&lt;div&gt;&lt;pre&gt;\$heightoptionslist = [\n"</span><span class="keyword">.</span><span class="default">print_r</span><span class="keyword">(</span><span class="default">$heightoptionslist</span><span class="keyword">, </span><span class="default">true</span><span class="keyword">).</span><span class="string">"\n]&lt;/pre&gt;&lt;/div&gt;"</span><span class="keyword">;<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+while a string containing literal quotes doesn't (in nearly all cases on this machine):<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="comment">//--------------------------------------------<br />
+// Another example value,<br />
+// this time with escaped literal quotes<br />
+</span><span class="default">$heightoptionslist </span><span class="keyword">= &lt;&lt;&lt;HEIGHTEND<br />
+</span><span class="string">a:3:{s:26:"Hands/inches (eg. 13\' 2\"HH)";s:6:"option";s:20:"Inches only (eg.39\")";s:6:"option";s:24:"Centimeters (eg. 153cms)";s:6:"option";}<br />
+</span><span class="keyword">HEIGHTEND;<br />
+</span><span class="comment">//--------------------------------------------<br />
+// Change the serialized string back to an array.<br />
+</span><span class="default">$heightoptionslist </span><span class="keyword">= </span><span class="default">unserialize</span><span class="keyword">(</span><span class="default">$heightoptionslist</span><span class="keyword">);<br />
+</span><span class="comment">//--------------------------------------------<br />
+// And return a blank array for some fun.<br />
+</span><span class="keyword">echo </span><span class="string">"&lt;div&gt;&lt;pre&gt;\$heightoptionslist = [\n"</span><span class="keyword">.</span><span class="default">print_r</span><span class="keyword">(</span><span class="default">$heightoptionslist</span><span class="keyword">, </span><span class="default">true</span><span class="keyword">).</span><span class="string">"\n]&lt;/pre&gt;&lt;/div&gt;"</span><span class="keyword">;<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="80720""></a>
+  <div class="note">
+   <strong class="user">rhm31 at cam dot ac dot uk</strong>
+   <a href="#80720" class="date">29-Jan-2008 05:44</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Problem: I needed a way to call an object that I did not know the name of. This forced me to use a variable for the class name.<br />
+<br />
+Solution: unserialize();<br />
+<br />
+GACK! This is imaginative, but horrid.<br />
+<br />
+Firstly, I thought this would work:<br />
+$object=new $class_name();<br />
+<br />
+Otherwise, something like below will work:<br />
+$object=eval("new $class_name()");<br />
+<br />
+You can use a normal constructor this way too.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="77826""></a>
+  <div class="note">
+   <strong class="user">jsa1971 at gmail dot com</strong>
+   <a href="#77826" class="date">14-Sep-2007 07:41</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Ignore all the advice to implement __autoload-ers or magical handlers, to solve problems when retrieving class instances from sessions.&nbsp; It leads to terrible debugging nightmares.<br />
+<br />
+After fussing with all sorts of such solutions and getting nowhere, I've found a very simple solution that works correctly and explicitly:<br />
+<br />
+$_SESSION['myInstance'] = serialize($myInstance);<br />
+<br />
+....<br />
+<br />
+$myInstance_s = @$SESSION['myInstance']<br />
+if (!is_null($myInstance_s)) {<br />
+&nbsp;&nbsp;&nbsp; $myInstance = unserialize($myInstance_s);<br />
+}<br />
+<br />
+In other words, serialize the thing as a string, and put it in the session in this state - you regain control of the unserialization process and can code to handle exception cases rather than praying php's black magic does the right thing (and being sorely disappointed when it doesn't).</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="77538""></a>
+  <div class="note">
+   <strong class="user">cory at lavacube dot com</strong>
+   <a href="#77538" class="date">02-Sep-2007 06:45</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Problem: I needed a way to call an object that I did not know the name of. This forced me to use a variable for the class name.<br />
+<br />
+Solution: unserialize();<br />
+<br />
+Unserialize supports opening objects/classes from a serialized string. In order to do so I had to do something to this effect:<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+</span><span class="comment">// this is the variable part<br />
+</span><span class="default">$class_name </span><span class="keyword">= </span><span class="string">'Some_Obscure_Class'</span><span class="keyword">;<br />
+<br />
+</span><span class="comment">// here is where we take the name and dynamically create a serialize-compliant string.<br />
+</span><span class="default">$quickload </span><span class="keyword">= </span><span class="string">'O:' </span><span class="keyword">. </span><span class="default">strlen</span><span class="keyword">(</span><span class="default">$class_name</span><span class="keyword">) . </span><span class="string">':"' </span><span class="keyword">.</span><span class="default">$class_name</span><span class="keyword">. </span><span class="string">'":0:{}'</span><span class="keyword">;<br />
+<br />
+</span><span class="comment">// and here we inject the string into unserialize, this creating an object! :-)<br />
+</span><span class="default">$object </span><span class="keyword">= </span><span class="default">unserialize</span><span class="keyword">(</span><span class="default">$quickload</span><span class="keyword">);<br />
+<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+From here I used the __wakeup() magic function to initialize/construct the class as needed. :-)</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="76977""></a>
+  <div class="note">
+   <strong class="user">deminy at deminy dot net</strong>
+   <a href="#76977" class="date">08-Aug-2007 09:46</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Reply to eoin's post:<br />
+<br />
+The regular expression you used to unserialize a PHP session file won't work if the session file contains string variable which contains character "|".<br />
+<br />
+As I can see now, there is no any regular expression that can easily split data in a PHP session file. To read data from a session file, we may have to write a function to read content from the file, and then parse the content.<br />
+<br />
+(This reply was also posted at <a href="http://www.php.net/manual/en/function.serialize.php to reply Erudd" rel="nofollow" target="_blank">http://www.php.net/manual/en/function.serialize.php to reply Erudd</a>'s post)</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="76012""></a>
+  <div class="note">
+   <strong class="user">skinnepa at hotmail dot com</strong>
+   <a href="#76012" class="date">26-Jun-2007 10:42</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+props to steve at bluearena dot com and getmequick at gmail dot com<br />
+<br />
+Here's my implementation :p<br />
+<br />
+function mb_unserialize($serial_str) {<br />
+&nbsp;&nbsp;&nbsp; $out = preg_replace('!s:(\d+):"(.*?)";!se', "'s:'.strlen('$2').':\"$2\";'", $serial_str );<br />
+&nbsp;&nbsp;&nbsp; return unserialize($out);&nbsp; &nbsp; <br />
+}<br />
+<br />
+Works great for serialized UTF-8 content that doesn't like to be unserialized!</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="75773""></a>
+  <div class="note">
+   <strong class="user">steve at bluearena dot com</strong>
+   <a href="#75773" class="date">15-Jun-2007 05:18</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+To getmequick at gmail dot com<br />
+<br />
+Your outstanding preg_replace<br />
+<br />
+&lt;? php<br />
+$unserialized = preg_replace('!s:(\d+):"(.*?)";!se', "'s:'.strlen('$2').':\"$2\";'", $unserialized );<br />
+?&gt;<br />
+<br />
+helped me out of a hole after converting a database from latin1 to UTF8 and forgetting about how strict the strlen of serialized strings needs to be!<br />
+<br />
+I just added the s modifier for it to be able to support whitespace and it fixed everything.<br />
+<br />
+Thanks a million.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="74932""></a>
+  <div class="note">
+   <strong class="user">Ates Goral</strong>
+   <a href="#74932" class="date">04-May-2007 11:02</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+If instead of using JSON, you'd like to stick with PHP-style serialization, here's some JavaScript code I posted at <a href="http://magnetiq.com for serializing JavaScript objects in PHP fashion:" rel="nofollow" target="_blank">http://magnetiq.com for serializing JavaScript objects in PHP fashion:</a><br />
+<br />
+/* Returns the class name of the argument or undefined if<br />
+&nbsp;&nbsp; it's not a valid JavaScript object.<br />
+*/<br />
+function getObjectClass(obj)<br />
+{<br />
+&nbsp;&nbsp;&nbsp; if (obj &amp;&amp; obj.constructor &amp;&amp; obj.constructor.toString)<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; var arr = obj.constructor.toString().match(<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; /function\s*(\w+)/);<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if (arr &amp;&amp; arr.length == 2)<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; return arr[1];<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; return undefined;<br />
+}<br />
+<br />
+/* Serializes the given argument, PHP-style.<br />
+<br />
+&nbsp;&nbsp; The type mapping is as follows:<br />
+<br />
+&nbsp;&nbsp; JavaScript Type&nbsp; &nbsp; PHP Type<br />
+&nbsp;&nbsp; ---------------&nbsp; &nbsp; --------<br />
+&nbsp;&nbsp; Number&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; Integer or Decimal<br />
+&nbsp;&nbsp; String&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; String<br />
+&nbsp;&nbsp; Boolean&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Boolean<br />
+&nbsp;&nbsp; Array&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Array<br />
+&nbsp;&nbsp; Object&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; Object<br />
+&nbsp;&nbsp; undefined&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Null<br />
+<br />
+&nbsp;&nbsp; The special JavaScript object null also becomes PHP Null.<br />
+&nbsp;&nbsp; This function may not handle associative arrays or array<br />
+&nbsp;&nbsp; objects with additional properties well.<br />
+*/<br />
+function phpSerialize(val)<br />
+{<br />
+&nbsp;&nbsp;&nbsp; switch (typeof(val))<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp;&nbsp; case "number":<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return (Math.floor(val) == val ? "i" : "d") + ":" +<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; val + ";";<br />
+&nbsp;&nbsp;&nbsp; case "string":<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return "s:" + val.length + ":\"" + val + "\";";<br />
+&nbsp;&nbsp;&nbsp; case "boolean":<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return "b:" + (val ? "1" : "0") + ";";<br />
+&nbsp;&nbsp;&nbsp; case "object":<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if (val == null)<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; return "N;";<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; else if ("length" in val)<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; var idxobj = { idx: -1 };<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; return "a:" + val.length + ":{" + val.map(<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; function (item)<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; this.idx++;<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; var ser = phpSerialize(item);<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; return ser ?<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; phpSerialize(this.idx) + ser :<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; false;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }, idxobj).filter(<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; function (item)<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; return item;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }).join("") + "}";<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; else<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; var class_name = getObjectClass(val);<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if (class_name == undefined)<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; return false;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; var props = new Array();<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; for (var prop in val)<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; var ser = phpSerialize(val[prop]);<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if (ser)<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; props.push(phpSerialize(prop) + ser);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; return "O:" + class_name.length + ":\"" +<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; class_name + "\":" + props.length + ":{" +<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; props.join("") + "}";<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; case "undefined":<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return "N;";<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; return false;<br />
+}<br />
+<br />
+On the client side, you can pass in a complex (nested) JavaScript object to the phpSerialize function to get a PHP-style serialized representation. This string can be posted back and directly passed to the unserialize function to yield a representation of the complex object in PHP realm. Use of this technique requires caution on security matters.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="74414""></a>
+  <div class="note">
+   <strong class="user">me at no-spam dot com</strong>
+   <a href="#74414" class="date">10-Apr-2007 08:49</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+A note to the last person. To avoid the incomplete class notice, all you need to do is make sure you include the class definition before session_start(); is called. Simple as that.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="74356""></a>
+  <div class="note">
+   <strong class="user">Elise van Looij</strong>
+   <a href="#74356" class="date">07-Apr-2007 02:15</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Thank you, thank you, thank you to Chris Hayes for<br />
+<br />
+$_SESSION['my_object'] = unserialize(serialize($_SESSION['my_object']))<br />
+<br />
+I wrestled through several very learned articles that dealt with creating factory classes for serializing objects and including the entire class definition in each and every file, yet one single line was all it took to stop my drupal module from whining about __PHP_Incomplete_Class when I tried to use load an instance from a session.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="73585""></a>
+  <div class="note">
+   <strong class="user">BenBE at omorphia dot de</strong>
+   <a href="#73585" class="date">02-Mar-2007 06:20</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+When trying to serialize or unserialize recursive arrays or otherwise linked data you might find the undocumented R data type quite useful.<br />
+<br />
+If you want a array like the one produced with<br />
+&lt;?<br />
+$a = array();<br />
+$a[0] =&amp; $a;<br />
+?&gt;<br />
+serialized you can store it using a string simular to this one:<br />
+&lt;?<br />
+$a = unserialize("a:1:{i:0;R:1;}");<br />
+?&gt;<br />
+<br />
+Both sources will make $a hold an array that self-references itself in index 0.<br />
+<br />
+The argument for R is the index of the created sub-variable of the serialize-string beginning with 1.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="73510""></a>
+  <div class="note">
+   <strong class="user">julabz at laposte dot net</strong>
+   <a href="#73510" class="date">26-Feb-2007 08:07</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I couldn't get it with all these solutions, but it worked for me by mixing some of them this way:<br />
+<span class="default">&lt;?php<br />
+<br />
+</span><span class="keyword">function </span><span class="default">__serialize</span><span class="keyword">(</span><span class="default">$object</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$serialized </span><span class="keyword">= </span><span class="default">serialize</span><span class="keyword">(</span><span class="default">$object</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; return </span><span class="default">htmlentities</span><span class="keyword">(</span><span class="default">$serialized</span><span class="keyword">,</span><span class="default">ENT_QUOTES</span><span class="keyword">);<br />
+}<br />
+</span><span class="comment">//<br />
+</span><span class="keyword">function </span><span class="default">__unserialize</span><span class="keyword">(</span><span class="default">$string</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$unserialized </span><span class="keyword">= </span><span class="default">stripslashes</span><span class="keyword">(</span><span class="default">$string</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; </span><span class="default">$unserialized </span><span class="keyword">= </span><span class="default">preg_replace</span><span class="keyword">(</span><span class="string">'!s:(\d+):"(.*?)";!e'</span><span class="keyword">, </span><span class="string">"'s:'.strlen('$2').':\"$2\";'"</span><span class="keyword">, </span><span class="default">$unserialized </span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; return </span><span class="default">unserialize</span><span class="keyword">(</span><span class="default">$unserialized</span><span class="keyword">);<br />
+}<br />
+<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="73423""></a>
+  <div class="note">
+   <strong class="user">Angel from 4hoursgift.com</strong>
+   <a href="#73423" class="date">22-Feb-2007 09:16</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+To Igor Defaye:<br />
+<br />
+Thanks a lot. It worked to me. <br />
+<br />
+unserialize() parameter ends when it first find a ' character, so if there is any it truncates the data and it does work properly.<br />
+<br />
+(tested with PHP 4.4.1)</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="73398""></a>
+  <div class="note">
+   <strong class="user">fuzzywoodlandcreatureSPAM at SUCKSgmail dot com</strong>
+   <a href="#73398" class="date">21-Feb-2007 08:59</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+To Igor Defaye:<br />
+unserialize() works fine with anything I've thrown at it, single quotes included.&nbsp; My guess is you're running into problems created by Magic Quotes.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="73296""></a>
+  <div class="note">
+   <strong class="user">Igor Defaye</strong>
+   <a href="#73296" class="date">16-Feb-2007 08:08</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+It took me a good hour to figure out why serialized data stored in mysql database would not unserialize.<br />
+This is what I was trying to unserialize :<br />
+a:4:{i:0;s:43:"Date_Format(dateEntree,'%Y%m%d')";}<br />
+<br />
+Addslashes did not work for me, I had to use :<br />
+str_replace("'", "\'", $serializedData)<br />
+in order to replace only sigle quotes and not double quotes, so I obtained this :<br />
+a:4:{i:0;s:43:"Date_Format(dateEntree,\'%Y%m%d\')";}<br />
+<br />
+unserialize does not like single quotes.<br />
+Hope it can help someome.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="71846""></a>
+  <div class="note">
+   <strong class="user">double at dumpit dot com</strong>
+   <a href="#71846" class="date">19-Dec-2006 05:09</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+This little function will check whether the serialized string is well formed. <br />
+<br />
+PHP &lt; 6 because i'd heard changes will be made in this php-intern function, <br />
+maybe it could be edited easy for it.<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+</span><span class="keyword">function </span><span class="default">wd_check_serialization</span><span class="keyword">( </span><span class="default">$string</span><span class="keyword">, &amp;</span><span class="default">$errmsg </span><span class="keyword">) <br />
+{<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$str </span><span class="keyword">= </span><span class="string">'s'</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$array </span><span class="keyword">= </span><span class="string">'a'</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$integer </span><span class="keyword">= </span><span class="string">'i'</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$any </span><span class="keyword">= </span><span class="string">'[^}]*?'</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$count </span><span class="keyword">= </span><span class="string">'\d+'</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$content </span><span class="keyword">= </span><span class="string">'"(?:\\\";|.)*?";'</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$open_tag </span><span class="keyword">= </span><span class="string">'\{'</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$close_tag </span><span class="keyword">= </span><span class="string">'\}'</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$parameter </span><span class="keyword">= </span><span class="string">"(</span><span class="default">$str</span><span class="string">|</span><span class="default">$array</span><span class="string">|</span><span class="default">$integer</span><span class="string">|</span><span class="default">$any</span><span class="string">):(</span><span class="default">$count</span><span class="string">)" </span><span class="keyword">. </span><span class="string">"(?:[:](</span><span class="default">$open_tag</span><span class="string">|</span><span class="default">$content</span><span class="string">)|[;])"</span><span class="keyword">;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$preg </span><span class="keyword">= </span><span class="string">"/</span><span class="default">$parameter</span><span class="string">|(</span><span class="default">$close_tag</span><span class="string">)/"</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; if( !</span><span class="default">preg_match_all</span><span class="keyword">( </span><span class="default">$preg</span><span class="keyword">, </span><span class="default">$string</span><span class="keyword">, </span><span class="default">$matches </span><span class="keyword">) ) <br />
+&nbsp;&nbsp;&nbsp; {&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$errmsg </span><span class="keyword">= </span><span class="string">'not a serialized string'</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">false</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }&nbsp; &nbsp; <br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$open_arrays </span><span class="keyword">= </span><span class="default">0</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; foreach( </span><span class="default">$matches</span><span class="keyword">[</span><span class="default">1</span><span class="keyword">] AS </span><span class="default">$key </span><span class="keyword">=&gt; </span><span class="default">$value </span><span class="keyword">)<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if( !empty( </span><span class="default">$value </span><span class="keyword">) &amp;&amp; ( </span><span class="default">$value </span><span class="keyword">!= </span><span class="default">$array </span><span class="keyword">xor </span><span class="default">$value </span><span class="keyword">!= </span><span class="default">$str </span><span class="keyword">xor </span><span class="default">$value </span><span class="keyword">!= </span><span class="default">$integer </span><span class="keyword">) ) <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$errmsg </span><span class="keyword">= </span><span class="string">'undefined datatype'</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">false</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if( </span><span class="default">$value </span><span class="keyword">== </span><span class="default">$array </span><span class="keyword">)<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$open_arrays</span><span class="keyword">++;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if( </span><span class="default">$matches</span><span class="keyword">[</span><span class="default">3</span><span class="keyword">][</span><span class="default">$key</span><span class="keyword">] != </span><span class="string">'{' </span><span class="keyword">) <br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$errmsg </span><span class="keyword">= </span><span class="string">'open tag expected'</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">false</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if( </span><span class="default">$value </span><span class="keyword">== </span><span class="string">'' </span><span class="keyword">)<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if( </span><span class="default">$matches</span><span class="keyword">[</span><span class="default">4</span><span class="keyword">][</span><span class="default">$key</span><span class="keyword">] != </span><span class="string">'}' </span><span class="keyword">) <br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$errmsg </span><span class="keyword">= </span><span class="string">'close tag expected'</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">false</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$open_arrays</span><span class="keyword">--;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if( </span><span class="default">$value </span><span class="keyword">== </span><span class="default">$str </span><span class="keyword">)<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$aVar </span><span class="keyword">= </span><span class="default">ltrim</span><span class="keyword">( </span><span class="default">$matches</span><span class="keyword">[</span><span class="default">3</span><span class="keyword">][</span><span class="default">$key</span><span class="keyword">], </span><span class="string">'"' </span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$aVar </span><span class="keyword">= </span><span class="default">rtrim</span><span class="keyword">( </span><span class="default">$aVar</span><span class="keyword">, </span><span class="string">'";' </span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if( </span><span class="default">strlen</span><span class="keyword">( </span><span class="default">$aVar </span><span class="keyword">) != </span><span class="default">$matches</span><span class="keyword">[</span><span class="default">2</span><span class="keyword">][</span><span class="default">$key</span><span class="keyword">] ) <br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$errmsg </span><span class="keyword">= </span><span class="string">'stringlen for string not match'</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">false</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if( </span><span class="default">$value </span><span class="keyword">== </span><span class="default">$integer </span><span class="keyword">)<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if( !empty( </span><span class="default">$matches</span><span class="keyword">[</span><span class="default">3</span><span class="keyword">][</span><span class="default">$key</span><span class="keyword">] ) ) <br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$errmsg </span><span class="keyword">= </span><span class="string">'unexpected data'</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">false</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if( !</span><span class="default">is_integer</span><span class="keyword">( (int)</span><span class="default">$matches</span><span class="keyword">[</span><span class="default">2</span><span class="keyword">][</span><span class="default">$key</span><span class="keyword">] ) ) <br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$errmsg </span><span class="keyword">= </span><span class="string">'integer expected'</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">false</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; }&nbsp; &nbsp; &nbsp; &nbsp; <br />
+&nbsp;&nbsp;&nbsp; if( </span><span class="default">$open_arrays </span><span class="keyword">!= </span><span class="default">0 </span><span class="keyword">) <br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$errmsg </span><span class="keyword">= </span><span class="string">'wrong setted arrays'</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">false</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">true</span><span class="keyword">;<br />
+}<br />
+<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="71270""></a>
+  <div class="note">
+   <strong class="user">getmequick at gmail dot com</strong>
+   <a href="#71270" class="date">20-Nov-2006 03:22</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+for those who has error like "<br />
+error at offset .."<br />
+<br />
+but doesn't know why.<br />
+<br />
+This function might be usefull<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+$sObject3 </span><span class="keyword">= </span><span class="string">'a:2:{i:0;s:1:"1";i:1;s:3654:"1a1dc91c907325c69271ddf0c944bc72";}'</span><span class="keyword">;<br />
+<br />
+</span><span class="default">print_r</span><span class="keyword">( </span><span class="default">__unserialize</span><span class="keyword">(</span><span class="default">$sObject3&nbsp; </span><span class="keyword">));<br />
+<br />
+function </span><span class="default">__unserialize</span><span class="keyword">(</span><span class="default">$sObject</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$__ret </span><span class="keyword">=</span><span class="default">preg_replace</span><span class="keyword">(</span><span class="string">'!s:(\d+):"(.*?)";!e'</span><span class="keyword">, </span><span class="string">"'s:'.strlen('$2').':\"$2\";'"</span><span class="keyword">, </span><span class="default">$sObject </span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">unserialize</span><span class="keyword">(</span><span class="default">$__ret</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; <br />
+}<br />
+<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="70884""></a>
+  <div class="note">
+   <strong class="user">eakolb  at  dygel  dot  nizzet</strong>
+   <a href="#70884" class="date">02-Nov-2006 08:10</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Apparently, unserialize is really picky about anyone messing with the serial string. Just spent an hour debugging why unserialize wasn't working on a serial string stored in a database where, per client requirement, all inserted data is strtoupper'd. Can't just strtolower on a serial string, though -- if there are null values in there (signified as N;), they must be upper case.<br />
+<br />
+The following call may be a bit convoluted, but it works.<br />
+<br />
+unserialize(preg_replace('/;n;/', ';N;', strtolower($serial)))<br />
+<br />
+Of course, if you have string data within that array, that'll get clobbered by the strtolower. In my case, I was dealing with integer values (aside from the key names). But this might save someone else out there a little trouble.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="68748""></a>
+  <div class="note">
+   <strong class="user">Are Pedersen</strong>
+   <a href="#68748" class="date">09-Aug-2006 01:46</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Be aware that if useing serialize/unserialize in a serverfarm with both 32bit and 64bit servers you can get unexpected results.<br />
+<br />
+Ex: if you serialize an integer with value of 2147483648 on a 64bit system and then unserialize it on a 32bit system you will get the value -2147483648 instead. This is because an integer on 32bit cannot be above 2147483647 so it wraps.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="65687""></a>
+  <div class="note">
+   <strong class="user">chad 0x40 herballure 0x2e com</strong>
+   <a href="#65687" class="date">05-May-2006 09:08</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+When unserializing in PHP5 (behavior observed with 5.1.2), __autoload() will be checked first, and unserialize_callback_func called only if __autoload failed to load the class definition.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="62502""></a>
+  <div class="note">
+   <strong class="user">fhummel at hotmail dot com</strong>
+   <a href="#62502" class="date">01-Mar-2006 09:37</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I have noticed that using the eval function as described in other posts might produce class redefinitions if separate class files are used and included.<br />
+<br />
+My solution was to include_once at the top all .php files with classes that will be used on a particular page. This way the class definition exists when unserialize is called and you get the no duplicate check for free by using include_once.<br />
+<br />
+Maybe someone can chime in on how this might affect performance.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="61700""></a>
+  <div class="note">
+   <strong class="user">onuryerlikaya at hotmail dot com</strong>
+   <a href="#61700" class="date">09-Feb-2006 04:00</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+<span class="default">&lt;?php<br />
+<br />
+</span><span class="comment">// Create your array()<br />
+</span><span class="default">$array </span><span class="keyword">= array(</span><span class="string">"First"</span><span class="keyword">,</span><span class="string">"Second"</span><span class="keyword">,</span><span class="string">"Third"</span><span class="keyword">);<br />
+</span><span class="comment">// Create your package <br />
+</span><span class="default">$package </span><span class="keyword">= </span><span class="default">serialize</span><span class="keyword">(</span><span class="default">$array</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">// You can print your serialized package<br />
+// a:3:{i:0;s:5:"First";i:1;s:6:"Second";i:2;s:5:"Third";}<br />
+</span><span class="keyword">print </span><span class="default">$package</span><span class="keyword">.</span><span class="string">"&lt;br&gt;"</span><span class="keyword">;<br />
+<br />
+</span><span class="comment">// Unserialize your serialized package with print_r or var_dump<br />
+</span><span class="default">$data&nbsp; &nbsp; </span><span class="keyword">= </span><span class="default">unserialize</span><span class="keyword">(</span><span class="default">$package</span><span class="keyword">);<br />
+</span><span class="default">print_r</span><span class="keyword">(</span><span class="default">$data</span><span class="keyword">);<br />
+</span><span class="comment">// var_dump($data); // It's same as print_r<br />
+// Array ( [0] =&gt; First [1] =&gt; Second [2] =&gt; Third )<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="61256""></a>
+  <div class="note">
+   <strong class="user">Jules</strong>
+   <a href="#61256" class="date">29-Jan-2006 08:49</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+"Moreover, you must be *very* careful when using eval() as it can be easily used to do something nasty."<br />
+<br />
+Actually, you should probably be equally careful with unserialize, as using it might result in code from your (or standard PHP) classes being executed when you aren't expecting it.&nbsp; It's clearly harder to exploit, but the possibility is there.&nbsp; Therefore, only unserialize data that you know you generated yourself (either because it's stored where you put it, or because its signed, or has been validated in some other way).</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="60896""></a>
+  <div class="note">
+   <strong class="user">mina86 at projektcode dot org</strong>
+   <a href="#60896" class="date">19-Jan-2006 10:28</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Accualy artistan's function does not work (there should be $serialized_data instead of $text in function body). Moreover, you must be *very* careful when using eval() as it can be easily used to do something nasty. Here comes what I've made basing on the two available versions:<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">function </span><span class="default">unserialize_data</span><span class="keyword">(</span><span class="default">$str</span><span class="keyword">, </span><span class="default">$objs </span><span class="keyword">= </span><span class="default">true</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; if (</span><span class="default">$objs </span><span class="keyword">&amp;&amp; </span><span class="default">preg_match_all</span><span class="keyword">(</span><span class="string">'/O:\d+:"([a-zA-Z0-9_]+)":/'</span><span class="keyword">, </span><span class="default">$str</span><span class="keyword">, </span><span class="default">$arr</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$callback </span><span class="keyword">= </span><span class="default">ini_get</span><span class="keyword">(</span><span class="string">'unserialize_callback_func'</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; foreach (</span><span class="default">$arr</span><span class="keyword">[</span><span class="default">1</span><span class="keyword">] as </span><span class="default">$cls</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if (!</span><span class="default">class_exists</span><span class="keyword">(</span><span class="default">$cls</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">call_user_func</span><span class="keyword">(</span><span class="default">$callback</span><span class="keyword">, </span><span class="default">$cls</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if (!</span><span class="default">class_exists</span><span class="keyword">(</span><span class="default">$cls</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; eval(</span><span class="string">'class ' </span><span class="keyword">. </span><span class="default">$cls </span><span class="keyword">. </span><span class="string">' { }'</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">unserialize</span><span class="keyword">(</span><span class="default">$str</span><span class="keyword">);&nbsp;&nbsp; <br />
+}<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+However, better (not tested though) sollution seems to be:<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">function </span><span class="default">declare_empty_class</span><span class="keyword">(</span><span class="default">$classname</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; static </span><span class="default">$callback </span><span class="keyword">= </span><span class="default">null</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; if (</span><span class="default">$callback</span><span class="keyword">===</span><span class="default">null</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$callback </span><span class="keyword">= </span><span class="default">$classname</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; if (</span><span class="default">$callback</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">call_user_func</span><span class="keyword">(</span><span class="default">$callback</span><span class="keyword">, </span><span class="default">$classname</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; if (!</span><span class="default">class_exists</span><span class="keyword">(</span><span class="default">$classname</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; eval(</span><span class="string">'class ' </span><span class="keyword">. </span><span class="default">$classname </span><span class="keyword">. </span><span class="string">' { }'</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+}<br />
+</span><span class="default">declare_empty_class</span><span class="keyword">(</span><span class="default">ini_get</span><span class="keyword">(</span><span class="string">'unserialize_callback_func'</span><span class="keyword">));<br />
+</span><span class="default">ini_set</span><span class="keyword">(</span><span class="string">'unserialize_callback_func'</span><span class="keyword">, </span><span class="string">'declare_empty_class'</span><span class="keyword">);<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="60584""></a>
+  <div class="note">
+   <strong class="user">artistan at cableone dot net</strong>
+   <a href="#60584" class="date">11-Jan-2006 08:46</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+// thanks to user comments I created this<br />
+<br />
+&nbsp;&nbsp;&nbsp; /**<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; UnSerialize and return data<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; @param string [$serialized_data] data to unserialize<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; @return mixed<br />
+&nbsp;&nbsp;&nbsp; */<br />
+&nbsp;&nbsp;&nbsp; function unserialize_data($serialized_data,$objects=true){<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if($objects){<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; // thanks to comment from veg@rd.no 04-Jan-2006 10:34 at <a href="http://us2.php.net/manual/en/function.unserialize.php" rel="nofollow" target="_blank">http://us2.php.net/manual/en/function.unserialize.php</a><br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; // make classes for those that do not exist<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $matches = Array();<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; preg_match_all('/O:(\d)*:"([^":]*)":/', $text, $matches);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; foreach ($matches[2] as $class)<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if(!class_exists($class))<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; eval('class '.$class.' { }');<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; return unserialize($serialized_data);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+// if using php5 you may want to modify to use __autoload function.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="60356""></a>
+  <div class="note">
+   <strong class="user">veg at rd dot no</strong>
+   <a href="#60356" class="date">04-Jan-2006 10:34</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Unserializing an object of a class that hasn't been declared where it is being unserialized will result in an unusable object. I do not know why this happens, but I know of two workarounds which I've written about here; <a href="http://vega.rd.no/entry/200601_serializing_objects_in_php" rel="nofollow" target="_blank">http://vega.rd.no/entry/200601_serializing_objects_in_php</a><br />
+<br />
+In short, the solution is to declare the class before unserializing the object; so this code will do when unserializing an object of type MyClass;<br />
+<br />
+<span class="default">&lt;?php<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">class </span><span class="default">MyClass </span><span class="keyword">{}<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$object </span><span class="keyword">= </span><span class="default">unserialize</span><span class="keyword">(</span><span class="default">$serializedData</span><span class="keyword">);<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+However, if you have several different classes, which you don't necessarily know the names of beforehand, use this short function to handle it for you;<br />
+<br />
+<span class="default">&lt;?php<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">function </span><span class="default">unserializeUnknownObject</span><span class="keyword">(</span><span class="default">$text</span><span class="keyword">)<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$matches </span><span class="keyword">= Array();<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">preg_match_all</span><span class="keyword">(</span><span class="string">'/O:(\d)*:"([^":]*)":/'</span><span class="keyword">, </span><span class="default">$text</span><span class="keyword">, </span><span class="default">$matches</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; foreach (</span><span class="default">$matches</span><span class="keyword">[</span><span class="default">2</span><span class="keyword">] as </span><span class="default">$class</span><span class="keyword">) <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; eval(</span><span class="string">'class '</span><span class="keyword">.</span><span class="default">$class</span><span class="keyword">.</span><span class="string">' { }'</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">unserialize</span><span class="keyword">(</span><span class="default">$text</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$object </span><span class="keyword">= </span><span class="default">unserializeUnknownObject</span><span class="keyword">(</span><span class="default">$serializedData</span><span class="keyword">);<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+This could also have been accomplished by using unserialize_callback_func.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="59856""></a>
+  <div class="note">
+   <strong class="user">tarwin at gmail dot com</strong>
+   <a href="#59856" class="date">18-Dec-2005 05:30</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I screwed around with this for hours and hours and it was doing my head in. Hopefully this can help.<br />
+<br />
+When I was loading my page which was unserializing a string it would just hang (not finish sending information to the browser) at random places if I had not put the Class information first.<br />
+<br />
+This is probably obvious (I know it says that it "will not work" if I do not declare the classes first) but the strange error of randomly stopping putting data to the page was very offputting from the actual error. It seems to go for a few KB or something and then just decide to stop.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="59613""></a>
+  <div class="note">
+   <strong class="user">none at none dot none</strong>
+   <a href="#59613" class="date">10-Dec-2005 07:57</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+The only complaint I have about serializing, is that it will not save the variable name.&nbsp; To fix this, as well as add support for more then one variable/array, I chose to write this class:<br />
+<br />
+&nbsp;class SaveVar<br />
+&nbsp;{<br />
+&nbsp; function store($list)<br />
+&nbsp; {<br />
+&nbsp;&nbsp; $sl = explode("|", $list);<br />
+&nbsp;&nbsp; for ($i = 0; $i &lt; count($sl); $i++)<br />
+&nbsp;&nbsp; {<br />
+&nbsp;&nbsp;&nbsp; $varname&nbsp; &nbsp; = $sl[$i];<br />
+&nbsp;&nbsp;&nbsp; global $$varname;<br />
+&nbsp;&nbsp;&nbsp; $thevar&nbsp; &nbsp;&nbsp; = $$varname;<br />
+&nbsp;&nbsp;&nbsp; $serialized = serialize($thevar);<br />
+&nbsp;&nbsp;&nbsp; $saved[$i] = base64_encode($varname)."@".base64_encode($serialized);<br />
+&nbsp;&nbsp; }<br />
+&nbsp;&nbsp; $data = implode("|", $saved);<br />
+&nbsp;&nbsp; return($data);<br />
+&nbsp; }<br />
+<br />
+&nbsp; function restore($stored)<br />
+&nbsp; {<br />
+&nbsp;&nbsp; $sv = explode("|", $stored);<br />
+&nbsp;&nbsp; for ($i = 0; $i &lt; count($sv); $i++)<br />
+&nbsp;&nbsp; {<br />
+&nbsp;&nbsp;&nbsp; $svp&nbsp;&nbsp; = $sv[$i];<br />
+&nbsp;&nbsp;&nbsp; list($name64, $value64) = explode("@", $svp);<br />
+&nbsp;&nbsp;&nbsp; $name&nbsp; = base64_decode($name64);<br />
+&nbsp;&nbsp;&nbsp; $value = base64_decode($value64);<br />
+&nbsp;&nbsp;&nbsp; global $$name;<br />
+&nbsp;&nbsp;&nbsp; $$name = unserialize($value);<br />
+&nbsp;&nbsp; }<br />
+&nbsp; }<br />
+&nbsp;}<br />
+<br />
+----<br />
+<br />
+An example of using this class is as follows...<br />
+<br />
+----<br />
+<br />
+&nbsp;$arr1 = array("Hello", "World");<br />
+&nbsp;$arr2 = array("World", "Hello");<br />
+<br />
+&nbsp;$sv = new SaveVar;<br />
+<br />
+&nbsp;$saved = $sv-&gt;store("arr1|arr2");<br />
+<br />
+&nbsp;$arr1 = NULL;<br />
+&nbsp;$arr2 = NULL;<br />
+<br />
+&nbsp;echo $saved;<br />
+&nbsp;echo "&lt;HR&gt;";<br />
+&nbsp;$sv-&gt;restore($saved);<br />
+<br />
+&nbsp;print_r($arr1);<br />
+&nbsp;echo "&lt;BR&gt;";<br />
+&nbsp;print_r($arr2);<br />
+<br />
+----<br />
+<br />
+I hope someone finds this useful...<br />
+<br />
+&nbsp;&nbsp; -Jestin S Larson</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="55845""></a>
+  <div class="note">
+   <strong class="user">martin dot goldinger at netserver dot ch</strong>
+   <a href="#55845" class="date">15-Aug-2005 04:48</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+When you use sessions, its very important to keep the sessiondata small, due to low performance with unserialize. Every class shoud extend from this class. The result will be, that no null Values are written to the sessiondata. It will increase performance.<br />
+<br />
+&lt;?<br />
+class BaseObject<br />
+{<br />
+&nbsp;&nbsp;&nbsp; function __sleep()<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $vars = (array)$this;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; foreach ($vars as $key =&gt; $val)<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if (is_null($val))<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; unset($vars[$key]);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }&nbsp; &nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return array_keys($vars);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+};<br />
+?&gt;</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="49704""></a>
+  <div class="note">
+   <strong class="user">ungu at terong dot com</strong>
+   <a href="#49704" class="date">05-Feb-2005 10:20</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I got the same case as yabba at the dot hut with his post<br />
+&gt;&gt; caveat: stripslashes!!!<br />
+<br />
+In my server configutation the magic_quotes_gpc is on therefore it will automatically escape ' (single-quote), " (double quote), \ (backslash) and NUL's with a backslash.<br />
+And the stripslashes is the workaround for my case as well.<br />
+<br />
+Erwin</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="46796""></a>
+  <div class="note">
+   <strong class="user">Chris Hayes (chris at hypersites dot com)</strong>
+   <a href="#46796" class="date">23-Oct-2004 09:27</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+In reply to the earlier post about having to include object definitions *before* using unserialize.&nbsp; There is a workaround for this.<br />
+<br />
+When an object is serialized, the first bit of the string is actually the name of the class.&nbsp; When an unknown object is unserialized, this is maintained as a property.&nbsp; So if you serialize it again, you get back the exact same string as if you'd serialized the original object.&nbsp; Basically, to cut to the point...<br />
+<br />
+If you use<br />
+<br />
+$_SESSION['my_object'] = unserialize(serialize($_SESSION['my_object']))<br />
+<br />
+then you get back an object of the correct type, even if the session had originally loaded it as an object of type stdClass.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="45503""></a>
+  <div class="note">
+   <strong class="user">hfuecks at phppatterns dot com</strong>
+   <a href="#45503" class="date">09-Sep-2004 04:14</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+If you are accepting a serialized string from an untrusted source (e.g. generated in Javascript), you need to be careful to check that it doesn't result in "unexpected" objects being created when you unserialize it.<br />
+<br />
+The following function pulls out the class names of all objects in a _valid_ serialized string. It works by first removing an serialized string values (which might contain serialized object syntax) then pulling out the class names from the remaining string. The returned value is a unique list of class names which the serialized string contains.<br />
+<br />
+Note it assumes the serialized string is valid (that it will be accepted by unserialize()). There may be invalid serialized strings that could trick this function but these should fail when unserialized.<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">function </span><span class="default">getSerializedClassNames</span><span class="keyword">(</span><span class="default">$string</span><span class="keyword">) {<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// Stip any string representations (which might contain object syntax)<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$string </span><span class="keyword">= </span><span class="default">preg_replace</span><span class="keyword">(</span><span class="string">'/s:[0-9]+:".*"/Us'</span><span class="keyword">,</span><span class="string">''</span><span class="keyword">,</span><span class="default">$string</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// Pull out the class named<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">preg_match_all</span><span class="keyword">(</span><span class="string">'/O:[0-9]+:"(.*)"/U'</span><span class="keyword">, </span><span class="default">$string</span><span class="keyword">, </span><span class="default">$matches</span><span class="keyword">, </span><span class="default">PREG_PATTERN_ORDER</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// Make sure names are unique (same object serialized twice)<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">return </span><span class="default">array_unique</span><span class="keyword">(</span><span class="default">$matches</span><span class="keyword">[</span><span class="default">1</span><span class="keyword">]);<br />
+<br />
+}<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+Unit tests for a version of this function can be found at:<br />
+<br />
+<a href="http://cvs.sourceforge.net/viewcvs.py/xmlrpccom" rel="nofollow" target="_blank">http://cvs.sourceforge.net/viewcvs.py/xmlrpccom</a><br />
+&nbsp;&nbsp;&nbsp; /scriptserver/tests/php/classparser.test.php?view=auto<br />
+<br />
+See also the discussion here;<br />
+<a href="http://marc.theaimsgroup.com/?t=109439858700006&amp;r=1&amp;w=2" rel="nofollow" target="_blank">http://marc.theaimsgroup.com/?t=109439858700006&amp;r=1&amp;w=2</a><br />
+<a href="http://marc.theaimsgroup.com/?l=php-dev&amp;m=109444959007776&amp;w=2" rel="nofollow" target="_blank">http://marc.theaimsgroup.com/?l=php-dev&amp;m=109444959007776&amp;w=2</a></span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="45347""></a>
+  <div class="note">
+   <strong class="user">pfister at avenir dot de</strong>
+   <a href="#45347" class="date">02-Sep-2004 02:25</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Having had a problem with an mysql-stored serialized array which I had edited I found out that unserialize seems to have got a problem with "\r" within the string I wanted to unserialize. <br />
+<br />
+It simply quits it's job with "false".<br />
+<br />
+To work arround this problem I just replaced \r with "":<br />
+<br />
+<span class="default">&lt;?php<br />
+$serializedArray </span><span class="keyword">= </span><span class="string">'a:1:{i:0;a:2:{s:4:"name";s:70:"Here comes the newline\r\nthis is the new line";s:5:"value";d:2.20;}}'</span><span class="keyword">;<br />
+<br />
+</span><span class="default">var_dump</span><span class="keyword">(</span><span class="default">unserialize</span><span class="keyword">(</span><span class="default">$serializedArray</span><span class="keyword">)); </span><span class="comment">//This just outputs bool(false)<br />
+<br />
+</span><span class="default">$serializedArray </span><span class="keyword">= </span><span class="default">str_replace</span><span class="keyword">(</span><span class="string">"\r"</span><span class="keyword">, </span><span class="string">""</span><span class="keyword">, </span><span class="default">$serializedArray</span><span class="keyword">);<br />
+<br />
+</span><span class="default">var_dump</span><span class="keyword">(</span><span class="default">unserialize</span><span class="keyword">(</span><span class="default">$serializedArray</span><span class="keyword">)); </span><span class="comment">//This outputs the array structure<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="44837""></a>
+  <div class="note">
+   <strong class="user">eoin at joy dot ucc dot ie</strong>
+   <a href="#44837" class="date">17-Aug-2004 11:38</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I recently found myself in need of unserializing PHP session data (stored in a database) that had expired but was not yet deleted i.e. I needed to get at the contents of the session but was unable to use the usual PHP interface. The following function takes a string of serialized session data and returns an array of PHP values. The structure of the returned array is the same as the $_SESSION array if you were using the normal interface. I haven't tested this extensively but it did the job for me.<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">function </span><span class="default">unserialize_session_data</span><span class="keyword">( </span><span class="default">$serialized_string </span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$variables </span><span class="keyword">= array(&nbsp; );<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$a </span><span class="keyword">= </span><span class="default">preg_split</span><span class="keyword">( </span><span class="string">"/(\w+)\|/"</span><span class="keyword">, </span><span class="default">$serialized_string</span><span class="keyword">, -</span><span class="default">1</span><span class="keyword">, </span><span class="default">PREG_SPLIT_NO_EMPTY </span><span class="keyword">| </span><span class="default">PREG_SPLIT_DELIM_CAPTURE </span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; for( </span><span class="default">$i </span><span class="keyword">= </span><span class="default">0</span><span class="keyword">; </span><span class="default">$i </span><span class="keyword">&lt; </span><span class="default">count</span><span class="keyword">( </span><span class="default">$a </span><span class="keyword">); </span><span class="default">$i </span><span class="keyword">= </span><span class="default">$i</span><span class="keyword">+</span><span class="default">2 </span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$variables</span><span class="keyword">[</span><span class="default">$a</span><span class="keyword">[</span><span class="default">$i</span><span class="keyword">]] = </span><span class="default">unserialize</span><span class="keyword">( </span><span class="default">$a</span><span class="keyword">[</span><span class="default">$i</span><span class="keyword">+</span><span class="default">1</span><span class="keyword">] );<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; return( </span><span class="default">$variables </span><span class="keyword">);<br />
+}<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="42806""></a>
+  <div class="note">
+   <strong class="user">yonman at gamer dot co dot il</strong>
+   <a href="#42806" class="date">30-May-2004 09:29</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+yabba at the dot hut:<br />
+<br />
+The cookie mechanism for the webserver adds the slashes automatically. instead of just dumping strings into the cookie, make sure you base64_encode them first - to protect the cookie's content from escape characters.<br />
+<br />
+Of course, this means that when retrieving the cookie, you'll need to base64_decode the string.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="40757""></a>
+  <div class="note">
+   
+   <a href="#40757" class="date">13-Mar-2004 10:42</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+If a a string is unserializeable FALSE is returned as well as an E_NOTICE error. This is odd since you may want to know if a given string converts back to a PHP value and act accordingly. If you run your script with E_ALL reporting this will show up.<br />
+<br />
+I noticed this debugging this line of code:<br />
+$b = unserialize(base64_decode($a));<br />
+<br />
+Curiously, base64_decode() does not throw errors if the string can't be decoded. The only workaround is to prepend the @ operator to unserialize() or to change the error level.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="39436""></a>
+  <div class="note">
+   <strong class="user">yabba at the dot hut</strong>
+   <a href="#39436" class="date">28-Jan-2004 01:09</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+caveat: stripslashes!!!<br />
+<br />
+if using <br />
+&nbsp;&nbsp; &nbsp; &nbsp; setcookie('hubba',serialize($data));<br />
+to set a cookie, you might want to check <br />
+&nbsp;&nbsp; &nbsp; &nbsp; $data(unserialize(stripslashes($_COOKIE['hubba']));<br />
+to retrieve them back!!!<br />
+<br />
+this is, if unserialize fails. you can also print_r($_COOKIE) to look into what you've got back. <br />
+<br />
+beats me how the slashes got there in the first place....</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="38146""></a>
+  <div class="note">
+   <strong class="user">Terry Johnson</strong>
+   <a href="#38146" class="date">09-Dec-2003 05:27</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+It is possible to make a neat autoloader for class definitions using this, but there are some gotchas for the unwary programmer: <br />
+<br />
+1) If you are setting the unserialize_callback_func directive in the ini or .htaccess file, use auto_prepend_file to load the definition of your callback function - otherwise objects that stay in the session may trigger errors on pages where you didn't expect the object to be used.<br />
+<br />
+2) It helps if you define all your classes in files with lowercase file names from the beginning.&nbsp; The callback function is always call with the class name in lower case, and it is a lot quicker to use that directly than make a lookup table:<br />
+<br />
+function callback_func($classname) {<br />
+&nbsp;&nbsp;&nbsp; @include_once("${classname}.class.php");<br />
+}<br />
+<br />
+3) It does not appear to be possible to use a static member fuction of a class (for example, a your object persistence layer) as the unserialize callback function, so this will cause confusion:<br />
+<br />
+php_value auto_prepend_file "Persist.php"<br />
+php_value unserialize_callback_func Persist::factory<br />
+<br />
+The next best solution is to make it a function in the global scope and have your object factory call it as required:<br />
+<br />
+Class Persist<br />
+{<br />
+&nbsp;&nbsp;&nbsp; function &amp;factory($type) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; callback_func(strtolower($type));<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $classname = "${type}";<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if (!class_exists($classname)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; return PEAR::raiseError('Class Not Found',PERSIST_ERROR_CLASS_NOT_FOUND,PEAR_ERROR_RETURN);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; @$obj =&amp; new $classname;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return $obj;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+...<br />
+}</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="37008""></a>
+  <div class="note">
+   <strong class="user">aderyn at nowhere dot tld</strong>
+   <a href="#37008" class="date">30-Oct-2003 10:02</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+A quick note:<br />
+If you store a serialized object in a session, you have to include the class _before_ you initialize (session_start()) the session.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="function.strval.html">strval</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.unset.html">unset</a></div>
  <div class="up"><a href="ref.var.html">Variable handling Functions</a></div>

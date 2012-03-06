@@ -32,7 +32,48 @@ currently not documented; only its argument list is available.
  </div>
 
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="47432""></a>
+  <div class="note">
+   <strong class="user">sami at sipponen dot com</strong>
+   <a href="#47432" class="date">16-Nov-2004 03:56</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Hopefully the code below help you to loop through references with LDAP3 servers. It took me a significant amount of time to figure out how this thing works and now I have successfully used this with Active Directory to loop through severial subdomains.<br />
+<br />
+Special thanks to Stig Venaas who helped me to get started. (the original problem was that ldap_parse_reference function was missing in Windows builds. At least it will now work with Windows PHP versions 5.1.0-DEV and higher after I made a bug report)<br />
+<br />
+function crawlRefs($user, $passw, $host, $dn, $port, $filter) {<br />
+<br />
+&nbsp; //Create the basic connection for fetching referrals<br />
+&nbsp; $adConn = ldap_connect($host, $port) or die("System couldn't connect!");<br />
+&nbsp; ldap_set_option($adConn, LDAP_OPT_PROTOCOL_VERSION, 3) or die ("System couldn't make first protocol option setting!");<br />
+&nbsp; ldap_set_option($adConn, LDAP_OPT_REFERRALS, 0) or die ("System couldn't make second protocol option setting!");<br />
+&nbsp; $bd = ldap_bind($adConn, $user, $passw) or die ("System couldn't bind the connection!");<br />
+&nbsp; $search = ldap_search($adConn, $dn, $filter);<br />
+<br />
+&nbsp; //Find referrals<br />
+&nbsp; $ref = ldap_first_reference($adConn, $search);<br />
+&nbsp; while ($ref) {<br />
+&nbsp;&nbsp;&nbsp; if (ldap_parse_reference($adConn, $ref, $referrals)) {<br />
+&nbsp;&nbsp; &nbsp;&nbsp; while ($referral = array_shift($referrals)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; echo $referral . "&lt;br&gt;\n";<br />
+&nbsp;&nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp; $ref = ldap_next_reference($adConn, $ref);<br />
+}</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="function.ldap-first-entry.html">ldap_first_entry</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.ldap-free-result.html">ldap_free_result</a></div>
  <div class="up"><a href="ref.ldap.html">LDAP Functions</a></div>

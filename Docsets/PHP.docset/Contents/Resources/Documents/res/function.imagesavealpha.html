@@ -107,7 +107,189 @@ such as <span class="function"><a href="function.imagecreatetruecolor.html" clas
   </p>
  </div>
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="102597""></a>
+  <div class="note">
+   <strong class="user">ray hatfield</strong>
+   <a href="#102597" class="date">23-Feb-2011 11:01</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+After much trial and error and gnashing of teeth I finally figured out how to composite a png with an 8-bit alpha onto a jpg. This was not obvious to me so I thought I'd share. Hope it helps.<br />
+<br />
+I'm using this to create a framed thumbnail image:<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="comment">// load the frame image (png with 8-bit transparency)<br />
+</span><span class="default">$frame </span><span class="keyword">= </span><span class="default">imagecreatefrompng</span><span class="keyword">(</span><span class="string">'path/to/frame.png'</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">// load the thumbnail image<br />
+</span><span class="default">$thumb </span><span class="keyword">= </span><span class="default">imagecreatefromjpeg</span><span class="keyword">(</span><span class="string">'path/to/thumbnail.jpg'</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">// get the dimensions of the frame, which we'll also be using for the<br />
+// composited final image.<br />
+</span><span class="default">$width </span><span class="keyword">= </span><span class="default">imagesx</span><span class="keyword">( </span><span class="default">$frame </span><span class="keyword">);<br />
+</span><span class="default">$height </span><span class="keyword">= </span><span class="default">imagesy</span><span class="keyword">( </span><span class="default">$frame </span><span class="keyword">);<br />
+<br />
+</span><span class="comment">// create the destination/output image.<br />
+</span><span class="default">$img</span><span class="keyword">=</span><span class="default">imagecreatetruecolor</span><span class="keyword">( </span><span class="default">$width</span><span class="keyword">, </span><span class="default">$height </span><span class="keyword">);<br />
+<br />
+</span><span class="comment">// enable alpha blending on the destination image.<br />
+</span><span class="default">imagealphablending</span><span class="keyword">(</span><span class="default">$img</span><span class="keyword">, </span><span class="default">true</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">// Allocate a transparent color and fill the new image with it.<br />
+// Without this the image will have a black background instead of being transparent.<br />
+</span><span class="default">$transparent </span><span class="keyword">= </span><span class="default">imagecolorallocatealpha</span><span class="keyword">( </span><span class="default">$img</span><span class="keyword">, </span><span class="default">0</span><span class="keyword">, </span><span class="default">0</span><span class="keyword">, </span><span class="default">0</span><span class="keyword">, </span><span class="default">127 </span><span class="keyword">);<br />
+</span><span class="default">imagefill</span><span class="keyword">( </span><span class="default">$img</span><span class="keyword">, </span><span class="default">0</span><span class="keyword">, </span><span class="default">0</span><span class="keyword">, </span><span class="default">$transparent </span><span class="keyword">);<br />
+<br />
+</span><span class="comment">// copy the thumbnail into the output image.<br />
+</span><span class="default">imagecopyresampled</span><span class="keyword">(</span><span class="default">$img</span><span class="keyword">,</span><span class="default">$thumb</span><span class="keyword">,</span><span class="default">32</span><span class="keyword">,</span><span class="default">30</span><span class="keyword">,</span><span class="default">0</span><span class="keyword">,</span><span class="default">0</span><span class="keyword">, </span><span class="default">130</span><span class="keyword">, </span><span class="default">100</span><span class="keyword">, </span><span class="default">imagesx</span><span class="keyword">( </span><span class="default">$thumb </span><span class="keyword">), </span><span class="default">imagesy</span><span class="keyword">( </span><span class="default">$thumb </span><span class="keyword">) );<br />
+<br />
+</span><span class="comment">// copy the frame into the output image (layered on top of the thumbnail)<br />
+</span><span class="default">imagecopyresampled</span><span class="keyword">(</span><span class="default">$img</span><span class="keyword">,</span><span class="default">$frame</span><span class="keyword">,</span><span class="default">0</span><span class="keyword">,</span><span class="default">0</span><span class="keyword">,</span><span class="default">0</span><span class="keyword">,</span><span class="default">0</span><span class="keyword">, </span><span class="default">$width</span><span class="keyword">,</span><span class="default">$height</span><span class="keyword">,</span><span class="default">$width</span><span class="keyword">,</span><span class="default">$height</span><span class="keyword">);<br />
+<br />
+</span><span class="default">imagealphablending</span><span class="keyword">(</span><span class="default">$img</span><span class="keyword">, </span><span class="default">false</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">// save the alpha<br />
+</span><span class="default">imagesavealpha</span><span class="keyword">(</span><span class="default">$img</span><span class="keyword">,</span><span class="default">true</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">// emit the image<br />
+</span><span class="default">header</span><span class="keyword">(</span><span class="string">'Content-type: image/png'</span><span class="keyword">);<br />
+</span><span class="default">imagepng</span><span class="keyword">( </span><span class="default">$img </span><span class="keyword">);<br />
+<br />
+</span><span class="comment">// dispose<br />
+</span><span class="default">imagedestroy</span><span class="keyword">(</span><span class="default">$img</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">// done.<br />
+</span><span class="keyword">exit;<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="94986""></a>
+  <div class="note">
+   <strong class="user">tobias at silverxnet dot de</strong>
+   <a href="#94986" class="date">06-Dec-2009 06:07</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+As I needed a function that enables me to put a separate mask into the alpha channel of a picture, I found there is no function to allow this directly via PHP/GD, hence I wrote a quick'n'dirty function that does the trick. <br />
+<br />
+For the mask any format is fine (jpg, png, gif, ...). Black will be transparent, white will be opaque - greyscale makes it half transparent, like with any alpha channel. The alpha channel is only 7 bit, hence there are just 128 variations of transparency possible. <br />
+<br />
+I use the red channel, for the transparency, so you can make it either greyscale or redscale, doesn't matter.<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">function </span><span class="default">imagealphamask</span><span class="keyword">( &amp;</span><span class="default">$picture</span><span class="keyword">, </span><span class="default">$mask </span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// Get sizes and set up new picture<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$xSize </span><span class="keyword">= </span><span class="default">imagesx</span><span class="keyword">( </span><span class="default">$picture </span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$ySize </span><span class="keyword">= </span><span class="default">imagesy</span><span class="keyword">( </span><span class="default">$picture </span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$newPicture </span><span class="keyword">= </span><span class="default">imagecreatetruecolor</span><span class="keyword">( </span><span class="default">$xSize</span><span class="keyword">, </span><span class="default">$ySize </span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">imagesavealpha</span><span class="keyword">( </span><span class="default">$newPicture</span><span class="keyword">, </span><span class="default">true </span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">imagefill</span><span class="keyword">( </span><span class="default">$newPicture</span><span class="keyword">, </span><span class="default">0</span><span class="keyword">, </span><span class="default">0</span><span class="keyword">, </span><span class="default">imagecolorallocatealpha</span><span class="keyword">( </span><span class="default">$newPicture</span><span class="keyword">, </span><span class="default">0</span><span class="keyword">, </span><span class="default">0</span><span class="keyword">, </span><span class="default">0</span><span class="keyword">, </span><span class="default">127 </span><span class="keyword">) );<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// Resize mask if necessary<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">if( </span><span class="default">$xSize </span><span class="keyword">!= </span><span class="default">imagesx</span><span class="keyword">( </span><span class="default">$mask </span><span class="keyword">) || </span><span class="default">$ySize </span><span class="keyword">!= </span><span class="default">imagesy</span><span class="keyword">( </span><span class="default">$mask </span><span class="keyword">) ) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$tempPic </span><span class="keyword">= </span><span class="default">imagecreatetruecolor</span><span class="keyword">( </span><span class="default">$xSize</span><span class="keyword">, </span><span class="default">$ySize </span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">imagecopyresampled</span><span class="keyword">( </span><span class="default">$tempPic</span><span class="keyword">, </span><span class="default">$mask</span><span class="keyword">, </span><span class="default">0</span><span class="keyword">, </span><span class="default">0</span><span class="keyword">, </span><span class="default">0</span><span class="keyword">, </span><span class="default">0</span><span class="keyword">, </span><span class="default">$xSize</span><span class="keyword">, </span><span class="default">$ySize</span><span class="keyword">, </span><span class="default">imagesx</span><span class="keyword">( </span><span class="default">$mask </span><span class="keyword">), </span><span class="default">imagesy</span><span class="keyword">( </span><span class="default">$mask </span><span class="keyword">) );<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">imagedestroy</span><span class="keyword">( </span><span class="default">$mask </span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$mask </span><span class="keyword">= </span><span class="default">$tempPic</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// Perform pixel-based alpha map application<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">for( </span><span class="default">$x </span><span class="keyword">= </span><span class="default">0</span><span class="keyword">; </span><span class="default">$x </span><span class="keyword">&lt; </span><span class="default">$xSize</span><span class="keyword">; </span><span class="default">$x</span><span class="keyword">++ ) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; for( </span><span class="default">$y </span><span class="keyword">= </span><span class="default">0</span><span class="keyword">; </span><span class="default">$y </span><span class="keyword">&lt; </span><span class="default">$ySize</span><span class="keyword">; </span><span class="default">$y</span><span class="keyword">++ ) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$alpha </span><span class="keyword">= </span><span class="default">imagecolorsforindex</span><span class="keyword">( </span><span class="default">$mask</span><span class="keyword">, </span><span class="default">imagecolorat</span><span class="keyword">( </span><span class="default">$mask</span><span class="keyword">, </span><span class="default">$x</span><span class="keyword">, </span><span class="default">$y </span><span class="keyword">) );<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$alpha </span><span class="keyword">= </span><span class="default">127 </span><span class="keyword">- </span><span class="default">floor</span><span class="keyword">( </span><span class="default">$alpha</span><span class="keyword">[ </span><span class="string">'red' </span><span class="keyword">] / </span><span class="default">2 </span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$color </span><span class="keyword">= </span><span class="default">imagecolorsforindex</span><span class="keyword">( </span><span class="default">$picture</span><span class="keyword">, </span><span class="default">imagecolorat</span><span class="keyword">( </span><span class="default">$picture</span><span class="keyword">, </span><span class="default">$x</span><span class="keyword">, </span><span class="default">$y </span><span class="keyword">) );<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">imagesetpixel</span><span class="keyword">( </span><span class="default">$newPicture</span><span class="keyword">, </span><span class="default">$x</span><span class="keyword">, </span><span class="default">$y</span><span class="keyword">, </span><span class="default">imagecolorallocatealpha</span><span class="keyword">( </span><span class="default">$newPicture</span><span class="keyword">, </span><span class="default">$color</span><span class="keyword">[ </span><span class="string">'red' </span><span class="keyword">], </span><span class="default">$color</span><span class="keyword">[ </span><span class="string">'green' </span><span class="keyword">], </span><span class="default">$color</span><span class="keyword">[ </span><span class="string">'blue' </span><span class="keyword">], </span><span class="default">$alpha </span><span class="keyword">) );<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// Copy back to original picture<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">imagedestroy</span><span class="keyword">( </span><span class="default">$picture </span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$picture </span><span class="keyword">= </span><span class="default">$newPicture</span><span class="keyword">;<br />
+}<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+To use the function is rather simple: <br />
+<span class="default">&lt;?php<br />
+</span><span class="comment">// Load source and mask<br />
+</span><span class="default">$source </span><span class="keyword">= </span><span class="default">imagecreatefrompng</span><span class="keyword">( </span><span class="string">'myPicture.png' </span><span class="keyword">);<br />
+</span><span class="default">$mask </span><span class="keyword">= </span><span class="default">imagecreatefrompng</span><span class="keyword">( </span><span class="string">'myMask.png' </span><span class="keyword">);<br />
+<br />
+</span><span class="comment">// Apply mask to source<br />
+</span><span class="default">imagealphamask</span><span class="keyword">( </span><span class="default">$source</span><span class="keyword">, </span><span class="default">$mask </span><span class="keyword">);<br />
+<br />
+</span><span class="comment">// Output<br />
+</span><span class="default">header</span><span class="keyword">( </span><span class="string">"Content-type: image/png"</span><span class="keyword">);<br />
+</span><span class="default">imagepng</span><span class="keyword">( </span><span class="default">$source </span><span class="keyword">);<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+Hope it helps!</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="82722""></a>
+  <div class="note">
+   <strong class="user">phil at unabacus dot net</strong>
+   <a href="#82722" class="date">23-Apr-2008 06:47</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+The comment left by "doggz at mindless dot com" will cause a duplication in layering of the transparent image - AlphaImageLoader loads the image as if it were a floating layer on top of the &lt;img&gt; element - so your image will double up.. so don't go thinking something very strange is happening with your PHP it's the silly browser ;)<br />
+<br />
+The easiest (although not the best) way to get around this is to use the CSS background property instead of an image src - because as of yet you can't change an image's src dynamically using currently supported CSS:<br />
+<br />
+&lt;div style="width:200px; height:200px; background: url(my-trans-image.php); *background:url(); *filter:progid:<br />
+DXImageTransform.Microsoft.AlphaImageLoader(src='my-trans-image.php', sizingMethod='scale');"&gt;&lt;/div&gt;<br />
+<br />
+The above (although not pretty) keeps the image loaded as a background for any good browser as they should ignore the starred (*) CSS items and should support Alpha PNGs natively. IE will listen to the starred items and blank out the background whilst applying it's AlphaLoader on top. Obviously you need to know the width and height of your image but you can get this using getimagesize() or just by hardcoding.<br />
+<br />
+Downsides to know:<br />
+<br />
+1. Unless the user has 'backgrounds enabled when printing' your image wont show up when the webpage is printed.<br />
+<br />
+2. You can't stretch or shrink a background image - if you change the div's dimensions from that of the image you will stretch it in IE (due to the 'scale' property - which you can change for sake of standardness to 'crop') but you will crop it in any other browser.<br />
+<br />
+3. Most browsers treat images and backgrounds differently, in load priority and in the way the user can interact with them.<br />
+<br />
+Other Options:<br />
+<br />
+Other methods resort to using JavaScript or Browser Detection on the Server Side.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="36330""></a>
+  <div class="note">
+   <strong class="user">doggz at mindless dot com</strong>
+   <a href="#36330" class="date">05-Oct-2003 09:50</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+To use PNG-24 in IE 5.5+ try:<br />
+&lt;img alt="Transparant PNG" src="myimage.gif" style="width: 200px; height: 200px; filter:progid:<br />
+DXImageTransform.Microsoft.AlphaImageLoader(src='myimage.png', sizingMethod='scale')" /&gt;<br />
+<br />
+there is more info available at <a href="http://people.brandeis.edu/~peelle/png/" rel="nofollow" target="_blank">http://people.brandeis.edu/~peelle/png/</a></span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="function.imagerotate.html">imagerotate</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.imagesetbrush.html">imagesetbrush</a></div>
  <div class="up"><a href="ref.image.html">GD and Image Functions</a></div>

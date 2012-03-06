@@ -989,6 +989,725 @@
  
 <h2>Table of Contents</h2><ul class="chunklist chunklist_reference"><li><a href="xmlreader.close.html">XMLReader::close</a> â€” Close the XMLReader input</li><li><a href="xmlreader.expand.html">XMLReader::expand</a> â€” Returns a copy of the current node as a DOM object</li><li><a href="xmlreader.getattribute.html">XMLReader::getAttribute</a> â€” Get the value of a named attribute</li><li><a href="xmlreader.getattributeno.html">XMLReader::getAttributeNo</a> â€” Get the value of an attribute by index</li><li><a href="xmlreader.getattributens.html">XMLReader::getAttributeNs</a> â€” Get the value of an attribute by localname and URI</li><li><a href="xmlreader.getparserproperty.html">XMLReader::getParserProperty</a> â€” Indicates if specified property has been set</li><li><a href="xmlreader.isvalid.html">XMLReader::isValid</a> â€” Indicates if the parsed document is valid</li><li><a href="xmlreader.lookupnamespace.html">XMLReader::lookupNamespace</a> â€” Lookup namespace for a prefix</li><li><a href="xmlreader.movetoattribute.html">XMLReader::moveToAttribute</a> â€” Move cursor to a named attribute</li><li><a href="xmlreader.movetoattributeno.html">XMLReader::moveToAttributeNo</a> â€” Move cursor to an attribute by index</li><li><a href="xmlreader.movetoattributens.html">XMLReader::moveToAttributeNs</a> â€” Move cursor to a named attribute</li><li><a href="xmlreader.movetoelement.html">XMLReader::moveToElement</a> â€” Position cursor on the parent Element of current Attribute</li><li><a href="xmlreader.movetofirstattribute.html">XMLReader::moveToFirstAttribute</a> â€” Position cursor on the first Attribute</li><li><a href="xmlreader.movetonextattribute.html">XMLReader::moveToNextAttribute</a> â€” Position cursor on the next Attribute</li><li><a href="xmlreader.next.html">XMLReader::next</a> â€” Move cursor to next node skipping all subtrees</li><li><a href="xmlreader.open.html">XMLReader::open</a> â€” Set the URI containing the XML to parse</li><li><a href="xmlreader.read.html">XMLReader::read</a> â€” Move to next node in document</li><li><a href="xmlreader.readinnerxml.html">XMLReader::readInnerXML</a> â€” Retrieve XML from current node</li><li><a href="xmlreader.readouterxml.html">XMLReader::readOuterXML</a> â€” Retrieve XML from current node, including it self</li><li><a href="xmlreader.readstring.html">XMLReader::readString</a> â€” Reads the contents of the current node as a string</li><li><a href="xmlreader.setparserproperty.html">XMLReader::setParserProperty</a> â€” Set parser options</li><li><a href="xmlreader.setrelaxngschema.html">XMLReader::setRelaxNGSchema</a> â€” Set the filename or URI for a RelaxNG Schema</li><li><a href="xmlreader.setrelaxngschemasource.html">XMLReader::setRelaxNGSchemaSource</a> â€” Set the data containing a RelaxNG Schema</li><li><a href="xmlreader.setschema.html">XMLReader::setSchema</a> â€” Validate document against XSD</li><li><a href="xmlreader.xml.html">XMLReader::XML</a> â€” Set the data containing the XML to parse</li></ul>
 </div>
+<div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="100347""></a>
+  <div class="note">
+   <strong class="user">japos dot trash at googlemail dot com</strong>
+   <a href="#100347" class="date">09-Oct-2010 02:17</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Take care about how to use XMLReader::$isElementEmpty. I don't know if it is a bug or not, but $isElementEmpty is set for the current context and NOT just for the element. If you move your cursor to an attribute, $isElementEmpty will ALWAYS be false.<br />
+<br />
+<span class="default">&lt;?php<br />
+&nbsp;$xml </span><span class="keyword">= new </span><span class="default">XMLReader</span><span class="keyword">();<br />
+&nbsp;</span><span class="default">$xml</span><span class="keyword">-&gt;</span><span class="default">XML</span><span class="keyword">(</span><span class="string">'&lt;tag attr="value" /&gt;'</span><span class="keyword">);<br />
+&nbsp;</span><span class="default">$xml</span><span class="keyword">-&gt;</span><span class="default">read</span><span class="keyword">();<br />
+&nbsp;</span><span class="default">var_dump</span><span class="keyword">(</span><span class="default">$xml</span><span class="keyword">-&gt;</span><span class="default">isEmptyElement</span><span class="keyword">);<br />
+&nbsp;</span><span class="default">$xml</span><span class="keyword">-&gt;</span><span class="default">moveToNextAttribute</span><span class="keyword">();<br />
+&nbsp;</span><span class="default">var_dump</span><span class="keyword">(</span><span class="default">$xml</span><span class="keyword">-&gt;</span><span class="default">isEmptyElement</span><span class="keyword">);<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+will output<br />
+<br />
+(bool) true<br />
+(bool) false<br />
+<br />
+So be sure to store $isEmptyElement before moving the cursor.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="100074""></a>
+  <div class="note">
+   <strong class="user">jart (at) mail.ru</strong>
+   <a href="#100074" class="date">23-Sep-2010 06:59</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Guys, I hope this example will help<br />
+you can erase prints showing the process-<br />
+and it will be a piece of nice code.<br />
+<br />
+<span class="default">&lt;?php <br />
+</span><span class="keyword">function </span><span class="default">xml2assoc</span><span class="keyword">(</span><span class="default">$xml</span><span class="keyword">, </span><span class="default">$name</span><span class="keyword">)<br />
+{ <br />
+&nbsp;&nbsp;&nbsp; print </span><span class="string">"&lt;ul&gt;"</span><span class="keyword">;<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$tree </span><span class="keyword">= </span><span class="default">null</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; print(</span><span class="string">"I'm inside " </span><span class="keyword">. </span><span class="default">$name </span><span class="keyword">. </span><span class="string">"&lt;br&gt;"</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; while(</span><span class="default">$xml</span><span class="keyword">-&gt;</span><span class="default">read</span><span class="keyword">()) <br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if(</span><span class="default">$xml</span><span class="keyword">-&gt;</span><span class="default">nodeType </span><span class="keyword">== </span><span class="default">XMLReader</span><span class="keyword">::</span><span class="default">END_ELEMENT</span><span class="keyword">)<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; print </span><span class="string">"&lt;/ul&gt;"</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">$tree</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; else if(</span><span class="default">$xml</span><span class="keyword">-&gt;</span><span class="default">nodeType </span><span class="keyword">== </span><span class="default">XMLReader</span><span class="keyword">::</span><span class="default">ELEMENT</span><span class="keyword">)<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$node </span><span class="keyword">= array();<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; print(</span><span class="string">"Adding " </span><span class="keyword">. </span><span class="default">$xml</span><span class="keyword">-&gt;</span><span class="default">name </span><span class="keyword">.</span><span class="string">"&lt;br&gt;"</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$node</span><span class="keyword">[</span><span class="string">'tag'</span><span class="keyword">] = </span><span class="default">$xml</span><span class="keyword">-&gt;</span><span class="default">name</span><span class="keyword">;<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if(</span><span class="default">$xml</span><span class="keyword">-&gt;</span><span class="default">hasAttributes</span><span class="keyword">)<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$attributes </span><span class="keyword">= array();<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; while(</span><span class="default">$xml</span><span class="keyword">-&gt;</span><span class="default">moveToNextAttribute</span><span class="keyword">()) <br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; print(</span><span class="string">"Adding attr " </span><span class="keyword">. </span><span class="default">$xml</span><span class="keyword">-&gt;</span><span class="default">name </span><span class="keyword">.</span><span class="string">" = " </span><span class="keyword">. </span><span class="default">$xml</span><span class="keyword">-&gt;</span><span class="default">value </span><span class="keyword">. </span><span class="string">"&lt;br&gt;"</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$attributes</span><span class="keyword">[</span><span class="default">$xml</span><span class="keyword">-&gt;</span><span class="default">name</span><span class="keyword">] = </span><span class="default">$xml</span><span class="keyword">-&gt;</span><span class="default">value</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$node</span><span class="keyword">[</span><span class="string">'attr'</span><span class="keyword">] = </span><span class="default">$attributes</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if(!</span><span class="default">$xml</span><span class="keyword">-&gt;</span><span class="default">isEmptyElement</span><span class="keyword">)<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$childs </span><span class="keyword">= </span><span class="default">xml2assoc</span><span class="keyword">(</span><span class="default">$xml</span><span class="keyword">, </span><span class="default">$node</span><span class="keyword">[</span><span class="string">'tag'</span><span class="keyword">]);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$node</span><span class="keyword">[</span><span class="string">'childs'</span><span class="keyword">] = </span><span class="default">$childs</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; print(</span><span class="default">$node</span><span class="keyword">[</span><span class="string">'tag'</span><span class="keyword">] . </span><span class="string">" added &lt;br&gt;"</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$tree</span><span class="keyword">[] = </span><span class="default">$node</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; else if(</span><span class="default">$xml</span><span class="keyword">-&gt;</span><span class="default">nodeType </span><span class="keyword">== </span><span class="default">XMLReader</span><span class="keyword">::</span><span class="default">TEXT</span><span class="keyword">)<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$node </span><span class="keyword">= array();<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$node</span><span class="keyword">[</span><span class="string">'text'</span><span class="keyword">] = </span><span class="default">$xml</span><span class="keyword">-&gt;</span><span class="default">value</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$tree</span><span class="keyword">[] = </span><span class="default">$node</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; print </span><span class="string">"text added = " </span><span class="keyword">. </span><span class="default">$node</span><span class="keyword">[</span><span class="string">'text'</span><span class="keyword">] . </span><span class="string">"&lt;br&gt;"</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; print </span><span class="string">"returning " </span><span class="keyword">. </span><span class="default">count</span><span class="keyword">(</span><span class="default">$tree</span><span class="keyword">) . </span><span class="string">" childs&lt;br&gt;"</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; print </span><span class="string">"&lt;/ul&gt;"</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">$tree</span><span class="keyword">; <br />
+}<br />
+<br />
+echo </span><span class="string">"&lt;PRE&gt;"</span><span class="keyword">;<br />
+<br />
+</span><span class="default">$xml </span><span class="keyword">= new </span><span class="default">XMLReader</span><span class="keyword">(); <br />
+</span><span class="default">$xml</span><span class="keyword">-&gt;</span><span class="default">open</span><span class="keyword">(</span><span class="string">'test.xml'</span><span class="keyword">); <br />
+</span><span class="default">$assoc </span><span class="keyword">= </span><span class="default">xml2assoc</span><span class="keyword">(</span><span class="default">$xml</span><span class="keyword">, </span><span class="string">"root"</span><span class="keyword">); <br />
+</span><span class="default">$xml</span><span class="keyword">-&gt;</span><span class="default">close</span><span class="keyword">();<br />
+<br />
+</span><span class="default">print_r</span><span class="keyword">(</span><span class="default">$assoc</span><span class="keyword">);<br />
+echo </span><span class="string">"&lt;/PRE&gt;"</span><span class="keyword">;<br />
+<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+It reads this xml:<br />
+<br />
+&lt;test&gt;<br />
+&nbsp;&nbsp;&nbsp; &lt;hallo volume="loud"&gt; me &lt;br/&gt; lala &lt;/hallo&gt;<br />
+&nbsp;&nbsp;&nbsp; &lt;hallo&gt; me &lt;/hallo&gt;<br />
+&lt;/test&gt;</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="93842""></a>
+  <div class="note">
+   <strong class="user">jnettles at inccrra dot org</strong>
+   <a href="#93842" class="date">02-Oct-2009 09:51</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Just in case someone is confused, if you're wanting to simply pass a string of XML instead of an entire file, you would do this.<br />
+<br />
+<span class="default">&lt;?php<br />
+$foo </span><span class="keyword">= new </span><span class="default">XMLReader</span><span class="keyword">();<br />
+</span><span class="default">$foo</span><span class="keyword">-&gt;</span><span class="default">xml</span><span class="keyword">(</span><span class="default">$STRING</span><span class="keyword">);<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+.... where $STRING holds your XML. You cannot pass it like $foo = $STRING or $foo-&gt;xml = $STRING.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="89853""></a>
+  <div class="note">
+   <strong class="user">james dot ellis at example dot com</strong>
+   <a href="#89853" class="date">25-Mar-2009 03:16</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+The "XML2Assoc" functions noted here should be used with caution... basically they are duplicating the functionality already present in SimpleXML. They may work but they won't scale.<br />
+<br />
+Their are two main uses cases for parsing XML, each suited to either XMLReader or SimpleXML.<br />
+<br />
+1. SimpleXML is an excellent tool for easy access to an XML document tree using native PHP data types. It starts to flounder with massive (&gt; 50M or so) XML documents, as it reads the entire document into memory before it can be processed. SimpleXML will just laugh at you then die when your server runs out of memory (or it will cause a load spike).<br />
+<br />
+2. Aside from the reasoning behind massive XML documents, if you have to deal with massive XML documents, use XMLReader to process them. Don't try and gather an entire XML document into a PHP data structure using XMLReader and a PHP xml2assoc() function, you are reinventing the SimpleXML wheel.<br />
+When parsing massive XML documents using XMLReader, gather the data you need to perform an operation then perform it before skipping to the next node. Do not build massive data structures from a massive XML document, your server (and it's admins) will not like you.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="88420""></a>
+  <div class="note">
+   <strong class="user">PxL</strong>
+   <a href="#88420" class="date">23-Jan-2009 03:36</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+A basic parser<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">function </span><span class="default">xml2assoc</span><span class="keyword">(</span><span class="default">$xml</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$arr </span><span class="keyword">= array();<br />
+&nbsp;&nbsp;&nbsp; if (!</span><span class="default">preg_match_all</span><span class="keyword">(</span><span class="string">'|\&lt;\s*?(\w+).*?\&gt;(.*)\&lt;\/\s*\\1.*?\&gt;|s'</span><span class="keyword">, </span><span class="default">$xml</span><span class="keyword">, </span><span class="default">$m</span><span class="keyword">)) return </span><span class="default">$xml</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; if (</span><span class="default">is_array</span><span class="keyword">(</span><span class="default">$m</span><span class="keyword">[</span><span class="default">1</span><span class="keyword">]))<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; for (</span><span class="default">$i </span><span class="keyword">= </span><span class="default">0</span><span class="keyword">;</span><span class="default">$i </span><span class="keyword">&lt; </span><span class="default">sizeof</span><span class="keyword">(</span><span class="default">$m</span><span class="keyword">[</span><span class="default">1</span><span class="keyword">]); </span><span class="default">$i</span><span class="keyword">++) </span><span class="default">$arr</span><span class="keyword">[</span><span class="default">$m</span><span class="keyword">[</span><span class="default">1</span><span class="keyword">][</span><span class="default">$i</span><span class="keyword">]] = </span><span class="default">xml2assoc</span><span class="keyword">(</span><span class="default">$m</span><span class="keyword">[</span><span class="default">2</span><span class="keyword">][</span><span class="default">$i</span><span class="keyword">]);<br />
+&nbsp;&nbsp;&nbsp; else </span><span class="default">$arr</span><span class="keyword">[</span><span class="default">$m</span><span class="keyword">[</span><span class="default">1</span><span class="keyword">]] = </span><span class="default">xml2assoc</span><span class="keyword">(</span><span class="default">$m</span><span class="keyword">[</span><span class="default">2</span><span class="keyword">]);<br />
+<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">$arr</span><span class="keyword">;<br />
+}<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="88264""></a>
+  <div class="note">
+   <strong class="user">boukeversteegh at gmail dot com</strong>
+   <a href="#88264" class="date">18-Jan-2009 02:06</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+XML to ASSOCIATIVE ARRAY<br />
+<br />
+Improved algorithm based on Sergey Aikinkulov's. The problem was that it would overwrite nodes if they had the same tag name. Because of that &lt;a&gt;&lt;b/&gt;&lt;b/&gt;&lt;a&gt; would be read as if &lt;a&gt;&lt;b/&gt;&lt;a/&gt;. This algorithm handles it better and outputs an easy to understand array:<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">function </span><span class="default">xml2assoc</span><span class="keyword">(</span><span class="default">$xml</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$tree </span><span class="keyword">= </span><span class="default">null</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; while(</span><span class="default">$xml</span><span class="keyword">-&gt;</span><span class="default">read</span><span class="keyword">())<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; switch (</span><span class="default">$xml</span><span class="keyword">-&gt;</span><span class="default">nodeType</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; case </span><span class="default">XMLReader</span><span class="keyword">::</span><span class="default">END_ELEMENT</span><span class="keyword">: return </span><span class="default">$tree</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; case </span><span class="default">XMLReader</span><span class="keyword">::</span><span class="default">ELEMENT</span><span class="keyword">:<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$node </span><span class="keyword">= array(</span><span class="string">'tag' </span><span class="keyword">=&gt; </span><span class="default">$xml</span><span class="keyword">-&gt;</span><span class="default">name</span><span class="keyword">, </span><span class="string">'value' </span><span class="keyword">=&gt; </span><span class="default">$xml</span><span class="keyword">-&gt;</span><span class="default">isEmptyElement </span><span class="keyword">? </span><span class="string">'' </span><span class="keyword">: </span><span class="default">xml2assoc</span><span class="keyword">(</span><span class="default">$xml</span><span class="keyword">));<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if(</span><span class="default">$xml</span><span class="keyword">-&gt;</span><span class="default">hasAttributes</span><span class="keyword">)<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; while(</span><span class="default">$xml</span><span class="keyword">-&gt;</span><span class="default">moveToNextAttribute</span><span class="keyword">())<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$node</span><span class="keyword">[</span><span class="string">'attributes'</span><span class="keyword">][</span><span class="default">$xml</span><span class="keyword">-&gt;</span><span class="default">name</span><span class="keyword">] = </span><span class="default">$xml</span><span class="keyword">-&gt;</span><span class="default">value</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$tree</span><span class="keyword">[] = </span><span class="default">$node</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; break;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; case </span><span class="default">XMLReader</span><span class="keyword">::</span><span class="default">TEXT</span><span class="keyword">:<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; case </span><span class="default">XMLReader</span><span class="keyword">::</span><span class="default">CDATA</span><span class="keyword">:<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$tree </span><span class="keyword">.= </span><span class="default">$xml</span><span class="keyword">-&gt;</span><span class="default">value</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">$tree</span><span class="keyword">;<br />
+}<br />
+<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+Usage:<br />
+<br />
+myxml.xml:<br />
+------<br />
+&lt;PERSON&gt;<br />
+&nbsp;&nbsp;&nbsp; &lt;NAME&gt;John&lt;/NAME&gt;<br />
+&nbsp;&nbsp;&nbsp; &lt;PHONE type="home"&gt;555-555-555&lt;/PHONE&gt;<br />
+&lt;/PERSON&gt;<br />
+----<br />
+<br />
+&lt;?<br />
+&nbsp;&nbsp;&nbsp; $xml = new XMLReader();<br />
+&nbsp;&nbsp;&nbsp; $xml-&gt;open('myxml.xml');<br />
+&nbsp;&nbsp;&nbsp; $assoc = xml2assoc($xml);<br />
+&nbsp;&nbsp;&nbsp; $xml-&gt;close();<br />
+&nbsp;&nbsp;&nbsp; print_r($assoc);<br />
+?&gt;<br />
+<br />
+Outputs:<br />
+Array<br />
+(<br />
+&nbsp;&nbsp;&nbsp; [0] =&gt; Array<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; (<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [tag] =&gt; PERSON<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [value] =&gt; Array<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; (<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [0] =&gt; Array<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; (<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [tag] =&gt; NAME<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [value] =&gt; John<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; )<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [1] =&gt; Array<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; (<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [tag] =&gt; PHONE<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [value] =&gt; 555-555-555<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [attributes] =&gt; Array<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; (<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [type] =&gt; home<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; )<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; )<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; )<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; )<br />
+<br />
+)<br />
+<br />
+For reasons that have to do with recursion, it returns an array with the ROOT xml node as the first childNode, rather than to return only the ROOT node.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="88070""></a>
+  <div class="note">
+   <strong class="user">andrei_antal at yahoo dot com</strong>
+   <a href="#88070" class="date">08-Jan-2009 08:25</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+<span class="default">&lt;?php<br />
+</span><span class="comment">//Pull certain elements <br />
+&nbsp;</span><span class="default">$reader </span><span class="keyword">= new </span><span class="default">XMLReader</span><span class="keyword">();<br />
+&nbsp; </span><span class="default">$reader</span><span class="keyword">-&gt;</span><span class="default">open</span><span class="keyword">(</span><span class="default">$xmlfile</span><span class="keyword">);<br />
+while (</span><span class="default">$reader</span><span class="keyword">-&gt;</span><span class="default">read</span><span class="keyword">()) {<br />
+&nbsp;switch (</span><span class="default">$reader</span><span class="keyword">-&gt;</span><span class="default">nodeType</span><span class="keyword">) {<br />
+&nbsp;&nbsp; case (</span><span class="default">XMLREADER</span><span class="keyword">::</span><span class="default">ELEMENT</span><span class="keyword">):<br />
+<br />
+if (</span><span class="default">$reader</span><span class="keyword">-&gt;</span><span class="default">name </span><span class="keyword">== </span><span class="string">"Code"</span><span class="keyword">)<br />
+&nbsp;&nbsp; &nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; </span><span class="default">$reader</span><span class="keyword">-&gt;</span><span class="default">read</span><span class="keyword">();<br />
+&nbsp;&nbsp; &nbsp; &nbsp; </span><span class="default">$code </span><span class="keyword">= </span><span class="default">trim</span><span class="keyword">(</span><span class="default">$reader</span><span class="keyword">-&gt;</span><span class="default">value</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; echo </span><span class="string">"</span><span class="default">$code</span><span class="string">\n"</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; break;<br />
+&nbsp;&nbsp; &nbsp; }<br />
+<br />
+&nbsp;if (</span><span class="default">$reader</span><span class="keyword">-&gt;</span><span class="default">name </span><span class="keyword">== </span><span class="string">"Name"</span><span class="keyword">)<br />
+&nbsp;&nbsp; &nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; </span><span class="default">$reader</span><span class="keyword">-&gt;</span><span class="default">read</span><span class="keyword">();<br />
+&nbsp;&nbsp; &nbsp; &nbsp; </span><span class="default">$customername </span><span class="keyword">= </span><span class="default">trim</span><span class="keyword">( </span><span class="default">$reader</span><span class="keyword">-&gt;</span><span class="default">value </span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; echo </span><span class="string">"</span><span class="default">$name</span><span class="string">\n"</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; break;<br />
+&nbsp;&nbsp; &nbsp; }<br />
+<br />
+&nbsp;if (</span><span class="default">$reader</span><span class="keyword">-&gt;</span><span class="default">name </span><span class="keyword">== </span><span class="string">"Camp"</span><span class="keyword">)<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">$camp </span><span class="keyword">= </span><span class="default">trim</span><span class="keyword">(</span><span class="default">$reader</span><span class="keyword">-&gt;</span><span class="default">getAttribute</span><span class="keyword">(</span><span class="string">"ID"</span><span class="keyword">));<br />
+&nbsp;&nbsp; &nbsp; &nbsp; echo </span><span class="string">"</span><span class="default">$camp</span><span class="string">\n"</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp;&nbsp; break;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp; }<br />
+}<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="87288""></a>
+  <div class="note">
+   <strong class="user">godseth at o2 dot pl</strong>
+   <a href="#87288" class="date">28-Nov-2008 02:34</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Thanks rein_baarsma33 AT hotmail DOT com for bugfixes. <br />
+<br />
+This is my new child of XML parsing method&nbsp; based on my and yours modification. <br />
+<br />
+XML2ASSOC Is a complete solution for parsing ordinary XML<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="comment">/**<br />
+&nbsp;* XML2Assoc Class to creating <br />
+&nbsp;* PHP Assoc Array from XML File<br />
+&nbsp;* <br />
+&nbsp;* @author godseth (AT) o2.pl &amp; rein_baarsma33 (AT) hotmail.com (Bugfixes in parseXml Method)<br />
+&nbsp;* @uses XMLReader<br />
+&nbsp;*<br />
+&nbsp;*/<br />
+<br />
+</span><span class="keyword">class </span><span class="default">Xml2Assoc </span><span class="keyword">{<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">/**<br />
+&nbsp;&nbsp; &nbsp; * Optimization Enabled / Disabled<br />
+&nbsp;&nbsp; &nbsp; *<br />
+&nbsp;&nbsp; &nbsp; * @var bool<br />
+&nbsp;&nbsp; &nbsp; */<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">protected </span><span class="default">$bOptimize </span><span class="keyword">= </span><span class="default">false</span><span class="keyword">;<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">/**<br />
+&nbsp;&nbsp; &nbsp; * Method for loading XML Data from String<br />
+&nbsp;&nbsp; &nbsp; *<br />
+&nbsp;&nbsp; &nbsp; * @param string $sXml<br />
+&nbsp;&nbsp; &nbsp; * @param bool $bOptimize<br />
+&nbsp;&nbsp; &nbsp; */<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">public function </span><span class="default">parseString</span><span class="keyword">( </span><span class="default">$sXml </span><span class="keyword">, </span><span class="default">$bOptimize </span><span class="keyword">= </span><span class="default">false</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$oXml </span><span class="keyword">= new </span><span class="default">XMLReader</span><span class="keyword">();<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$this </span><span class="keyword">-&gt; </span><span class="default">bOptimize </span><span class="keyword">= (bool) </span><span class="default">$bOptimize</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; try {<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// Set String Containing XML data<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$oXml</span><span class="keyword">-&gt;</span><span class="default">XML</span><span class="keyword">(</span><span class="default">$sXml</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// Parse Xml and return result<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">return </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">parseXml</span><span class="keyword">(</span><span class="default">$oXml</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; } catch (</span><span class="default">Exception $e</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; echo </span><span class="default">$e</span><span class="keyword">-&gt;</span><span class="default">getMessage</span><span class="keyword">();<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">/**<br />
+&nbsp;&nbsp; &nbsp; * Method for loading Xml Data from file<br />
+&nbsp;&nbsp; &nbsp; *<br />
+&nbsp;&nbsp; &nbsp; * @param string $sXmlFilePath<br />
+&nbsp;&nbsp; &nbsp; * @param bool $bOptimize<br />
+&nbsp;&nbsp; &nbsp; */<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">public function </span><span class="default">parseFile</span><span class="keyword">( </span><span class="default">$sXmlFilePath </span><span class="keyword">, </span><span class="default">$bOptimize </span><span class="keyword">= </span><span class="default">false </span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$oXml </span><span class="keyword">= new </span><span class="default">XMLReader</span><span class="keyword">();<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$this </span><span class="keyword">-&gt; </span><span class="default">bOptimize </span><span class="keyword">= (bool) </span><span class="default">$bOptimize</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; try {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// Open XML file<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$oXml</span><span class="keyword">-&gt;</span><span class="default">open</span><span class="keyword">(</span><span class="default">$sXmlFilePath</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// // Parse Xml and return result<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">return </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">parseXml</span><span class="keyword">(</span><span class="default">$oXml</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; } catch (</span><span class="default">Exception $e</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; echo </span><span class="default">$e</span><span class="keyword">-&gt;</span><span class="default">getMessage</span><span class="keyword">(). </span><span class="string">' | Try open file: '</span><span class="keyword">.</span><span class="default">$sXmlFilePath</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">/**<br />
+&nbsp;&nbsp; &nbsp; * XML Parser<br />
+&nbsp;&nbsp; &nbsp; *<br />
+&nbsp;&nbsp; &nbsp; * @param XMLReader $oXml<br />
+&nbsp;&nbsp; &nbsp; * @return array<br />
+&nbsp;&nbsp; &nbsp; */<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">protected function </span><span class="default">parseXml</span><span class="keyword">( </span><span class="default">XMLReader $oXml </span><span class="keyword">) {<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$aAssocXML </span><span class="keyword">= </span><span class="default">null</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$iDc </span><span class="keyword">= -</span><span class="default">1</span><span class="keyword">;<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; while(</span><span class="default">$oXml</span><span class="keyword">-&gt;</span><span class="default">read</span><span class="keyword">()){<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; switch (</span><span class="default">$oXml</span><span class="keyword">-&gt;</span><span class="default">nodeType</span><span class="keyword">) {<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; case </span><span class="default">XMLReader</span><span class="keyword">::</span><span class="default">END_ELEMENT</span><span class="keyword">:<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if (</span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">bOptimize</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">optXml</span><span class="keyword">(</span><span class="default">$aAssocXML</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">$aAssocXML</span><span class="keyword">;<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; case </span><span class="default">XMLReader</span><span class="keyword">::</span><span class="default">ELEMENT</span><span class="keyword">:<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if(!isset(</span><span class="default">$aAssocXML</span><span class="keyword">[</span><span class="default">$oXml</span><span class="keyword">-&gt;</span><span class="default">name</span><span class="keyword">])) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if(</span><span class="default">$oXml</span><span class="keyword">-&gt;</span><span class="default">hasAttributes</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$aAssocXML</span><span class="keyword">[</span><span class="default">$oXml</span><span class="keyword">-&gt;</span><span class="default">name</span><span class="keyword">][] = </span><span class="default">$oXml</span><span class="keyword">-&gt;</span><span class="default">isEmptyElement </span><span class="keyword">? </span><span class="string">'' </span><span class="keyword">: </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">parseXML</span><span class="keyword">(</span><span class="default">$oXml</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; } else {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if(</span><span class="default">$oXml</span><span class="keyword">-&gt;</span><span class="default">isEmptyElement</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$aAssocXML</span><span class="keyword">[</span><span class="default">$oXml</span><span class="keyword">-&gt;</span><span class="default">name</span><span class="keyword">] = </span><span class="string">''</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; } else {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$aAssocXML</span><span class="keyword">[</span><span class="default">$oXml</span><span class="keyword">-&gt;</span><span class="default">name</span><span class="keyword">] = </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">parseXML</span><span class="keyword">(</span><span class="default">$oXml</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; } elseif (</span><span class="default">is_array</span><span class="keyword">(</span><span class="default">$aAssocXML</span><span class="keyword">[</span><span class="default">$oXml</span><span class="keyword">-&gt;</span><span class="default">name</span><span class="keyword">])) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if (!isset(</span><span class="default">$aAssocXML</span><span class="keyword">[</span><span class="default">$oXml</span><span class="keyword">-&gt;</span><span class="default">name</span><span class="keyword">][</span><span class="default">0</span><span class="keyword">]))<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$temp </span><span class="keyword">= </span><span class="default">$aAssocXML</span><span class="keyword">[</span><span class="default">$oXml</span><span class="keyword">-&gt;</span><span class="default">name</span><span class="keyword">];<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; foreach (</span><span class="default">$temp </span><span class="keyword">as </span><span class="default">$sKey</span><span class="keyword">=&gt;</span><span class="default">$sValue</span><span class="keyword">)<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; unset(</span><span class="default">$aAssocXML</span><span class="keyword">[</span><span class="default">$oXml</span><span class="keyword">-&gt;</span><span class="default">name</span><span class="keyword">][</span><span class="default">$sKey</span><span class="keyword">]);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$aAssocXML</span><span class="keyword">[</span><span class="default">$oXml</span><span class="keyword">-&gt;</span><span class="default">name</span><span class="keyword">][] = </span><span class="default">$temp</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if(</span><span class="default">$oXml</span><span class="keyword">-&gt;</span><span class="default">hasAttributes</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$aAssocXML</span><span class="keyword">[</span><span class="default">$oXml</span><span class="keyword">-&gt;</span><span class="default">name</span><span class="keyword">][] = </span><span class="default">$oXml</span><span class="keyword">-&gt;</span><span class="default">isEmptyElement </span><span class="keyword">? </span><span class="string">'' </span><span class="keyword">: </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">parseXML</span><span class="keyword">(</span><span class="default">$oXml</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; } else {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if(</span><span class="default">$oXml</span><span class="keyword">-&gt;</span><span class="default">isEmptyElement</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$aAssocXML</span><span class="keyword">[</span><span class="default">$oXml</span><span class="keyword">-&gt;</span><span class="default">name</span><span class="keyword">][] = </span><span class="string">''</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; } else {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$aAssocXML</span><span class="keyword">[</span><span class="default">$oXml</span><span class="keyword">-&gt;</span><span class="default">name</span><span class="keyword">][] = </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">parseXML</span><span class="keyword">(</span><span class="default">$oXml</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; } else {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$mOldVar </span><span class="keyword">= </span><span class="default">$aAssocXML</span><span class="keyword">[</span><span class="default">$oXml</span><span class="keyword">-&gt;</span><span class="default">name</span><span class="keyword">];<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$aAssocXML</span><span class="keyword">[</span><span class="default">$oXml</span><span class="keyword">-&gt;</span><span class="default">name</span><span class="keyword">] = array(</span><span class="default">$mOldVar</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if(</span><span class="default">$oXml</span><span class="keyword">-&gt;</span><span class="default">hasAttributes</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$aAssocXML</span><span class="keyword">[</span><span class="default">$oXml</span><span class="keyword">-&gt;</span><span class="default">name</span><span class="keyword">][] = </span><span class="default">$oXml</span><span class="keyword">-&gt;</span><span class="default">isEmptyElement </span><span class="keyword">? </span><span class="string">'' </span><span class="keyword">: </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">parseXML</span><span class="keyword">(</span><span class="default">$oXml</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; } else {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if(</span><span class="default">$oXml</span><span class="keyword">-&gt;</span><span class="default">isEmptyElement</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$aAssocXML</span><span class="keyword">[</span><span class="default">$oXml</span><span class="keyword">-&gt;</span><span class="default">name</span><span class="keyword">][] = </span><span class="string">''</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; } else {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$aAssocXML</span><span class="keyword">[</span><span class="default">$oXml</span><span class="keyword">-&gt;</span><span class="default">name</span><span class="keyword">][] = </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">parseXML</span><span class="keyword">(</span><span class="default">$oXml</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if(</span><span class="default">$oXml</span><span class="keyword">-&gt;</span><span class="default">hasAttributes</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$mElement </span><span class="keyword">=&amp; </span><span class="default">$aAssocXML</span><span class="keyword">[</span><span class="default">$oXml</span><span class="keyword">-&gt;</span><span class="default">name</span><span class="keyword">][</span><span class="default">count</span><span class="keyword">(</span><span class="default">$aAssocXML</span><span class="keyword">[</span><span class="default">$oXml</span><span class="keyword">-&gt;</span><span class="default">name</span><span class="keyword">]) - </span><span class="default">1</span><span class="keyword">];<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; while(</span><span class="default">$oXml</span><span class="keyword">-&gt;</span><span class="default">moveToNextAttribute</span><span class="keyword">()) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$mElement</span><span class="keyword">[</span><span class="default">$oXml</span><span class="keyword">-&gt;</span><span class="default">name</span><span class="keyword">] = </span><span class="default">$oXml</span><span class="keyword">-&gt;</span><span class="default">value</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; break;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; case </span><span class="default">XMLReader</span><span class="keyword">::</span><span class="default">TEXT</span><span class="keyword">:<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; case </span><span class="default">XMLReader</span><span class="keyword">::</span><span class="default">CDATA</span><span class="keyword">:<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$aAssocXML</span><span class="keyword">[++</span><span class="default">$iDc</span><span class="keyword">] = </span><span class="default">$oXml</span><span class="keyword">-&gt;</span><span class="default">value</span><span class="keyword">;<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">$aAssocXML</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">/**<br />
+&nbsp;&nbsp; &nbsp; * Method to optimize assoc tree.<br />
+&nbsp;&nbsp; &nbsp; * ( Deleting 0 index when element<br />
+&nbsp;&nbsp; &nbsp; *&nbsp; have one attribute / value )<br />
+&nbsp;&nbsp; &nbsp; *<br />
+&nbsp;&nbsp; &nbsp; * @param array $mData<br />
+&nbsp;&nbsp; &nbsp; */<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">public function </span><span class="default">optXml</span><span class="keyword">(&amp;</span><span class="default">$mData</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if (</span><span class="default">is_array</span><span class="keyword">(</span><span class="default">$mData</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if (isset(</span><span class="default">$mData</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">]) &amp;&amp; </span><span class="default">count</span><span class="keyword">(</span><span class="default">$mData</span><span class="keyword">) == </span><span class="default">1 </span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$mData </span><span class="keyword">= </span><span class="default">$mData</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">];<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if (</span><span class="default">is_array</span><span class="keyword">(</span><span class="default">$mData</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; foreach (</span><span class="default">$mData </span><span class="keyword">as &amp;</span><span class="default">$aSub</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">optXml</span><span class="keyword">(</span><span class="default">$aSub</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; } else {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; foreach (</span><span class="default">$mData </span><span class="keyword">as &amp;</span><span class="default">$aSub</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">optXml</span><span class="keyword">(</span><span class="default">$aSub</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+}<br />
+<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+[EDIT BY danbrown AT php DOT net:&nbsp; Fixes were also provided by "Alex" and (qdog AT qview DOT org) in user notes on this page (since removed).]</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="83929""></a>
+  <div class="note">
+   <strong class="user">Sergey Aikinkulov</strong>
+   <a href="#83929" class="date">19-Jun-2008 03:51</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Next version xml2assoc with some improve fixes:<br />
+&nbsp;- no doubled data<br />
+&nbsp;- no buffer arrays<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="comment">/*<br />
+&nbsp;&nbsp;&nbsp; Read XML structure to associative array<br />
+&nbsp;&nbsp;&nbsp; --<br />
+&nbsp;&nbsp;&nbsp; Using:<br />
+&nbsp;&nbsp;&nbsp; $xml = new XMLReader();<br />
+&nbsp;&nbsp;&nbsp; $xml-&gt;open([XML file]);<br />
+&nbsp;&nbsp;&nbsp; $assoc = xml2assoc($xml);<br />
+&nbsp;&nbsp;&nbsp; $xml-&gt;close();<br />
+*/<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">function </span><span class="default">xml2assoc</span><span class="keyword">(</span><span class="default">$xml</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">$assoc </span><span class="keyword">= </span><span class="default">null</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp;&nbsp; while(</span><span class="default">$xml</span><span class="keyword">-&gt;</span><span class="default">read</span><span class="keyword">()){<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; switch (</span><span class="default">$xml</span><span class="keyword">-&gt;</span><span class="default">nodeType</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; case </span><span class="default">XMLReader</span><span class="keyword">::</span><span class="default">END_ELEMENT</span><span class="keyword">: return </span><span class="default">$assoc</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; case </span><span class="default">XMLReader</span><span class="keyword">::</span><span class="default">ELEMENT</span><span class="keyword">:<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$assoc</span><span class="keyword">[</span><span class="default">$xml</span><span class="keyword">-&gt;</span><span class="default">name</span><span class="keyword">][] = array(</span><span class="string">'value' </span><span class="keyword">=&gt; </span><span class="default">$xml</span><span class="keyword">-&gt;</span><span class="default">isEmptyElement </span><span class="keyword">? </span><span class="string">'' </span><span class="keyword">: </span><span class="default">xml2assoc</span><span class="keyword">(</span><span class="default">$xml</span><span class="keyword">));<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if(</span><span class="default">$xml</span><span class="keyword">-&gt;</span><span class="default">hasAttributes</span><span class="keyword">){<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$el </span><span class="keyword">=&amp; </span><span class="default">$assoc</span><span class="keyword">[</span><span class="default">$xml</span><span class="keyword">-&gt;</span><span class="default">name</span><span class="keyword">][</span><span class="default">count</span><span class="keyword">(</span><span class="default">$assoc</span><span class="keyword">[</span><span class="default">$xml</span><span class="keyword">-&gt;</span><span class="default">name</span><span class="keyword">]) - </span><span class="default">1</span><span class="keyword">];<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; while(</span><span class="default">$xml</span><span class="keyword">-&gt;</span><span class="default">moveToNextAttribute</span><span class="keyword">()) </span><span class="default">$el</span><span class="keyword">[</span><span class="string">'attributes'</span><span class="keyword">][</span><span class="default">$xml</span><span class="keyword">-&gt;</span><span class="default">name</span><span class="keyword">] = </span><span class="default">$xml</span><span class="keyword">-&gt;</span><span class="default">value</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; break;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; case </span><span class="default">XMLReader</span><span class="keyword">::</span><span class="default">TEXT</span><span class="keyword">:<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; case </span><span class="default">XMLReader</span><span class="keyword">::</span><span class="default">CDATA</span><span class="keyword">: </span><span class="default">$assoc </span><span class="keyword">.= </span><span class="default">$xml</span><span class="keyword">-&gt;</span><span class="default">value</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp;&nbsp; return </span><span class="default">$assoc</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="81852""></a>
+  <div class="note">
+   <strong class="user">desk_ocean at msn dot com</strong>
+   <a href="#81852" class="date">16-Mar-2008 10:03</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+make some modify from Sergey Aikinkulov's note<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">function </span><span class="default">xml2assoc</span><span class="keyword">(&amp;</span><span class="default">$xml</span><span class="keyword">){<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$assoc </span><span class="keyword">= </span><span class="default">NULL</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$n </span><span class="keyword">= </span><span class="default">0</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; while(</span><span class="default">$xml</span><span class="keyword">-&gt;</span><span class="default">read</span><span class="keyword">()){<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if(</span><span class="default">$xml</span><span class="keyword">-&gt;</span><span class="default">nodeType </span><span class="keyword">== </span><span class="default">XMLReader</span><span class="keyword">::</span><span class="default">END_ELEMENT</span><span class="keyword">) break;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if(</span><span class="default">$xml</span><span class="keyword">-&gt;</span><span class="default">nodeType </span><span class="keyword">== </span><span class="default">XMLReader</span><span class="keyword">::</span><span class="default">ELEMENT </span><span class="keyword">and !</span><span class="default">$xml</span><span class="keyword">-&gt;</span><span class="default">isEmptyElement</span><span class="keyword">){<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$assoc</span><span class="keyword">[</span><span class="default">$n</span><span class="keyword">][</span><span class="string">'name'</span><span class="keyword">] = </span><span class="default">$xml</span><span class="keyword">-&gt;</span><span class="default">name</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if(</span><span class="default">$xml</span><span class="keyword">-&gt;</span><span class="default">hasAttributes</span><span class="keyword">) while(</span><span class="default">$xml</span><span class="keyword">-&gt;</span><span class="default">moveToNextAttribute</span><span class="keyword">()) </span><span class="default">$assoc</span><span class="keyword">[</span><span class="default">$n</span><span class="keyword">][</span><span class="string">'atr'</span><span class="keyword">][</span><span class="default">$xml</span><span class="keyword">-&gt;</span><span class="default">name</span><span class="keyword">] = </span><span class="default">$xml</span><span class="keyword">-&gt;</span><span class="default">value</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$assoc</span><span class="keyword">[</span><span class="default">$n</span><span class="keyword">][</span><span class="string">'val'</span><span class="keyword">] = </span><span class="default">xml2assoc</span><span class="keyword">(</span><span class="default">$xml</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$n</span><span class="keyword">++;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; else if(</span><span class="default">$xml</span><span class="keyword">-&gt;</span><span class="default">isEmptyElement</span><span class="keyword">){<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$assoc</span><span class="keyword">[</span><span class="default">$n</span><span class="keyword">][</span><span class="string">'name'</span><span class="keyword">] = </span><span class="default">$xml</span><span class="keyword">-&gt;</span><span class="default">name</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if(</span><span class="default">$xml</span><span class="keyword">-&gt;</span><span class="default">hasAttributes</span><span class="keyword">) while(</span><span class="default">$xml</span><span class="keyword">-&gt;</span><span class="default">moveToNextAttribute</span><span class="keyword">()) </span><span class="default">$assoc</span><span class="keyword">[</span><span class="default">$n</span><span class="keyword">][</span><span class="string">'atr'</span><span class="keyword">][</span><span class="default">$xml</span><span class="keyword">-&gt;</span><span class="default">name</span><span class="keyword">] = </span><span class="default">$xml</span><span class="keyword">-&gt;</span><span class="default">value</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$assoc</span><span class="keyword">[</span><span class="default">$n</span><span class="keyword">][</span><span class="string">'val'</span><span class="keyword">] = </span><span class="string">""</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$n</span><span class="keyword">++;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; else if(</span><span class="default">$xml</span><span class="keyword">-&gt;</span><span class="default">nodeType </span><span class="keyword">== </span><span class="default">XMLReader</span><span class="keyword">::</span><span class="default">TEXT</span><span class="keyword">) </span><span class="default">$assoc </span><span class="keyword">= </span><span class="default">$xml</span><span class="keyword">-&gt;</span><span class="default">value</span><span class="keyword">; <br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">$assoc</span><span class="keyword">;<br />
+}<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+add else if($xml-&gt;isEmptyElement)<br />
+may be some xml has emptyelement</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="81148""></a>
+  <div class="note">
+   <strong class="user">itari</strong>
+   <a href="#81148" class="date">15-Feb-2008 08:30</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+<span class="default">&lt;?php<br />
+</span><span class="keyword">function </span><span class="default">parseXML</span><span class="keyword">(</span><span class="default">$node</span><span class="keyword">,</span><span class="default">$seq</span><span class="keyword">,</span><span class="default">$path</span><span class="keyword">) {<br />
+global </span><span class="default">$oldpath</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; if (!</span><span class="default">$node</span><span class="keyword">-&gt;</span><span class="default">read</span><span class="keyword">())<br />
+&nbsp;&nbsp; &nbsp;&nbsp; return;<br />
+&nbsp;&nbsp;&nbsp; if (</span><span class="default">$node</span><span class="keyword">-&gt;</span><span class="default">nodeType </span><span class="keyword">!= </span><span class="default">15</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp;&nbsp; print </span><span class="string">'&lt;br/&gt;'</span><span class="keyword">.</span><span class="default">$node</span><span class="keyword">-&gt;</span><span class="default">depth</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp;&nbsp; print </span><span class="string">'-'</span><span class="keyword">.</span><span class="default">$seq</span><span class="keyword">++;<br />
+&nbsp;&nbsp; &nbsp;&nbsp; print </span><span class="string">'&nbsp; '</span><span class="keyword">.</span><span class="default">$path</span><span class="keyword">.</span><span class="string">'/'</span><span class="keyword">.(</span><span class="default">$node</span><span class="keyword">-&gt;</span><span class="default">nodeType</span><span class="keyword">==</span><span class="default">3</span><span class="keyword">?</span><span class="string">'text() = '</span><span class="keyword">:</span><span class="default">$node</span><span class="keyword">-&gt;</span><span class="default">name</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp;&nbsp; print </span><span class="default">$node</span><span class="keyword">-&gt;</span><span class="default">value</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp;&nbsp; if (</span><span class="default">$node</span><span class="keyword">-&gt;</span><span class="default">hasAttributes</span><span class="keyword">) { <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; print </span><span class="string">' [hasAttributes: '</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; while (</span><span class="default">$node</span><span class="keyword">-&gt;</span><span class="default">moveToNextAttribute</span><span class="keyword">()) print </span><span class="string">'@'</span><span class="keyword">.</span><span class="default">$node</span><span class="keyword">-&gt;</span><span class="default">name</span><span class="keyword">.</span><span class="string">' = '</span><span class="keyword">.</span><span class="default">$node</span><span class="keyword">-&gt;</span><span class="default">value</span><span class="keyword">.</span><span class="string">' '</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; print </span><span class="string">']'</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp;&nbsp; if (</span><span class="default">$node</span><span class="keyword">-&gt;</span><span class="default">nodeType </span><span class="keyword">== </span><span class="default">1</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$oldpath</span><span class="keyword">=</span><span class="default">$path</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$path</span><span class="keyword">.=</span><span class="string">'/'</span><span class="keyword">.</span><span class="default">$node</span><span class="keyword">-&gt;</span><span class="default">name</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">parseXML</span><span class="keyword">(</span><span class="default">$node</span><span class="keyword">,</span><span class="default">$seq</span><span class="keyword">,</span><span class="default">$path</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; else </span><span class="default">parseXML</span><span class="keyword">(</span><span class="default">$node</span><span class="keyword">,</span><span class="default">$seq</span><span class="keyword">,</span><span class="default">$oldpath</span><span class="keyword">); <br />
+}<br />
+<br />
+</span><span class="default">$source </span><span class="keyword">= </span><span class="string">"&lt;tag1&gt;this&lt;tag2 id='4' name='foo'&gt;is&lt;/tag2&gt;a&lt;tag2 id='5'&gt;common&lt;/tag2&gt;record&lt;/tag1&gt;"</span><span class="keyword">;<br />
+</span><span class="default">$xml </span><span class="keyword">= new </span><span class="default">XMLReader</span><span class="keyword">();<br />
+</span><span class="default">$xml</span><span class="keyword">-&gt;</span><span class="default">XML</span><span class="keyword">(</span><span class="default">$source</span><span class="keyword">);<br />
+print </span><span class="default">htmlspecialchars</span><span class="keyword">(</span><span class="default">$source</span><span class="keyword">).</span><span class="string">'&lt;br/&gt;'</span><span class="keyword">;<br />
+</span><span class="default">parseXML</span><span class="keyword">(</span><span class="default">$xml</span><span class="keyword">,</span><span class="default">0</span><span class="keyword">,</span><span class="string">''</span><span class="keyword">);<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+Output:<br />
+<br />
+&lt;tag1&gt;this&lt;tag2 id='4' name='foo'&gt;is&lt;/tag2&gt;a&lt;tag2 id='5'&gt;common&lt;/tag2&gt;record&lt;/tag1&gt;<br />
+<br />
+0-0 /tag1<br />
+1-1 /tag1/text() = this<br />
+1-2 /tag1/tag2 [hasAttributes: @id = 4 @name = foo ]<br />
+2-3 /tag1/text() = is<br />
+1-4 /text() = a<br />
+1-5 /tag2 [hasAttributes: @id = 5 ]<br />
+2-6 /text() = common<br />
+1-7 /text() = record</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="61929""></a>
+  <div class="note">
+   <strong class="user">orion at ftf-hq dot dk</strong>
+   <a href="#61929" class="date">15-Feb-2006 04:50</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Some more documentation (i.e. examples) would be nice :-)<br />
+<br />
+This is how I read some mysql parameters in an xml file:<br />
+<br />
+<span class="default">&lt;?php<br />
+&nbsp;&nbsp;&nbsp; $xml </span><span class="keyword">= new </span><span class="default">XMLReader</span><span class="keyword">();<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$xml</span><span class="keyword">-&gt;</span><span class="default">open</span><span class="keyword">(</span><span class="string">"config.xml"</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$xml</span><span class="keyword">-&gt;</span><span class="default">setParserProperty</span><span class="keyword">(</span><span class="default">2</span><span class="keyword">,</span><span class="default">true</span><span class="keyword">); </span><span class="comment">// This seems a little unclear to me - but it worked :)<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">while (</span><span class="default">$xml</span><span class="keyword">-&gt;</span><span class="default">read</span><span class="keyword">()) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; switch (</span><span class="default">$xml</span><span class="keyword">-&gt;</span><span class="default">name</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; case </span><span class="string">"mysql_host"</span><span class="keyword">:<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$xml</span><span class="keyword">-&gt;</span><span class="default">read</span><span class="keyword">();<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$conf</span><span class="keyword">[</span><span class="string">"mysql_host"</span><span class="keyword">] = </span><span class="default">$xml</span><span class="keyword">-&gt;</span><span class="default">value</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$xml</span><span class="keyword">-&gt;</span><span class="default">read</span><span class="keyword">();<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; break;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; case </span><span class="string">"mysql_username"</span><span class="keyword">:<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$xml</span><span class="keyword">-&gt;</span><span class="default">read</span><span class="keyword">();<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$conf</span><span class="keyword">[</span><span class="string">"mysql_user"</span><span class="keyword">] = </span><span class="default">$xml</span><span class="keyword">-&gt;</span><span class="default">value</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$xml</span><span class="keyword">-&gt;</span><span class="default">read</span><span class="keyword">();<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; break;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; case </span><span class="string">"mysql_password"</span><span class="keyword">:<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$xml</span><span class="keyword">-&gt;</span><span class="default">read</span><span class="keyword">();<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$conf</span><span class="keyword">[</span><span class="string">"mysql_pass"</span><span class="keyword">] = </span><span class="default">$xml</span><span class="keyword">-&gt;</span><span class="default">value</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$xml</span><span class="keyword">-&gt;</span><span class="default">read</span><span class="keyword">();<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; break;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; case </span><span class="string">"mysql_database"</span><span class="keyword">:<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$xml</span><span class="keyword">-&gt;</span><span class="default">read</span><span class="keyword">();<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$conf</span><span class="keyword">[</span><span class="string">"mysql_db"</span><span class="keyword">] = </span><span class="default">$xml</span><span class="keyword">-&gt;</span><span class="default">value</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$xml</span><span class="keyword">-&gt;</span><span class="default">read</span><span class="keyword">();<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; break;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$xml</span><span class="keyword">-&gt;</span><span class="default">close</span><span class="keyword">();<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+The XML file used:<br />
+&lt;?xml version='1.0'?&gt;<br />
+&lt;MySQL_INIT&gt;<br />
+&nbsp;&nbsp; &lt;mysql_host&gt;localhost&lt;/mysql_host&gt;<br />
+&nbsp;&nbsp; &lt;mysql_database&gt;db_database&lt;/mysql_database&gt;<br />
+&nbsp;&nbsp; &lt;mysql_username&gt;root&lt;/mysql_username&gt;<br />
+&nbsp;&nbsp; &lt;mysql_password&gt;password&lt;/mysql_password&gt;<br />
+&lt;/MySQL_INIT&gt;</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
 <hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="xmlreader.resources.html">Resource Types</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="xmlreader.close.html">XMLReader::close</a></div>

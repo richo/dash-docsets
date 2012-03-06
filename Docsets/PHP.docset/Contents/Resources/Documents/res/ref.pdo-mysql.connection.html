@@ -204,7 +204,182 @@ mysql:unix_socket=/tmp/mysql.sock;dbname=testdb
     </p></blockquote>
    </div>
 
-  </div><hr /><div class="manualnavbar" style="text-align: center;">
+  </div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="107186""></a>
+  <div class="note">
+   <strong class="user">damien at mc-kenna dot com</strong>
+   <a href="#107186" class="date">12-Jan-2012 07:58</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+It appears that internally the host string infers a default of "localhost", e.g. this appears to work as a valid $dsn: mysql:host=;port=3306</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="89593""></a>
+  <div class="note">
+   <strong class="user">rustamabd at gmail dot com</strong>
+   <a href="#89593" class="date">15-Mar-2009 12:18</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Even though pdo_mysql accepts an additional "charset" parameter in the DSN (see mysql_driver.c:442), as of PHP 5.2.9 it does not do anything with it.<br />
+<br />
+A possible workaround to set the charset to UTF-8, for example, could be:<br />
+<span class="default">&lt;?php<br />
+<br />
+&nbsp;&nbsp;&nbsp; $dbh </span><span class="keyword">= new </span><span class="default">PDO</span><span class="keyword">(</span><span class="string">"mysql:</span><span class="default">$connstr</span><span class="string">"</span><span class="keyword">,&nbsp; </span><span class="default">$user</span><span class="keyword">, </span><span class="default">$password</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$dbh </span><span class="keyword">-&gt; </span><span class="default">exec</span><span class="keyword">(</span><span class="string">"set names utf8"</span><span class="keyword">);<br />
+<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="89507""></a>
+  <div class="note">
+   <strong class="user">codeslinger at compsalot dot com</strong>
+   <a href="#89507" class="date">11-Mar-2009 07:07</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Here is a function that provides a generic interface to connect<br />
+&nbsp;to a mySQL PDO.&nbsp; This takes care of the default values automatically <br />
+and deals with the difference between a host name and a socket path.<br />
+<br />
+The advantage of using LOCALHOST for the default is that you don't have<br />
+&nbsp;to worry about IPv4 vs IPv6.&nbsp; But keep in mind that mySQL login security <br />
+does not treat the name as being interchangeable with the ip address.&nbsp; <br />
+You could of course change the default to use a socket path instead.<br />
+<br />
+Enjoy!<br />
+Codeslinger<br />
+<br />
+P.S. This form forces you to limit the length of your lines, so I had to<br />
+split a couple of things.<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+</span><span class="comment">//pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp<br />
+//<br />
+//&nbsp; Creates a new mySQL database connection<br />
+//<br />
+//&nbsp; Returns a PDO object or an error message&nbsp; <br />
+//&nbsp; Use: is_object()&nbsp; to verify the result<br />
+//<br />
+//<br />
+//&nbsp; If $DBHost starts with a '/' then it is treated as a Socket<br />
+//<br />
+//&nbsp; if $DBHost is empty it will default to LOCALHOST which is NOT the <br />
+//&nbsp; same as 127.0.0.1<br />
+//<br />
+//&nbsp; $DBPort is optional and will use the standard mySQL default if not <br />
+//&nbsp; specified<br />
+//<br />
+//&nbsp; The database name ($DBName) is optional, but if it is specified <br />
+//&nbsp; it must exist or an error results<br />
+//<br />
+//&nbsp; 2009-03-11&nbsp; Created: by codeslinger at compsalot.com<br />
+//<br />
+//&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Released to the Public Domain free to use and modify<br />
+//<br />
+//<br />
+</span><span class="keyword">function </span><span class="default">dbPDO_Connect_mySQL</span><span class="keyword">(</span><span class="default">$DBUser</span><span class="keyword">, </span><span class="default">$DBPass</span><span class="keyword">, </span><span class="default">$DBName </span><span class="keyword">= </span><span class="default">false</span><span class="keyword">, <br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$DBHost </span><span class="keyword">= </span><span class="default">false</span><span class="keyword">, </span><span class="default">$DBPort </span><span class="keyword">= </span><span class="default">false</span><span class="keyword">)<br />
+{<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$DBNameEq </span><span class="keyword">= empty(</span><span class="default">$DBName</span><span class="keyword">) ? </span><span class="string">'' </span><span class="keyword">: </span><span class="string">";dbname=</span><span class="default">$DBName</span><span class="string">"</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; if (empty(</span><span class="default">$DBHost</span><span class="keyword">)) </span><span class="default">$DBHost </span><span class="keyword">= </span><span class="string">'localhost'</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; If (</span><span class="default">$DBHost</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">] === </span><span class="string">'/'</span><span class="keyword">)<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$Connection </span><span class="keyword">= </span><span class="string">"unix_socket=</span><span class="default">$DBHost</span><span class="string">"</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; else<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if (empty(</span><span class="default">$DBPort</span><span class="keyword">)) </span><span class="default">$DBPort </span><span class="keyword">= </span><span class="default">3306</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$Connection </span><span class="keyword">= </span><span class="string">"host=</span><span class="default">$DBHost</span><span class="string">;port=</span><span class="default">$DBPort</span><span class="string">"</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">//======================<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">try<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$dbh&nbsp; &nbsp;&nbsp; </span><span class="keyword">= new </span><span class="default">PDO</span><span class="keyword">(</span><span class="string">"mysql:</span><span class="default">$Connection$DBNameEq</span><span class="string">"<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">,&nbsp; </span><span class="default">$DBUser</span><span class="keyword">, </span><span class="default">$DBPass</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; catch (</span><span class="default">PDOException $e</span><span class="keyword">)<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">$e</span><span class="keyword">-&gt;</span><span class="default">getMessage</span><span class="keyword">();<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">$dbh</span><span class="keyword">;<br />
+}<br />
+<br />
+</span><span class="comment">//================================<br />
+//================================<br />
+//<br />
+//Example of use:<br />
+<br />
+&nbsp; //connects to the default (localhost)<br />
+<br />
+&nbsp; </span><span class="default">$dbh </span><span class="keyword">= </span><span class="default">dbPDO_Connect_mySQL</span><span class="keyword">(</span><span class="string">'user'</span><span class="keyword">, </span><span class="string">'password'</span><span class="keyword">, </span><span class="string">'database'</span><span class="keyword">);<br />
+<br />
+&nbsp; </span><span class="comment">//............................................................<br />
+&nbsp; //error handler goes here<br />
+<br />
+&nbsp; </span><span class="keyword">if (!</span><span class="default">is_object</span><span class="keyword">(</span><span class="default">$dbh</span><span class="keyword">)) </span><span class="default">trigger_error</span><span class="keyword">(</span><span class="string">"Failed to connect to 'database' "<br />
+&nbsp;&nbsp; &nbsp; &nbsp; </span><span class="keyword">.</span><span class="string">" | Error = </span><span class="default">$dbh</span><span class="string">"</span><span class="keyword">, </span><span class="default">E_USER_ERROR</span><span class="keyword">);<br />
+<br />
+&nbsp; </span><span class="comment">//............................................................<br />
+&nbsp; //get a record<br />
+<br />
+&nbsp; </span><span class="default">$sql </span><span class="keyword">= </span><span class="string">"select * from SomeTable limit 1;"</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp; </span><span class="default">$dbRS </span><span class="keyword">= </span><span class="default">$dbh</span><span class="keyword">-&gt;</span><span class="default">query</span><span class="keyword">(</span><span class="default">$sql</span><span class="keyword">);<br />
+&nbsp; </span><span class="default">$row </span><span class="keyword">= empty(</span><span class="default">$dbRS</span><span class="keyword">) ? </span><span class="default">false </span><span class="keyword">: </span><span class="default">$dbRS</span><span class="keyword">-&gt;</span><span class="default">fetch</span><span class="keyword">(</span><span class="default">PDO</span><span class="keyword">::</span><span class="default">FETCH_ASSOC</span><span class="keyword">);<br />
+&nbsp; if (!empty(</span><span class="default">$dbRS</span><span class="keyword">)) </span><span class="default">$dbRS</span><span class="keyword">-&gt;</span><span class="default">closeCursor</span><span class="keyword">();<br />
+<br />
+&nbsp; </span><span class="comment">//............................................................<br />
+&nbsp; //do something with the data<br />
+<br />
+&nbsp; </span><span class="keyword">if (!empty(</span><span class="default">$row</span><span class="keyword">)) </span><span class="default">print_r</span><span class="keyword">(</span><span class="default">$row</span><span class="keyword">);&nbsp; &nbsp; <br />
+&nbsp; else echo </span><span class="string">"Error? no data found\n"</span><span class="keyword">;<br />
+<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="89499""></a>
+  <div class="note">
+   <strong class="user">codeslinger at compsalot dot com</strong>
+   <a href="#89499" class="date">11-Mar-2009 03:00</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I have tested this and found that the "dbname" field is optional.&nbsp; Which is a good thing if you must first create the db.<br />
+<br />
+After creating a db be sure to exec a "use dbname;"&nbsp; command, or else use fully specified table references.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="ref.pdo-mysql.html">MySQL (PDO)</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="ref.pdo-sqlsrv.html">MS SQL Server (PDO)</a></div>
  <div class="up"><a href="ref.pdo-mysql.html">MySQL (PDO)</a></div>

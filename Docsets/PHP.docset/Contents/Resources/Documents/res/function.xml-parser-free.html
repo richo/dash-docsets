@@ -63,7 +63,177 @@
  </div>
 
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="70271""></a>
+  <div class="note">
+   <strong class="user">alex_foe at yahoo dot de</strong>
+   <a href="#70271" class="date">09-Oct-2006 10:07</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+whitout throwing exceptions you could try these for clear parser shutdown:<br />
+<br />
+xml_parse($this-&gt;p, null, 1);<br />
+<br />
+full example-class (php4 compatible):<br />
+<br />
+class XML_Parser<br />
+{<br />
+&nbsp;&nbsp;&nbsp; var $file = null;<br />
+&nbsp;&nbsp;&nbsp; var $p = null; #the resource xml-parser<br />
+<br />
+&nbsp;&nbsp;&nbsp; var $__parsing = false;<br />
+<br />
+&nbsp;&nbsp;&nbsp; function XML_Parser($file = null) <br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if (!empty($file)) { $this-&gt;file = $file; }<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $this-&gt;p = xml_parser_create();<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; xml_set_element_handler($this-&gt;p, array(&amp;$this, "element_start"));<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; register_shutdown_function(array(&amp;$this, "destructor"));<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; function element_start($parser, $name, $attrs) { die("here I die while parsing"); }<br />
+<br />
+&nbsp;&nbsp;&nbsp; function parse_file($file = null)<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $this-&gt;__parsing = true;<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if (!empty($file)) { $this-&gt;file = $file; }<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if (!file_exists($this-&gt;file)) { die("file does not exists: $this-&gt;file"); return; }<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if (!($fp = fopen($this-&gt;file, "r"))) { die("could not open XML input"); }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; while ($data = fread($fp, 4096))<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if (!xml_parse($this-&gt;p, $data, feof($fp)))<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; die(<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; xml_error_string(xml_get_error_code($this-&gt;p)<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; . xml_getcurrent_line_number($this-&gt;p)));<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $this-&gt;__parsing = false;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; function destructor()<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if ($this-&gt;__parsing) { xml_parse($this-&gt;p, null, 1); }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; xml_parser_free($this-&gt;p);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+}<br />
+<br />
+#run_me<br />
+$o =&amp; new XML_Parser "some_xml_file.xml";<br />
+$o-&gt;parse_file();</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="57370""></a>
+  <div class="note">
+   <strong class="user">dio at edu dot uni-klu dot ac dot at</strong>
+   <a href="#57370" class="date">01-Oct-2005 09:56</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+If you try to free an XML parser while it is still parsing, strange things will happen - your script will "hang" and no output will be sent to the browser. Consider this pseudo-code example:<br />
+<br />
+-------<br />
+<br />
+...<br />
+if (!xml_parse($parser)) echo 'XML error';<br />
+<br />
+xml_parser_free($parser);<br />
+<br />
+...<br />
+<br />
+function SomeCallbackWhichWasSetBefore(...)<br />
+{<br />
+global $parser;<br />
+<br />
+...<br />
+<br />
+if (some_error_happened) xml_parser_free($parser);&nbsp; //problem!<br />
+<br />
+...<br />
+<br />
+}<br />
+<br />
+------<br />
+<br />
+It would be logical that xml_parse would return false if the parser was freed while parsing, right? Wrong! Instead, everything hangs and no output will be sent out (no matter whether output buffering is on or not). It took me more than an hour to figure out why: you cannot free a parser handle that is currently parsing. A simple solution:<br />
+<br />
+-------<br />
+<br />
+$xml_error = false;<br />
+if (!xml_parse($parser))<br />
+echo 'XML error (directly from parser)';<br />
+else if ($xml_error)<br />
+echo 'XML error (from some callback function);<br />
+<br />
+xml_parser_free($parser);<br />
+<br />
+...<br />
+<br />
+function SomeCallbackWhichWasSetBefore(...)<br />
+{<br />
+global $parser;<br />
+global $xml_error;<br />
+<br />
+if ($xml_error)<br />
+return;<br />
+<br />
+...<br />
+<br />
+if (some_error_occured)<br />
+{<br />
+$xml_error = false;<br />
+return;<br />
+}<br />
+<br />
+...<br />
+<br />
+}<br />
+<br />
+-------<br />
+<br />
+If you use this solution you will have to check for $xml_error in every callback function. Essentially what you're doing is that, in case you want to stop parsing because of an error, you continue until xml_parse() is finished (without actually doing anything) and then free the parser and act on the error.<br />
+<br />
+Of course the underlying problem is that you cannot stop a parser while it is parsing. There should be some function like xml_throw_error() or xml_parser_stop() or whatever, but unfortunately there isn't.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="37022""></a>
+  <div class="note">
+   <strong class="user">php dot net at gwprogramming dot com (George Webb)</strong>
+   <a href="#37022" class="date">30-Oct-2003 06:56</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I found that with PHP 4.3.4RC1, if you don't call xml_parser_free() before your script ends, some sort of ugliness occurs with the webserver; i.e. the HTTP connection is closed.&nbsp; (The apache error_log says "exit signal Segmentation fault (11)".)<br />
+<br />
+Usually PHP tends to clean up connections you don't explicitly close (e.g. database connections), but in this case apparently it doesn't.<br />
+<br />
+Some web browsers (MSIE for one) do not actually show this problem, so you may not actually notice it.&nbsp; Opera 7.11 does show it, which is how I discovered it.<br />
+<br />
+So don't forget to call xml_parser_free() ... always!</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="function.xml-parser-create.html">xml_parser_create</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.xml-parser-get-option.html">xml_parser_get_option</a></div>
  <div class="up"><a href="ref.xml.html">XML Parser Functions</a></div>

@@ -141,7 +141,209 @@ is being evaluated. This result comes from a call to
   </p>
  </div>
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="103714""></a>
+  <div class="note">
+   <strong class="user">bruce at kaskubar dot com</strong>
+   <a href="#103714" class="date">29-Apr-2011 06:30</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+The warning against mixing the use of mysql_result with other result set functions is a bit generic. More specifically, mysql_result alters the result set's internal row pointer (at least in a LAMP environment). This is anything but obvious as the nature of the function is random access for grabbing a quick byte. Using mysql_data_seek after some mysql_result calls, before going into a mysql_fetch_array loop, will set things straight.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="93917""></a>
+  <div class="note">
+   <strong class="user">DJK</strong>
+   <a href="#93917" class="date">06-Oct-2009 02:00</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Note that mysql_result affects the internal pointer used by mysql_fetch_*<br />
+<br />
+<span class="default">&lt;?php<br />
+$res </span><span class="keyword">= </span><span class="default">mysql_query</span><span class="keyword">(</span><span class="string">'SELECT a,b FROM ab'</span><span class="keyword">);<br />
+echo </span><span class="default">mysql_result</span><span class="keyword">(</span><span class="default">$res</span><span class="keyword">,</span><span class="default">0</span><span class="keyword">,</span><span class="default">0</span><span class="keyword">);<br />
+</span><span class="default">print_r</span><span class="keyword">(</span><span class="default">mysql_fetch_assoc</span><span class="keyword">(</span><span class="default">$res</span><span class="keyword">));<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+In the above example, the call to mysql_fetch_assoc would return the SECOND result, not the first as (I) expected.<br />
+<br />
+Use mysql_data_seek($res,0) to reset the result set.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="86175""></a>
+  <div class="note">
+   <strong class="user">adam dot chou at gmail dot com</strong>
+   <a href="#86175" class="date">06-Oct-2008 02:49</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+mysql_result() will throw E_WARNING if mysql_query returns 0 rows. This is unlike any of the mysql_fetch_* functions so be careful of this if you have E_WARNING turned on in error_reporting(). You might want to check mysql_num_rows() before calling mysql_result()</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="82921""></a>
+  <div class="note">
+   <strong class="user">kg6ypi at remotehams dot com</strong>
+   <a href="#82921" class="date">01-May-2008 05:54</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+//updated error handling for mysql_evaluate<br />
+<br />
+function mysql_evaluate($query, $default_value=0) {<br />
+<br />
+&nbsp;&nbsp;&nbsp; if (!$result=mysql_query($query)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return 0;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; if (mysql_num_rows($result)==0)<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return $default_value;<br />
+&nbsp;&nbsp;&nbsp; else<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return mysql_result($result,0);<br />
+}<br />
+<br />
+// same applies for the mysql_evaluate_array() function</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="75090""></a>
+  <div class="note">
+   <strong class="user">djurredenboer at hotmail dot com</strong>
+   <a href="#75090" class="date">11-May-2007 12:08</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+&lt;?<br />
+$link = mysql_connect("host", "user", "passw");<br />
+mysql_select_db("database", $link);<br />
+$number = 3;<br />
+$insert = mysql_query("SELECT `test1`.*, `test2`.*, <br />
+FROM `test1`, `test2`, `<br />
+WHERE ((`test1`.`author` = `test2`.`ID`) AND (`test2`.`ID` ='$number'))<br />
+ORDER BY `toetsen`.`autoID` DESC",$link);<br />
+<br />
+&nbsp;<br />
+&nbsp;<br />
+&nbsp;<br />
+&nbsp;echo mysql_result( $insert , 0, 'test1.question') ;<br />
+<br />
+#here he echoes the questions the stuff out of the first table <br />
+&nbsp;<br />
+echo mysql_result( $insert , 0, 'test2.name') ;<br />
+<br />
+#here he echoes the questions the stuff out of the second table <br />
+?&gt;</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="69598""></a>
+  <div class="note">
+   <strong class="user">erelsgl dot NOSPAM  at  cs  dot  technion  dot  ac  dot  il</strong>
+   <a href="#69598" class="date">12-Sep-2006 04:18</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+two simple but very useful functions, for converting a query to a value or an array:<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">function </span><span class="default">mysql_evaluate</span><span class="keyword">(</span><span class="default">$query</span><span class="keyword">, </span><span class="default">$default_value</span><span class="keyword">=</span><span class="string">"undefined"</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$result </span><span class="keyword">= </span><span class="default">mysql_query</span><span class="keyword">(</span><span class="default">$query</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; if (</span><span class="default">mysql_num_rows</span><span class="keyword">(</span><span class="default">$result</span><span class="keyword">)==</span><span class="default">0</span><span class="keyword">)<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">$default_value</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; else<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">mysql_result</span><span class="keyword">(</span><span class="default">$result</span><span class="keyword">,</span><span class="default">0</span><span class="keyword">);<br />
+}<br />
+<br />
+function </span><span class="default">mysql_evaluate_array</span><span class="keyword">(</span><span class="default">$query</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$result </span><span class="keyword">= </span><span class="default">mysql_query</span><span class="keyword">(</span><span class="default">$query</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$values </span><span class="keyword">= array();<br />
+&nbsp;&nbsp;&nbsp; for (</span><span class="default">$i</span><span class="keyword">=</span><span class="default">0</span><span class="keyword">; </span><span class="default">$i</span><span class="keyword">&lt;</span><span class="default">mysql_num_rows</span><span class="keyword">(</span><span class="default">$result</span><span class="keyword">); ++</span><span class="default">$i</span><span class="keyword">)<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">array_push</span><span class="keyword">(</span><span class="default">$values</span><span class="keyword">, </span><span class="default">mysql_result</span><span class="keyword">(</span><span class="default">$result</span><span class="keyword">,</span><span class="default">$i</span><span class="keyword">));<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">$values</span><span class="keyword">;<br />
+}<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+<a href="http://tora.us.fm/_script/highlight.php?file=sql" rel="nofollow" target="_blank">http://tora.us.fm/_script/highlight.php?file=sql</a><br />
+<br />
+Usage examples:<br />
+<br />
+<span class="default">&lt;?php<br />
+&nbsp;$customer_count </span><span class="keyword">= </span><span class="default">mysql_evaluate</span><span class="keyword">(</span><span class="string">"SELECT COUNT(*) FROM customers"</span><span class="keyword">);<br />
+&nbsp;</span><span class="default">$customer_names </span><span class="keyword">= </span><span class="default">mysql_evaluate_array</span><span class="keyword">(</span><span class="string">"SELECT name FROM customers"</span><span class="keyword">);<br />
+<br />
+</span><span class="default">$customer_type </span><span class="keyword">= </span><span class="default">mysql_evaluate</span><span class="keyword">(</span><span class="string">"SELECT type FROM customers WHERE name='</span><span class="default">$name</span><span class="string">'"</span><span class="keyword">, </span><span class="string">"DEFAULT_TYPE"</span><span class="keyword">);<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="68212""></a>
+  <div class="note">
+   <strong class="user">gack at bar dot foo</strong>
+   <a href="#68212" class="date">18-Jul-2006 07:42</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+if you want to do something based on the fact that the data is the same in the next row, then looking ahead is easy with this.<br />
+<br />
+<span class="default">&lt;?php<br />
+$i</span><span class="keyword">=</span><span class="default">0</span><span class="keyword">;<br />
+</span><span class="default">$rows</span><span class="keyword">=</span><span class="default">mysql_num_rows</span><span class="keyword">(</span><span class="default">$result</span><span class="keyword">);<br />
+while(</span><span class="default">$i </span><span class="keyword">&lt; </span><span class="default">$rows</span><span class="keyword">) {<br />
+&nbsp;</span><span class="default">$x </span><span class="keyword">= </span><span class="default">mysql_result</span><span class="keyword">(</span><span class="default">$result</span><span class="keyword">, </span><span class="default">$i</span><span class="keyword">, </span><span class="default">0</span><span class="keyword">);<br />
+&nbsp;if (</span><span class="default">$x </span><span class="keyword">= </span><span class="default">mysql_result</span><span class="keyword">(</span><span class="default">$result</span><span class="keyword">, </span><span class="default">$i</span><span class="keyword">+</span><span class="default">1</span><span class="keyword">, </span><span class="default">0</span><span class="keyword">)) {<br />
+&nbsp; echo </span><span class="string">"It's the same thing!"</span><span class="keyword">;<br />
+&nbsp;}<br />
+}<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="35211""></a>
+  <div class="note">
+   <strong class="user">raz0 at NOSPAM dot worldonline dot dk</strong>
+   <a href="#35211" class="date">23-Aug-2003 10:42</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+If you want to fetch the result from a mysql query similar to one of these two queries...<br />
+<br />
+$query = mysql_query("SELECT COUNT(*) FROM table");<br />
+$query = mysql_query("SELECT LAST_INSERT_ID()");<br />
+<br />
+... you would use mysql_result() like shown below to retrieve the output as an int.<br />
+<br />
+$result = mysql_result($query, 0, 0);</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="function.mysql-real-escape-string.html">mysql_real_escape_string</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.mysql-select-db.html">mysql_select_db</a></div>
  <div class="up"><a href="ref.mysql.html">MySQL Functions</a></div>

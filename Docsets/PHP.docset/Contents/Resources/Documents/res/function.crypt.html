@@ -286,7 +286,487 @@ SHA-512:      $6$rounds=5000$usesomesillystri$D4IrlXatmP7rx3P3InaxBeoomnAihCKRVQ
  </div>
 
  
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="105949""></a>
+  <div class="note">
+   <strong class="user">harry at simans dot net</strong>
+   <a href="#105949" class="date">27-Sep-2011 04:34</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I made a nice little wrapper function for crypt():<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">function </span><span class="default">hasher</span><span class="keyword">(</span><span class="default">$info</span><span class="keyword">, </span><span class="default">$encdata </span><span class="keyword">= </span><span class="default">false</span><span class="keyword">)<br />
+{<br />
+&nbsp; </span><span class="default">$strength </span><span class="keyword">= </span><span class="string">"08"</span><span class="keyword">;<br />
+&nbsp; </span><span class="comment">//if encrypted data is passed, check it against input ($info)<br />
+&nbsp; </span><span class="keyword">if (</span><span class="default">$encdata</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; if (</span><span class="default">substr</span><span class="keyword">(</span><span class="default">$encdata</span><span class="keyword">, </span><span class="default">0</span><span class="keyword">, </span><span class="default">60</span><span class="keyword">) == </span><span class="default">crypt</span><span class="keyword">(</span><span class="default">$info</span><span class="keyword">, </span><span class="string">"$2a$"</span><span class="keyword">.</span><span class="default">$strength</span><span class="keyword">.</span><span class="string">"$"</span><span class="keyword">.</span><span class="default">substr</span><span class="keyword">(</span><span class="default">$encdata</span><span class="keyword">, </span><span class="default">60</span><span class="keyword">))) {<br />
+&nbsp;&nbsp; &nbsp;&nbsp; return </span><span class="default">true</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; else {<br />
+&nbsp;&nbsp; &nbsp;&nbsp; return </span><span class="default">false</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp; }<br />
+&nbsp; else {<br />
+&nbsp; </span><span class="comment">//make a salt and hash it with input, and add salt to end<br />
+&nbsp; </span><span class="default">$salt </span><span class="keyword">= </span><span class="string">""</span><span class="keyword">;<br />
+&nbsp; for (</span><span class="default">$i </span><span class="keyword">= </span><span class="default">0</span><span class="keyword">; </span><span class="default">$i </span><span class="keyword">&lt; </span><span class="default">22</span><span class="keyword">; </span><span class="default">$i</span><span class="keyword">++) {<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$salt </span><span class="keyword">.= </span><span class="default">substr</span><span class="keyword">(</span><span class="string">"./ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"</span><span class="keyword">, </span><span class="default">mt_rand</span><span class="keyword">(</span><span class="default">0</span><span class="keyword">, </span><span class="default">63</span><span class="keyword">), </span><span class="default">1</span><span class="keyword">);<br />
+&nbsp; }<br />
+&nbsp; </span><span class="comment">//return 82 char string (60 char hash &amp; 22 char salt)<br />
+</span><span class="keyword">return </span><span class="default">crypt</span><span class="keyword">(</span><span class="default">$info</span><span class="keyword">, </span><span class="string">"$2a$"</span><span class="keyword">.</span><span class="default">$strength</span><span class="keyword">.</span><span class="string">"$"</span><span class="keyword">.</span><span class="default">$salt</span><span class="keyword">).</span><span class="default">$salt</span><span class="keyword">;<br />
+}<br />
+}<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+This wrapper will accept a string as input and hash it, and output the hash result of the string and salt together, plus the salt added on the end. You can then store that output in a db, and pass it on to the function as the 2nd parameter when you go to verify it, along with the user input or whatever as the first.<br />
+<br />
+Examples:<br />
+<br />
+<span class="default">&lt;?php<br />
+$hash </span><span class="keyword">= </span><span class="default">hasher</span><span class="keyword">(</span><span class="default">$userinput</span><span class="keyword">);<br />
+if (</span><span class="default">$hash </span><span class="keyword">== </span><span class="default">hasher</span><span class="keyword">(</span><span class="default">$userinput</span><span class="keyword">, </span><span class="default">$hash</span><span class="keyword">) {</span><span class="comment">//authed}<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+Neat huh?</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="105871""></a>
+  <div class="note">
+   <strong class="user">eleljrk at gmail dot com</strong>
+   <a href="#105871" class="date">21-Sep-2011 11:23</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I've seen many CRYPT_BLOWFISH salt generators, but none REALLY go into the depth of it. This give you a RANDOM string of 22 characters, the string can contain ANY OF THE ALLOWED characters for the salt. I wont claim this the best solution, but this is fairly much everything you can do with a random salt generator.<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+</span><span class="keyword">public function </span><span class="default">getSalt</span><span class="keyword">() {<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$c </span><span class="keyword">= </span><span class="default">explode</span><span class="keyword">(</span><span class="string">" "</span><span class="keyword">, </span><span class="string">". / a A b B c C d D e E f F g G h H i I j J k K l L m M n N o O p P q Q r R s S t T u U v V w W x X y Y z Z 0 1 2 3 4 5 6 7 8 9"</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$ks </span><span class="keyword">= </span><span class="default">array_rand</span><span class="keyword">(</span><span class="default">$c</span><span class="keyword">, </span><span class="default">22</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$s </span><span class="keyword">= </span><span class="string">""</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; foreach(</span><span class="default">$ks </span><span class="keyword">as </span><span class="default">$k</span><span class="keyword">) { </span><span class="default">$s </span><span class="keyword">.= </span><span class="default">$c</span><span class="keyword">[</span><span class="default">$k</span><span class="keyword">]; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">$s</span><span class="keyword">;<br />
+<br />
+}<br />
+<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+Take note that every allowed character is inside the $c variable, $s is the salt, $ks is for keys to use in salt and $k is key. There is probably a better and shorter script out there, but this is solid enough for me.<br />
+<br />
+Have fun with the code.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="102278""></a>
+  <div class="note">
+   <strong class="user">kaminski at istori dot com</strong>
+   <a href="#102278" class="date">05-Feb-2011 03:43</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Here is an expression to generate pseudorandom salt for the CRYPT_BLOWFISH hash type:<br />
+<br />
+<span class="default">&lt;?php $salt </span><span class="keyword">= </span><span class="default">substr</span><span class="keyword">(</span><span class="default">str_replace</span><span class="keyword">(</span><span class="string">'+'</span><span class="keyword">, </span><span class="string">'.'</span><span class="keyword">, </span><span class="default">base64_encode</span><span class="keyword">(</span><span class="default">pack</span><span class="keyword">(</span><span class="string">'N4'</span><span class="keyword">, </span><span class="default">mt_rand</span><span class="keyword">(), </span><span class="default">mt_rand</span><span class="keyword">(), </span><span class="default">mt_rand</span><span class="keyword">(), </span><span class="default">mt_rand</span><span class="keyword">()))), </span><span class="default">0</span><span class="keyword">, </span><span class="default">22</span><span class="keyword">); </span><span class="default">?&gt;<br />
+</span><br />
+It is intended for use on systems where mt_getrandmax() == 2147483647.<br />
+<br />
+The salt created will be 128 bits in length, padded to 132 bits and then expressed in 22 base64 characters.&nbsp; (CRYPT_BLOWFISH only uses 128 bits for the salt, even though there are 132 bits in 22 base64 characters.&nbsp; If you examine the CRYPT_BLOWFISH input and output, you can see that it ignores the last four bits on input, and sets them to zero on output.)<br />
+<br />
+Note that the high-order bits of the four 32-bit dwords returned by mt_rand() will always be zero (since mt_getrandmax == 2^31), so only 124 of the 128 bits will be pseudorandom.&nbsp; I found that acceptable for my application.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="101565""></a>
+  <div class="note">
+   <strong class="user">Robin Leffmann</strong>
+   <a href="#101565" class="date">25-Dec-2010 06:23</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+The salts for crypt() must follow the usual base64 ASCII pattern (./0-9A-Za-z only), but the payload string can contain any binary data.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="95579""></a>
+  <div class="note">
+   <strong class="user">Thomas Praxl</strong>
+   <a href="#95579" class="date">10-Jan-2010 09:28</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Note that crypt can cause hangs on Windows OS when used with a salt. This applies only to certain circumstances.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="93171""></a>
+  <div class="note">
+   <strong class="user">php at nospam dot nowhere dot com</strong>
+   <a href="#93171" class="date">26-Aug-2009 07:21</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+The makesalt() function code below when used to create an MD5 salt, produces a salt with characters not typically in a salt used by operating system crypt functions.&nbsp; Some of these characters may have unintended side effects depending on how they are used - including the following: @ ` ~ \ | {}.<br />
+<br />
+I am using the following to create MD5-Crypt hashes, (yes, I am assuming CRYPT_MD5 support is present).<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">function </span><span class="default">md5crypt</span><span class="keyword">(</span><span class="default">$password</span><span class="keyword">){<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// create a salt that ensures crypt creates an md5 hash<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$base64_alphabet</span><span class="keyword">=</span><span class="string">'ABCDEFGHIJKLMNOPQRSTUVWXYZ'<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">.</span><span class="string">'abcdefghijklmnopqrstuvwxyz0123456789+/'</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$salt</span><span class="keyword">=</span><span class="string">'$1$'</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; for(</span><span class="default">$i</span><span class="keyword">=</span><span class="default">0</span><span class="keyword">; </span><span class="default">$i</span><span class="keyword">&lt;</span><span class="default">9</span><span class="keyword">; </span><span class="default">$i</span><span class="keyword">++){<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$salt</span><span class="keyword">.=</span><span class="default">$base64_alphabet</span><span class="keyword">[</span><span class="default">rand</span><span class="keyword">(</span><span class="default">0</span><span class="keyword">,</span><span class="default">63</span><span class="keyword">)];<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// return the crypt md5 password<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">return </span><span class="default">crypt</span><span class="keyword">(</span><span class="default">$password</span><span class="keyword">,</span><span class="default">$salt</span><span class="keyword">.</span><span class="string">'$'</span><span class="keyword">);<br />
+}<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="76401""></a>
+  <div class="note">
+   <strong class="user">addiakogiannis at isds dot gr</strong>
+   <a href="#76401" class="date">13-Jul-2007 03:46</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Two siple functions for encrypting and decrypting with RIJNDAEL 256<br />
+<br />
+function RIJNDAEL_encrypt($text){<br />
+<br />
+&nbsp;&nbsp;&nbsp; $iv_size = mcrypt_get_iv_size(MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB);<br />
+&nbsp;&nbsp;&nbsp; $iv = mcrypt_create_iv($iv_size, MCRYPT_RAND);<br />
+&nbsp;&nbsp;&nbsp; $key = "This is a very secret key";<br />
+&nbsp;&nbsp;&nbsp; return base64_encode(mcrypt_encrypt(MCRYPT_RIJNDAEL_256, $key, $text, MCRYPT_MODE_ECB, $iv));<br />
+&nbsp;&nbsp;&nbsp; <br />
+}<br />
+<br />
+function RIJNDAEL_decrypt($text){<br />
+<br />
+&nbsp;&nbsp;&nbsp; $iv_size = mcrypt_get_iv_size(MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB);<br />
+&nbsp;&nbsp;&nbsp; $iv = mcrypt_create_iv($iv_size, MCRYPT_RAND);<br />
+&nbsp;&nbsp;&nbsp; $key = "This is a very secret key";<br />
+&nbsp; //I used trim to remove trailing spaces<br />
+return trim(mcrypt_decrypt(MCRYPT_RIJNDAEL_256, $key, base64_decode($text), MCRYPT_MODE_ECB, $iv));<br />
+&nbsp;&nbsp;&nbsp; <br />
+}<br />
+<br />
+//example<br />
+echo RIJNDAEL_decrypt(RIJNDAEL_encrypt('Her name was lola!'));</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="74344""></a>
+  <div class="note">
+   <strong class="user">leth at nowhere dot not</strong>
+   <a href="#74344" class="date">06-Apr-2007 07:51</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+for me(on OpenBSD4.0+Apache 1.3(standard)+php4.3.10) blowfish seems to work if you do something like this:<br />
+<br />
+&nbsp;&nbsp;&nbsp; if (CRYPT_BLOWFISH == 1)<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $salt="this should really be a long line of salt";<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $blowfish_salt = "\$2a\$07\$".substr($salt, 0, CRYPT_SALT_LENGTH);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; echo crypt($pass, $blowfish_salt);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+of course with $salt set as a good long salt.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="74338""></a>
+  <div class="note">
+   <strong class="user">Jou</strong>
+   <a href="#74338" class="date">06-Apr-2007 01:52</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I found out that you can use php:s crypt function to change&nbsp; the user/root password in Linux distributions (at least in Slackware).<br />
+<br />
+You just have to change the encrypted password for the user in the /etc/shadow file with the output from crypt("newpassword");</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="73619""></a>
+  <div class="note">
+   <strong class="user">mikey_nich (at) hotmÃ¡il . com</strong>
+   <a href="#73619" class="date">04-Mar-2007 07:47</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Are you using Apache2 on f.i. WinXP and want to create .htpasswd files via php? Then you need to use the APR1-MD5 encryption method. Here is a function for that:<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+</span><span class="keyword">function </span><span class="default">crypt_apr1_md5</span><span class="keyword">(</span><span class="default">$plainpasswd</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$salt </span><span class="keyword">= </span><span class="default">substr</span><span class="keyword">(</span><span class="default">str_shuffle</span><span class="keyword">(</span><span class="string">"abcdefghijklmnopqrstuvwxyz0123456789"</span><span class="keyword">), </span><span class="default">0</span><span class="keyword">, </span><span class="default">8</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$len </span><span class="keyword">= </span><span class="default">strlen</span><span class="keyword">(</span><span class="default">$plainpasswd</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$text </span><span class="keyword">= </span><span class="default">$plainpasswd</span><span class="keyword">.</span><span class="string">'$apr1$'</span><span class="keyword">.</span><span class="default">$salt</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$bin </span><span class="keyword">= </span><span class="default">pack</span><span class="keyword">(</span><span class="string">"H32"</span><span class="keyword">, </span><span class="default">md5</span><span class="keyword">(</span><span class="default">$plainpasswd</span><span class="keyword">.</span><span class="default">$salt</span><span class="keyword">.</span><span class="default">$plainpasswd</span><span class="keyword">));<br />
+&nbsp;&nbsp;&nbsp; for(</span><span class="default">$i </span><span class="keyword">= </span><span class="default">$len</span><span class="keyword">; </span><span class="default">$i </span><span class="keyword">&gt; </span><span class="default">0</span><span class="keyword">; </span><span class="default">$i </span><span class="keyword">-= </span><span class="default">16</span><span class="keyword">) { </span><span class="default">$text </span><span class="keyword">.= </span><span class="default">substr</span><span class="keyword">(</span><span class="default">$bin</span><span class="keyword">, </span><span class="default">0</span><span class="keyword">, </span><span class="default">min</span><span class="keyword">(</span><span class="default">16</span><span class="keyword">, </span><span class="default">$i</span><span class="keyword">)); }<br />
+&nbsp;&nbsp;&nbsp; for(</span><span class="default">$i </span><span class="keyword">= </span><span class="default">$len</span><span class="keyword">; </span><span class="default">$i </span><span class="keyword">&gt; </span><span class="default">0</span><span class="keyword">; </span><span class="default">$i </span><span class="keyword">&gt;&gt;= </span><span class="default">1</span><span class="keyword">) { </span><span class="default">$text </span><span class="keyword">.= (</span><span class="default">$i </span><span class="keyword">&amp; </span><span class="default">1</span><span class="keyword">) ? </span><span class="default">chr</span><span class="keyword">(</span><span class="default">0</span><span class="keyword">) : </span><span class="default">$plainpasswd</span><span class="keyword">{</span><span class="default">0</span><span class="keyword">}; }<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$bin </span><span class="keyword">= </span><span class="default">pack</span><span class="keyword">(</span><span class="string">"H32"</span><span class="keyword">, </span><span class="default">md5</span><span class="keyword">(</span><span class="default">$text</span><span class="keyword">));<br />
+&nbsp;&nbsp;&nbsp; for(</span><span class="default">$i </span><span class="keyword">= </span><span class="default">0</span><span class="keyword">; </span><span class="default">$i </span><span class="keyword">&lt; </span><span class="default">1000</span><span class="keyword">; </span><span class="default">$i</span><span class="keyword">++) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$new </span><span class="keyword">= (</span><span class="default">$i </span><span class="keyword">&amp; </span><span class="default">1</span><span class="keyword">) ? </span><span class="default">$plainpasswd </span><span class="keyword">: </span><span class="default">$bin</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if (</span><span class="default">$i </span><span class="keyword">% </span><span class="default">3</span><span class="keyword">) </span><span class="default">$new </span><span class="keyword">.= </span><span class="default">$salt</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if (</span><span class="default">$i </span><span class="keyword">% </span><span class="default">7</span><span class="keyword">) </span><span class="default">$new </span><span class="keyword">.= </span><span class="default">$plainpasswd</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$new </span><span class="keyword">.= (</span><span class="default">$i </span><span class="keyword">&amp; </span><span class="default">1</span><span class="keyword">) ? </span><span class="default">$bin </span><span class="keyword">: </span><span class="default">$plainpasswd</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$bin </span><span class="keyword">= </span><span class="default">pack</span><span class="keyword">(</span><span class="string">"H32"</span><span class="keyword">, </span><span class="default">md5</span><span class="keyword">(</span><span class="default">$new</span><span class="keyword">));<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; for (</span><span class="default">$i </span><span class="keyword">= </span><span class="default">0</span><span class="keyword">; </span><span class="default">$i </span><span class="keyword">&lt; </span><span class="default">5</span><span class="keyword">; </span><span class="default">$i</span><span class="keyword">++) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$k </span><span class="keyword">= </span><span class="default">$i </span><span class="keyword">+ </span><span class="default">6</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$j </span><span class="keyword">= </span><span class="default">$i </span><span class="keyword">+ </span><span class="default">12</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if (</span><span class="default">$j </span><span class="keyword">== </span><span class="default">16</span><span class="keyword">) </span><span class="default">$j </span><span class="keyword">= </span><span class="default">5</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$tmp </span><span class="keyword">= </span><span class="default">$bin</span><span class="keyword">[</span><span class="default">$i</span><span class="keyword">].</span><span class="default">$bin</span><span class="keyword">[</span><span class="default">$k</span><span class="keyword">].</span><span class="default">$bin</span><span class="keyword">[</span><span class="default">$j</span><span class="keyword">].</span><span class="default">$tmp</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$tmp </span><span class="keyword">= </span><span class="default">chr</span><span class="keyword">(</span><span class="default">0</span><span class="keyword">).</span><span class="default">chr</span><span class="keyword">(</span><span class="default">0</span><span class="keyword">).</span><span class="default">$bin</span><span class="keyword">[</span><span class="default">11</span><span class="keyword">].</span><span class="default">$tmp</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$tmp </span><span class="keyword">= </span><span class="default">strtr</span><span class="keyword">(</span><span class="default">strrev</span><span class="keyword">(</span><span class="default">substr</span><span class="keyword">(</span><span class="default">base64_encode</span><span class="keyword">(</span><span class="default">$tmp</span><span class="keyword">), </span><span class="default">2</span><span class="keyword">)),<br />
+&nbsp;&nbsp;&nbsp; </span><span class="string">"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"</span><span class="keyword">,<br />
+&nbsp;&nbsp;&nbsp; </span><span class="string">"./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="string">"$"</span><span class="keyword">.</span><span class="string">"apr1"</span><span class="keyword">.</span><span class="string">"$"</span><span class="keyword">.</span><span class="default">$salt</span><span class="keyword">.</span><span class="string">"$"</span><span class="keyword">.</span><span class="default">$tmp</span><span class="keyword">;<br />
+}<br />
+<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="71748""></a>
+  <div class="note">
+   <strong class="user">tserong at sgi dot com</strong>
+   <a href="#71748" class="date">14-Dec-2006 12:18</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Blowfish doesn't use a sixteen character salt, it uses sixteen *bytes* of salt.&nbsp; So (courtesy of the docs for the Crypt::Eksblowfish::Bcrypt Perl module), it's:<br />
+<br />
+&nbsp;&nbsp;&nbsp; "$2", optional "a", "$", two digits, "$", and 22 base 64 digits<br />
+<br />
+If the salt is not long enough, crypt will return "*0" and you will have no idea what is wrong.&nbsp; Interestingly, the example in the documentation with a trailing '$' in the salt does not work.&nbsp; Replace the '$' with a '.', and the output appears as advertised.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="69808""></a>
+  <div class="note">
+   <strong class="user">picolobo at pilab dot dyndns dot org</strong>
+   <a href="#69808" class="date">21-Sep-2006 01:49</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I had problems with ENCRYPT MySQL function when i tried to compare with the encrypted password (with ENCRYPT).<br />
+<br />
+Another solution i read from "UNIX Advanced programming" where i found about the UNIX system call "crypt()":<br />
+<br />
+Password="tB" //The two first letters of encrypted password<br />
+<br />
+SELECT password from users where Password=ENCRYPT('".$_POST['password']."',Password)<br />
+<br />
+mysql&gt; select password from users where password=encrypt('pasword','tB');<br />
++---------------+<br />
+| password&nbsp; &nbsp; &nbsp; |<br />
++---------------+<br />
+| tBY8OVuabSiTU |<br />
++---------------+<br />
+1 row in set (0.01 sec)<br />
+<br />
+Bye.<br />
+<br />
+&gt; topace at lightbox dot org<br />
+&gt; 22-Sep-2005 06:34<br />
+&gt;<br />
+&gt; To authenticate against a stored crypt in MySQL, simply use:<br />
+&gt;<br />
+&gt; SELECT ................<br />
+&gt;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; AND Password=ENCRYPT('".$_POST['password']."',Password)</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="60056""></a>
+  <div class="note">
+   <strong class="user">solar at openwall dot com</strong>
+   <a href="#60056" class="date">23-Dec-2005 11:20</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+With different password hashing methods supported on different systems and with the need to generate salts with your own PHP code in order to use the more advanced / more secure methods, it takes special knowledge to use crypt() optimally, producing strong password hashes.&nbsp; Other message digest / hashing functions supported by PHP, such as md5() and sha1(), are really no good for password hashing if used naively, resulting in hashes which may be brute-forced at rates much higher than those possible for hashes produced by crypt().<br />
+<br />
+I have implemented a PHP password hashing framework (in PHP, tested with all of PHP 3, 4, and 5) which hides the complexity from your PHP applications (no need for you to worry about salts, etc.), yet does things in almost the best way possible given the constraints of the available functions.&nbsp; The homepage for the framework is:<br />
+<br />
+<a href="http://www.openwall.com/phpass/" rel="nofollow" target="_blank">http://www.openwall.com/phpass/</a><br />
+<br />
+I have placed this code in the public domain, so there are no copyrights or licensing restrictions to worry about.<br />
+<br />
+P.S. I have 10 years of experience in password (in)security and I've developed several other password security tools and libraries.&nbsp; So most people can feel confident they're getting this done better by using my framework than they could have done it on their own.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="58805""></a>
+  <div class="note">
+   <strong class="user">hotdog (at) gmx (dot) net</strong>
+   <a href="#58805" class="date">16-Nov-2005 07:34</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+WRONG:<br />
+<br />
+$mypassword = "toto";<br />
+$smd5_pass = "{SMD5}......." // in openldap<br />
+<br />
+if (preg_match ("/{SMD5}/i", $smd5_pass))<br />
+&nbsp;{<br />
+&nbsp; $encrypted = substr($md5_pass, 6);<br />
+&nbsp; $hash = base64_decode($encrypted);<br />
+&nbsp; $salt = substr($hash,16);<br />
+&nbsp; $mhashed =&nbsp; mhash(MHASH_MD5, $mypassword . $salt) ;<br />
+&nbsp; $without_salt = explode($salt,$hash_hex);<br />
+&nbsp;&nbsp; if ($without_salt[0] == $mhashed) {<br />
+&nbsp;&nbsp;&nbsp; echo "Password verified &lt;br&gt;";<br />
+&nbsp;&nbsp;&nbsp; } else {<br />
+&nbsp;&nbsp;&nbsp; echo "Password Not verified&lt;br&gt;";<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;}<br />
+<br />
+$without_salt = explode($salt,$hash_hex); should be $without_salt = explode($salt,$hash); <br />
+<br />
+RIGHT:<br />
+<br />
+$mypassword = "toto";<br />
+$smd5_pass = "{SMD5}......." // in openldap<br />
+<br />
+if (preg_match ("/{SMD5}/i", $smd5_pass))<br />
+&nbsp;{<br />
+&nbsp; $encrypted = substr($md5_pass, 6);<br />
+&nbsp; $hash = base64_decode($encrypted);<br />
+&nbsp; $salt = substr($hash,16);<br />
+&nbsp; $mhashed =&nbsp; mhash(MHASH_MD5, $mypassword . $salt) ;<br />
+&nbsp; $without_salt = explode($salt,$hash);<br />
+&nbsp;&nbsp; if ($without_salt[0] == $mhashed) {<br />
+&nbsp;&nbsp;&nbsp; echo "Password verified &lt;br&gt;";<br />
+&nbsp;&nbsp;&nbsp; } else {<br />
+&nbsp;&nbsp;&nbsp; echo "Password Not verified&lt;br&gt;";<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;}</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="52862""></a>
+  <div class="note">
+   <strong class="user">Vlad Alexa Mancini mancin at nextcode dot org</strong>
+   <a href="#52862" class="date">15-May-2005 01:57</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+cleaner version of shadow() and with more ascii chars<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+</span><span class="keyword">function </span><span class="default">shadow </span><span class="keyword">(</span><span class="default">$input</span><span class="keyword">){<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; for (</span><span class="default">$n </span><span class="keyword">= </span><span class="default">0</span><span class="keyword">; </span><span class="default">$n </span><span class="keyword">&lt; </span><span class="default">9</span><span class="keyword">; </span><span class="default">$n</span><span class="keyword">++){<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$s </span><span class="keyword">.= </span><span class="default">chr</span><span class="keyword">(</span><span class="default">rand</span><span class="keyword">(</span><span class="default">64</span><span class="keyword">,</span><span class="default">126</span><span class="keyword">));<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; </span><span class="default">$seed </span><span class="keyword">=&nbsp; </span><span class="string">"$1$"</span><span class="keyword">.</span><span class="default">$s</span><span class="keyword">.</span><span class="string">"$"</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; </span><span class="default">$return </span><span class="keyword">= </span><span class="default">crypt</span><span class="keyword">(</span><span class="default">$input</span><span class="keyword">,</span><span class="default">$seed</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">$return</span><span class="keyword">;<br />
+}<br />
+<br />
+&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="45350""></a>
+  <div class="note">
+   <strong class="user">thorhajo at gmail dot com</strong>
+   <a href="#45350" class="date">02-Sep-2004 03:34</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Here's a little function I wrote to generate MD5 password hashes in the format they're found in /etc/shadow:<br />
+<br />
+function shadow($password)<br />
+{<br />
+&nbsp; $hash = '';<br />
+&nbsp; for($i=0;$i&lt;8;$i++)<br />
+&nbsp; {<br />
+&nbsp;&nbsp;&nbsp; $j = mt_rand(0,53);<br />
+&nbsp;&nbsp;&nbsp; if($j&lt;26)$hash .= chr(rand(65,90));<br />
+&nbsp;&nbsp;&nbsp; else if($j&lt;52)$hash .= chr(rand(97,122));<br />
+&nbsp;&nbsp;&nbsp; else if($j&lt;53)$hash .= '.';<br />
+&nbsp;&nbsp;&nbsp; else $hash .= '/';<br />
+&nbsp; }<br />
+&nbsp; return crypt($password,'$1$'.$hash.'$');<br />
+}<br />
+<br />
+I've written this so that each character in the a-zA-Z./ set has a 1/54 of a chance of being selected (26 + 26 + 2 = 54), thus being statistically even.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="43821""></a>
+  <div class="note">
+   <strong class="user">aidan at php dot net</strong>
+   <a href="#43821" class="date">05-Jul-2004 07:52</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Text_Password allows one to create pronounceable and unpronounceable passwords.<br />
+<br />
+<a href="http://pear.php.net/package/text_password" rel="nofollow" target="_blank">http://pear.php.net/package/text_password</a></span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="function.crc32.html">crc32</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.echo.html">echo</a></div>
  <div class="up"><a href="ref.strings.html">String Functions</a></div>

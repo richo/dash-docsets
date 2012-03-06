@@ -642,6 +642,685 @@
   given parameters, and waits for completion.</li><li><a href="function.pg-put-line.html">pg_put_line</a> â€” Send a NULL-terminated string to PostgreSQL backend</li><li><a href="function.pg-query-params.html">pg_query_params</a> â€” Submits a command to the server and waits for the result, with the ability to pass parameters separately from the SQL command text.</li><li><a href="function.pg-query.html">pg_query</a> â€” Execute a query</li><li><a href="function.pg-result-error-field.html">pg_result_error_field</a> â€” Returns an individual field of an error report.</li><li><a href="function.pg-result-error.html">pg_result_error</a> â€” Get error message associated with result</li><li><a href="function.pg-result-seek.html">pg_result_seek</a> â€” Set internal row offset in result resource</li><li><a href="function.pg-result-status.html">pg_result_status</a> â€” Get status of query result</li><li><a href="function.pg-select.html">pg_select</a> â€” Select records</li><li><a href="function.pg-send-execute.html">pg_send_execute</a> â€” Sends a request to execute a prepared statement with given parameters, without waiting for the result(s).</li><li><a href="function.pg-send-prepare.html">pg_send_prepare</a> â€” Sends a request to create a prepared statement with the given parameters, without waiting for completion.</li><li><a href="function.pg-send-query-params.html">pg_send_query_params</a> â€” Submits a command and separate parameters to the server without waiting for the result(s).</li><li><a href="function.pg-send-query.html">pg_send_query</a> â€” Sends asynchronous query</li><li><a href="function.pg-set-client-encoding.html">pg_set_client_encoding</a> â€” Set the client encoding</li><li><a href="function.pg-set-error-verbosity.html">pg_set_error_verbosity</a> â€” Determines the verbosity of messages returned by pg_last_error 
    and pg_result_error.</li><li><a href="function.pg-trace.html">pg_trace</a> â€” Enable tracing a PostgreSQL connection</li><li><a href="function.pg-transaction-status.html">pg_transaction_status</a> â€” Returns the current in-transaction status of the server.</li><li><a href="function.pg-tty.html">pg_tty</a> â€” Return the TTY name associated with the connection</li><li><a href="function.pg-unescape-bytea.html">pg_unescape_bytea</a> â€” Unescape binary for bytea type</li><li><a href="function.pg-untrace.html">pg_untrace</a> â€” Disable tracing of a PostgreSQL connection</li><li><a href="function.pg-update.html">pg_update</a> â€” Update table</li><li><a href="function.pg-version.html">pg_version</a> â€” Returns an array with client, protocol and server version (when available)</li></ul>
 </div>
+<div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="89841""></a>
+  <div class="note">
+   <strong class="user">cc[plus]php[at]c2se[dot]com</strong>
+   <a href="#89841" class="date">25-Mar-2009 09:12</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Parsing a postgres array can be a tricky problem, he's my take on this, it handles multi-dimensional arrays plus escaping using a nasty regexp to determine the limits of each data-item.<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">function </span><span class="default">pg_array_parse</span><span class="keyword">( </span><span class="default">$text</span><span class="keyword">, &amp;</span><span class="default">$output</span><span class="keyword">, </span><span class="default">$limit </span><span class="keyword">= </span><span class="default">false</span><span class="keyword">, </span><span class="default">$offset </span><span class="keyword">= </span><span class="default">1 </span><span class="keyword">)<br />
+{<br />
+&nbsp; if( </span><span class="default">false </span><span class="keyword">=== </span><span class="default">$limit </span><span class="keyword">)<br />
+&nbsp; {<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$limit </span><span class="keyword">= </span><span class="default">strlen</span><span class="keyword">( </span><span class="default">$text </span><span class="keyword">)-</span><span class="default">1</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$output </span><span class="keyword">= array();<br />
+&nbsp; }<br />
+&nbsp; if( </span><span class="string">'{}' </span><span class="keyword">!= </span><span class="default">$text </span><span class="keyword">)<br />
+&nbsp;&nbsp;&nbsp; do<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp;&nbsp; if( </span><span class="string">'{' </span><span class="keyword">!= </span><span class="default">$text</span><span class="keyword">{</span><span class="default">$offset</span><span class="keyword">} )<br />
+&nbsp;&nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">preg_match</span><span class="keyword">( </span><span class="string">"/(\\{?\"([^\"\\\\]|\\\\.)*\"|[^,{}]+)+([,}]+)/"</span><span class="keyword">, </span><span class="default">$text</span><span class="keyword">, </span><span class="default">$match</span><span class="keyword">, </span><span class="default">0</span><span class="keyword">, </span><span class="default">$offset </span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$offset </span><span class="keyword">+= </span><span class="default">strlen</span><span class="keyword">( </span><span class="default">$match</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">] );<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$output</span><span class="keyword">[] = ( </span><span class="string">'"' </span><span class="keyword">!= </span><span class="default">$match</span><span class="keyword">[</span><span class="default">1</span><span class="keyword">]{</span><span class="default">0</span><span class="keyword">} ? </span><span class="default">$match</span><span class="keyword">[</span><span class="default">1</span><span class="keyword">] : </span><span class="default">stripcslashes</span><span class="keyword">( </span><span class="default">substr</span><span class="keyword">( </span><span class="default">$match</span><span class="keyword">[</span><span class="default">1</span><span class="keyword">], </span><span class="default">1</span><span class="keyword">, -</span><span class="default">1 </span><span class="keyword">) ) );<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if( </span><span class="string">'},' </span><span class="keyword">== </span><span class="default">$match</span><span class="keyword">[</span><span class="default">3</span><span class="keyword">] ) return </span><span class="default">$offset</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp;&nbsp; else&nbsp; </span><span class="default">$offset </span><span class="keyword">= </span><span class="default">pg_array_parse</span><span class="keyword">( </span><span class="default">$text</span><span class="keyword">, </span><span class="default">$output</span><span class="keyword">[], </span><span class="default">$limit</span><span class="keyword">, </span><span class="default">$offset</span><span class="keyword">+</span><span class="default">1 </span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; while( </span><span class="default">$limit </span><span class="keyword">&gt; </span><span class="default">$offset </span><span class="keyword">);<br />
+&nbsp; return </span><span class="default">$output</span><span class="keyword">;<br />
+}<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="87511""></a>
+  <div class="note">
+   <strong class="user">rainer at hihn dot org</strong>
+   <a href="#87511" class="date">08-Dec-2008 01:07</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+<span class="default">&lt;?php<br />
+</span><span class="keyword">function </span><span class="default">pg_export_table_content</span><span class="keyword">() {<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">/*<br />
+&nbsp;&nbsp; &nbsp;&nbsp; * this function exports all contents of all tables in the file import.sql<br />
+&nbsp;&nbsp; &nbsp;&nbsp; * $pg-&gt; = my postgres db class<br />
+&nbsp;&nbsp; &nbsp;&nbsp; */<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$tables </span><span class="keyword">= array();<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$mytables </span><span class="keyword">= array();<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$all_tables </span><span class="keyword">= </span><span class="default">$pg</span><span class="keyword">-&gt;</span><span class="default">query</span><span class="keyword">(</span><span class="string">"SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' and table_type = 'BASE TABLE';"</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; while(</span><span class="default">$row </span><span class="keyword">= </span><span class="default">$pg</span><span class="keyword">-&gt;</span><span class="default">fetch_row</span><span class="keyword">(</span><span class="default">$all_tables</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$tables</span><span class="keyword">[] = </span><span class="default">$row</span><span class="keyword">-&gt;</span><span class="default">table_name</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$esc</span><span class="keyword">[] = </span><span class="string">"value"</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$esc</span><span class="keyword">[] = </span><span class="string">"time"</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$esc</span><span class="keyword">[] = </span><span class="string">"order"</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$esc</span><span class="keyword">[] = </span><span class="string">"comment"</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$esc</span><span class="keyword">[] = </span><span class="string">"group"</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$esc</span><span class="keyword">[] = </span><span class="string">"time"</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$esc</span><span class="keyword">[] = </span><span class="string">"name"</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$esc</span><span class="keyword">[] = </span><span class="string">"alter"</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$esc</span><span class="keyword">[] = </span><span class="string">"user"</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; foreach(</span><span class="default">$tables </span><span class="keyword">as </span><span class="default">$v1</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$myqry </span><span class="keyword">= </span><span class="string">"select * from \""</span><span class="keyword">.</span><span class="default">$v1</span><span class="keyword">.</span><span class="string">"\""</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$myres </span><span class="keyword">= </span><span class="default">$pg</span><span class="keyword">-&gt;</span><span class="default">query</span><span class="keyword">(</span><span class="default">$myqry</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; while(</span><span class="default">$myrow </span><span class="keyword">= </span><span class="default">$pg</span><span class="keyword">-&gt;</span><span class="default">fetch_assoc</span><span class="keyword">(</span><span class="default">$myres</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$mytables</span><span class="keyword">[</span><span class="default">$v1</span><span class="keyword">][] = </span><span class="default">$myrow</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$handle </span><span class="keyword">= </span><span class="default">fopen</span><span class="keyword">(</span><span class="string">"./import.sql"</span><span class="keyword">, </span><span class="string">"w+"</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; foreach(</span><span class="default">$mytables </span><span class="keyword">as </span><span class="default">$k1 </span><span class="keyword">=&gt; </span><span class="default">$v1</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; foreach(</span><span class="default">$v1 </span><span class="keyword">as </span><span class="default">$k2 </span><span class="keyword">=&gt; </span><span class="default">$v2</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; foreach(</span><span class="default">$v2 </span><span class="keyword">as </span><span class="default">$k3 </span><span class="keyword">=&gt; </span><span class="default">$v3</span><span class="keyword">) {&nbsp; &nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if(</span><span class="default">in_array</span><span class="keyword">(</span><span class="default">$k3</span><span class="keyword">, </span><span class="default">$esc</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$mycols</span><span class="keyword">[] = </span><span class="string">"\""</span><span class="keyword">.</span><span class="default">$k3</span><span class="keyword">.</span><span class="string">"\""</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; else {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$mycols</span><span class="keyword">[] = </span><span class="default">$k3</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$col_qry </span><span class="keyword">= </span><span class="string">"select column_name, data_type from information_schema.columns where table_name = '"</span><span class="keyword">.</span><span class="default">$k1</span><span class="keyword">.</span><span class="string">"'"</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$col_res </span><span class="keyword">= </span><span class="default">$pg</span><span class="keyword">-&gt;</span><span class="default">query</span><span class="keyword">(</span><span class="default">$col_qry</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; while(</span><span class="default">$col_row </span><span class="keyword">= </span><span class="default">$pg</span><span class="keyword">-&gt;</span><span class="default">fetch_assoc</span><span class="keyword">(</span><span class="default">$col_res</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$mydatatypes</span><span class="keyword">[</span><span class="default">$col_row</span><span class="keyword">[</span><span class="string">"column_name"</span><span class="keyword">]] = </span><span class="default">$col_row</span><span class="keyword">[</span><span class="string">"data_type"</span><span class="keyword">];<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if((</span><span class="default">$mydatatypes</span><span class="keyword">[</span><span class="default">$k3</span><span class="keyword">] == </span><span class="string">"integer"</span><span class="keyword">) || (</span><span class="default">$mydatatypes</span><span class="keyword">[</span><span class="default">$k3</span><span class="keyword">] == </span><span class="string">"bigint"</span><span class="keyword">) || (</span><span class="default">$mydatatypes</span><span class="keyword">[</span><span class="default">$k3</span><span class="keyword">] == </span><span class="string">"smallint"</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if(empty(</span><span class="default">$v3</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$myval</span><span class="keyword">[] = </span><span class="string">"NULL"</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; else {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$myval</span><span class="keyword">[] = </span><span class="default">$v3</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; else {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$myval</span><span class="keyword">[] = </span><span class="string">"'"</span><span class="keyword">.</span><span class="default">$v3</span><span class="keyword">.</span><span class="string">"'"</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$myquery </span><span class="keyword">= </span><span class="string">"insert into "</span><span class="keyword">.</span><span class="default">$k1</span><span class="keyword">.</span><span class="string">"("</span><span class="keyword">.</span><span class="default">implode</span><span class="keyword">(</span><span class="string">","</span><span class="keyword">, </span><span class="default">$mycols</span><span class="keyword">).</span><span class="string">") VALUES ("</span><span class="keyword">.</span><span class="default">implode</span><span class="keyword">(</span><span class="string">","</span><span class="keyword">, </span><span class="default">$myval</span><span class="keyword">).</span><span class="string">");"</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; unset(</span><span class="default">$myval</span><span class="keyword">,</span><span class="default">$mycols</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">fwrite</span><span class="keyword">(</span><span class="default">$handle</span><span class="keyword">, </span><span class="default">$myquery</span><span class="keyword">.</span><span class="string">"\n"</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">fclose</span><span class="keyword">(</span><span class="default">$handle</span><span class="keyword">);<br />
+}<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="84754""></a>
+  <div class="note">
+   <strong class="user">Demeter dot Tamas at stud dot u-szeged dot hu</strong>
+   <a href="#84754" class="date">28-Jul-2008 01:40</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+There is no need to parse a postgres array. The stored procedures should never return an array. Use SETOF instead.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="81333""></a>
+  <div class="note">
+   <strong class="user">veggivore at yahoo dot com</strong>
+   <a href="#81333" class="date">22-Feb-2008 03:39</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Parse a PostgreSQL array of any dimension to a PHP array.<br />
+<br />
+Works great if you absolutely trust the data ;-)<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">function </span><span class="default">pg_array_parse</span><span class="keyword">(</span><span class="default">$array</span><span class="keyword">, </span><span class="default">$asText </span><span class="keyword">= </span><span class="default">true</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$s </span><span class="keyword">= </span><span class="default">$array</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; if (</span><span class="default">$asText</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$s </span><span class="keyword">= </span><span class="default">str_replace</span><span class="keyword">(</span><span class="string">"{"</span><span class="keyword">, </span><span class="string">"array('"</span><span class="keyword">, </span><span class="default">$s</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$s </span><span class="keyword">= </span><span class="default">str_replace</span><span class="keyword">(</span><span class="string">"}"</span><span class="keyword">, </span><span class="string">"')"</span><span class="keyword">, </span><span class="default">$s</span><span class="keyword">);&nbsp; &nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$s </span><span class="keyword">= </span><span class="default">str_replace</span><span class="keyword">(</span><span class="string">","</span><span class="keyword">, </span><span class="string">"','"</span><span class="keyword">, </span><span class="default">$s</span><span class="keyword">);&nbsp; &nbsp; <br />
+&nbsp;&nbsp;&nbsp; } else {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$s </span><span class="keyword">= </span><span class="default">str_replace</span><span class="keyword">(</span><span class="string">"{"</span><span class="keyword">, </span><span class="string">"array("</span><span class="keyword">, </span><span class="default">$s</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$s </span><span class="keyword">= </span><span class="default">str_replace</span><span class="keyword">(</span><span class="string">"}"</span><span class="keyword">, </span><span class="string">")"</span><span class="keyword">, </span><span class="default">$s</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$s </span><span class="keyword">= </span><span class="string">"\$retval = </span><span class="default">$s</span><span class="string">;"</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; eval(</span><span class="default">$s</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">$retval</span><span class="keyword">;<br />
+}<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="73837""></a>
+  <div class="note">
+   
+   <a href="#73837" class="date">12-Mar-2007 09:28</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Quick and dirty emulation of the mysql_select_db () function for Postgres:<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+</span><span class="keyword">function </span><span class="default">pg_select_db </span><span class="keyword">(</span><span class="default">$dbName</span><span class="keyword">)<br />
+{<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$query </span><span class="keyword">= </span><span class="string">'\connect '</span><span class="keyword">.</span><span class="default">pg_escape_string </span><span class="keyword">(</span><span class="default">$dbName</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; if (</span><span class="default">$result </span><span class="keyword">= </span><span class="default">pg_query </span><span class="keyword">(</span><span class="default">$query</span><span class="keyword">))<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return (</span><span class="default">true</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; else<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return (</span><span class="default">false</span><span class="keyword">);<br />
+}<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+Obviously not a great example, but it at least demonstrates how to implement mysql_select_db functionality when using Postgres.&nbsp; Or you could always use schemas :)</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="71221""></a>
+  <div class="note">
+   
+   <a href="#71221" class="date">16-Nov-2006 04:30</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Chris KL: Will parse well {"\\"}? The second " will be treat as escaped while it shoudn't...</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="70596""></a>
+  <div class="note">
+   
+   <a href="#70596" class="date">20-Oct-2006 10:10</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Lots of advice on stored procedures didn't work for me.&nbsp; This did:<br />
+<br />
+<span class="default">&lt;?php<br />
+$response </span><span class="keyword">= </span><span class="default">pg_query</span><span class="keyword">( </span><span class="default">$connection</span><span class="keyword">, </span><span class="string">"BEGIN; DECLARE s CURSOR FOR SELECT get_consumer('harry'); FETCH ALL IN s; END;" </span><span class="keyword">);<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+..where harry looks like this:<br />
+<br />
+CREATE OR REPLACE FUNCTION get_consumer( varchar )<br />
+RETURNS refcursor<br />
+AS '<br />
+DECLARE<br />
+&nbsp; _name&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; ALIAS FOR $1;<br />
+&nbsp; r&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; refcursor;<br />
+BEGIN<br />
+&nbsp; OPEN r FOR SELECT name FROM consumer<br />
+&nbsp; WHERE<br />
+&nbsp;&nbsp;&nbsp; consumer.name = _name<br />
+&nbsp; ;<br />
+&nbsp; RETURN r;<br />
+END<br />
+' LANGUAGE 'plpgsql';</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="58660""></a>
+  <div class="note">
+   <strong class="user">Chris KL</strong>
+   <a href="#58660" class="date">10-Nov-2005 05:17</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Here is a better array parser for PHP.&nbsp; It will work with 1-d arrays only.&nbsp; Unlike the example below it will work in all cases.<br />
+<br />
+&nbsp;&nbsp;&nbsp; /**<br />
+&nbsp;&nbsp; &nbsp; * Change a db array into a PHP array<br />
+&nbsp;&nbsp; &nbsp; * @param $arr String representing the DB array<br />
+&nbsp;&nbsp; &nbsp; * @return A PHP array<br />
+&nbsp;&nbsp; &nbsp; */<br />
+&nbsp;&nbsp;&nbsp; function phpArray($dbarr) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; // Take off the first and last characters (the braces)<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $arr = substr($dbarr, 1, strlen($dbarr) - 2);<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; // Pick out array entries by carefully parsing.&nbsp; This is necessary in order<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; // to cope with double quotes and commas, etc.<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $elements = array();<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $i = $j = 0;&nbsp; &nbsp; &nbsp; &nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $in_quotes = false;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; while ($i &lt; strlen($arr)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; // If current char is a double quote and it's not escaped, then<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; // enter quoted bit<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $char = substr($arr, $i, 1);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if ($char == '"' &amp;&amp; ($i == 0 || substr($arr, $i - 1, 1) != '\\')) <br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $in_quotes = !$in_quotes;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; elseif ($char == ',' &amp;&amp; !$in_quotes) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; // Add text so far to the array<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $elements[] = substr($arr, $j, $i - $j);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $j = $i + 1;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $i++;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; // Add final text to the array<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $elements[] = substr($arr, $j);<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; // Do one further loop over the elements array to remote double quoting<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; // and escaping of double quotes and backslashes<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; for ($i = 0; $i &lt; sizeof($elements); $i++) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $v = $elements[$i];<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if (strpos($v, '"') === 0) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $v = substr($v, 1, strlen($v) - 2);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $v = str_replace('\\"', '"', $v);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $v = str_replace('\\\\', '\\', $v);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $elements[$i] = $v;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return $elements;<br />
+&nbsp;&nbsp;&nbsp; }</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="57709""></a>
+  <div class="note">
+   <strong class="user">1413 at blargh dot com</strong>
+   <a href="#57709" class="date">11-Oct-2005 05:09</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Here is some quick and dirty code to convert Postgres-returned arrays into PHP arrays.&nbsp; There's probably a billion bugs, but since I'm only dealing with variable-depth-and-length arrays of integers, it works for my needs.<br />
+<br />
+Most notably, any data that might have commas in it won't work right...<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">function </span><span class="default">PGArrayToPHPArray</span><span class="keyword">(</span><span class="default">$pgArray</span><span class="keyword">)<br />
+{<br />
+&nbsp; </span><span class="default">$ret </span><span class="keyword">= array();<br />
+&nbsp; </span><span class="default">$stack </span><span class="keyword">= array(&amp;</span><span class="default">$ret</span><span class="keyword">);<br />
+&nbsp; </span><span class="default">$pgArray </span><span class="keyword">= </span><span class="default">substr</span><span class="keyword">(</span><span class="default">$pgArray</span><span class="keyword">, </span><span class="default">1</span><span class="keyword">, -</span><span class="default">1</span><span class="keyword">);<br />
+&nbsp; </span><span class="default">$pgElements </span><span class="keyword">= </span><span class="default">explode</span><span class="keyword">(</span><span class="string">","</span><span class="keyword">, </span><span class="default">$pgArray</span><span class="keyword">);<br />
+&nbsp; <br />
+&nbsp; </span><span class="default">ArrayDump</span><span class="keyword">(</span><span class="default">$pgElements</span><span class="keyword">);<br />
+<br />
+&nbsp; foreach(</span><span class="default">$pgElements </span><span class="keyword">as </span><span class="default">$elem</span><span class="keyword">)<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp;&nbsp; if(</span><span class="default">substr</span><span class="keyword">(</span><span class="default">$elem</span><span class="keyword">,-</span><span class="default">1</span><span class="keyword">) == </span><span class="string">"}"</span><span class="keyword">)<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$elem </span><span class="keyword">= </span><span class="default">substr</span><span class="keyword">(</span><span class="default">$elem</span><span class="keyword">,</span><span class="default">0</span><span class="keyword">,-</span><span class="default">1</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$newSub </span><span class="keyword">= array();<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; while(</span><span class="default">substr</span><span class="keyword">(</span><span class="default">$elem</span><span class="keyword">,</span><span class="default">0</span><span class="keyword">,</span><span class="default">1</span><span class="keyword">) != </span><span class="string">"{"</span><span class="keyword">)<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$newSub</span><span class="keyword">[] = </span><span class="default">$elem</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$elem </span><span class="keyword">= </span><span class="default">array_pop</span><span class="keyword">(</span><span class="default">$ret</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$newSub</span><span class="keyword">[] = </span><span class="default">substr</span><span class="keyword">(</span><span class="default">$elem</span><span class="keyword">,</span><span class="default">1</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$ret</span><span class="keyword">[] = </span><span class="default">array_reverse</span><span class="keyword">(</span><span class="default">$newSub</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp;&nbsp; else<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$ret</span><span class="keyword">[] = </span><span class="default">$elem</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp; return </span><span class="default">$ret</span><span class="keyword">;<br />
+}<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="53559""></a>
+  <div class="note">
+   <strong class="user">anis_wn at gawab dot com</strong>
+   <a href="#53559" class="date">05-Jun-2005 09:45</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Setting up PostgreSQL for higher security PHP connection.<br />
+<br />
+Case:<br />
+We want to connect to PostgreSQL database using username and password supplied by webuser at login time.<br />
+<br />
+Fact (Linux):<br />
+Apache (perhaps other servers, too) running the server as (default to) apache user account. So if you connect to PostgreSQL using default user, apache will be assingned for it. If you hard code the user and password in your PHP script, you'll loose security restriction from PostgreSQL.<br />
+<br />
+Solution:<br />
+(You are assumed to have enough privilege to do these things, though)<br />
+1. Edit pg_hba.conf to have the line like the one below<br />
+&nbsp;&nbsp;&nbsp; host&nbsp; &nbsp; db_Name&nbsp; &nbsp; [web_server_ip_address] [ip_address_mask] md5<br />
+2. Add to you script the login page that submits username and password.<br />
+3. Use those information to login to PostgreSQL like these...<br />
+&lt;?<br />
+&nbsp;&nbsp;&nbsp; $conn = "host=$DBHost port=$DBPort dbname=$DBName ".<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; "user='{$_POST['dbUsername']}' password='{$_POST['dbPassword']}'";<br />
+&nbsp;&nbsp;&nbsp; $db = pg_connect ($conn);<br />
+[your other codes go here...]<br />
+?&gt;<br />
+4. You must add users in PostgreSQL properly.<br />
+5. For your convenience, you can store the username and password to $_SESSION variable.<br />
+<br />
+Good luck.<br />
+Anis WN</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="53036""></a>
+  <div class="note">
+   <strong class="user">WillowCatkin at hotmail dot com</strong>
+   <a href="#53036" class="date">21-May-2005 06:43</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+There is an example:<br />
+<span class="default">&lt;?php<br />
+</span><span class="comment">/*<br />
+&nbsp;* Define PostgreSQL database server connect parameters.<br />
+&nbsp;*/<br />
+</span><span class="default">define</span><span class="keyword">(</span><span class="string">'PGHOST'</span><span class="keyword">,</span><span class="string">'10.0.0.218'</span><span class="keyword">);<br />
+</span><span class="default">define</span><span class="keyword">(</span><span class="string">'PGPORT'</span><span class="keyword">,</span><span class="default">5432</span><span class="keyword">);<br />
+</span><span class="default">define</span><span class="keyword">(</span><span class="string">'PGDATABASE'</span><span class="keyword">,</span><span class="string">'example'</span><span class="keyword">);<br />
+</span><span class="default">define</span><span class="keyword">(</span><span class="string">'PGUSER'</span><span class="keyword">, </span><span class="string">'root'</span><span class="keyword">);<br />
+</span><span class="default">define</span><span class="keyword">(</span><span class="string">'PGPASSWORD'</span><span class="keyword">, </span><span class="string">'nopass'</span><span class="keyword">);<br />
+</span><span class="default">define</span><span class="keyword">(</span><span class="string">'PGCLIENTENCODING'</span><span class="keyword">,</span><span class="string">'UNICODE'</span><span class="keyword">);<br />
+</span><span class="default">define</span><span class="keyword">(</span><span class="string">'ERROR_ON_CONNECT_FAILED'</span><span class="keyword">,</span><span class="string">'Sorry, can not connect the database server now!'</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">/*<br />
+&nbsp;* Merge connect string and connect db server with default parameters.<br />
+&nbsp;*/<br />
+</span><span class="default">pg_pconnect</span><span class="keyword">(</span><span class="string">'host=' </span><span class="keyword">. </span><span class="default">PGHOST </span><span class="keyword">. </span><span class="string">' port=' </span><span class="keyword">. </span><span class="default">PGPORT </span><span class="keyword">. </span><span class="string">' dbname=' </span><span class="keyword">. </span><span class="default">PGDATABASE </span><span class="keyword">. </span><span class="string">' user=' </span><span class="keyword">. </span><span class="default">PGUSER </span><span class="keyword">. </span><span class="string">' password=' </span><span class="keyword">. </span><span class="default">PGPASSWORD</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">/*<br />
+&nbsp;* generate sql statements to call db-server-side stored procedure(or function) <br />
+&nbsp;* @parameter&nbsp; &nbsp; string&nbsp; &nbsp; $proc&nbsp; &nbsp; &nbsp; &nbsp; stored procedure name.<br />
+&nbsp;* @parameter&nbsp; &nbsp; array&nbsp; &nbsp; $paras&nbsp; &nbsp; &nbsp; &nbsp; parameters, 2 dimensions array.<br />
+&nbsp;* @return&nbsp; &nbsp; &nbsp; &nbsp; string&nbsp; &nbsp; $sql = 'select "proc"(para1,para2,para3);'<br />
+&nbsp;* @example&nbsp; &nbsp; pg_prepare('userExists',<br />
+&nbsp;*&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; array(<br />
+&nbsp;*&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; array('userName','chin','string'),<br />
+&nbsp;*&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; array('userId','7777','numeric')<br />
+&nbsp;*&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; )<br />
+&nbsp;* )<br />
+&nbsp;*/<br />
+</span><span class="keyword">function </span><span class="default">pg_prepare</span><span class="keyword">(</span><span class="default">$proc</span><span class="keyword">, </span><span class="default">$paras</span><span class="keyword">)<br />
+{<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$sql </span><span class="keyword">= </span><span class="string">'select "' </span><span class="keyword">. </span><span class="default">$proc </span><span class="keyword">. </span><span class="string">'"('</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$sql </span><span class="keyword">.= </span><span class="default">$paras</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">][</span><span class="default">2</span><span class="keyword">] == </span><span class="string">'numeric' </span><span class="keyword">? </span><span class="default">$paras</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">][</span><span class="default">1</span><span class="keyword">] : </span><span class="string">"'" </span><span class="keyword">. </span><span class="default">str_replace</span><span class="keyword">(</span><span class="string">"'"</span><span class="keyword">,</span><span class="string">"''"</span><span class="keyword">,</span><span class="default">$paras</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">][</span><span class="default">1</span><span class="keyword">]) . </span><span class="string">"'"</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$len </span><span class="keyword">= </span><span class="default">count</span><span class="keyword">(</span><span class="default">$paras</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; for (</span><span class="default">$i </span><span class="keyword">= </span><span class="default">1</span><span class="keyword">; </span><span class="default">$i </span><span class="keyword">&lt; </span><span class="default">$len</span><span class="keyword">; </span><span class="default">$i </span><span class="keyword">++)<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$sql </span><span class="keyword">.= </span><span class="string">','</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$sql </span><span class="keyword">.= </span><span class="default">$paras</span><span class="keyword">[</span><span class="default">$i</span><span class="keyword">][</span><span class="default">2</span><span class="keyword">] == </span><span class="string">'numeric' </span><span class="keyword">? </span><span class="default">$paras</span><span class="keyword">[</span><span class="default">$i</span><span class="keyword">][</span><span class="default">1</span><span class="keyword">] : </span><span class="string">"'" </span><span class="keyword">. </span><span class="default">str_replace</span><span class="keyword">(</span><span class="string">"'"</span><span class="keyword">,</span><span class="string">"''"</span><span class="keyword">,</span><span class="default">$paras</span><span class="keyword">[</span><span class="default">$i</span><span class="keyword">][</span><span class="default">1</span><span class="keyword">]) . </span><span class="string">"'"</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$sql </span><span class="keyword">.= </span><span class="string">');'</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">$sql</span><span class="keyword">;<br />
+}<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="46209""></a>
+  <div class="note">
+   <strong class="user">adaml at mimuw edu pl</strong>
+   <a href="#46209" class="date">02-Oct-2004 06:07</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Yes, PHP does support stored procedures<br />
+You have to add "select" before the name of the <br />
+procedure, just like that:<br />
+<br />
+$result = pg_querry($conn, "SELECT procedure_x($aa)");<br />
+<br />
+if a procedure returns a cursor you do something like that:<br />
+<br />
+$result = pg_query($conn, "SELECT procedure_x('rcursor'); FETCH ALL IN rcursor");</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="43751""></a>
+  <div class="note">
+   <strong class="user">74012 dot 2773 at compuserve dot com</strong>
+   <a href="#43751" class="date">01-Jul-2004 09:35</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+for just a list of tables, this works with postgresql-7.2.1:<br />
+<br />
+function pg_list_tables($db) {<br />
+&nbsp;&nbsp;&nbsp; $sql = "select relname from pg_stat_user_tables order by relname;";<br />
+&nbsp;&nbsp;&nbsp; return pg_query($db, $sql);<br />
+}</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="42679""></a>
+  <div class="note">
+   <strong class="user">abondi at ijk dot it</strong>
+   <a href="#42679" class="date">26-May-2004 05:11</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I've found another function to mimic the following mysql list tables function (<a href="http://www.php.net/manual/en/function.mysql-list-tables.php" rel="nofollow" target="_blank">http://www.php.net/manual/en/function.mysql-list-tables.php</a>) that's more useful for my target:<br />
+<br />
+function pg_list_tables() {<br />
+&nbsp;&nbsp; &nbsp;&nbsp; $sql = "SELECT a.relname AS Name<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; FROM pg_class a, pg_user b<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; WHERE ( relkind = 'r') and relname !~ '^pg_' AND relname !~ '^sql_'<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; AND relname !~ '^xin[vx][0-9]+' AND b.usesysid = a.relowner<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; AND NOT (EXISTS (SELECT viewname FROM pg_views WHERE viewname=a.relname));";<br />
+&nbsp;&nbsp; &nbsp;&nbsp; return(pg_query($conn, $sql));<br />
+}</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="28047""></a>
+  <div class="note">
+   <strong class="user">daniel at bichara dot com dot br</strong>
+   <a href="#28047" class="date">30-Dec-2002 05:04</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Running RedHat Linux and Apache with suexec enabled you must include pgsql.so on each .php file using dl("pgsql.so") and remove "extension=pgsql.so" from php.ini, otherwise Apache (httpd) will not start.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="27265""></a>
+  <div class="note">
+   <strong class="user">anonymous at unknown dot com</strong>
+   <a href="#27265" class="date">29-Nov-2002 09:50</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I just wanted to add to my previous post I've got the system up and running.<br />
+Environment: Windows XP, Apache 1.3.23, Php 4.3 RC2, PostGreSQL beta4 native windows build<br />
+<br />
+Installation was fairly easy: <br />
+1. read the readme.txt<br />
+2. edit the setenv.bat as described in readme<br />
+3. run 'initdb'<br />
+&nbsp;&nbsp;&nbsp; all execs are in /bin<br />
+&nbsp;&nbsp;&nbsp; help is accessed like &lt;command&gt; --help<br />
+4. Start the psql deamon - you may want to create a batch file like<br />
+&nbsp;&nbsp;&nbsp; 'D:\postgres_beta4\bin\postmaster -h localhost -D D:/postgres_beta4/data'<br />
+<br />
+&nbsp;&nbsp;&nbsp; --deamon should be up and running now--<br />
+<br />
+You can login into a shell from a console like<br />
+&nbsp;&nbsp;&nbsp; 'psql -h localhost -d &lt;username&gt;'<br />
+<br />
+You must load the postgresql extension by editing the php.ini and restarting apache in order to access psql with php.<br />
+<br />
+And one final not: when running<br />
+&nbsp;&nbsp;&nbsp; $dbconn = pg_connect ("host=localhost port=5432 dbname=$dbname user=$user");<br />
+remember that $user and or $dbname is CASESENSITIVE.<br />
+<br />
+Oh yeah, I created the data dir manually - don't know whether that was necessary<br />
+<br />
+Grtz Vargo</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="18749""></a>
+  <div class="note">
+   <strong class="user">mystran at wasteland dot pp dot htv dot fi</strong>
+   <a href="#18749" class="date">03-Feb-2002 07:46</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Nice to know fact that I didn't find documented here.<br />
+<br />
+PHP will return values of PostgreSQL boolean datatype as single character strings "t" and "f", not PHP true and false.<br />
+<br />
+[Editor's Note]<br />
+'t' or 'f' is valid boolean expression for PostgreSQL.<br />
+<br />
+All values from PostgreSQL are strings, since PostgreSQL integer, float may be much larger than PHP's native int, double can handle. PostgreSQL array is not supported.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="15521""></a>
+  <div class="note">
+   <strong class="user">saberit at home dot com</strong>
+   <a href="#15521" class="date">15-Sep-2001 02:11</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I tried compiling PHP from source with PostgreSQL support (./configure --with-pgsql=/usr/local/pgsql) and ran into a bunch of problems when trying to 'make'. The problem was that some of the PostgreSQL headers were not installed by default when I installed PostgreSQL from source. When installing PostgreSQL make sure you 'make install-all-headers' after you 'make install'.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="13904""></a>
+  <div class="note">
+   <strong class="user">hubert at hubertmuller dot com</strong>
+   <a href="#13904" class="date">09-Jul-2001 04:36</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+The best way to find the separated list of tables, sequences, keys etc is:<br />
+<br />
+SELECT relname FROM pg_class WHERE relkind='&lt;value&gt;' AND relname !~ '^pg_';<br />
+<br />
+&lt;value&gt; takes:<br />
+i for keys,<br />
+r for relations,<br />
+S for sequences<br />
+<br />
+Note that all tables names that begins with 'pg_' are PostgreSQL internal tables (this explain why I use AND relname !~ '^pg_' condition).</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="13660""></a>
+  <div class="note">
+   <strong class="user">passion at monkey dot org</strong>
+   <a href="#13660" class="date">27-Jun-2001 06:53</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I've tried to mimic the following mysql database connection functions for postgres. <br />
+<a href="http://www.php.net/manual/en/function.mysql-list-dbs.php" rel="nofollow" target="_blank">http://www.php.net/manual/en/function.mysql-list-dbs.php</a><br />
+<a href="http://www.php.net/manual/en/function.mysql-list-tables.php" rel="nofollow" target="_blank">http://www.php.net/manual/en/function.mysql-list-tables.php</a><br />
+<br />
+These are assuming that you're passing in $link as the result from pg_connect:<br />
+<br />
+function pg_list_dbs($link)<br />
+{&nbsp; <br />
+&nbsp;&nbsp;&nbsp; $sql = 'SELECT datname FROM pg_database';<br />
+&nbsp;&nbsp;&nbsp; return (pg_query($link, $sql));<br />
+}&nbsp; <br />
+<br />
+function pg_list_tables($link)<br />
+{&nbsp; <br />
+&nbsp;&nbsp;&nbsp; $sql = "SELECT relname FROM pg_class WHERE relname !~ '^pg_'";<br />
+&nbsp;&nbsp;&nbsp; return (pg_query($link, $sql));<br />
+}</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="12467""></a>
+  <div class="note">
+   <strong class="user">!spamcraig at ahdore dot com</strong>
+   <a href="#12467" class="date">15-Apr-2001 01:11</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+If you want to extract data from select statements, you need to store the result index, and then apply pg_result to that value. Basically, do this<br />
+<br />
+$resultIdx = pg_query ($database, "select * from tablename");<br />
+$mySelect = pg_fetch_result($resultIdx, 0, 0);&nbsp; // gets column 0 of tuple 0<br />
+echo("My select: [".$mySelect."]");<br />
+<br />
+I'm new to php and had to do some fiddling around to work this out. It's reasonably elementary, but not demonstrated by the examples on these pages. Hopefully it will come in useful to someone else.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="4113""></a>
+  <div class="note">
+   <strong class="user">bleach at chek dot com</strong>
+   <a href="#4113" class="date">02-Mar-2000 12:36</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+If you want to see all the objects in a database, you can find that information in the pg_class table. &lt;BR&gt;<br />
+SELECT * FROM pg_class;&lt;BR&gt;<br />
+Now this is going to be kind of long and complex, to see how psql command handles the \d and other things. use the syntax.&nbsp; psql -E &lt;Database&gt;, ie psql -E mydatabase &lt;BR&gt;<br />
+What this will do is show the SQL command used for everything. So when you type a \d or something, it shows the SQL query used for the result.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
 <hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="pgsql.examples-basic.html">Basic usage</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.pg-affected-rows.html">pg_affected_rows</a></div>

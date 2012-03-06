@@ -162,6 +162,119 @@
  
 <h2>Table of Contents</h2><ul class="chunklist chunklist_reference"><li><a href="domdocumentfragment.appendxml.html">DOMDocumentFragment::appendXML</a> â€” Append raw XML data</li></ul>
 </div>
+<div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="103155""></a>
+  <div class="note">
+   <strong class="user">Ricki</strong>
+   <a href="#103155" class="date">29-Mar-2011 06:00</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+DOMDocumentFragment only appears useful if created from a parent DOMDocument eg.<br />
+<br />
+1. $dom = new DOMDocument("1.0","UTF-8");<br />
+2. $docFrag = $dom-&gt;createDocumentFragment();<br />
+3. Now append items to $docFrag <br />
+4. Graft $docFrag contents back onto $dom at the desired location<br />
+<br />
+Conversely taking this approach:<br />
+1. $dom = new DOMDocument("1.0","UTF-8");<br />
+2. $docFrag = new DOMDocumentFragment();<br />
+3. Now append items to $docFrag<br />
+<br />
+...will fail on step 3 with a "read only" error as $docFrag is not created as a child of&nbsp; DOMDocument.<br />
+<br />
+I'm not sure of the reason for this: on the web people have cited security, and others have cited poor design however whatever the reason, it is really limiting when wanting to encapsulating generic independent DocumentFragments into classes for easy grafting to the desired tree. The only workarounds i have seen look expensive from a performance perspective and cumbersome from a coding perspective ie. create a&nbsp; dummy $dom for temporary use.<br />
+<br />
+(This is valid as of PHP 5.3) I've put this here as i've wasted a lot of time finding it out - I hope this saves others some heartache.<br />
+<br />
+Using new DOMDocumentFramt</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="103151""></a>
+  <div class="note">
+   <strong class="user">matthijs at stdin dot nl</strong>
+   <a href="#103151" class="date">29-Mar-2011 03:06</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Note that DOMDocumentFragment is a bit special when it's added to another node. When that happens, not the fragment itself is added as a child, but all of the children of the fragment are moved over to the new parent node.<br />
+<br />
+For example, consider this script:<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+</span><span class="comment">/* Create a document and a fragment containing a single node */<br />
+</span><span class="default">$doc </span><span class="keyword">= new </span><span class="default">DOMDocument</span><span class="keyword">();<br />
+</span><span class="default">$fragment </span><span class="keyword">= </span><span class="default">$doc</span><span class="keyword">-&gt;</span><span class="default">createDocumentFragment</span><span class="keyword">();<br />
+</span><span class="default">$fragment</span><span class="keyword">-&gt;</span><span class="default">appendChild</span><span class="keyword">(</span><span class="default">$doc</span><span class="keyword">-&gt;</span><span class="default">createElement</span><span class="keyword">(</span><span class="string">'foo'</span><span class="keyword">));<br />
+<br />
+</span><span class="comment">/* Now, the foo node is a child of the fragment */<br />
+</span><span class="default">var_dump</span><span class="keyword">(</span><span class="default">$fragment</span><span class="keyword">-&gt;</span><span class="default">firstChild</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">/* After appending the fragment to another node, the children of the<br />
+&nbsp;* fragment will have been transfered to that node (and the fragment is<br />
+&nbsp;* not present in the children list!) */<br />
+</span><span class="default">$doc</span><span class="keyword">-&gt;</span><span class="default">appendChild</span><span class="keyword">(</span><span class="default">$fragment</span><span class="keyword">);<br />
+</span><span class="comment">/* So the fragment has no children anymore */<br />
+</span><span class="default">var_dump</span><span class="keyword">(</span><span class="default">$fragment</span><span class="keyword">-&gt;</span><span class="default">firstChild</span><span class="keyword">);<br />
+</span><span class="comment">/* But $doc has a single child, which is the foo element, not the<br />
+&nbsp;* fragment */<br />
+</span><span class="default">var_dump</span><span class="keyword">(</span><span class="default">$doc</span><span class="keyword">-&gt;</span><span class="default">childNodes</span><span class="keyword">-&gt;</span><span class="default">length</span><span class="keyword">);<br />
+</span><span class="default">var_dump</span><span class="keyword">(</span><span class="default">$doc</span><span class="keyword">-&gt;</span><span class="default">firstChild</span><span class="keyword">);<br />
+<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+This produces the following output:<br />
+<br />
+object(DOMElement)#3 (0) {<br />
+}<br />
+NULL<br />
+int(1)<br />
+object(DOMElement)#3 (0) {<br />
+}</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="92881""></a>
+  <div class="note">
+   <strong class="user">mary dot kalinosky at thieme dot com</strong>
+   <a href="#92881" class="date">12-Aug-2009 03:43</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I found DOMDocument very useful for extracting raw XML from a field in a MySQL database. <br />
+<br />
+The following always gave me character entities for the XML tag brackets (&amp;lt; &amp;gt;) in the output (whether I used the utf8_encode function or htmlspecialchars function or neither of them on $row['text']):<br />
+<br />
+<span class="default">&lt;?php<br />
+$next_elem </span><span class="keyword">= </span><span class="default">$doc</span><span class="keyword">-&gt;</span><span class="default">createElement</span><span class="keyword">( </span><span class="default">$row</span><span class="keyword">[</span><span class="string">'node_type'</span><span class="keyword">], </span><span class="default">utf8_encode</span><span class="keyword">(</span><span class="default">$row</span><span class="keyword">[</span><span class="string">'text'</span><span class="keyword">]) );<br />
+</span><span class="default">$section_elem</span><span class="keyword">-&gt;</span><span class="default">appendChild</span><span class="keyword">(</span><span class="default">$next_elem</span><span class="keyword">);<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+I changed the code to use a DOMDocumentFragment and now the XML I stored in my database comes out as XML in my output with proper tag brackets instead of html character entities:<br />
+<br />
+<span class="default">&lt;?php<br />
+$next_elem </span><span class="keyword">= </span><span class="default">$doc</span><span class="keyword">-&gt;</span><span class="default">createDocumentFragment</span><span class="keyword">();<br />
+</span><span class="default">$next_elem</span><span class="keyword">-&gt;</span><span class="default">appendXML</span><span class="keyword">(</span><span class="default">$row</span><span class="keyword">[</span><span class="string">'text'</span><span class="keyword">]);<br />
+</span><span class="default">$section_elem</span><span class="keyword">-&gt;</span><span class="default">appendChild</span><span class="keyword">(</span><span class="default">$next_elem</span><span class="keyword">);<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
 <hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="domdocument.xinclude.html">DOMDocument::xinclude</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="domdocumentfragment.appendxml.html">DOMDocumentFragment::appendXML</a></div>

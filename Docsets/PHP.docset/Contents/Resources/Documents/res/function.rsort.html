@@ -120,7 +120,148 @@ than just reordering the keys.</span></p></blockquote>
   </p>
  </div>
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="54227""></a>
+  <div class="note">
+   <strong class="user">Alex M</strong>
+   <a href="#54227" class="date">27-Jun-2005 07:39</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+A cleaner (I think) way to sort a list of files into reversed order based on their modification date.<br />
+<br />
+<span class="default">&lt;?php<br />
+&nbsp;&nbsp; $path </span><span class="keyword">= </span><span class="default">$_SERVER</span><span class="keyword">[</span><span class="default">DOCUMENT_ROOT</span><span class="keyword">].</span><span class="string">"/files/"</span><span class="keyword">;<br />
+&nbsp;&nbsp; </span><span class="default">$dh </span><span class="keyword">= @</span><span class="default">opendir</span><span class="keyword">(</span><span class="default">$path</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp; while (</span><span class="default">false </span><span class="keyword">!== (</span><span class="default">$file</span><span class="keyword">=</span><span class="default">readdir</span><span class="keyword">(</span><span class="default">$dh</span><span class="keyword">)))<br />
+&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp;&nbsp; if (</span><span class="default">substr</span><span class="keyword">(</span><span class="default">$file</span><span class="keyword">,</span><span class="default">0</span><span class="keyword">,</span><span class="default">1</span><span class="keyword">)!=</span><span class="string">"."</span><span class="keyword">)<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; </span><span class="default">$files</span><span class="keyword">[]=array(</span><span class="default">filemtime</span><span class="keyword">(</span><span class="default">$path</span><span class="keyword">.</span><span class="default">$file</span><span class="keyword">),</span><span class="default">$file</span><span class="keyword">);&nbsp;&nbsp; </span><span class="comment">#2-D array<br />
+&nbsp;&nbsp; </span><span class="keyword">}<br />
+&nbsp;&nbsp; </span><span class="default">closedir</span><span class="keyword">(</span><span class="default">$dh</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp; if (</span><span class="default">$files</span><span class="keyword">)<br />
+&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">rsort</span><span class="keyword">(</span><span class="default">$files</span><span class="keyword">); </span><span class="comment">#sorts by filemtime<br />
+<br />
+&nbsp;&nbsp; &nbsp;&nbsp; #done! Show the files sorted by modification date<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="keyword">foreach (</span><span class="default">$files </span><span class="keyword">as </span><span class="default">$file</span><span class="keyword">)<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; echo </span><span class="string">"</span><span class="default">$file</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">]</span><span class="string"> </span><span class="default">$file</span><span class="keyword">[</span><span class="default">1</span><span class="keyword">]</span><span class="string">&lt;br&gt;\n"</span><span class="keyword">;&nbsp; </span><span class="comment">#file[0]=Unix timestamp; file[1]=filename<br />
+&nbsp;&nbsp; </span><span class="keyword">}<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="49001""></a>
+  <div class="note">
+   <strong class="user">pshirkey at boosthardware dot com</strong>
+   <a href="#49001" class="date">14-Jan-2005 01:06</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I needed a function that would sort a list of files into reversed order based on their modification date.<br />
+<br />
+Here's what I came up with:<br />
+<br />
+function display_content($dir,$ext){<br />
+<br />
+&nbsp;&nbsp;&nbsp; $f = array();<br />
+&nbsp;&nbsp;&nbsp; if (is_dir($dir)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if ($dh = opendir($dir)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; while (($folder = readdir($dh)) !== false) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if (preg_match("/\s*$ext$/", $folder)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $fullpath = "$dir/$folder";<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $mtime = filemtime ($fullpath);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $ff = array($mtime =&gt; $fullpath);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $f = array_merge($f, $ff);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; rsort($f, SORT_NUMERIC);<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; while (list($key, $val) = each($f)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $fcontents = file($val, "r");<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; while (list($key, $val) = each($fcontents)) <br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; echo "$val\n";<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; closedir($dh);<br />
+}<br />
+<br />
+Call it like so:<br />
+<br />
+display_content("folder","extension");</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="47092""></a>
+  <div class="note">
+   <strong class="user">ray at non-aol dot com</strong>
+   <a href="#47092" class="date">02-Nov-2004 07:49</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Like sort(), rsort() assigns new keys for the elements in array. It will remove any existing keys you may have assigned, rather than just reordering the keys.&nbsp; This means that it will destroy associative keys.<br />
+<br />
+$animals = array("dog"=&gt;"large",&nbsp; "cat"=&gt;"medium",&nbsp; "mouse"=&gt;"small");<br />
+print_r($animals);<br />
+//Array ( [dog] =&gt; large [cat] =&gt; medium [mouse] =&gt; small )<br />
+<br />
+rsort($animals);<br />
+print_r($animals);<br />
+//Array ( [0] =&gt; small [1] =&gt; medium [2] =&gt; large ) <br />
+<br />
+Use KSORT() or KRSORT() to preserve associative keys.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="33110""></a>
+  <div class="note">
+   <strong class="user">rnk-php at kleckner dot net</strong>
+   <a href="#33110" class="date">17-Jun-2003 12:37</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Apparently rsort does not put arrays with one value back to zero.&nbsp; If you have an array like: $tmp = array(9 =&gt; 'asdf') and then rsort it, $tmp[0] is empty and $tmp[9] stays as is.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="13354""></a>
+  <div class="note">
+   <strong class="user">slevy1 at pipeline dot com</strong>
+   <a href="#13354" class="date">12-Jun-2001 11:15</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I thought rsort was working successfully or on a multi-dimensional array of strings that had first been sorted with usort(). But, I noticed today that the array&nbsp; was only partially in descending order.&nbsp; I tried array_reverse on it and that seems to have solved things.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="function.reset.html">reset</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.shuffle.html">shuffle</a></div>
  <div class="up"><a href="ref.array.html">Array Functions</a></div>

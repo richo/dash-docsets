@@ -143,7 +143,144 @@ such as <span class="function"><a href="function.imagecreatetruecolor.html" clas
   </p>
  </div>
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="79910""></a>
+  <div class="note">
+   <strong class="user">andre at bynetworld dot com</strong>
+   <a href="#79910" class="date">19-Dec-2007 05:31</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+In the previous note by -&gt; lukeross at sys3175 dot co dot uk &lt;- there is a coding error in the for() loops. After correcting the error, I found that this function did a great job of&nbsp; converting color images to 2 colors.<br />
+The following is the corrected function code:<br />
+<br />
+function ImageColorFloydSteinberg($dst_img, $src_img) {<br />
+&nbsp;&nbsp;&nbsp; ImageColorAllocate($dst_img, 0,0,0);<br />
+&nbsp;&nbsp;&nbsp; ImageColorAllocate($dst_img, 255,255,255);<br />
+&nbsp;&nbsp;&nbsp; $isx = ImageSX($src_img);<br />
+&nbsp;&nbsp;&nbsp; $isy = ImageSY($src_img);<br />
+&nbsp;&nbsp;&nbsp; $grey_img = ImageCreate($isx, $isy);<br />
+&nbsp;&nbsp;&nbsp; for ($a = 0; $a &lt;= 255; $a++) ImageColorAllocate($grey_img, $a,$a,$a);<br />
+&nbsp;&nbsp;&nbsp; $isx -= 1; // To correct pixel count in source image width starting from 0<br />
+&nbsp;&nbsp;&nbsp; $isy -= 1; // Correcting pixel count in source image height starting from 0<br />
+&nbsp;&nbsp;&nbsp; for($x = 0; $x &lt;= $isx; $x++) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; for($y = 0; $y &lt;= $isy; $y++) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $color = ImageColorsForIndex($src_img, ImageColorAt($src_img, $x, $y));<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $greyscale = .299 * $color["red"] + .587 * $color["green"] + .114 * $color["blue"];<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; ImageSetPixel($grey_img, $x, $y, ImageColorClosest($grey_img, $greyscale, $greyscale, $greyscale));<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; for($x = 0; $x &lt;= $isx; $x++) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; for($y = 0; $y &lt;= $isy; $y++) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $color = ImageColorsForIndex($grey_img, ImageColorAt($grey_img, $x, $y));<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if ($color["red"] &gt; 128) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; ImageSetPixel($dst_img, $x, $y, ImageColorClosest($dst_img,255,255,255));<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $err = $color["red"] - 255;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; } else {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; ImageSetPixel($dst_img, $x, $y, ImageColorClosest($dst_img,0,0,0));<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $err = $color["red"];<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if ($x != $isx) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $color2 = ImageColorsForIndex($grey_img, ImageColorAt($grey_img, $x+1, $y));<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $newgrey = $color2["red"] + $err * 7 / 16;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; ImageSetPixel($grey_img, $x+1, $y, ImageColorClosest($grey_img,$newgrey, $newgrey, $newgrey));<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if ($x != 0) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $color2 = ImageColorsForIndex($grey_img, ImageColorAt($grey_img, $x-1, $y));<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $newgrey = $color2["red"] + $err * 3 / 16;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; ImageSetPixel($grey_img, $x-1, $y, ImageColorClosest($grey_img,$newgrey, $newgrey, $newgrey));<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if ($y != $isy) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $color2 = ImageColorsForIndex($grey_img, ImageColorAt($grey_img, $x, $y+1));<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $newgrey = $color2["red"] + $err * 5 / 16;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; ImageSetPixel($grey_img, $x, $y+1, ImageColorClosest($grey_img,$newgrey, $newgrey, $newgrey));<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if ($x != $isx &amp;&amp; $y != $isy) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $color2 = ImageColorsForIndex($grey_img, ImageColorAt($grey_img, $x+1, $y+1));<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $newgrey = $color2["red"] + $err / 16;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; ImageSetPixel($grey_img, $x+1, $y+1, ImageColorClosest($grey_img,$newgrey, $newgrey, $newgrey));<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; imagedestroy($grey_img);<br />
+}</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="19484""></a>
+  <div class="note">
+   <strong class="user">lukeross at sys3175 dot co dot uk</strong>
+   <a href="#19484" class="date">28-Feb-2002 01:57</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+As has been commented before, GD doesnt do a very good translation to 2-colours, especially for photos.&nbsp; The following routine converts to two colours, I believe using error diffusion (the algorithm's nicked off news).&nbsp; It's slow, but just about adequate for small images and low load.&nbsp; I suspect it can be made much more efficient :-)<br />
+<br />
+function ImageColorFloydSteinberg($dst_img, $src_img) {<br />
+&nbsp;&nbsp;&nbsp; ImageColorAllocate($dst_img, 0,0,0);<br />
+&nbsp;&nbsp;&nbsp; ImageColorAllocate($dst_img, 255,255,255);<br />
+&nbsp;&nbsp;&nbsp; $grey_img = ImageCreate(ImageSX($src_img), ImageSY($src_img));<br />
+&nbsp;&nbsp;&nbsp; for ($a = 0; $a &lt;= 255; $a++) ImageColorAllocate($grey_img, $a,$a,$a);<br />
+&nbsp;&nbsp;&nbsp; for($x = 0; $x &lt;= ImageSX($src_img); $x++) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; for($y = 0; $y &lt;= ImageSY($src_img); $y++) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $color = ImageColorsForIndex($src_img, ImageColorAt($src_img, $x, $y));<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $greyscale = .299 * $color["red"] + .587 * $color["green"] + .114 * $color["blue"];<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; ImageSetPixel($grey_img, $x, $y, ImageColorClosest($grey_img, $greyscale, $greyscale, $greyscale));<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; for($x = 0; $x &lt;= ImageSX($src_img); $x++) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; for($y = 0; $y &lt;= ImageSY($src_img); $y++) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $color = ImageColorsForIndex($grey_img, ImageColorAt($grey_img, $x, $y));<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if ($color["red"] &gt; 128) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; ImageSetPixel($dst_img, $x, $y, ImageColorClosest($dst_img,255,255,255));<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $err = $color["red"] - 255;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; } else {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; ImageSetPixel($dst_img, $x, $y, ImageColorClosest($dst_img,0,0,0));<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $err = $color["red"];<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if ($x != ImageSx($src_img)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $color2 = ImageColorsForIndex($grey_img, ImageColorAt($grey_img, $x+1, $y));<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $newgrey = $color2["red"] + $err * 7 / 16;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; ImageSetPixel($grey_img, $x+1, $y, ImageColorClosest($grey_img,$newgrey, $newgrey, $newgrey));<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if ($x != 0) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $color2 = ImageColorsForIndex($grey_img, ImageColorAt($grey_img, $x-1, $y));<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $newgrey = $color2["red"] + $err * 3 / 16;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; ImageSetPixel($grey_img, $x-1, $y, ImageColorClosest($grey_img,$newgrey, $newgrey, $newgrey));<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if ($y != ImageSy($src_img)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $color2 = ImageColorsForIndex($grey_img, ImageColorAt($grey_img, $x, $y+1));<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $newgrey = $color2["red"] + $err * 5 / 16;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; ImageSetPixel($grey_img, $x, $y+1, ImageColorClosest($grey_img,$newgrey, $newgrey, $newgrey));<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if ($x != ImageSx($src_img) &amp;&amp; $y != ImageSy($src_img)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $color2 = ImageColorsForIndex($grey_img, ImageColorAt($grey_img, $x+1, $y+1));<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $newgrey = $color2["red"] + $err / 16;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; ImageSetPixel($grey_img, $x+1, $y+1, ImageColorClosest($grey_img,$newgrey, $newgrey, $newgrey));<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; imagedestroy($grey_img);<br />
+}<br />
+<br />
+To output your WBMP, use<br />
+<br />
+ImageWBMP($final_img, "", ImageColorClosest(255,255,255));</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="function.imagetypes.html">imagetypes</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.imagexbm.html">imagexbm</a></div>
  <div class="up"><a href="ref.image.html">GD and Image Functions</a></div>

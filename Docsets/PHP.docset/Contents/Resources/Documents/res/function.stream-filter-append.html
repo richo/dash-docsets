@@ -201,7 +201,110 @@
   </ul>
  </div>
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="84637""></a>
+  <div class="note">
+   <strong class="user">dlvoy</strong>
+   <a href="#84637" class="date">23-Jul-2008 12:20</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+While using compression filters on a large set of files during one script invocation i've got<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; Fatal error: Allowed memory size of xxx bytes exhausted<br />
+even when my max memory limit settings was insane high (128MB)<br />
+<br />
+Workaround is to remember to remove filter after work done with stream_filter_remove:<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">foreach(</span><span class="default">$lot_of_files </span><span class="keyword">as </span><span class="default">$filename</span><span class="keyword">)<br />
+{<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$fp </span><span class="keyword">= </span><span class="default">fopen</span><span class="keyword">(</span><span class="default">$filename</span><span class="keyword">, </span><span class="string">'rb'</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$filter_params </span><span class="keyword">= array(</span><span class="string">'level' </span><span class="keyword">=&gt; </span><span class="default">2</span><span class="keyword">, </span><span class="string">'window' </span><span class="keyword">=&gt; </span><span class="default">15</span><span class="keyword">, </span><span class="default">$memory </span><span class="keyword">=&gt; </span><span class="default">6</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$s_filter </span><span class="keyword">= </span><span class="default">stream_filter_append</span><span class="keyword">(</span><span class="default">$fp</span><span class="keyword">, </span><span class="string">'zlib.deflate'</span><span class="keyword">, </span><span class="default">STREAM_FILTER_READ</span><span class="keyword">, </span><span class="default">$filter_params</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// here stream-operating code&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">stream_filter_remove</span><span class="keyword">(</span><span class="default">$s_filter</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">fclose</span><span class="keyword">(</span><span class="default">$fp</span><span class="keyword">);<br />
+}<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="59674""></a>
+  <div class="note">
+   <strong class="user">net_navard at yahoo dot com</strong>
+   <a href="#59674" class="date">12-Dec-2005 10:47</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Hello firends<br />
+<br />
+The difference betweem adding a stream filter first or last in the filte list in only the order they will be applied to streams.<br />
+<br />
+For example, if you're reading data from a file, and a given filter is placed in first place with stream_filter_prepend()the data will be processed by that filter first.<br />
+<br />
+This example reads out file data and the filter is applied at the beginning of the reading operation:<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="comment">/* Open a test file for reading */<br />
+</span><span class="default">$fp </span><span class="keyword">= </span><span class="default">fopen</span><span class="keyword">(</span><span class="string">"test.txt"</span><span class="keyword">, </span><span class="string">"r"</span><span class="keyword">);<br />
+</span><span class="comment">/* Apply the ROT13 filter to the<br />
+&nbsp;* read filter chain, but not the<br />
+&nbsp;* write filter chain */<br />
+</span><span class="default">stream_filter_prepend</span><span class="keyword">(</span><span class="default">$fp</span><span class="keyword">, </span><span class="string">"string.rot13"</span><span class="keyword">,<br />
+</span><span class="default">STREAM_FILTER_READ</span><span class="keyword">);<br />
+</span><span class="comment">// read file data<br />
+</span><span class="default">$contents</span><span class="keyword">=</span><span class="default">fread</span><span class="keyword">(</span><span class="default">$fp</span><span class="keyword">,</span><span class="default">1024</span><span class="keyword">);<br />
+</span><span class="comment">// file data is first filtered and stored in $contents<br />
+</span><span class="keyword">echo </span><span class="default">$contents</span><span class="keyword">;<br />
+</span><span class="default">fclose</span><span class="keyword">(</span><span class="default">$fp</span><span class="keyword">);<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+On the other hand, if stream_filter_append() is used, then the filter will be applied at the end of the data operation. The thing about this is only the order filters are applied to streams. Back to the example, it's not the same thing removing new lines from file data and then counting the number of characters, than performing the inverse process. In this case, the order that filters are applied to stream is important.<br />
+<br />
+This example writes a test string to a file. The filter is applied at the end of the writing operation:<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="comment">/* Open a test file for writing */<br />
+</span><span class="default">$fp </span><span class="keyword">= </span><span class="default">fopen</span><span class="keyword">(</span><span class="string">"test.txt"</span><span class="keyword">, </span><span class="string">"w+"</span><span class="keyword">);<br />
+</span><span class="comment">/* Apply the ROT13 filter to the<br />
+&nbsp;* write filter chain, but not the<br />
+&nbsp;* read filter chain */<br />
+</span><span class="default">stream_filter_append</span><span class="keyword">(</span><span class="default">$fp</span><span class="keyword">, </span><span class="string">"string.rot13"</span><span class="keyword">,<br />
+</span><span class="default">STREAM_FILTER_WRITE</span><span class="keyword">);<br />
+</span><span class="comment">/* Write a simple string to the file<br />
+&nbsp;* it will be ROT13 transformed at the end of the<br />
+stream operation<br />
+&nbsp;* way out */<br />
+</span><span class="default">fwrite</span><span class="keyword">(</span><span class="default">$fp</span><span class="keyword">, </span><span class="string">"This is a test\n"</span><span class="keyword">); </span><span class="comment">// string data is<br />
+</span><span class="default">first written</span><span class="keyword">, </span><span class="default">then ROT13 tranformed </span><span class="keyword">and </span><span class="default">lastly<br />
+written to file<br />
+</span><span class="comment">/* Back up to the beginning of the file */<br />
+</span><span class="default">rewind</span><span class="keyword">(</span><span class="default">$fp</span><span class="keyword">);<br />
+</span><span class="default">$contents</span><span class="keyword">=</span><span class="default">fread</span><span class="keyword">(</span><span class="default">$fp</span><span class="keyword">,</span><span class="default">512</span><span class="keyword">);<br />
+</span><span class="default">fclose</span><span class="keyword">(</span><span class="default">$fp</span><span class="keyword">);<br />
+echo </span><span class="default">$contents</span><span class="keyword">;<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+In the first case, data is transformed at the end of the writing operation, while in the second one, data is first filtered and then stored in $contents.<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; With Regards <br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; Hossein</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="function.stream-encoding.html">stream_encoding</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.stream-filter-prepend.html">stream_filter_prepend</a></div>
  <div class="up"><a href="ref.stream.html">Stream Functions</a></div>

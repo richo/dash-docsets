@@ -124,7 +124,196 @@ imap_stream</tt></i></span><dd>
   </p>
  </div>
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="93706""></a>
+  <div class="note">
+   <strong class="user">thisemailaddress at gmail dot com</strong>
+   <a href="#93706" class="date">23-Sep-2009 10:48</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+In case you feel the need to kill all emails from before a certain year on your Gmail account, this would work:<br />
+<br />
+<span class="default">&lt;?php<br />
+error_reporting</span><span class="keyword">(</span><span class="default">E_ALL </span><span class="keyword">^ (</span><span class="default">E_NOTICE </span><span class="keyword">| </span><span class="default">E_WARNING</span><span class="keyword">));<br />
+<br />
+echo </span><span class="string">"parsing ini file...\n"</span><span class="keyword">;<br />
+</span><span class="default">$ini </span><span class="keyword">= </span><span class="default">parse_ini_file</span><span class="keyword">(</span><span class="string">'g.ini'</span><span class="keyword">);<br />
+</span><span class="default">$user </span><span class="keyword">= </span><span class="default">$ini</span><span class="keyword">[</span><span class="string">'user'</span><span class="keyword">];<br />
+</span><span class="default">$pass </span><span class="keyword">= </span><span class="default">$ini</span><span class="keyword">[</span><span class="string">'pass'</span><span class="keyword">];<br />
+</span><span class="default">$year </span><span class="keyword">= </span><span class="default">$ini</span><span class="keyword">[</span><span class="string">'year'</span><span class="keyword">];<br />
+echo </span><span class="string">"account </span><span class="keyword">{</span><span class="default">$user</span><span class="keyword">}</span><span class="string"> - killing msgs from before </span><span class="keyword">{</span><span class="default">$year</span><span class="keyword">}</span><span class="string">\n\n"</span><span class="keyword">;<br />
+<br />
+echo </span><span class="string">"connecting...\n"</span><span class="keyword">;<br />
+</span><span class="default">$imap </span><span class="keyword">= </span><span class="default">imap_open</span><span class="keyword">(</span><span class="string">"{imap.gmail.com:993/imap/ssl/novalidate-cert}[Gmail]/All Mail"</span><span class="keyword">, </span><span class="default">$user</span><span class="keyword">, </span><span class="default">$pass</span><span class="keyword">) or die(</span><span class="string">"can't connect: " </span><span class="keyword">. </span><span class="default">imap_last_error</span><span class="keyword">() . </span><span class="string">"\n"</span><span class="keyword">);<br />
+<br />
+echo </span><span class="string">"checking current mailbox...\n"</span><span class="keyword">;<br />
+</span><span class="default">$mbox </span><span class="keyword">= </span><span class="default">imap_check</span><span class="keyword">(</span><span class="default">$imap</span><span class="keyword">);<br />
+<br />
+echo </span><span class="string">"fetching overview...\n"</span><span class="keyword">;<br />
+</span><span class="default">$flaggedForDelete </span><span class="keyword">= </span><span class="default">0</span><span class="keyword">;<br />
+for(</span><span class="default">$n </span><span class="keyword">= </span><span class="default">0</span><span class="keyword">; </span><span class="default">$n </span><span class="keyword">&lt; </span><span class="default">$mbox</span><span class="keyword">-&gt;</span><span class="default">Nmsgs</span><span class="keyword">; </span><span class="default">$n</span><span class="keyword">++) {<br />
+&nbsp;&nbsp;&nbsp; echo </span><span class="string">"processing </span><span class="keyword">{</span><span class="default">$n</span><span class="keyword">}</span><span class="string"> of </span><span class="keyword">{</span><span class="default">$mbox</span><span class="keyword">-&gt;</span><span class="default">Nmsgs</span><span class="keyword">}</span><span class="string">...\r"</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$hdr </span><span class="keyword">= </span><span class="default">imap_fetchheader</span><span class="keyword">(</span><span class="default">$imap</span><span class="keyword">, </span><span class="default">$n</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">preg_match</span><span class="keyword">(</span><span class="string">'/^Date: (.*?)$/m'</span><span class="keyword">, </span><span class="default">$hdr</span><span class="keyword">, </span><span class="default">$matches</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$date </span><span class="keyword">= </span><span class="default">date_parse</span><span class="keyword">(</span><span class="default">strtotime</span><span class="keyword">(</span><span class="default">$matches</span><span class="keyword">[</span><span class="default">1</span><span class="keyword">]));<br />
+&nbsp;&nbsp;&nbsp; if(</span><span class="default">$date</span><span class="keyword">[</span><span class="string">'year'</span><span class="keyword">] &lt; </span><span class="default">$year</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">imap_delete</span><span class="keyword">(</span><span class="default">$imap</span><span class="keyword">, </span><span class="default">$msg</span><span class="keyword">-&gt;</span><span class="default">msgno</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$flaggedForDelete</span><span class="keyword">++;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+}<br />
+<br />
+echo </span><span class="string">"expunging mailbox (</span><span class="keyword">{</span><span class="default">$flaggedForDelete</span><span class="keyword">}</span><span class="string"> messages flagged)... "</span><span class="keyword">;<br />
+echo ((</span><span class="default">imap_expunge</span><span class="keyword">(</span><span class="default">$imap</span><span class="keyword">)) ? </span><span class="string">"ok" </span><span class="keyword">: </span><span class="string">"failed!"</span><span class="keyword">).</span><span class="string">"\n"</span><span class="keyword">;<br />
+</span><span class="default">imap_close</span><span class="keyword">(</span><span class="default">$imap</span><span class="keyword">);<br />
+<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="90467""></a>
+  <div class="note">
+   <strong class="user">Alex</strong>
+   <a href="#90467" class="date">23-Apr-2009 12:00</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I think you don't have to give a range to imap_delete() if you want to delete a single one. <br />
+<br />
+This works well:<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+imap_delete</span><span class="keyword">(</span><span class="default">$conn</span><span class="keyword">,</span><span class="default">trim</span><span class="keyword">(</span><span class="default">$msgno</span><span class="keyword">));&nbsp; &nbsp; <br />
+<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="88557""></a>
+  <div class="note">
+   <strong class="user">chris at financialservicesonline dot com dot au</strong>
+   <a href="#88557" class="date">28-Jan-2009 03:54</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+After a little experimentation i found out how to mark a single message for deletion...<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+$msgid </span><span class="keyword">= </span><span class="string">'5'</span><span class="keyword">; </span><span class="comment">//For example<br />
+<br />
+</span><span class="default">imap_delete</span><span class="keyword">(</span><span class="default">$mbox</span><span class="keyword">, </span><span class="string">"</span><span class="default">$msgid</span><span class="string">:</span><span class="default">$msgid</span><span class="string">"</span><span class="keyword">);<br />
+<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+imap_delete() seems to want a range, so to select one, simply range from your id to your id.<br />
+<br />
+Hope this helps.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="88127""></a>
+  <div class="note">
+   <strong class="user">iwantsimplelife at lycos dot com</strong>
+   <a href="#88127" class="date">12-Jan-2009 01:40</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Somehow, when ever I try to delete an email using the message number returned by imap_header, any email with a message number below 999 will fail.<br />
+<br />
+I discovered that the imap_header will pad the message number with spaces. You will need to trim the number before calling imap_delete.<br />
+<br />
+I am using qmail and it took me over a month to figure it out.<br />
+<br />
+Hope this will be helpful to some poor soul out there facing the same problem.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="37300""></a>
+  <div class="note">
+   <strong class="user">jacky at jackyhome dot myvnc dot com</strong>
+   <a href="#37300" class="date">09-Nov-2003 01:42</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+// is not a complete code but enough to clear out an entire mailbox.<br />
+// hope this can save your time :-)<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+</span><span class="keyword">if (isset(</span><span class="default">$_REQUEST</span><span class="keyword">[</span><span class="string">'DoNow'</span><span class="keyword">])) <br />
+{<br />
+&nbsp; </span><span class="comment"># PULL ADDITIONAL FILES<br />
+&nbsp; </span><span class="keyword">include_once (</span><span class="string">"common.php"</span><span class="keyword">);<br />
+&nbsp; <br />
+&nbsp; </span><span class="default">$conn </span><span class="keyword">= @</span><span class="default">imap_open</span><span class="keyword">(</span><span class="string">"\{</span><span class="default">$server</span><span class="string">/</span><span class="default">$serverType</span><span class="string">}Trash"</span><span class="keyword">, </span><span class="default">$user</span><span class="keyword">, </span><span class="default">$pass</span><span class="keyword">) <br />
+&nbsp; or die(</span><span class="string">"Connection to folder failed"</span><span class="keyword">);<br />
+&nbsp; <br />
+&nbsp; </span><span class="default">$headers </span><span class="keyword">= @</span><span class="default">imap_check</span><span class="keyword">(</span><span class="default">$conn</span><span class="keyword">);<br />
+&nbsp; (</span><span class="default">$headers</span><span class="keyword">-&gt;</span><span class="default">Nmsgs </span><span class="keyword">&gt; </span><span class="default">0</span><span class="keyword">) or die(</span><span class="string">"Trash is empty already !"</span><span class="keyword">);<br />
+&nbsp; <br />
+&nbsp; </span><span class="comment">// delete email(s)<br />
+&nbsp; </span><span class="keyword">@</span><span class="default">imap_delete</span><span class="keyword">(</span><span class="default">$conn</span><span class="keyword">,</span><span class="string">'1:*'</span><span class="keyword">);&nbsp;&nbsp; </span><span class="comment">// to clear out an entire mailbox.<br />
+&nbsp; </span><span class="keyword">@</span><span class="default">imap_expunge</span><span class="keyword">(</span><span class="default">$conn</span><span class="keyword">);<br />
+&nbsp; echo </span><span class="string">"Trash is empty."</span><span class="keyword">; <br />
+&nbsp; <br />
+&nbsp; </span><span class="default">imap_close</span><span class="keyword">(</span><span class="default">$conn</span><span class="keyword">);<br />
+} <br />
+else<br />
+{<br />
+&nbsp; echo </span><span class="string">"&lt;form name='formA' action='"</span><span class="keyword">.</span><span class="default">$_SERVER</span><span class="keyword">[</span><span class="string">'PATH_INFO'</span><span class="keyword">].</span><span class="string">"' method='POST'&gt;"</span><span class="keyword">; </span><span class="default">?&gt;<br />
+</span>&nbsp; Are you sure to empty trash ?<br />
+&nbsp; &lt;p&gt;<br />
+&nbsp; &lt;input type="submit" value="Go Ahead" name="DoNow"&gt;&amp;nbsp;<br />
+&nbsp; &lt;input type="button" value="Cancel" name="Cancel" onClick='javascript:self.history.go(-1)'&gt;&lt;/form&gt;&lt;/p&gt;<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">} </span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="31110""></a>
+  <div class="note">
+   <strong class="user">James G</strong>
+   <a href="#31110" class="date">09-Apr-2003 09:05</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I had some major issues deleting emails using this function.&nbsp; Using IIS 5.0 and a win based Mail Server, I could not delete the emails individually.<br />
+<br />
+My script merely needed to check the emails and update the database for bounce backs, after which I simply wanted to erase all emails.<br />
+<br />
+If imap_delete($mbox,$email-&gt;MsgNo) just isnt working for you, you can try using<br />
+<br />
+&nbsp;&nbsp;&nbsp; imap_delete($mbox,'1:*');<br />
+<br />
+to clear out an entire mailbox.<br />
+<br />
+Hope this helps cause it drove me insane for about 5 hours.&nbsp; :)</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="function.imap-createmailbox.html">imap_createmailbox</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.imap-deletemailbox.html">imap_deletemailbox</a></div>
  <div class="up"><a href="ref.imap.html">IMAP Functions</a></div>

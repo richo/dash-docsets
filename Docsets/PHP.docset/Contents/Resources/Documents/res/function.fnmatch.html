@@ -216,7 +216,356 @@
  </div>
 
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="100207""></a>
+  <div class="note">
+   <strong class="user">me at rowanlewis dot com</strong>
+   <a href="#100207" class="date">30-Sep-2010 10:58</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Here's a definitive solution, which supports negative character classes and the four documented flags.<br />
+<br />
+<span class="default">&lt;?php<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">if (!</span><span class="default">function_exists</span><span class="keyword">(</span><span class="string">'fnmatch'</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">define</span><span class="keyword">(</span><span class="string">'FNM_PATHNAME'</span><span class="keyword">, </span><span class="default">1</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">define</span><span class="keyword">(</span><span class="string">'FNM_NOESCAPE'</span><span class="keyword">, </span><span class="default">2</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">define</span><span class="keyword">(</span><span class="string">'FNM_PERIOD'</span><span class="keyword">, </span><span class="default">4</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">define</span><span class="keyword">(</span><span class="string">'FNM_CASEFOLD'</span><span class="keyword">, </span><span class="default">16</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; function </span><span class="default">fnmatch</span><span class="keyword">(</span><span class="default">$pattern</span><span class="keyword">, </span><span class="default">$string</span><span class="keyword">, </span><span class="default">$flags </span><span class="keyword">= </span><span class="default">0</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">pcre_fnmatch</span><span class="keyword">(</span><span class="default">$pattern</span><span class="keyword">, </span><span class="default">$string</span><span class="keyword">, </span><span class="default">$flags</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; function </span><span class="default">pcre_fnmatch</span><span class="keyword">(</span><span class="default">$pattern</span><span class="keyword">, </span><span class="default">$string</span><span class="keyword">, </span><span class="default">$flags </span><span class="keyword">= </span><span class="default">0</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$modifiers </span><span class="keyword">= </span><span class="default">null</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$transforms </span><span class="keyword">= array(<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="string">'\*'&nbsp; &nbsp; </span><span class="keyword">=&gt; </span><span class="string">'.*'</span><span class="keyword">,<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="string">'\?'&nbsp; &nbsp; </span><span class="keyword">=&gt; </span><span class="string">'.'</span><span class="keyword">,<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="string">'\[\!'&nbsp; &nbsp; </span><span class="keyword">=&gt; </span><span class="string">'[^'</span><span class="keyword">,<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="string">'\['&nbsp; &nbsp; </span><span class="keyword">=&gt; </span><span class="string">'['</span><span class="keyword">,<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="string">'\]'&nbsp; &nbsp; </span><span class="keyword">=&gt; </span><span class="string">']'</span><span class="keyword">,<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="string">'\.'&nbsp; &nbsp; </span><span class="keyword">=&gt; </span><span class="string">'\.'</span><span class="keyword">,<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="string">'\\'&nbsp; &nbsp; </span><span class="keyword">=&gt; </span><span class="string">'\\\\'<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// Forward slash in string must be in pattern:<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">if (</span><span class="default">$flags </span><span class="keyword">&amp; </span><span class="default">FNM_PATHNAME</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$transforms</span><span class="keyword">[</span><span class="string">'\*'</span><span class="keyword">] = </span><span class="string">'[^/]*'</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// Back slash should not be escaped:<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">if (</span><span class="default">$flags </span><span class="keyword">&amp; </span><span class="default">FNM_NOESCAPE</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; unset(</span><span class="default">$transforms</span><span class="keyword">[</span><span class="string">'\\'</span><span class="keyword">]);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// Perform case insensitive match:<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">if (</span><span class="default">$flags </span><span class="keyword">&amp; </span><span class="default">FNM_CASEFOLD</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$modifiers </span><span class="keyword">.= </span><span class="string">'i'</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// Period at start must be the same as pattern:<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">if (</span><span class="default">$flags </span><span class="keyword">&amp; </span><span class="default">FNM_PERIOD</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if (</span><span class="default">strpos</span><span class="keyword">(</span><span class="default">$string</span><span class="keyword">, </span><span class="string">'.'</span><span class="keyword">) === </span><span class="default">0 </span><span class="keyword">&amp;&amp; </span><span class="default">strpos</span><span class="keyword">(</span><span class="default">$pattern</span><span class="keyword">, </span><span class="string">'.'</span><span class="keyword">) !== </span><span class="default">0</span><span class="keyword">) return </span><span class="default">false</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$pattern </span><span class="keyword">= </span><span class="string">'#^'<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">. </span><span class="default">strtr</span><span class="keyword">(</span><span class="default">preg_quote</span><span class="keyword">(</span><span class="default">$pattern</span><span class="keyword">, </span><span class="string">'#'</span><span class="keyword">), </span><span class="default">$transforms</span><span class="keyword">)<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; . </span><span class="string">'$#'<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">. </span><span class="default">$modifiers</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return (boolean)</span><span class="default">preg_match</span><span class="keyword">(</span><span class="default">$pattern</span><span class="keyword">, </span><span class="default">$string</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; <br />
+</span><span class="default">?&gt;<br />
+</span><br />
+This probably needs further testing, but it seems to function identically to the native fnmatch implementation.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="81927""></a>
+  <div class="note">
+   <strong class="user">Sinured</strong>
+   <a href="#81927" class="date">19-Mar-2008 01:04</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+An addition to my previous note: My statement regarding the FNM_* constants was wrong. They are available on POSIX-compliant systems (in other words, if fnmatch() is defined).</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="79489""></a>
+  <div class="note">
+   <strong class="user">theboydanny at gmail dot com</strong>
+   <a href="#79489" class="date">29-Nov-2007 10:31</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+About the windows compat functions below:<br />
+I needed fnmatch for a application that had to work on Windows, took a look here and tested both. Jk's works for me, soywiz didn't (on WinXPSP2, PHP 5.2.3).<br />
+The only difference between them is addcslashes (soywiz) instead of preg_quote (jk). They _should_ both work, but for some reason soywiz's didn't for me. So YMMV.<br />
+However, to make JK's fnmatch() work with the example in the documentation, you also have to strtr the [ and ] in $pattern.<br />
+<span class="default">&lt;?php<br />
+$pattern </span><span class="keyword">= </span><span class="default">strtr</span><span class="keyword">(</span><span class="default">preg_quote</span><span class="keyword">(</span><span class="default">$pattern</span><span class="keyword">, </span><span class="string">'#'</span><span class="keyword">), array(</span><span class="string">'\*' </span><span class="keyword">=&gt; </span><span class="string">'.*'</span><span class="keyword">, </span><span class="string">'\?' </span><span class="keyword">=&gt; </span><span class="string">'.'</span><span class="keyword">, </span><span class="string">'\[' </span><span class="keyword">=&gt; </span><span class="string">'['</span><span class="keyword">, </span><span class="string">'\]' </span><span class="keyword">=&gt; </span><span class="string">']'</span><span class="keyword">));<br />
+</span><span class="default">?&gt;<br />
+</span>And thanks for the functions, guys.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="76782""></a>
+  <div class="note">
+   <strong class="user">Sinured</strong>
+   <a href="#76782" class="date">30-Jul-2007 10:14</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Possible flags (scratched out of fnmatch.h):<br />
+...::...<br />
+<br />
+FNM_PATHNAME:<br />
+&gt; Slash in $string only matches slash in $pattern.<br />
+<br />
+FNM_PERIOD:<br />
+&gt; Leading period in $string must be exactly matched by period in $pattern.<br />
+<br />
+FNM_NOESCAPE:<br />
+&gt; Disable backslash escaping.<br />
+<br />
+FNM_NOSYS:<br />
+&gt; Obsolescent.<br />
+<br />
+FNM_FILE_NAME:<br />
+&gt; Alias of FNM_PATHNAME.<br />
+<br />
+FNM_LEADING_DIR:<br />
+&gt; From fnmatch.h: /* Ignore `/...' after a match.&nbsp; */<br />
+<br />
+FNM_CASEFOLD:<br />
+&gt; Caseless match.<br />
+<br />
+Since they‰Ûªre appearing in file.c, but are not available in PHP, we‰Ûªll have to define them ourselves:<br />
+<span class="default">&lt;?php<br />
+define</span><span class="keyword">(</span><span class="string">'FNM_PATHNAME'</span><span class="keyword">, </span><span class="default">1</span><span class="keyword">);<br />
+</span><span class="default">define</span><span class="keyword">(</span><span class="string">'FNM_PERIOD'</span><span class="keyword">, </span><span class="default">4</span><span class="keyword">);<br />
+</span><span class="default">define</span><span class="keyword">(</span><span class="string">'FNM_NOESCAPE'</span><span class="keyword">, </span><span class="default">2</span><span class="keyword">);<br />
+</span><span class="comment">// GNU extensions<br />
+</span><span class="default">define</span><span class="keyword">(</span><span class="string">'FNM_FILE_NAME'</span><span class="keyword">, </span><span class="default">FNM_PATHNAME</span><span class="keyword">);<br />
+</span><span class="default">define</span><span class="keyword">(</span><span class="string">'FNM_LEADING_DIR'</span><span class="keyword">, </span><span class="default">8</span><span class="keyword">);<br />
+</span><span class="default">define</span><span class="keyword">(</span><span class="string">'FNM_CASEFOLD'</span><span class="keyword">, </span><span class="default">16</span><span class="keyword">);<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+I didn‰Ûªt test any of these except casefold, which worked for me.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="75702""></a>
+  <div class="note">
+   <strong class="user">Frederik Krautwald</strong>
+   <a href="#75702" class="date">12-Jun-2007 10:30</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+soywiz's function still doesn't seem to work -- at least not with PHP 5.2.3 on Windows -- but jk's does.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="72490""></a>
+  <div class="note">
+   <strong class="user">soywiz at NOSPAM dot php dot net</strong>
+   <a href="#72490" class="date">20-Jan-2007 07:40</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+A revised better alternative for fnmatch on windows. It should work well on PHP &gt;= 4.0.0<br />
+<br />
+<span class="default">&lt;?php<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">if (!</span><span class="default">function_exists</span><span class="keyword">(</span><span class="string">'fnmatch'</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; function </span><span class="default">fnmatch</span><span class="keyword">(</span><span class="default">$pattern</span><span class="keyword">, </span><span class="default">$string</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; return @</span><span class="default">preg_match</span><span class="keyword">(<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="string">'/^' </span><span class="keyword">. </span><span class="default">strtr</span><span class="keyword">(</span><span class="default">addcslashes</span><span class="keyword">(</span><span class="default">$pattern</span><span class="keyword">, </span><span class="string">'/\\.+^$(){}=!&lt;&gt;|'</span><span class="keyword">),<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; array(</span><span class="string">'*' </span><span class="keyword">=&gt; </span><span class="string">'.*'</span><span class="keyword">, </span><span class="string">'?' </span><span class="keyword">=&gt; </span><span class="string">'.?'</span><span class="keyword">)) . </span><span class="string">'$/i'</span><span class="keyword">, </span><span class="default">$string<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; }<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="71725""></a>
+  <div class="note">
+   <strong class="user">jk at ricochetsolutions dot com</strong>
+   <a href="#71725" class="date">13-Dec-2006 05:39</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+soywiz's function didnt seem to work for me, but this did.<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">if(!</span><span class="default">function_exists</span><span class="keyword">(</span><span class="string">'fnmatch'</span><span class="keyword">)) {<br />
+<br />
+&nbsp;&nbsp;&nbsp; function </span><span class="default">fnmatch</span><span class="keyword">(</span><span class="default">$pattern</span><span class="keyword">, </span><span class="default">$string</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">preg_match</span><span class="keyword">(</span><span class="string">"#^"</span><span class="keyword">.</span><span class="default">strtr</span><span class="keyword">(</span><span class="default">preg_quote</span><span class="keyword">(</span><span class="default">$pattern</span><span class="keyword">, </span><span class="string">'#'</span><span class="keyword">), array(</span><span class="string">'\*' </span><span class="keyword">=&gt; </span><span class="string">'.*'</span><span class="keyword">, </span><span class="string">'\?' </span><span class="keyword">=&gt; </span><span class="string">'.'</span><span class="keyword">)).</span><span class="string">"$#i"</span><span class="keyword">, </span><span class="default">$string</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; } </span><span class="comment">// end<br />
+<br />
+</span><span class="keyword">} </span><span class="comment">// end if<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="68198""></a>
+  <div class="note">
+   <strong class="user">soywiz at php dot net</strong>
+   <a href="#68198" class="date">17-Jul-2006 07:12</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+A better "fnmatch" alternative for windows that converts a fnmatch pattern into a preg one. It should work on PHP &gt;= 4.0.0<br />
+<br />
+<span class="default">&lt;?php<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">if (!</span><span class="default">function_exists</span><span class="keyword">(</span><span class="string">'fnmatch'</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; function </span><span class="default">fnmatch</span><span class="keyword">(</span><span class="default">$pattern</span><span class="keyword">, </span><span class="default">$string</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; return @</span><span class="default">preg_match</span><span class="keyword">(</span><span class="string">'/^' </span><span class="keyword">. </span><span class="default">strtr</span><span class="keyword">(</span><span class="default">addcslashes</span><span class="keyword">(</span><span class="default">$pattern</span><span class="keyword">, </span><span class="string">'\\.+^$(){}=!&lt;&gt;|'</span><span class="keyword">), array(</span><span class="string">'*' </span><span class="keyword">=&gt; </span><span class="string">'.*'</span><span class="keyword">, </span><span class="string">'?' </span><span class="keyword">=&gt; </span><span class="string">'.?'</span><span class="keyword">)) . </span><span class="string">'$/i'</span><span class="keyword">, </span><span class="default">$string</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; }<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="62550""></a>
+  <div class="note">
+   <strong class="user">jsnell at networkninja dot com</strong>
+   <a href="#62550" class="date">02-Mar-2006 07:12</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+The last line of soywiz at gmail dot com windows replacement should be changed to:<br />
+<br />
+&nbsp;&nbsp; return preg_match('/' . $npattern . '$/i', $string);<br />
+<br />
+otherwise, a pattern for *.xml will match file.xml~ or any else anything with the text *.xml in it, regardless of position.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="55126""></a>
+  <div class="note">
+   <strong class="user">soywiz at gmail dot com</strong>
+   <a href="#55126" class="date">26-Jul-2005 04:07</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+A "fnmatch" alternative that converts the pattern, to a valid preg one and uses preg_match then. It will work on windows.<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">if (!</span><span class="default">function_exists</span><span class="keyword">(</span><span class="string">'fnmatch'</span><span class="keyword">)) {<br />
+function </span><span class="default">fnmatch</span><span class="keyword">(</span><span class="default">$pattern</span><span class="keyword">, </span><span class="default">$string</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; for (</span><span class="default">$op </span><span class="keyword">= </span><span class="default">0</span><span class="keyword">, </span><span class="default">$npattern </span><span class="keyword">= </span><span class="string">''</span><span class="keyword">, </span><span class="default">$n </span><span class="keyword">= </span><span class="default">0</span><span class="keyword">, </span><span class="default">$l </span><span class="keyword">= </span><span class="default">strlen</span><span class="keyword">(</span><span class="default">$pattern</span><span class="keyword">); </span><span class="default">$n </span><span class="keyword">&lt; </span><span class="default">$l</span><span class="keyword">; </span><span class="default">$n</span><span class="keyword">++) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; switch (</span><span class="default">$c </span><span class="keyword">= </span><span class="default">$pattern</span><span class="keyword">[</span><span class="default">$n</span><span class="keyword">]) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; case </span><span class="string">'\\'</span><span class="keyword">:<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$npattern </span><span class="keyword">.= </span><span class="string">'\\' </span><span class="keyword">. @</span><span class="default">$pattern</span><span class="keyword">[++</span><span class="default">$n</span><span class="keyword">];<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; break;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; case </span><span class="string">'.'</span><span class="keyword">: case </span><span class="string">'+'</span><span class="keyword">: case </span><span class="string">'^'</span><span class="keyword">: case </span><span class="string">'$'</span><span class="keyword">: case </span><span class="string">'('</span><span class="keyword">: case </span><span class="string">')'</span><span class="keyword">: case </span><span class="string">'{'</span><span class="keyword">: case </span><span class="string">'}'</span><span class="keyword">: case </span><span class="string">'='</span><span class="keyword">: case </span><span class="string">'!'</span><span class="keyword">: case </span><span class="string">'&lt;'</span><span class="keyword">: case </span><span class="string">'&gt;'</span><span class="keyword">: case </span><span class="string">'|'</span><span class="keyword">:<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$npattern </span><span class="keyword">.= </span><span class="string">'\\' </span><span class="keyword">. </span><span class="default">$c</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; break;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; case </span><span class="string">'?'</span><span class="keyword">: case </span><span class="string">'*'</span><span class="keyword">:<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$npattern </span><span class="keyword">.= </span><span class="string">'.' </span><span class="keyword">. </span><span class="default">$c</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; break;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; case </span><span class="string">'['</span><span class="keyword">: case </span><span class="string">']'</span><span class="keyword">: default:<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$npattern </span><span class="keyword">.= </span><span class="default">$c</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if (</span><span class="default">$c </span><span class="keyword">== </span><span class="string">'['</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$op</span><span class="keyword">++;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; } else if (</span><span class="default">$c </span><span class="keyword">== </span><span class="string">']'</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if (</span><span class="default">$op </span><span class="keyword">== </span><span class="default">0</span><span class="keyword">) return </span><span class="default">false</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$op</span><span class="keyword">--;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; break;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; if (</span><span class="default">$op </span><span class="keyword">!= </span><span class="default">0</span><span class="keyword">) return </span><span class="default">false</span><span class="keyword">;<br />
+<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">preg_match</span><span class="keyword">(</span><span class="string">'/' </span><span class="keyword">. </span><span class="default">$npattern </span><span class="keyword">. </span><span class="string">'/i'</span><span class="keyword">, </span><span class="default">$string</span><span class="keyword">);<br />
+}<br />
+}<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="34769""></a>
+  <div class="note">
+   <strong class="user">phlipping at yahoo dot com</strong>
+   <a href="#34769" class="date">06-Aug-2003 03:59</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+you couls also try this function that I wrote before I found fnmatch:<br />
+<br />
+function WildToReg($str)<br />
+{<br />
+&nbsp; $s = "";&nbsp;&nbsp; <br />
+&nbsp; for ($i = 0; $i &lt; strlen($str); $i++)<br />
+&nbsp; {<br />
+&nbsp;&nbsp; $c = $str{$i};<br />
+&nbsp;&nbsp; if ($c =='?')<br />
+&nbsp;&nbsp;&nbsp; $s .= '.'; // any character<br />
+&nbsp;&nbsp; else if ($c == '*')&nbsp; &nbsp; <br />
+&nbsp;&nbsp;&nbsp; $s .= '.*'; // 0 or more any characters&nbsp; &nbsp; <br />
+&nbsp;&nbsp; else if ($c == '[' || $c == ']')<br />
+&nbsp;&nbsp;&nbsp; $s .= $c;&nbsp; // one of characters within []<br />
+&nbsp;&nbsp; else<br />
+&nbsp;&nbsp;&nbsp; $s .= '\\' . $c;<br />
+&nbsp; }<br />
+&nbsp; $s = '^' . $s . '$';<br />
+<br />
+&nbsp; //trim redundant ^ or $<br />
+&nbsp; //eg ^.*\.txt$ matches exactly the same as \.txt$<br />
+&nbsp; if (substr($s,0,3) == "^.*")<br />
+&nbsp;&nbsp; $s = substr($s,3);<br />
+&nbsp; if (substr($s,-3,3) == ".*$")<br />
+&nbsp;&nbsp; $s = substr($s,0,-3);<br />
+&nbsp; return $s;<br />
+}<br />
+<br />
+if (ereg(WildToReg("*.txt"), $fn))<br />
+&nbsp; print "$fn is a text file";<br />
+else<br />
+&nbsp; print "$fn is not a text file";</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="function.flock.html">flock</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.fopen.html">fopen</a></div>
  <div class="up"><a href="ref.filesystem.html">Filesystem Functions</a></div>

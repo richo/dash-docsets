@@ -126,6 +126,781 @@
 
  <h2>Table of Contents</h2><ul class="chunklist chunklist_reference"><li><a href="function.curl-close.html">curl_close</a> â€” Close a cURL session</li><li><a href="function.curl-copy-handle.html">curl_copy_handle</a> â€” Copy a cURL handle along with all of its preferences</li><li><a href="function.curl-errno.html">curl_errno</a> â€” Return the last error number</li><li><a href="function.curl-error.html">curl_error</a> â€” Return a string containing the last error for the current session</li><li><a href="function.curl-exec.html">curl_exec</a> â€” Perform a cURL session</li><li><a href="function.curl-getinfo.html">curl_getinfo</a> â€” Get information regarding a specific transfer</li><li><a href="function.curl-init.html">curl_init</a> â€” Initialize a cURL session</li><li><a href="function.curl-multi-add-handle.html">curl_multi_add_handle</a> â€” Add a normal cURL handle to a cURL multi handle</li><li><a href="function.curl-multi-close.html">curl_multi_close</a> â€” Close a set of cURL handles</li><li><a href="function.curl-multi-exec.html">curl_multi_exec</a> â€” Run the sub-connections of the current cURL handle</li><li><a href="function.curl-multi-getcontent.html">curl_multi_getcontent</a> â€” Return the content of a cURL handle if CURLOPT_RETURNTRANSFER is set</li><li><a href="function.curl-multi-info-read.html">curl_multi_info_read</a> â€” Get information about the current transfers</li><li><a href="function.curl-multi-init.html">curl_multi_init</a> â€” Returns a new cURL multi handle</li><li><a href="function.curl-multi-remove-handle.html">curl_multi_remove_handle</a> â€” Remove a multi handle from a set of cURL handles</li><li><a href="function.curl-multi-select.html">curl_multi_select</a> â€” Wait for activity on any curl_multi connection</li><li><a href="function.curl-setopt-array.html">curl_setopt_array</a> â€” Set multiple options for a cURL transfer</li><li><a href="function.curl-setopt.html">curl_setopt</a> â€” Set an option for a cURL transfer</li><li><a href="function.curl-version.html">curl_version</a> â€” Gets cURL version information</li></ul>
 </div>
+<div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="97452""></a>
+  <div class="note">
+   <strong class="user">arturm at union dot com dot pl</strong>
+   <a href="#97452" class="date">20-Apr-2010 09:03</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+One of the reasons why curl can be slow is that it appends header "Expect: 100-continue". Try this fix:<br />
+<br />
+<span class="default">&lt;?php<br />
+$headers </span><span class="keyword">= array(<br />
+&nbsp; </span><span class="string">"Expect:"</span><span class="keyword">,<br />
+&nbsp; </span><span class="comment">// more headers here<br />
+</span><span class="keyword">);<br />
+</span><span class="default">curl_setopt</span><span class="keyword">(</span><span class="default">$ch</span><span class="keyword">, </span><span class="default">CURLOPT_HTTPHEADER</span><span class="keyword">, </span><span class="default">$headers</span><span class="keyword">);<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="93163""></a>
+  <div class="note">
+   <strong class="user">Emprivo.com</strong>
+   <a href="#93163" class="date">26-Aug-2009 09:58</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Fixed bugs in the function posted earlier (better javascript redirect following and now supports HTTPS)<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+</span><span class="comment">/*==================================<br />
+Get url content and response headers (given a url, follows all redirections on it and returned content and response headers of final url)<br />
+<br />
+@return&nbsp; &nbsp; array[0]&nbsp; &nbsp; content<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; array[1]&nbsp; &nbsp; array of response headers<br />
+==================================*/<br />
+</span><span class="keyword">function </span><span class="default">get_url</span><span class="keyword">( </span><span class="default">$url</span><span class="keyword">,&nbsp; </span><span class="default">$javascript_loop </span><span class="keyword">= </span><span class="default">0</span><span class="keyword">, </span><span class="default">$timeout </span><span class="keyword">= </span><span class="default">5 </span><span class="keyword">)<br />
+{<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$url </span><span class="keyword">= </span><span class="default">str_replace</span><span class="keyword">( </span><span class="string">"&amp;amp;"</span><span class="keyword">, </span><span class="string">"&amp;"</span><span class="keyword">, </span><span class="default">urldecode</span><span class="keyword">(</span><span class="default">trim</span><span class="keyword">(</span><span class="default">$url</span><span class="keyword">)) );<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$cookie </span><span class="keyword">= </span><span class="default">tempnam </span><span class="keyword">(</span><span class="string">"/tmp"</span><span class="keyword">, </span><span class="string">"CURLCOOKIE"</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$ch </span><span class="keyword">= </span><span class="default">curl_init</span><span class="keyword">();<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">curl_setopt</span><span class="keyword">( </span><span class="default">$ch</span><span class="keyword">, </span><span class="default">CURLOPT_USERAGENT</span><span class="keyword">, </span><span class="string">"Mozilla/5.0 (Windows; U; Windows NT 5.1; rv:1.7.3) Gecko/20041001 Firefox/0.10.1" </span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">curl_setopt</span><span class="keyword">( </span><span class="default">$ch</span><span class="keyword">, </span><span class="default">CURLOPT_URL</span><span class="keyword">, </span><span class="default">$url </span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">curl_setopt</span><span class="keyword">( </span><span class="default">$ch</span><span class="keyword">, </span><span class="default">CURLOPT_COOKIEJAR</span><span class="keyword">, </span><span class="default">$cookie </span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">curl_setopt</span><span class="keyword">( </span><span class="default">$ch</span><span class="keyword">, </span><span class="default">CURLOPT_FOLLOWLOCATION</span><span class="keyword">, </span><span class="default">true </span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">curl_setopt</span><span class="keyword">( </span><span class="default">$ch</span><span class="keyword">, </span><span class="default">CURLOPT_ENCODING</span><span class="keyword">, </span><span class="string">"" </span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">curl_setopt</span><span class="keyword">( </span><span class="default">$ch</span><span class="keyword">, </span><span class="default">CURLOPT_RETURNTRANSFER</span><span class="keyword">, </span><span class="default">true </span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">curl_setopt</span><span class="keyword">( </span><span class="default">$ch</span><span class="keyword">, </span><span class="default">CURLOPT_AUTOREFERER</span><span class="keyword">, </span><span class="default">true </span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">curl_setopt</span><span class="keyword">( </span><span class="default">$ch</span><span class="keyword">, </span><span class="default">CURLOPT_SSL_VERIFYPEER</span><span class="keyword">, </span><span class="default">false </span><span class="keyword">);&nbsp; &nbsp; </span><span class="comment"># required for https urls<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">curl_setopt</span><span class="keyword">( </span><span class="default">$ch</span><span class="keyword">, </span><span class="default">CURLOPT_CONNECTTIMEOUT</span><span class="keyword">, </span><span class="default">$timeout </span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">curl_setopt</span><span class="keyword">( </span><span class="default">$ch</span><span class="keyword">, </span><span class="default">CURLOPT_TIMEOUT</span><span class="keyword">, </span><span class="default">$timeout </span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">curl_setopt</span><span class="keyword">( </span><span class="default">$ch</span><span class="keyword">, </span><span class="default">CURLOPT_MAXREDIRS</span><span class="keyword">, </span><span class="default">10 </span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$content </span><span class="keyword">= </span><span class="default">curl_exec</span><span class="keyword">( </span><span class="default">$ch </span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$response </span><span class="keyword">= </span><span class="default">curl_getinfo</span><span class="keyword">( </span><span class="default">$ch </span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">curl_close </span><span class="keyword">( </span><span class="default">$ch </span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp;&nbsp; if (</span><span class="default">$response</span><span class="keyword">[</span><span class="string">'http_code'</span><span class="keyword">] == </span><span class="default">301 </span><span class="keyword">|| </span><span class="default">$response</span><span class="keyword">[</span><span class="string">'http_code'</span><span class="keyword">] == </span><span class="default">302</span><span class="keyword">)<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">ini_set</span><span class="keyword">(</span><span class="string">"user_agent"</span><span class="keyword">, </span><span class="string">"Mozilla/5.0 (Windows; U; Windows NT 5.1; rv:1.7.3) Gecko/20041001 Firefox/0.10.1"</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if ( </span><span class="default">$headers </span><span class="keyword">= </span><span class="default">get_headers</span><span class="keyword">(</span><span class="default">$response</span><span class="keyword">[</span><span class="string">'url'</span><span class="keyword">]) )<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; foreach( </span><span class="default">$headers </span><span class="keyword">as </span><span class="default">$value </span><span class="keyword">)<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if ( </span><span class="default">substr</span><span class="keyword">( </span><span class="default">strtolower</span><span class="keyword">(</span><span class="default">$value</span><span class="keyword">), </span><span class="default">0</span><span class="keyword">, </span><span class="default">9 </span><span class="keyword">) == </span><span class="string">"location:" </span><span class="keyword">)<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">get_url</span><span class="keyword">( </span><span class="default">trim</span><span class="keyword">( </span><span class="default">substr</span><span class="keyword">( </span><span class="default">$value</span><span class="keyword">, </span><span class="default">9</span><span class="keyword">, </span><span class="default">strlen</span><span class="keyword">(</span><span class="default">$value</span><span class="keyword">) ) ) );<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; if (&nbsp; &nbsp; ( </span><span class="default">preg_match</span><span class="keyword">(</span><span class="string">"/&gt;[[:space:]]+window\.location\.replace\('(.*)'\)/i"</span><span class="keyword">, </span><span class="default">$content</span><span class="keyword">, </span><span class="default">$value</span><span class="keyword">) || </span><span class="default">preg_match</span><span class="keyword">(</span><span class="string">"/&gt;[[:space:]]+window\.location\=\"(.*)\"/i"</span><span class="keyword">, </span><span class="default">$content</span><span class="keyword">, </span><span class="default">$value</span><span class="keyword">) ) &amp;&amp;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$javascript_loop </span><span class="keyword">&lt; </span><span class="default">5<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">)<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">get_url</span><span class="keyword">( </span><span class="default">$value</span><span class="keyword">[</span><span class="default">1</span><span class="keyword">], </span><span class="default">$javascript_loop</span><span class="keyword">+</span><span class="default">1 </span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; else<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return array( </span><span class="default">$content</span><span class="keyword">, </span><span class="default">$response </span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+}<br />
+<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="92848""></a>
+  <div class="note">
+   <strong class="user">Emprivo</strong>
+   <a href="#92848" class="date">11-Aug-2009 12:21</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+To follow ALL redirects using CURL brings up a lot of special cases. Here's a function that takes everything into account (even javascript redirects)<br />
+<br />
+<span class="default">&lt;?php <br />
+<br />
+</span><span class="keyword">function </span><span class="default">get_final_url</span><span class="keyword">( </span><span class="default">$url</span><span class="keyword">, </span><span class="default">$timeout </span><span class="keyword">= </span><span class="default">5 </span><span class="keyword">)<br />
+{<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$url </span><span class="keyword">= </span><span class="default">str_replace</span><span class="keyword">( </span><span class="string">"&amp;amp;"</span><span class="keyword">, </span><span class="string">"&amp;"</span><span class="keyword">, </span><span class="default">urldecode</span><span class="keyword">(</span><span class="default">trim</span><span class="keyword">(</span><span class="default">$url</span><span class="keyword">)) );<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$cookie </span><span class="keyword">= </span><span class="default">tempnam </span><span class="keyword">(</span><span class="string">"/tmp"</span><span class="keyword">, </span><span class="string">"CURLCOOKIE"</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$ch </span><span class="keyword">= </span><span class="default">curl_init</span><span class="keyword">();<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">curl_setopt</span><span class="keyword">( </span><span class="default">$ch</span><span class="keyword">, </span><span class="default">CURLOPT_USERAGENT</span><span class="keyword">, </span><span class="string">"Mozilla/5.0 (Windows; U; Windows NT 5.1; rv:1.7.3) Gecko/20041001 Firefox/0.10.1" </span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">curl_setopt</span><span class="keyword">( </span><span class="default">$ch</span><span class="keyword">, </span><span class="default">CURLOPT_URL</span><span class="keyword">, </span><span class="default">$url </span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">curl_setopt</span><span class="keyword">( </span><span class="default">$ch</span><span class="keyword">, </span><span class="default">CURLOPT_COOKIEJAR</span><span class="keyword">, </span><span class="default">$cookie </span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">curl_setopt</span><span class="keyword">( </span><span class="default">$ch</span><span class="keyword">, </span><span class="default">CURLOPT_FOLLOWLOCATION</span><span class="keyword">, </span><span class="default">true </span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">curl_setopt</span><span class="keyword">( </span><span class="default">$ch</span><span class="keyword">, </span><span class="default">CURLOPT_ENCODING</span><span class="keyword">, </span><span class="string">"" </span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">curl_setopt</span><span class="keyword">( </span><span class="default">$ch</span><span class="keyword">, </span><span class="default">CURLOPT_RETURNTRANSFER</span><span class="keyword">, </span><span class="default">true </span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">curl_setopt</span><span class="keyword">( </span><span class="default">$ch</span><span class="keyword">, </span><span class="default">CURLOPT_AUTOREFERER</span><span class="keyword">, </span><span class="default">true </span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">curl_setopt</span><span class="keyword">( </span><span class="default">$ch</span><span class="keyword">, </span><span class="default">CURLOPT_CONNECTTIMEOUT</span><span class="keyword">, </span><span class="default">$timeout </span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">curl_setopt</span><span class="keyword">( </span><span class="default">$ch</span><span class="keyword">, </span><span class="default">CURLOPT_TIMEOUT</span><span class="keyword">, </span><span class="default">$timeout </span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">curl_setopt</span><span class="keyword">( </span><span class="default">$ch</span><span class="keyword">, </span><span class="default">CURLOPT_MAXREDIRS</span><span class="keyword">, </span><span class="default">10 </span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$content </span><span class="keyword">= </span><span class="default">curl_exec</span><span class="keyword">( </span><span class="default">$ch </span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$response </span><span class="keyword">= </span><span class="default">curl_getinfo</span><span class="keyword">( </span><span class="default">$ch </span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">curl_close </span><span class="keyword">( </span><span class="default">$ch </span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp;&nbsp; if (</span><span class="default">$response</span><span class="keyword">[</span><span class="string">'http_code'</span><span class="keyword">] == </span><span class="default">301 </span><span class="keyword">|| </span><span class="default">$response</span><span class="keyword">[</span><span class="string">'http_code'</span><span class="keyword">] == </span><span class="default">302</span><span class="keyword">)<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">ini_set</span><span class="keyword">(</span><span class="string">"user_agent"</span><span class="keyword">, </span><span class="string">"Mozilla/5.0 (Windows; U; Windows NT 5.1; rv:1.7.3) Gecko/20041001 Firefox/0.10.1"</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$headers </span><span class="keyword">= </span><span class="default">get_headers</span><span class="keyword">(</span><span class="default">$response</span><span class="keyword">[</span><span class="string">'url'</span><span class="keyword">]);<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$location </span><span class="keyword">= </span><span class="string">""</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; foreach( </span><span class="default">$headers </span><span class="keyword">as </span><span class="default">$value </span><span class="keyword">)<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if ( </span><span class="default">substr</span><span class="keyword">( </span><span class="default">strtolower</span><span class="keyword">(</span><span class="default">$value</span><span class="keyword">), </span><span class="default">0</span><span class="keyword">, </span><span class="default">9 </span><span class="keyword">) == </span><span class="string">"location:" </span><span class="keyword">)<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">get_final_url</span><span class="keyword">( </span><span class="default">trim</span><span class="keyword">( </span><span class="default">substr</span><span class="keyword">( </span><span class="default">$value</span><span class="keyword">, </span><span class="default">9</span><span class="keyword">, </span><span class="default">strlen</span><span class="keyword">(</span><span class="default">$value</span><span class="keyword">) ) ) );<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; if (&nbsp; &nbsp; </span><span class="default">preg_match</span><span class="keyword">(</span><span class="string">"/window\.location\.replace\('(.*)'\)/i"</span><span class="keyword">, </span><span class="default">$content</span><span class="keyword">, </span><span class="default">$value</span><span class="keyword">) ||<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">preg_match</span><span class="keyword">(</span><span class="string">"/window\.location\=\"(.*)\"/i"</span><span class="keyword">, </span><span class="default">$content</span><span class="keyword">, </span><span class="default">$value</span><span class="keyword">)<br />
+&nbsp;&nbsp;&nbsp; )<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">get_final_url </span><span class="keyword">( </span><span class="default">$value</span><span class="keyword">[</span><span class="default">1</span><span class="keyword">] );<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; else<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">$response</span><span class="keyword">[</span><span class="string">'url'</span><span class="keyword">];<br />
+&nbsp;&nbsp;&nbsp; }<br />
+}<br />
+<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="82946""></a>
+  <div class="note">
+   <strong class="user">Peter X.</strong>
+   <a href="#82946" class="date">02-May-2008 07:44</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Although it has been noted that cURL outperforms both file_get_contents and fopen when it comes to getting a file over a HTTP link, the disadvantage of cURL is that it has no way of only reading a part of a page at a time.<br />
+<br />
+For example, the following code is likely to generate a memory limit error:<br />
+<br />
+<span class="default">&lt;?php<br />
+$ch </span><span class="keyword">= </span><span class="default">curl_init</span><span class="keyword">(</span><span class="string">"<a href="http://www.example.com/reallybigfile.tar.gz" rel="nofollow" target="_blank">http://www.example.com/reallybigfile.tar.gz</a>"</span><span class="keyword">);<br />
+</span><span class="default">curl_setopt</span><span class="keyword">(</span><span class="default">$ch</span><span class="keyword">, </span><span class="default">CURLOPT_RETURNTRANSFER</span><span class="keyword">, </span><span class="default">true</span><span class="keyword">);<br />
+</span><span class="default">curl_setopt</span><span class="keyword">(</span><span class="default">$ch</span><span class="keyword">, </span><span class="default">CURLOPT_BINARYTRANSFER</span><span class="keyword">, </span><span class="default">true</span><span class="keyword">);<br />
+</span><span class="default">$output </span><span class="keyword">= </span><span class="default">curl_exec</span><span class="keyword">(</span><span class="default">$ch</span><span class="keyword">);<br />
+<br />
+</span><span class="default">$fh </span><span class="keyword">= </span><span class="default">fopen</span><span class="keyword">(</span><span class="string">"out.tar.gz"</span><span class="keyword">, </span><span class="string">'w'</span><span class="keyword">);<br />
+</span><span class="default">fwrite</span><span class="keyword">(</span><span class="default">$fh</span><span class="keyword">, </span><span class="default">$output</span><span class="keyword">);<br />
+</span><span class="default">fclose</span><span class="keyword">(</span><span class="default">$fh</span><span class="keyword">);<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+While this, on the other hand, wouldn't<br />
+<br />
+<span class="default">&lt;?php<br />
+$hostfile </span><span class="keyword">= </span><span class="default">fopen</span><span class="keyword">(</span><span class="string">"<a href="http://www.example.com/reallybigfile.tar.gz" rel="nofollow" target="_blank">http://www.example.com/reallybigfile.tar.gz</a>"</span><span class="keyword">, </span><span class="string">'r'</span><span class="keyword">);<br />
+</span><span class="default">$fh </span><span class="keyword">= </span><span class="default">fopen</span><span class="keyword">(</span><span class="string">"out.tar.gz"</span><span class="keyword">, </span><span class="string">'w'</span><span class="keyword">);<br />
+<br />
+while (!</span><span class="default">feof</span><span class="keyword">(</span><span class="default">$hostfile</span><span class="keyword">)) {<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$output </span><span class="keyword">= </span><span class="default">fread</span><span class="keyword">(</span><span class="default">$hostfile</span><span class="keyword">, </span><span class="default">8192</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">fwrite</span><span class="keyword">(</span><span class="default">$fh</span><span class="keyword">, </span><span class="default">$output</span><span class="keyword">);<br />
+}<br />
+&nbsp;&nbsp;&nbsp; <br />
+</span><span class="default">fclose</span><span class="keyword">(</span><span class="default">$hostfile</span><span class="keyword">);<br />
+</span><span class="default">fclose</span><span class="keyword">(</span><span class="default">$fh</span><span class="keyword">);<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="82935""></a>
+  <div class="note">
+   <strong class="user">cduke420 at gmail dot com</strong>
+   <a href="#82935" class="date">02-May-2008 11:20</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+In order to prevent curl sending messages to the server error log, you need to instruct curl to use a temporary file for output on stderr.<br />
+<br />
+<span class="default">&lt;?php<br />
+$gacookie</span><span class="keyword">=</span><span class="string">"/askapache/tmp/curl-1.txt"</span><span class="keyword">;<br />
+@</span><span class="default">touch</span><span class="keyword">(</span><span class="default">$gacookie</span><span class="keyword">);<br />
+@</span><span class="default">chmod</span><span class="keyword">(</span><span class="default">$gacookie</span><span class="keyword">,</span><span class="default">0666</span><span class="keyword">);<br />
+<br />
+if(</span><span class="default">$fp </span><span class="keyword">= </span><span class="default">tmpfile</span><span class="keyword">()){<br />
+&nbsp; </span><span class="default">$ch </span><span class="keyword">= </span><span class="default">curl_init</span><span class="keyword">(</span><span class="string">"<a href="http://www.askapache.com/p.php" rel="nofollow" target="_blank">http://www.askapache.com/p.php</a>"</span><span class="keyword">);<br />
+&nbsp; </span><span class="default">curl_setopt </span><span class="keyword">(</span><span class="default">$ch</span><span class="keyword">, </span><span class="default">CURLOPT_STDERR</span><span class="keyword">, </span><span class="default">$fp</span><span class="keyword">);<br />
+&nbsp; </span><span class="default">curl_setopt </span><span class="keyword">(</span><span class="default">$ch</span><span class="keyword">, </span><span class="default">CURLOPT_VERBOSE</span><span class="keyword">, </span><span class="default">2</span><span class="keyword">);<br />
+&nbsp; </span><span class="default">curl_setopt </span><span class="keyword">(</span><span class="default">$ch</span><span class="keyword">, </span><span class="default">CURLOPT_ENCODING</span><span class="keyword">, </span><span class="default">0</span><span class="keyword">);<br />
+&nbsp; </span><span class="default">curl_setopt </span><span class="keyword">(</span><span class="default">$ch</span><span class="keyword">, </span><span class="default">CURLOPT_USERAGENT</span><span class="keyword">, </span><span class="string">'Mozilla/5.0'</span><span class="keyword">);<br />
+&nbsp; </span><span class="default">curl_setopt </span><span class="keyword">(</span><span class="default">$ch</span><span class="keyword">, </span><span class="default">CURLOPT_HTTPHEADER</span><span class="keyword">, </span><span class="default">$FF</span><span class="keyword">);<br />
+&nbsp; </span><span class="default">curl_setopt </span><span class="keyword">(</span><span class="default">$ch</span><span class="keyword">, </span><span class="default">CURLOPT_COOKIEFILE</span><span class="keyword">, </span><span class="default">$gacookie</span><span class="keyword">);<br />
+&nbsp; </span><span class="default">curl_setopt </span><span class="keyword">(</span><span class="default">$ch</span><span class="keyword">, </span><span class="default">CURLOPT_COOKIEJAR</span><span class="keyword">, </span><span class="default">$gacookie</span><span class="keyword">);<br />
+&nbsp; </span><span class="default">curl_setopt </span><span class="keyword">(</span><span class="default">$ch</span><span class="keyword">, </span><span class="default">CURLOPT_RETURNTRANSFER</span><span class="keyword">, </span><span class="default">1</span><span class="keyword">);<br />
+&nbsp; </span><span class="default">curl_setopt </span><span class="keyword">(</span><span class="default">$ch</span><span class="keyword">, </span><span class="default">CURLOPT_FAILONERROR</span><span class="keyword">, </span><span class="default">1</span><span class="keyword">);<br />
+&nbsp; </span><span class="default">curl_setopt </span><span class="keyword">(</span><span class="default">$ch</span><span class="keyword">, </span><span class="default">CURLOPT_HEADER</span><span class="keyword">, </span><span class="default">1</span><span class="keyword">);<br />
+&nbsp; </span><span class="default">curl_setopt </span><span class="keyword">(</span><span class="default">$ch</span><span class="keyword">, </span><span class="default">CURLINFO_HEADER_OUT</span><span class="keyword">, </span><span class="default">1</span><span class="keyword">);<br />
+&nbsp; </span><span class="default">curl_setopt </span><span class="keyword">(</span><span class="default">$ch</span><span class="keyword">, </span><span class="default">CURLOPT_CONNECTTIMEOUT</span><span class="keyword">, </span><span class="default">30</span><span class="keyword">);<br />
+&nbsp; </span><span class="default">$r</span><span class="keyword">=</span><span class="default">curl_exec</span><span class="keyword">(</span><span class="default">$ch</span><span class="keyword">);</span><span class="default">$ch_info</span><span class="keyword">=</span><span class="default">curl_getinfo</span><span class="keyword">(</span><span class="default">$ch</span><span class="keyword">);&nbsp; &nbsp; <br />
+&nbsp; if (</span><span class="default">curl_errno</span><span class="keyword">(</span><span class="default">$ch</span><span class="keyword">)) return </span><span class="default">false</span><span class="keyword">;<br />
+&nbsp; else </span><span class="default">curl_close</span><span class="keyword">(</span><span class="default">$ch</span><span class="keyword">);<br />
+&nbsp; </span><span class="default">header</span><span class="keyword">(</span><span class="string">"Content-type: text/plain"</span><span class="keyword">);<br />
+&nbsp; echo </span><span class="default">$r</span><span class="keyword">;<br />
+&nbsp; </span><span class="default">sleep</span><span class="keyword">(</span><span class="default">2</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp; </span><span class="default">$postdata</span><span class="keyword">=</span><span class="string">'keywords='</span><span class="keyword">.</span><span class="default">$_GET</span><span class="keyword">[</span><span class="string">'k'</span><span class="keyword">];<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp; </span><span class="default">$ch1 </span><span class="keyword">= </span><span class="default">curl_init</span><span class="keyword">(</span><span class="string">"<a href="http://www.askapache.com/p.php" rel="nofollow" target="_blank">http://www.askapache.com/p.php</a>"</span><span class="keyword">);<br />
+&nbsp; </span><span class="default">curl_setopt </span><span class="keyword">(</span><span class="default">$ch1</span><span class="keyword">, </span><span class="default">CURLOPT_STDERR</span><span class="keyword">, </span><span class="default">$fp</span><span class="keyword">);<br />
+&nbsp; </span><span class="default">curl_setopt </span><span class="keyword">(</span><span class="default">$ch1</span><span class="keyword">, </span><span class="default">CURLOPT_VERBOSE</span><span class="keyword">, </span><span class="default">2</span><span class="keyword">);<br />
+&nbsp; </span><span class="default">curl_setopt </span><span class="keyword">(</span><span class="default">$ch1</span><span class="keyword">, </span><span class="default">CURLOPT_ENCODING</span><span class="keyword">, </span><span class="default">0</span><span class="keyword">);<br />
+&nbsp; </span><span class="default">curl_setopt </span><span class="keyword">(</span><span class="default">$ch1</span><span class="keyword">, </span><span class="default">CURLOPT_USERAGENT</span><span class="keyword">, </span><span class="string">'Mozilla/5.0'</span><span class="keyword">);<br />
+&nbsp; </span><span class="default">curl_setopt </span><span class="keyword">(</span><span class="default">$ch1</span><span class="keyword">, </span><span class="default">CURLOPT_COOKIEJAR</span><span class="keyword">, </span><span class="default">$gacookie</span><span class="keyword">);<br />
+&nbsp; </span><span class="default">curl_setopt </span><span class="keyword">(</span><span class="default">$ch1</span><span class="keyword">, </span><span class="default">CURLOPT_COOKIEFILE</span><span class="keyword">, </span><span class="default">$gacookie</span><span class="keyword">);<br />
+&nbsp; </span><span class="default">curl_setopt </span><span class="keyword">(</span><span class="default">$ch1</span><span class="keyword">, </span><span class="default">CURLOPT_POSTFIELDS</span><span class="keyword">, </span><span class="default">$postdata</span><span class="keyword">);<br />
+&nbsp; </span><span class="default">curl_setopt </span><span class="keyword">(</span><span class="default">$ch1</span><span class="keyword">, </span><span class="default">CURLOPT_POST</span><span class="keyword">, </span><span class="default">1</span><span class="keyword">);<br />
+&nbsp; </span><span class="default">curl_setopt </span><span class="keyword">(</span><span class="default">$ch1</span><span class="keyword">, </span><span class="default">CURLOPT_RETURNTRANSFER</span><span class="keyword">, </span><span class="default">1</span><span class="keyword">);<br />
+&nbsp; </span><span class="default">curl_setopt </span><span class="keyword">(</span><span class="default">$ch1</span><span class="keyword">, </span><span class="default">CURLOPT_FAILONERROR</span><span class="keyword">, </span><span class="default">1</span><span class="keyword">);<br />
+&nbsp; </span><span class="default">curl_setopt </span><span class="keyword">(</span><span class="default">$ch1</span><span class="keyword">, </span><span class="default">CURLOPT_HEADER</span><span class="keyword">, </span><span class="default">1</span><span class="keyword">);<br />
+&nbsp; </span><span class="default">curl_setopt </span><span class="keyword">(</span><span class="default">$ch1</span><span class="keyword">, </span><span class="default">CURLINFO_HEADER_OUT</span><span class="keyword">, </span><span class="default">1</span><span class="keyword">);<br />
+&nbsp; </span><span class="default">curl_setopt </span><span class="keyword">(</span><span class="default">$ch1</span><span class="keyword">, </span><span class="default">CURLOPT_CONNECTTIMEOUT</span><span class="keyword">, </span><span class="default">30</span><span class="keyword">);<br />
+&nbsp; </span><span class="default">$r</span><span class="keyword">=</span><span class="default">curl_exec </span><span class="keyword">(</span><span class="default">$ch1</span><span class="keyword">);</span><span class="default">$ch1_info</span><span class="keyword">=</span><span class="default">curl_getinfo</span><span class="keyword">(</span><span class="default">$ch1</span><span class="keyword">);<br />
+&nbsp; if (</span><span class="default">curl_errno</span><span class="keyword">(</span><span class="default">$ch1</span><span class="keyword">)) return </span><span class="default">false</span><span class="keyword">;<br />
+&nbsp; else </span><span class="default">curl_close</span><span class="keyword">(</span><span class="default">$ch1</span><span class="keyword">);<br />
+&nbsp; </span><span class="default">header</span><span class="keyword">(</span><span class="string">"Content-type: text/plain"</span><span class="keyword">);</span><span class="default">print_r</span><span class="keyword">(</span><span class="default">$ch1_info</span><span class="keyword">);echo </span><span class="default">$r</span><span class="keyword">;</span><span class="default">sleep</span><span class="keyword">(</span><span class="default">2</span><span class="keyword">);<br />
+<br />
+}</span><span class="default">fclose</span><span class="keyword">(</span><span class="default">$fp</span><span class="keyword">);<br />
+@</span><span class="default">unlink</span><span class="keyword">(</span><span class="default">$gacookie</span><span class="keyword">);<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+See also: <a href="http://www.askapache.com/security/curl-google-post-feed.html" rel="nofollow" target="_blank">http://www.askapache.com/security/curl-google-post-feed.html</a></span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="81651""></a>
+  <div class="note">
+   <strong class="user">fgabrieli at gmail com</strong>
+   <a href="#81651" class="date">08-Mar-2008 06:20</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Do not forget to use the complete path for the cookies <br />
+<br />
+<span class="default">&lt;?php<br />
+$ch </span><span class="keyword">= </span><span class="default">curl_init</span><span class="keyword">() ;<br />
+<br />
+</span><span class="default">$myfile </span><span class="keyword">= </span><span class="string">"d:\\mydir\\second_dir\\cookiefile.txt" </span><span class="keyword">;<br />
+<br />
+</span><span class="default">curl_setopt</span><span class="keyword">(</span><span class="default">$ch</span><span class="keyword">, </span><span class="default">CURLOPT_COOKIEJAR</span><span class="keyword">, </span><span class="default">$myfile</span><span class="keyword">) ;<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+Best regards,<br />
+Fernando Gabrieli</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="80637""></a>
+  <div class="note">
+   <strong class="user">lancelot--du-lac at hotmail dot fr</strong>
+   <a href="#80637" class="date">26-Jan-2008 03:26</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+As a windows xp user having php 5.2.5 running as an apache module on my personal computer, all I had to do in order to get this CURL stuff working is to uncomment the following line in my php.ini file:<br />
+<br />
+extension=php_curl.dll<br />
+<br />
+Thought I'd just mention it as it may save time to others since it seems somehow less compicated than the process mentioned (without sufficient explanation, mind you) in the above article (compile php??? options??? all I ever did to install php was to unzip the archive I downloaded and add a couple of line to my apache conf file).<br />
+<br />
+I just tried downloading a web page and save its source into a text file using the example from the manual above. When the php_curl.dll extension is not active, it doesn't work (fatal error with init_curl, as you'd expect). When the php_curl.dll extension is active, it works. No need for any other intricate operation as far as I can say.<br />
+<br />
+Otherwise, it's great that I now have my tool for doing any http request i want.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="78824""></a>
+  <div class="note">
+   <strong class="user">ryan at tankprofiler dot com</strong>
+   <a href="#78824" class="date">29-Oct-2007 12:26</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+If you have trouble on server 2003, IIS 6 ( perhaps other versions ) with getting the php_curl loading please see the following.&nbsp; <br />
+<br />
+- run (as an administrator) php.exe -i &gt; C:\phpinfo.txt and go open C:\phpinfo.txt, look in the file to see if CURL was loading, if it's there then keep reading.&nbsp; <br />
+<br />
+- running <span class="default">&lt;?PHP phpinfo</span><span class="keyword">(); </span><span class="default">?&gt;</span> inside a text.php script on my IIS server would not show CURL loading<br />
+<br />
+- A permissions problem on libeay32.dll and ssleay32.dll was causing the cli version of php allowing me access to these two dlls while IIS was not able to get them.&nbsp; I gave 'everyone' read and execute on these two dll's to try to fix the issue and it just now worked. You may wish to be more restrictive, perhaps IUSR rather than EVERYONE; but check your permissions none-the-less.<br />
+<br />
+Hopefully this saves someone some time!<br />
+- Ryan Nanney</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="76249""></a>
+  <div class="note">
+   <strong class="user">Mr.KTO</strong>
+   <a href="#76249" class="date">07-Jul-2007 06:59</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Don't foget to curl_close($ch); Even if curl_errno($ch) != 0<br />
+<br />
+Because if you don't - on Windows this will produce windows-error-report (Program terminated unexpectedly)</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="73687""></a>
+  <div class="note">
+   <strong class="user">killermonk at REMOVE dot killermonk dot com</strong>
+   <a href="#73687" class="date">06-Mar-2007 11:23</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+For anyone trying to use cURL to submit to an ASP/ASPX page that uses an image as the submit button.<br />
+<br />
+Make sure that you have 'button_name.x' and 'button_name.y' in the post fields. PHP names these fields 'button_name_x' and 'button_name_y', while ASP uses a dot.<br />
+<br />
+Also, as noted above, be sure to include the '__VIEWSTATE' input field in your post request.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="72608""></a>
+  <div class="note">
+   <strong class="user">gordon_e_rouse at yahoo dot com dot au</strong>
+   <a href="#72608" class="date">25-Jan-2007 02:24</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Using curl to take snapshots of the current page for emailing the HTML is a clever little idea. (ie: Email this page to a friend)<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="comment">//to be explained below!<br />
+</span><span class="default">session_write_close</span><span class="keyword">();<br />
+<br />
+</span><span class="default">$pageurl </span><span class="keyword">= </span><span class="string">"<a href="http://www.site.com/content.php?PHPSESSID=123XYZ" rel="nofollow" target="_blank">http://www.site.com/content.php?PHPSESSID=123XYZ</a><br />
+curl_setopt(</span><span class="default">$ch</span><span class="string">, CURLOPT_RETURNTRANSFER, 1);<br />
+<br />
+curl_setopt (</span><span class="default">$ch</span><span class="string">, CURLOPT_URL, </span><span class="default">$pageurl</span><span class="string"> ); <br />
+</span><span class="default">$html</span><span class="string"> = curl_exec ( </span><span class="default">$ch</span><span class="string"> );<br />
+curl_close(</span><span class="default">$ch</span><span class="string">);<br />
+<br />
+//then you need to fix pathing to absolute<br />
+</span><span class="default">$search</span><span class="string"> = "</span><span class="keyword">/(</span><span class="default">src</span><span class="keyword">|</span><span class="default">href</span><span class="keyword">|</span><span class="default">background</span><span class="keyword">)=\</span><span class="string">"[^:,^&gt;,^\"]*\"/i"</span><span class="keyword">;<br />
+<br />
+</span><span class="default">preg_match_all </span><span class="keyword">( </span><span class="default">$search</span><span class="keyword">, </span><span class="default">$html</span><span class="keyword">, </span><span class="default">$a_matches </span><span class="keyword">);<br />
+<br />
+</span><span class="comment">//you can figure out the rest ! but thought the reg expression is useful as well<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+But here is the catch, you may want to make sure curl connects to the server under the same session as the browser. So naturally you pass the session cookie through the curl system either by the cookie jar system, or through the query string in the path.<br />
+<br />
+This is where you will get stuck. PHP will need write access to the same session file simultaneously!! causing serious hanging issues!<br />
+<br />
+This is why you should close off your session before you make curl take a page snapshot!</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="72477""></a>
+  <div class="note">
+   <strong class="user">michael (at) networkstuff co nz</strong>
+   <a href="#72477" class="date">20-Jan-2007 01:05</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+If PHP configure fails with cURL errors, try ommiting the --with-curl=path and just make this --with-curl.<br />
+Of course it will also be optimal to make sure that the cURL library directory is listed in /etc/ld.so.conf and then run 'ldconfig'.<br />
+By default this is /usr/local/lib.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="69175""></a>
+  <div class="note">
+   <strong class="user">jon at jonroig--- dot com</strong>
+   <a href="#69175" class="date">25-Aug-2006 06:53</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+For anyone who is having trouble getting some of the advanced functionality to work in whatever version of PHP you have, I wrote a little wrapper for the command line version of curl. The function below is for Windows (hence, the curl.exe), but it works the same way under Linux or whatever.<br />
+<br />
+The curl man page enumerates a ton of options you can use...<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">function </span><span class="default">curlPageGrabber</span><span class="keyword">(</span><span class="default">$destinationURL</span><span class="keyword">, </span><span class="default">$refererURL</span><span class="keyword">, </span><span class="default">$postData</span><span class="keyword">, </span><span class="default">$autoForward </span><span class="keyword">= </span><span class="default">false</span><span class="keyword">, </span><span class="default">$autoGrabCookies </span><span class="keyword">= </span><span class="default">true</span><span class="keyword">, </span><span class="default">$curlDebug </span><span class="keyword">= </span><span class="default">false</span><span class="keyword">)<br />
+&nbsp; {<br />
+&nbsp; </span><span class="default">$curlString </span><span class="keyword">= </span><span class="string">"c:\curl\curl.exe -i -v -m 30 -L -b c:\curl\cookiejar.txt -c c:\curl\cookiejar.txt "</span><span class="keyword">;<br />
+&nbsp; </span><span class="default">$curlString </span><span class="keyword">.= </span><span class="string">" -A \"Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1; .NET CLR 1.1.4322;)\" "</span><span class="keyword">;<br />
+&nbsp; </span><span class="default">$curlString </span><span class="keyword">.= </span><span class="string">" -H \"Accept-Language: en-us\" "</span><span class="keyword">;<br />
+&nbsp; </span><span class="default">$curlString </span><span class="keyword">.= </span><span class="string">" -H \"Accept-Encoding: gzip, deflate\" "</span><span class="keyword">;<br />
+&nbsp; </span><span class="default">$curlString </span><span class="keyword">.= </span><span class="string">" -H \"Host: affiliate-program.amazon.com\" "</span><span class="keyword">;<br />
+&nbsp; </span><span class="default">$curlString </span><span class="keyword">.= </span><span class="string">" -H \"Accept: */*\" "</span><span class="keyword">;<br />
+&nbsp; </span><span class="default">$curlString </span><span class="keyword">.= </span><span class="string">" --compressed "</span><span class="keyword">;<br />
+&nbsp; </span><span class="comment">//$curlString .= " --trace-ascii ";<br />
+&nbsp; <br />
+&nbsp; </span><span class="keyword">if (</span><span class="default">$refererURL </span><span class="keyword">!= </span><span class="string">''</span><span class="keyword">)<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$curlString </span><span class="keyword">.= </span><span class="string">"-e \""</span><span class="keyword">.</span><span class="default">$refererURL</span><span class="keyword">.</span><span class="string">"\" "</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp; if (</span><span class="default">$postData </span><span class="keyword">!= </span><span class="string">''</span><span class="keyword">)<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$curlString</span><span class="keyword">.= </span><span class="string">" -d \"</span><span class="default">$postData</span><span class="string">\" "</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp; </span><span class="default">$curlString </span><span class="keyword">.= </span><span class="default">$destinationURL</span><span class="keyword">;<br />
+&nbsp; if (</span><span class="default">$curlDebug </span><span class="keyword">== </span><span class="default">true</span><span class="keyword">)<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp;&nbsp; echo </span><span class="string">"&lt;p&gt;curlString: </span><span class="default">$curlString</span><span class="string">&lt;/p&gt;"</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp; <br />
+&nbsp; </span><span class="default">$temp </span><span class="keyword">= </span><span class="default">exec</span><span class="keyword">(</span><span class="default">$curlString</span><span class="keyword">, </span><span class="default">$retval</span><span class="keyword">);<br />
+<br />
+&nbsp; </span><span class="default">$htmlData </span><span class="keyword">= </span><span class="string">''</span><span class="keyword">;<br />
+&nbsp; foreach (</span><span class="default">$retval </span><span class="keyword">as </span><span class="default">$arrayLine</span><span class="keyword">)<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$htmlData </span><span class="keyword">.= </span><span class="default">$arrayLine</span><span class="keyword">.</span><span class="string">"\r\n"</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp; if (</span><span class="default">$curlDebug </span><span class="keyword">== </span><span class="default">true</span><span class="keyword">)<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp;&nbsp; echo </span><span class="string">"&lt;textarea cols=80 rows=20&gt;</span><span class="default">$htmlData</span><span class="string">&lt;/textarea&gt;"</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp; <br />
+&nbsp; return </span><span class="default">$htmlData</span><span class="keyword">;<br />
+&nbsp;<br />
+&nbsp; <br />
+&nbsp; } </span><span class="comment">// end function<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="67940""></a>
+  <div class="note">
+   <strong class="user">galvao at galvao.eti.br</strong>
+   <a href="#67940" class="date">06-Jul-2006 08:27</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Note that on Win32 this documentation can get a little confusing.<br />
+<br />
+In order to get this to work you need to:<br />
+<br />
+1) Be sure that the folder where libeay32.dll and ssleay32.dll - tipically C:\\PHP - is present on the PATH variable.<br />
+<br />
+2) Uncomment - remove the semi-colon - the line that says "extension=php_curl.dll" from php.ini<br />
+<br />
+3) Restart the webserver (you should already know this one, but...)<br />
+<br />
+It took me some time to realize this, since this page doesn't mention the need to uncomment that php.ini's line.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="66847""></a>
+  <div class="note">
+   <strong class="user">david at neocodesoftware dot com</strong>
+   <a href="#66847" class="date">30-May-2006 05:42</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+This may be obvious to everybody *except* me, but if you want to use curl to connect via ftp rather than http, then you just need to use "<a href="ftp://" rel="nofollow" target="_blank">ftp://</a>" in the url specification (I was looking for an use_ftp flag or something).&nbsp; <br />
+<br />
+Use the CURLOPT_USERPWD to login to the ftp site.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="65700""></a>
+  <div class="note">
+   <strong class="user">Sean Huber</strong>
+   <a href="#65700" class="date">05-May-2006 04:01</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+<span class="default">&lt;?php<br />
+</span><span class="comment">/*<br />
+Sean Huber CURL library<br />
+<br />
+This library is a basic implementation of CURL capabilities.<br />
+It works in most modern versions of IE and FF.<br />
+<br />
+==================================== USAGE ====================================<br />
+It exports the CURL object globally, so set a callback with setCallback($func).<br />
+(Use setCallback(array('class_name', 'func_name')) to set a callback as a func<br />
+that lies within a different class)<br />
+Then use one of the CURL request methods:<br />
+<br />
+get($url);<br />
+post($url, $vars); vars is a urlencoded string in query string format.<br />
+<br />
+Your callback function will then be called with 1 argument, the response text.<br />
+If a callback is not defined, your request will return the response text.<br />
+*/<br />
+<br />
+</span><span class="keyword">class </span><span class="default">CURL </span><span class="keyword">{<br />
+&nbsp;&nbsp;&nbsp; var </span><span class="default">$callback </span><span class="keyword">= </span><span class="default">false</span><span class="keyword">;<br />
+<br />
+function </span><span class="default">setCallback</span><span class="keyword">(</span><span class="default">$func_name</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">callback </span><span class="keyword">= </span><span class="default">$func_name</span><span class="keyword">;<br />
+}<br />
+<br />
+function </span><span class="default">doRequest</span><span class="keyword">(</span><span class="default">$method</span><span class="keyword">, </span><span class="default">$url</span><span class="keyword">, </span><span class="default">$vars</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$ch </span><span class="keyword">= </span><span class="default">curl_init</span><span class="keyword">();<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">curl_setopt</span><span class="keyword">(</span><span class="default">$ch</span><span class="keyword">, </span><span class="default">CURLOPT_URL</span><span class="keyword">, </span><span class="default">$url</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">curl_setopt</span><span class="keyword">(</span><span class="default">$ch</span><span class="keyword">, </span><span class="default">CURLOPT_HEADER</span><span class="keyword">, </span><span class="default">1</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">curl_setopt</span><span class="keyword">(</span><span class="default">$ch</span><span class="keyword">, </span><span class="default">CURLOPT_USERAGENT</span><span class="keyword">, </span><span class="default">$_SERVER</span><span class="keyword">[</span><span class="string">'HTTP_USER_AGENT'</span><span class="keyword">]);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">curl_setopt</span><span class="keyword">(</span><span class="default">$ch</span><span class="keyword">, </span><span class="default">CURLOPT_FOLLOWLOCATION</span><span class="keyword">, </span><span class="default">1</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">curl_setopt</span><span class="keyword">(</span><span class="default">$ch</span><span class="keyword">, </span><span class="default">CURLOPT_RETURNTRANSFER</span><span class="keyword">, </span><span class="default">1</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">curl_setopt</span><span class="keyword">(</span><span class="default">$ch</span><span class="keyword">, </span><span class="default">CURLOPT_COOKIEJAR</span><span class="keyword">, </span><span class="string">'cookie.txt'</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">curl_setopt</span><span class="keyword">(</span><span class="default">$ch</span><span class="keyword">, </span><span class="default">CURLOPT_COOKIEFILE</span><span class="keyword">, </span><span class="string">'cookie.txt'</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; if (</span><span class="default">$method </span><span class="keyword">== </span><span class="string">'POST'</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">curl_setopt</span><span class="keyword">(</span><span class="default">$ch</span><span class="keyword">, </span><span class="default">CURLOPT_POST</span><span class="keyword">, </span><span class="default">1</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">curl_setopt</span><span class="keyword">(</span><span class="default">$ch</span><span class="keyword">, </span><span class="default">CURLOPT_POSTFIELDS</span><span class="keyword">, </span><span class="default">$vars</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$data </span><span class="keyword">= </span><span class="default">curl_exec</span><span class="keyword">(</span><span class="default">$ch</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">curl_close</span><span class="keyword">(</span><span class="default">$ch</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; if (</span><span class="default">$data</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if (</span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">callback</span><span class="keyword">)<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$callback </span><span class="keyword">= </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">callback</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">callback </span><span class="keyword">= </span><span class="default">false</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">call_user_func</span><span class="keyword">(</span><span class="default">$callback</span><span class="keyword">, </span><span class="default">$data</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; } else {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">$data</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; } else {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">curl_error</span><span class="keyword">(</span><span class="default">$ch</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+}<br />
+<br />
+function </span><span class="default">get</span><span class="keyword">(</span><span class="default">$url</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">doRequest</span><span class="keyword">(</span><span class="string">'GET'</span><span class="keyword">, </span><span class="default">$url</span><span class="keyword">, </span><span class="string">'NULL'</span><span class="keyword">);<br />
+}<br />
+<br />
+function </span><span class="default">post</span><span class="keyword">(</span><span class="default">$url</span><span class="keyword">, </span><span class="default">$vars</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">doRequest</span><span class="keyword">(</span><span class="string">'POST'</span><span class="keyword">, </span><span class="default">$url</span><span class="keyword">, </span><span class="default">$vars</span><span class="keyword">);<br />
+}<br />
+}<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="62547""></a>
+  <div class="note">
+   <strong class="user">richardkmiller AT gmail</strong>
+   <a href="#62547" class="date">02-Mar-2006 04:21</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Beware of any extra spaces in the URL.&nbsp; A trailing space in the URL caused my script to fail with the message "empty reply from server".</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="62194""></a>
+  <div class="note">
+   <strong class="user">stevehartken at hotmail dot com</strong>
+   <a href="#62194" class="date">21-Feb-2006 10:40</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I had the following experience when harvesting urls with a get variable from a page using cUrl. HTML pages will output ampersands as &amp;amp when the page is read by the curl function. <br />
+<br />
+If you code a script to find all hyperlinks, it will use &amp;amp instead of &amp;, especially using a regular expression search.<br />
+<br />
+It is hard to detect because when you output the url to the browser it renders the html. To fix, add a line to replace the &amp;amp with &amp;.<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">function </span><span class="default">processURL</span><span class="keyword">(</span><span class="default">$url</span><span class="keyword">){<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$url</span><span class="keyword">=</span><span class="default">str_replace</span><span class="keyword">(</span><span class="string">'&amp;amp;'</span><span class="keyword">,</span><span class="string">'&amp;'</span><span class="keyword">,</span><span class="default">$url</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$ch</span><span class="keyword">=</span><span class="default">curl_init</span><span class="keyword">();<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">curl_setopt</span><span class="keyword">(</span><span class="default">$ch</span><span class="keyword">, </span><span class="default">CURLOPT_URL</span><span class="keyword">, </span><span class="default">$url</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">curl_setopt </span><span class="keyword">(</span><span class="default">$ch</span><span class="keyword">, </span><span class="default">CURLOPT_RETURNTRANSFER</span><span class="keyword">, </span><span class="default">1</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$xml </span><span class="keyword">= </span><span class="default">curl_exec </span><span class="keyword">(</span><span class="default">$ch</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">curl_close </span><span class="keyword">(</span><span class="default">$ch</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; echo </span><span class="default">$xml</span><span class="keyword">;<br />
+}<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="46539""></a>
+  <div class="note">
+   <strong class="user">mikeb[at]xamo[dot]com</strong>
+   <a href="#46539" class="date">14-Oct-2004 01:11</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+A note of warning for PHP 5 users: if you try to fetch the CURLINFO_CONTENT_TYPE using curl_getinfo when there is a connect error, you will core dump PHP. I have informed the Curl team about this, so it will hopefully be fixed soon. Just make sure you check for an error before you look for this data.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="45653""></a>
+  <div class="note">
+   <strong class="user">alidrus at langkah dot com</strong>
+   <a href="#45653" class="date">14-Sep-2004 02:31</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+In recent versions of php, CURLOPT_MUTE has (probably) been deprecated. Any attempt of using curl_setopt() to set CURLOPT_MUTE will give you a warning like this:<br />
+<br />
+PHP Notice:&nbsp; Use of undefined constant CURLOPT_MUTE - assumed 'CURLOPT_MUTE' in ....<br />
+<br />
+If you wish tu silence the curl output, use the following instead:<br />
+<br />
+<span class="default">&lt;?php<br />
+&nbsp;&nbsp;&nbsp; curl_setopt</span><span class="keyword">(</span><span class="default">$ch</span><span class="keyword">, </span><span class="default">CURLOPT_RETURNTRANSFER</span><span class="keyword">, </span><span class="default">true</span><span class="keyword">);<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+And then,<br />
+<br />
+<span class="default">&lt;?php<br />
+&nbsp;&nbsp;&nbsp; $curl_output</span><span class="keyword">=</span><span class="default">curl_exec</span><span class="keyword">(</span><span class="default">$ch</span><span class="keyword">);<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+The output of the curl operation will be stored as a string in $curl_output while the operation remains totally silent.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="43156""></a>
+  <div class="note">
+   <strong class="user">rich @ richud dot com</strong>
+   <a href="#43156" class="date">11-Jun-2004 07:12</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+If you have upgraded to using thread safe PHP (with apache 2 MPM=worker) note that<br />
+CURLOPT_COOKIEJAR / CURLOPT_COOKIEFILE both need an absolute path set for the cookie file location and no longer take a relative path. <br />
+(As before, also remember to have set correct permissions to allow a writeable cookie file/dir by apache)<br />
+[php 4.3.7/apache v2.0.49]</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="40437""></a>
+  <div class="note">
+   <strong class="user">simon [at] vhostdirect [dot] co [dot] uk</strong>
+   <a href="#40437" class="date">03-Mar-2004 04:53</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+It took me quite some to to figure out how to get Curl (with SSL), OpenSSL and PHP to play nicely together.<br />
+<br />
+After reinstalling MS-VC7 and compiling OpenSSL to finally realise this was'nt nesscary.<br />
+<br />
+If your like me and like *Nix systems more than Windows then you'll most probly have similar problems.<br />
+<br />
+I came across this, on a simple google with the right keywords.<br />
+<br />
+<a href="http://www.tonyspencer.com/journal/00000037.htm" rel="nofollow" target="_blank">http://www.tonyspencer.com/journal/00000037.htm</a><br />
+<br />
+I read thru that and found my mistake.<br />
+<br />
+Its just a small list of notes, I found them to be the best I've found on the subject and the most simplist.<br />
+<br />
+Dont forget to add a simple line like this into your scripts to get them working on Win32.<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">if(</span><span class="default">$WINDIR</span><span class="keyword">) </span><span class="default">curl_setopt</span><span class="keyword">(</span><span class="default">$curl</span><span class="keyword">, </span><span class="default">CURLOPT_CAINFO</span><span class="keyword">, </span><span class="string">"c:\\windows\\ca-bundle.crt"</span><span class="keyword">);<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+Last note: ca-bundle.crt file is located in the Curl download. I stored mine in the windows directory and apache/php can access it fine.<br />
+<br />
+All the best and I hope this helps.<br />
+<br />
+Simon Lightfoot<br />
+vHost Direct Limited</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="39595""></a>
+  <div class="note">
+   <strong class="user">hraefn at hraefn dot net</strong>
+   <a href="#39595" class="date">03-Feb-2004 01:15</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+You can request (and have deflated for you) compressed http (from mod_gzip or ob_gzhandler, for instance) by using the following:<br />
+<br />
+<span class="default">&lt;?php<br />
+curl_setopt</span><span class="keyword">(</span><span class="default">$ch</span><span class="keyword">,</span><span class="default">CURLOPT_ENCODING </span><span class="keyword">, </span><span class="string">"gzip"</span><span class="keyword">);<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+This seems to work fine with the latest php (4.3.4) curl (7.11.0) and zlib (1.1.4) under linux.&nbsp; This is much more elegant than forcing the Accept-Encode header and using gzdeflate on an edited result.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="29813""></a>
+  <div class="note">
+   <strong class="user">bharris at spro dot net</strong>
+   <a href="#29813" class="date">25-Feb-2003 04:58</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+For Win2000: To get the 4.3.1 curl dll to work with https you now need to download the latest win32 curl library from <a href="http://curl.haxx.se and snag the ca-bundle.crt file from the lib directory.&nbsp; Place this somewhere handy on your webserver." rel="nofollow" target="_blank">http://curl.haxx.se and snag the ca-bundle.crt file from the lib directory.&nbsp; Place this somewhere handy on your webserver.</a><br />
+<br />
+Then in your PHP script, add the following setopt line to the rest of your curl_setopt commands:<br />
+<br />
+<span class="default">&lt;?php curl_setopt</span><span class="keyword">(</span><span class="default">$ch</span><span class="keyword">, </span><span class="default">CURLOPT_CAFILE</span><span class="keyword">, </span><span class="string">'C:\pathto\ca-bundle.crt'</span><span class="keyword">); </span><span class="default">?&gt;<br />
+</span><br />
+This worked for me and allowed me to discontinue using the CURLOPT_SSL_VERIFYPEER set to zero hack.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
 <hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="curl.examples-basic.html">Basic curl example</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.curl-close.html">curl_close</a></div>

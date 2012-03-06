@@ -80,7 +80,191 @@
  </div>
 
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="103548""></a>
+  <div class="note">
+   <strong class="user">Luke Scott</strong>
+   <a href="#103548" class="date">19-Apr-2011 07:03</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+If you want to make the best use out of autoload with an APC cache don't use spl_autoload. It uses relative paths and thus will perform a stat even with apc.stat=0 (either that, or it doesn't work at all).<br />
+<br />
+Instead make a custom function and use require/include with an absolute path (register it with spl_autoload_register).<br />
+<br />
+Do NOT use *_once functions or a relative path. This will fail harder than spl_autoload.<br />
+<br />
+Also avoid using file_exists and is_file. This will also perform a stat.<br />
+<br />
+Why are stats bad? Because they access the file system. PHP does have a stat cache that helps, but it defeats the purpose of apc.stat = 0.<br />
+<br />
+It's also good to keep in mind that it's good to keep your custom autoload function simple. This is my Loader class:<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+</span><span class="keyword">class </span><span class="default">Loader<br />
+</span><span class="keyword">{&nbsp; &nbsp; <br />
+&nbsp;&nbsp;&nbsp; public static function </span><span class="default">registerAutoload</span><span class="keyword">()<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">spl_autoload_register</span><span class="keyword">(array(</span><span class="default">__CLASS__</span><span class="keyword">, </span><span class="string">'includeClass'</span><span class="keyword">));<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; public static function </span><span class="default">unregisterAutoload</span><span class="keyword">()<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">spl_autoload_unregister</span><span class="keyword">(array(</span><span class="default">__CLASS__</span><span class="keyword">, </span><span class="string">'includeClass'</span><span class="keyword">));<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; public static function </span><span class="default">includeClass</span><span class="keyword">(</span><span class="default">$class</span><span class="keyword">)<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; require(</span><span class="default">PATH </span><span class="keyword">. </span><span class="string">'/' </span><span class="keyword">. </span><span class="default">strtr</span><span class="keyword">(</span><span class="default">$class</span><span class="keyword">, </span><span class="string">'_\\'</span><span class="keyword">, </span><span class="string">'//'</span><span class="keyword">) . </span><span class="string">'.php'</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+}<br />
+<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+Also want to point out that APC does an optimization with require/include (not *_once) with relative paths if require/include is done in the global scope (and isn't conditional). So it would be a good idea to explicitly include files you know you're going to use on every request (but don't use *_once). You could, for example, add a "registerProfiledAutoload" to the above class and keep track of what you're including to help you determine what you could explicitly include (during development, not production). The key is try not to make heavy use out of autoload.<br />
+<br />
+If you must use relative paths and don't care about having to lower-case your file-names then spl_autoload works great.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="98762""></a>
+  <div class="note">
+   <strong class="user">daniel</strong>
+   <a href="#98762" class="date">05-Jul-2010 07:58</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Note this function will LOWERCASE the class names its looking for, dont be confused when it cant find Foo_Bar.php<br />
+<br />
+also, unlike most other autoloader code snippets, this function DOES NOT translate underscores to slashes.<br />
+<br />
+class Foo_Bar {}<br />
+will load foo_bar.php and will not try to load foo/bar.php<br />
+<br />
+You can get around this with<br />
+spl_autoload_register(function($class) { return spl_autoload(str_replace('_', '/', $class));});</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="92767""></a>
+  <div class="note">
+   <strong class="user">simast at gmail dot com</strong>
+   <a href="#92767" class="date">07-Aug-2009 10:22</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Note, that the default autoload implementation is written in C land and is always slightly faster then your native PHP one.<br />
+<br />
+Here is a trick to use default implementation with any configuration:<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// Your custom class dir<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">define</span><span class="keyword">(</span><span class="string">'CLASS_DIR'</span><span class="keyword">, </span><span class="string">'class/'</span><span class="keyword">)<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// Add your class dir to include path<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">set_include_path</span><span class="keyword">(</span><span class="default">get_include_path</span><span class="keyword">().</span><span class="default">PATH_SEPARATOR</span><span class="keyword">.</span><span class="default">CLASS_DIR</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// You can use this trick to make autoloader look for commonly used "My.class.php" type filenames<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">spl_autoload_extensions</span><span class="keyword">(</span><span class="string">'.class.php'</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// Use default autoload implementation<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">spl_autoload_register</span><span class="keyword">();<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+This also works with namespaces out of the box. So you can write code like "use My\Name\Object" and it will map to "class/My/Name/Object.class.php" file path!</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="78053""></a>
+  <div class="note">
+   <strong class="user">safak_ozpinar at NOSPAM dot yahoo dot com</strong>
+   <a href="#78053" class="date">25-Sep-2007 07:17</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Note that, the orders of file extensions is important for performance. You should make the priority of your favourite file extension higest or use only one extension for your class files. Check out this example:<br />
+<br />
+Some class files:<br />
+<br />
+ClassA.php<br />
+<span class="default">&lt;?php </span><span class="keyword">class </span><span class="default">ClassA </span><span class="keyword">{ var </span><span class="default">$val </span><span class="keyword">= </span><span class="string">'Hello from class "ClassA"'</span><span class="keyword">; } </span><span class="default">?&gt;<br />
+</span>ClassB.php<br />
+<span class="default">&lt;?php </span><span class="keyword">class </span><span class="default">ClassB </span><span class="keyword">{ var </span><span class="default">$val </span><span class="keyword">= </span><span class="string">'Hello from class "ClassB"'</span><span class="keyword">; } </span><span class="default">?&gt;<br />
+</span>ClassC.php<br />
+<span class="default">&lt;?php </span><span class="keyword">class </span><span class="default">ClassC </span><span class="keyword">{ var </span><span class="default">$val </span><span class="keyword">= </span><span class="string">'Hello from class "ClassC"'</span><span class="keyword">; } </span><span class="default">?&gt;<br />
+</span>ClassD.php<br />
+<span class="default">&lt;?php </span><span class="keyword">class </span><span class="default">ClassD </span><span class="keyword">{ var </span><span class="default">$val </span><span class="keyword">= </span><span class="string">'Hello from class "ClassD"'</span><span class="keyword">; } </span><span class="default">?&gt;<br />
+</span>ClassE.php<br />
+<span class="default">&lt;?php </span><span class="keyword">class </span><span class="default">ClassE </span><span class="keyword">{ var </span><span class="default">$val </span><span class="keyword">= </span><span class="string">'Hello from class "ClassE"'</span><span class="keyword">; } </span><span class="default">?&gt;<br />
+</span><br />
+1. Simple:<br />
+<span class="default">&lt;?php<br />
+</span><span class="comment">// default priority: .inc .php<br />
+</span><span class="keyword">for(</span><span class="default">$n</span><span class="keyword">=</span><span class="default">65</span><span class="keyword">; </span><span class="default">$n</span><span class="keyword">&lt;</span><span class="default">70</span><span class="keyword">; </span><span class="default">$n</span><span class="keyword">++) {<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$className </span><span class="keyword">= </span><span class="string">'Class'</span><span class="keyword">.</span><span class="default">chr</span><span class="keyword">(</span><span class="default">$n</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">spl_autoload</span><span class="keyword">(</span><span class="default">$className</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$ins </span><span class="keyword">= new </span><span class="default">$className</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; echo </span><span class="default">$ins</span><span class="keyword">-&gt;</span><span class="default">val</span><span class="keyword">.</span><span class="string">'&lt;br&gt;'</span><span class="keyword">;<br />
+}<br />
+</span><span class="comment">// 4.2 miliseconds<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+2. Change priority:<br />
+<span class="default">&lt;?php<br />
+spl_autoload_extensions</span><span class="keyword">(</span><span class="string">'.php,.inc'</span><span class="keyword">);<br />
+</span><span class="comment">// new priority: .php .inc<br />
+</span><span class="keyword">for(</span><span class="default">$n</span><span class="keyword">=</span><span class="default">65</span><span class="keyword">; </span><span class="default">$n</span><span class="keyword">&lt;</span><span class="default">70</span><span class="keyword">; </span><span class="default">$n</span><span class="keyword">++) {<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$className </span><span class="keyword">= </span><span class="string">'Class'</span><span class="keyword">.</span><span class="default">chr</span><span class="keyword">(</span><span class="default">$n</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">spl_autoload</span><span class="keyword">(</span><span class="default">$className</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$ins </span><span class="keyword">= new </span><span class="default">$className</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; echo </span><span class="default">$ins</span><span class="keyword">-&gt;</span><span class="default">val</span><span class="keyword">.</span><span class="string">'&lt;br&gt;'</span><span class="keyword">;<br />
+}<br />
+</span><span class="comment">// 1.4 miliseconds<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+Or you can use this simple function that runs a bit faster for the extensions with lower priority :)<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">function </span><span class="default">my_autoload</span><span class="keyword">(</span><span class="default">$className</span><span class="keyword">, </span><span class="default">$extList</span><span class="keyword">=</span><span class="string">'.inc,.php'</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$ext </span><span class="keyword">= </span><span class="default">explode</span><span class="keyword">(</span><span class="string">','</span><span class="keyword">,</span><span class="default">$extList</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; foreach(</span><span class="default">$ext </span><span class="keyword">as </span><span class="default">$x</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$fname </span><span class="keyword">= </span><span class="default">$className</span><span class="keyword">.</span><span class="default">$x</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if(@</span><span class="default">file_exists</span><span class="keyword">(</span><span class="default">$fname</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; require_once(</span><span class="default">$fname</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">true</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">false</span><span class="keyword">;<br />
+}<br />
+<br />
+for(</span><span class="default">$n</span><span class="keyword">=</span><span class="default">65</span><span class="keyword">; </span><span class="default">$n</span><span class="keyword">&lt;</span><span class="default">70</span><span class="keyword">; </span><span class="default">$n</span><span class="keyword">++) {<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$className </span><span class="keyword">= </span><span class="string">'Class'</span><span class="keyword">.</span><span class="default">chr</span><span class="keyword">(</span><span class="default">$n</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">my_autoload</span><span class="keyword">(</span><span class="default">$className</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$ins </span><span class="keyword">= new </span><span class="default">$className</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; echo </span><span class="default">$ins</span><span class="keyword">-&gt;</span><span class="default">val</span><span class="keyword">.</span><span class="string">'&lt;br&gt;'</span><span class="keyword">;<br />
+}<br />
+</span><span class="comment">// 2.6 miliseconds<br />
+</span><span class="default">?&gt;<br />
+</span>---<br />
+Safak Ozpinar - Istanbul University, Computer Engineering</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="function.spl-autoload-unregister.html">spl_autoload_unregister</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.spl-classes.html">spl_classes</a></div>
  <div class="up"><a href="ref.spl.html">SPL Functions</a></div>

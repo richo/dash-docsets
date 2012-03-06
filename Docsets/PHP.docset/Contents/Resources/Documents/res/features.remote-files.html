@@ -106,6 +106,177 @@
   </p>
 
  </div>
+<div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="82844""></a>
+  <div class="note">
+   <strong class="user">mail at 3v1n0 dot net</strong>
+   <a href="#82844" class="date">28-Apr-2008 06:18</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I've changed the function below to support the 4xx errors and the 30x redirects... This is a partial implementation yet but it's sufficient for the normal usage.<br />
+<br />
+I've made a recursive implementation (if a 30x redirect is found), but it could be easily reverted to an iterative way (simple put something like while (!empty $url) at the beginning, and set the $url to an empty string if no 3xx/4xx status are found).<br />
+<br />
+&lt;?<br />
+function http_get($url, $range = 0)<br />
+{<br />
+&nbsp;&nbsp;&nbsp; $url_stuff = parse_url($url);<br />
+&nbsp;&nbsp;&nbsp; $port = isset($url_stuff['port']) ? $url_stuff['port'] : 80;<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; $fp = @fsockopen($url_stuff['host'], $port);<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; if (!$fp)<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return false;<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; $query&nbsp; = 'GET '.$url_stuff['path'].'?'.$url_stuff['query']." HTTP/1.1\r\n";<br />
+&nbsp;&nbsp;&nbsp; $query .= 'Host: '.$url_stuff['host']."\r\n";<br />
+&nbsp;&nbsp;&nbsp; $query .= 'Connection: close'."\r\n";<br />
+&nbsp;&nbsp;&nbsp; $query .= 'Cache-Control: no'."\r\n";<br />
+&nbsp;&nbsp;&nbsp; $query .= 'Accept-Ranges: bytes'."\r\n";<br />
+&nbsp;&nbsp;&nbsp; if ($range != 0)<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $query .= 'Range: bytes='.$range.'-'."\r\n"; // -500<br />
+&nbsp;&nbsp;&nbsp; //$query .= 'Referer: http:/...'."\r\n";<br />
+&nbsp;&nbsp;&nbsp; //$query .= 'User-Agent: myphp'."\r\n";<br />
+&nbsp;&nbsp;&nbsp; $query .= "\r\n";<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; fwrite($fp, $query);<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; $chunksize = 1*(1024*1024);<br />
+&nbsp;&nbsp;&nbsp; $headersfound = false;<br />
+<br />
+&nbsp;&nbsp;&nbsp; while (!feof($fp) &amp;&amp; !$headersfound) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $buffer .= @fread($fp, 1);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if (preg_match('/HTTP\/[0-9]\.[0-9][ ]+([0-9]{3}).*\r\n/', $buffer, $matches)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $headers['HTTP'] = $matches[1];<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $buffer = '';<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; } else if (preg_match('/([^:][A-Za-z_-]+):[ ]+(.*)\r\n/', $buffer, $matches)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $headers[$matches[1]] = $matches[2];<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $buffer = '';<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; } else if (preg_match('/^\r\n/', $buffer)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $headersfound = true;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $buffer = '';<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if (strlen($buffer) &gt;= $chunksize)<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; return false;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; if (preg_match('/4[0-9]{2}/', $headers['HTTP']))<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return false;<br />
+&nbsp;&nbsp;&nbsp; else if (preg_match('/3[0-9]{2}/', $headers['HTTP']) &amp;&amp; !empty($headers['Location'])) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $url = $headers['Location'];<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return http_get($url, $range);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; while (!feof($fp) &amp;&amp; $headersfound) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $buffer = @fread($fp, $chunksize);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; echo $buffer;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; ob_flush();<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; flush();<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; $status = fclose($fp);<br />
+<br />
+&nbsp;&nbsp;&nbsp; return $status;<br />
+}<br />
+?&gt;</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="65738""></a>
+  <div class="note">
+   <strong class="user">geoffrey at nevra dot net</strong>
+   <a href="#65738" class="date">06-May-2006 03:53</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Really, you should not send headers terminated by \n - it's not per-rfc supported by a HTTP server.<br />
+<br />
+Instead, send as \r\n which is what the protocol specifies, and that regular expression would be matched anywhere, so match for something like /^Content-Length: \d+$/i on each header-line (headers are terminated by the regular expression&nbsp; /(\r\n|[\r\n])/ - so preg_split on that. Remeber to use the appropriate flags, I can't be arsed to look them up)</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="45647""></a>
+  <div class="note">
+   <strong class="user">heck at fas dot harvard dot edu</strong>
+   <a href="#45647" class="date">14-Sep-2004 12:06</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+The previous post is part right, part wrong. It's part right because it's true that the php script will run on the remote server, if it's capable of interpreting php scripts. You can see this by creating this script on a remote machine:<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">echo </span><span class="default">system</span><span class="keyword">(</span><span class="string">"hostname"</span><span class="keyword">);<br />
+</span><span class="default">?&gt;<br />
+</span>Then include that in a php file on your local machine. When you view it in a browser, you'll see the hostname of the remote machine.<br />
+<br />
+However, that does not mean there are no security worries here. Just try replacing the previous script with this one:<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">echo </span><span class="string">"&lt;?php system(\"hostname\"); ?&gt;"</span><span class="keyword">;<br />
+</span><span class="default">?&gt;<br />
+</span>I'm guessing you can figure out what that's gonna do.<br />
+<br />
+So yes, remote includes can be a major security problem.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="34709""></a>
+  <div class="note">
+   <strong class="user">geoffrey at nevra dot net</strong>
+   <a href="#34709" class="date">04-Aug-2003 05:25</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+ok, here is the story:<br />
+<br />
+I was trying to download remote images, finding urls throught apache indexs with regexps and fopen()ing them to get the datas. It didn't work. I thought about binary considerations. Putting the 'b' in the second argument of fopen didn't help much, my browser still didn't want to display the images. I finally understood by watching the datas i was getting from the remote host: it was an html page ! hey, i didn't know apache sent html pages when requesting images, did you ?<br />
+the right way is then to send an http request via fsockopen. Here comes my second problem, using explode("\n\n", $buffer); to get rid of the headers. The right way is to get the value of the Content-Lenght field and use it in substr($buffer, -$Content-Lenght);<br />
+<br />
+finally, here is my own function to download these files:<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">function </span><span class="default">http_get</span><span class="keyword">(</span><span class="default">$url</span><span class="keyword">)<br />
+{<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$url_stuff </span><span class="keyword">= </span><span class="default">parse_url</span><span class="keyword">(</span><span class="default">$url</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$port </span><span class="keyword">= isset(</span><span class="default">$url_stuff</span><span class="keyword">[</span><span class="string">'port'</span><span class="keyword">]) ? </span><span class="default">$url_stuff</span><span class="keyword">[</span><span class="string">'port'</span><span class="keyword">] : </span><span class="default">80</span><span class="keyword">;<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$fp </span><span class="keyword">= </span><span class="default">fsockopen</span><span class="keyword">(</span><span class="default">$url_stuff</span><span class="keyword">[</span><span class="string">'host'</span><span class="keyword">], </span><span class="default">$port</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$query&nbsp; </span><span class="keyword">= </span><span class="string">'GET ' </span><span class="keyword">. </span><span class="default">$url_stuff</span><span class="keyword">[</span><span class="string">'path'</span><span class="keyword">] . </span><span class="string">" HTTP/1.0\n"</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$query </span><span class="keyword">.= </span><span class="string">'Host: ' </span><span class="keyword">. </span><span class="default">$url_stuff</span><span class="keyword">[</span><span class="string">'host'</span><span class="keyword">];<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$query </span><span class="keyword">.= </span><span class="string">"\n\n"</span><span class="keyword">;<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">fwrite</span><span class="keyword">(</span><span class="default">$fp</span><span class="keyword">, </span><span class="default">$query</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp;&nbsp; while (</span><span class="default">$tmp </span><span class="keyword">= </span><span class="default">fread</span><span class="keyword">(</span><span class="default">$fp</span><span class="keyword">, </span><span class="default">1024</span><span class="keyword">))<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$buffer </span><span class="keyword">.= </span><span class="default">$tmp</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">preg_match</span><span class="keyword">(</span><span class="string">'/Content-Length: ([0-9]+)/'</span><span class="keyword">, </span><span class="default">$buffer</span><span class="keyword">, </span><span class="default">$parts</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">substr</span><span class="keyword">(</span><span class="default">$buffer</span><span class="keyword">, - </span><span class="default">$parts</span><span class="keyword">[</span><span class="default">1</span><span class="keyword">]);<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+}<br />
+<br />
+ho, maybe you'll say i could have parsed the page to get rid of the html stuff, but i wanted to experience http a little ;)</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
 <hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="features.file-upload.put-method.html">PUT method support</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="features.connection-handling.html">Connection handling</a></div>

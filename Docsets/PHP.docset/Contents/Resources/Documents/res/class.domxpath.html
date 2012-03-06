@@ -145,6 +145,114 @@
  
 <h2>Table of Contents</h2><ul class="chunklist chunklist_reference"><li><a href="domxpath.construct.html">DOMXPath::__construct</a> â€” Creates a new DOMXPath object</li><li><a href="domxpath.evaluate.html">DOMXPath::evaluate</a> â€” Evaluates the given XPath expression and returns a typed result if possible</li><li><a href="domxpath.query.html">DOMXPath::query</a> â€” Evaluates the given XPath expression</li><li><a href="domxpath.registernamespace.html">DOMXPath::registerNamespace</a> â€” Registers the namespace with the DOMXPath object</li><li><a href="domxpath.registerphpfunctions.html">DOMXPath::registerPhpFunctions</a> â€” Register PHP functions as XPath functions</li></ul>
 </div>
+<div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="101694""></a>
+  <div class="note">
+   <strong class="user">dhz</strong>
+   <a href="#101694" class="date">05-Jan-2011 10:47</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I just spent far too much time chasing this one....<br />
+<br />
+When running an xpath query on a table be careful about table internal nodes (ie: &lt;tr&gt;&lt;/tr&gt;, and &lt;td&gt;&lt;/td&gt;).&nbsp; If the master &lt;table&gt; tag is missing, then query() (and likely evaluate() also) will return unexpected results.<br />
+<br />
+I had a DOMNode with a structure like this:<br />
+<br />
+&lt;td&gt;<br />
+&nbsp;&nbsp;&nbsp; &lt;table&gt;&lt;/table&gt;<br />
+&nbsp;&nbsp;&nbsp; &lt;table&gt;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; &lt;tr&gt;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &lt;td&gt;&lt;/td&gt;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; &lt;/tr&gt;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; &lt;tr&gt;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &lt;td&gt;&lt;/td&gt;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &lt;td&gt;&lt;/td&gt;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; &lt;/tr&gt;<br />
+&nbsp;&nbsp;&nbsp; &lt;/table&gt;<br />
+&lt;/td&gt;<br />
+<br />
+Upon which I was trying to do a relative query (ie: <span class="default">&lt;?php $xpath_obj</span><span class="keyword">-&gt;</span><span class="default">query</span><span class="keyword">(</span><span class="string">'my/x/path'</span><span class="keyword">, </span><span class="default">$relative_node</span><span class="keyword">); </span><span class="default">?&gt;</span>).<br />
+<br />
+But because of the lone outer &lt;td&gt;&lt;/td&gt; tags, the inner tags were being invalidated, while the nodes were still recognized.&nbsp; Meaning that the following query would work:<br />
+<br />
+<span class="default">&lt;?php $xpath_obj</span><span class="keyword">-&gt;</span><span class="default">query</span><span class="keyword">(</span><span class="string">'*[2]/*[*[2]]'</span><span class="keyword">, </span><span class="default">$relative_node</span><span class="keyword">); </span><span class="default">?&gt;<br />
+</span><br />
+But when replacing any of the "*" tokens with the corresponding (and valid) "table", "tr", or "td" tokens the query would inexplicably break.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="92841""></a>
+  <div class="note">
+   <strong class="user">david at lionhead dot nl</strong>
+   <a href="#92841" class="date">11-Aug-2009 06:33</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+When using DOMXPath and having a default namespace. Consider using an intermediate function to add the default namespace to all queries:<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="comment">// The default namespace: x:xmlns="<a href="http://..." rel="nofollow" target="_blank">http://...</a>"<br />
+</span><span class="default">$path</span><span class="keyword">=</span><span class="string">"/Book/Title"</span><span class="keyword">;<br />
+</span><span class="default">$path</span><span class="keyword">=</span><span class="default">preg_replace</span><span class="keyword">(</span><span class="string">"\/([a-zA-Z])"</span><span class="keyword">,</span><span class="string">"/x:$1"</span><span class="keyword">,</span><span class="default">$path</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">// Result: /x:Book/x:Title<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="87645""></a>
+  <div class="note">
+   <strong class="user">Mark Omohundro, ajamyajax dot com</strong>
+   <a href="#87645" class="date">14-Dec-2008 09:15</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+<span class="default">&lt;?php<br />
+</span><span class="comment">// to retrieve selected html data, try these DomXPath examples:<br />
+<br />
+</span><span class="default">$file </span><span class="keyword">= </span><span class="default">$DOCUMENT_ROOT</span><span class="keyword">. </span><span class="string">"test.html"</span><span class="keyword">;<br />
+</span><span class="default">$doc </span><span class="keyword">= new </span><span class="default">DOMDocument</span><span class="keyword">();<br />
+</span><span class="default">$doc</span><span class="keyword">-&gt;</span><span class="default">loadHTMLFile</span><span class="keyword">(</span><span class="default">$file</span><span class="keyword">);<br />
+<br />
+</span><span class="default">$xpath </span><span class="keyword">= new </span><span class="default">DOMXpath</span><span class="keyword">(</span><span class="default">$doc</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">// example 1: for everything with an id<br />
+//$elements = $xpath-&gt;query("//*[@id]");<br />
+<br />
+// example 2: for node data in a selected id<br />
+//$elements = $xpath-&gt;query("/html/body/div[@id='yourTagIdHere']");<br />
+<br />
+// example 3: same as above with wildcard<br />
+</span><span class="default">$elements </span><span class="keyword">= </span><span class="default">$xpath</span><span class="keyword">-&gt;</span><span class="default">query</span><span class="keyword">(</span><span class="string">"*/div[@id='yourTagIdHere']"</span><span class="keyword">);<br />
+<br />
+if (!</span><span class="default">is_null</span><span class="keyword">(</span><span class="default">$elements</span><span class="keyword">)) {<br />
+&nbsp; foreach (</span><span class="default">$elements </span><span class="keyword">as </span><span class="default">$element</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; echo </span><span class="string">"&lt;br/&gt;["</span><span class="keyword">. </span><span class="default">$element</span><span class="keyword">-&gt;</span><span class="default">nodeName</span><span class="keyword">. </span><span class="string">"]"</span><span class="keyword">;<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$nodes </span><span class="keyword">= </span><span class="default">$element</span><span class="keyword">-&gt;</span><span class="default">childNodes</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; foreach (</span><span class="default">$nodes </span><span class="keyword">as </span><span class="default">$node</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp;&nbsp; echo </span><span class="default">$node</span><span class="keyword">-&gt;</span><span class="default">nodeValue</span><span class="keyword">. </span><span class="string">"\n"</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp; }<br />
+}<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
 <hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="domtext.splittext.html">DOMText::splitText</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="domxpath.construct.html">DOMXPath::__construct</a></div>

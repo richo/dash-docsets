@@ -432,6 +432,313 @@
 
 <h2>Table of Contents</h2><ul class="chunklist chunklist_reference"><li><a href="streamwrapper.construct.html">streamWrapper::__construct</a> â€” Constructs a new stream wrapper</li><li><a href="streamwrapper.destruct.html">streamWrapper::__destruct</a> â€” Destructs an existing stream wrapper</li><li><a href="streamwrapper.dir-closedir.html">streamWrapper::dir_closedir</a> â€” Close directory handle</li><li><a href="streamwrapper.dir-opendir.html">streamWrapper::dir_opendir</a> â€” Open directory handle</li><li><a href="streamwrapper.dir-readdir.html">streamWrapper::dir_readdir</a> â€” Read entry from directory handle</li><li><a href="streamwrapper.dir-rewinddir.html">streamWrapper::dir_rewinddir</a> â€” Rewind directory handle</li><li><a href="streamwrapper.mkdir.html">streamWrapper::mkdir</a> â€” Create a directory</li><li><a href="streamwrapper.rename.html">streamWrapper::rename</a> â€” Renames a file or directory</li><li><a href="streamwrapper.rmdir.html">streamWrapper::rmdir</a> â€” Removes a directory</li><li><a href="streamwrapper.stream-cast.html">streamWrapper::stream_cast</a> â€” Retrieve the underlaying resource</li><li><a href="streamwrapper.stream-close.html">streamWrapper::stream_close</a> â€” Close an resource</li><li><a href="streamwrapper.stream-eof.html">streamWrapper::stream_eof</a> â€” Tests for end-of-file on a file pointer</li><li><a href="streamwrapper.stream-flush.html">streamWrapper::stream_flush</a> â€” Flushes the output</li><li><a href="streamwrapper.stream-lock.html">streamWrapper::stream_lock</a> â€” Advisory file locking</li><li><a href="streamwrapper.stream-metadata.html">streamWrapper::stream_metadata</a> â€” Change stream options</li><li><a href="streamwrapper.stream-open.html">streamWrapper::stream_open</a> â€” Opens file or URL</li><li><a href="streamwrapper.stream-read.html">streamWrapper::stream_read</a> â€” Read from stream</li><li><a href="streamwrapper.stream-seek.html">streamWrapper::stream_seek</a> â€” Seeks to specific location in a stream</li><li><a href="streamwrapper.stream-set-option.html">streamWrapper::stream_set_option</a> â€” Change stream options</li><li><a href="streamwrapper.stream-stat.html">streamWrapper::stream_stat</a> â€” Retrieve information about a file resource</li><li><a href="streamwrapper.stream-tell.html">streamWrapper::stream_tell</a> â€” Retrieve the current position of a stream</li><li><a href="streamwrapper.stream-write.html">streamWrapper::stream_write</a> â€” Write to stream</li><li><a href="streamwrapper.unlink.html">streamWrapper::unlink</a> â€” Delete a file</li><li><a href="streamwrapper.url-stat.html">streamWrapper::url_stat</a> â€” Retrieve information about a file</li></ul>
 </div>
+<div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="105872""></a>
+  <div class="note">
+   <strong class="user">Anonymous</strong>
+   <a href="#105872" class="date">21-Sep-2011 12:02</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Here is a very simple stream wrapper which calls your callback function for reads:<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+</span><span class="keyword">class </span><span class="default">CallbackUrl<br />
+</span><span class="keyword">{<br />
+&nbsp;&nbsp;&nbsp; const </span><span class="default">WRAPPER_NAME </span><span class="keyword">= </span><span class="string">'callback'</span><span class="keyword">;<br />
+<br />
+&nbsp;&nbsp;&nbsp; public </span><span class="default">$context</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; private </span><span class="default">$_cb</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; private </span><span class="default">$_eof </span><span class="keyword">= </span><span class="default">false</span><span class="keyword">;<br />
+<br />
+&nbsp;&nbsp;&nbsp; private static </span><span class="default">$_isRegistered </span><span class="keyword">= </span><span class="default">false</span><span class="keyword">;<br />
+<br />
+&nbsp;&nbsp;&nbsp; public static function </span><span class="default">getContext</span><span class="keyword">(</span><span class="default">$cb</span><span class="keyword">)<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if (!</span><span class="default">self</span><span class="keyword">::</span><span class="default">$_isRegistered</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">stream_wrapper_register</span><span class="keyword">(</span><span class="default">self</span><span class="keyword">::</span><span class="default">WRAPPER_NAME</span><span class="keyword">, </span><span class="default">get_class</span><span class="keyword">());<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">self</span><span class="keyword">::</span><span class="default">$_isRegistered </span><span class="keyword">= </span><span class="default">true</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if (!</span><span class="default">is_callable</span><span class="keyword">(</span><span class="default">$cb</span><span class="keyword">)) return </span><span class="default">false</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">stream_context_create</span><span class="keyword">(array(</span><span class="default">self</span><span class="keyword">::</span><span class="default">WRAPPER_NAME </span><span class="keyword">=&gt; array(</span><span class="string">'cb' </span><span class="keyword">=&gt; </span><span class="default">$cb</span><span class="keyword">)));<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; public function </span><span class="default">stream_open</span><span class="keyword">(</span><span class="default">$path</span><span class="keyword">, </span><span class="default">$mode</span><span class="keyword">, </span><span class="default">$options</span><span class="keyword">, &amp;</span><span class="default">$opened_path</span><span class="keyword">)<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if (!</span><span class="default">preg_match</span><span class="keyword">(</span><span class="string">'/^r[bt]?$/'</span><span class="keyword">, </span><span class="default">$mode</span><span class="keyword">) || !</span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">context</span><span class="keyword">) return </span><span class="default">false</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$opt </span><span class="keyword">= </span><span class="default">stream_context_get_options</span><span class="keyword">(</span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">context</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if (!</span><span class="default">is_array</span><span class="keyword">(</span><span class="default">$opt</span><span class="keyword">[</span><span class="default">self</span><span class="keyword">::</span><span class="default">WRAPPER_NAME</span><span class="keyword">]) ||<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; !isset(</span><span class="default">$opt</span><span class="keyword">[</span><span class="default">self</span><span class="keyword">::</span><span class="default">WRAPPER_NAME</span><span class="keyword">][</span><span class="string">'cb'</span><span class="keyword">]) ||<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; !</span><span class="default">is_callable</span><span class="keyword">(</span><span class="default">$opt</span><span class="keyword">[</span><span class="default">self</span><span class="keyword">::</span><span class="default">WRAPPER_NAME</span><span class="keyword">][</span><span class="string">'cb'</span><span class="keyword">])) return </span><span class="default">false</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">_cb </span><span class="keyword">= </span><span class="default">$opt</span><span class="keyword">[</span><span class="default">self</span><span class="keyword">::</span><span class="default">WRAPPER_NAME</span><span class="keyword">][</span><span class="string">'cb'</span><span class="keyword">];<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">true</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; public function </span><span class="default">stream_read</span><span class="keyword">(</span><span class="default">$count</span><span class="keyword">)<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if (</span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">_eof </span><span class="keyword">|| !</span><span class="default">$count</span><span class="keyword">) return </span><span class="string">''</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if ((</span><span class="default">$s </span><span class="keyword">= </span><span class="default">call_user_func</span><span class="keyword">(</span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">_cb</span><span class="keyword">, </span><span class="default">$count</span><span class="keyword">)) == </span><span class="string">''</span><span class="keyword">) </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">_eof </span><span class="keyword">= </span><span class="default">true</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">$s</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; public function </span><span class="default">stream_eof</span><span class="keyword">()<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">_eof</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+}<br />
+<br />
+class </span><span class="default">Test </span><span class="keyword">{<br />
+&nbsp;&nbsp;&nbsp; private </span><span class="default">$_s</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; public function </span><span class="default">__construct</span><span class="keyword">(</span><span class="default">$s</span><span class="keyword">)<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">_s </span><span class="keyword">= </span><span class="default">$s</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; public function </span><span class="default">read</span><span class="keyword">(</span><span class="default">$count</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">fread</span><span class="keyword">(</span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">_s</span><span class="keyword">, </span><span class="default">$count</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+}<br />
+<br />
+</span><span class="default">$t </span><span class="keyword">= new </span><span class="default">Test</span><span class="keyword">(</span><span class="default">fopen</span><span class="keyword">(</span><span class="string">'/etc/services'</span><span class="keyword">, </span><span class="string">'r'</span><span class="keyword">));<br />
+</span><span class="default">$fd </span><span class="keyword">= </span><span class="default">fopen</span><span class="keyword">(</span><span class="string">'callback://'</span><span class="keyword">, </span><span class="string">'r'</span><span class="keyword">, </span><span class="default">false</span><span class="keyword">, </span><span class="default">CallbackUrl</span><span class="keyword">::</span><span class="default">getContext</span><span class="keyword">(array(</span><span class="default">$t</span><span class="keyword">, </span><span class="string">'read'</span><span class="keyword">)));<br />
+while((</span><span class="default">$buf </span><span class="keyword">= </span><span class="default">fread</span><span class="keyword">(</span><span class="default">$fd</span><span class="keyword">, </span><span class="default">128</span><span class="keyword">)) != </span><span class="string">''</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; print </span><span class="default">$buf</span><span class="keyword">;<br />
+}<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="100549""></a>
+  <div class="note">
+   <strong class="user">isaac dot z dot no dot foster at spam dot gmail dot please dot com</strong>
+   <a href="#100549" class="date">22-Oct-2010 09:12</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+It's worth noting that the interface defined by yannick at gmail should not always be implemented by a stream wrapper class, as several of the methods should not be implemented if the class has no use for them (as per the manual). <br />
+<br />
+Specifically, mkdir, rename, rmdir, and unlink are methods that "should not be defined" if the wrapper has no use for them. The consequence is that the appropriate error message will not be returned. <br />
+<br />
+If the interface is implemented, you won't have the flexibility to not implement those methods.<br />
+<br />
+Not trying to be academic, but it was useful for me.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="92277""></a>
+  <div class="note">
+   <strong class="user">yannick dot battail at gmail dot com</strong>
+   <a href="#92277" class="date">17-Jul-2009 02:38</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+a php interface for wrapper<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">interface </span><span class="default">WrapperInterface<br />
+</span><span class="keyword">{<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">/**<br />
+&nbsp;&nbsp; &nbsp; * resource context<br />
+&nbsp;&nbsp; &nbsp; *<br />
+&nbsp;&nbsp; &nbsp; * @var resource<br />
+&nbsp;&nbsp; &nbsp; */<br />
+&nbsp;&nbsp;&nbsp; //public $context;<br />
+<br />
+&nbsp;&nbsp;&nbsp; /**<br />
+&nbsp;&nbsp; &nbsp; * constructor<br />
+&nbsp;&nbsp; &nbsp; *<br />
+&nbsp;&nbsp; &nbsp; */<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">public function </span><span class="default">__construct</span><span class="keyword">();<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">/**<br />
+&nbsp;&nbsp; &nbsp; *<br />
+&nbsp;&nbsp; &nbsp; *<br />
+&nbsp;&nbsp; &nbsp; * @return bool<br />
+&nbsp;&nbsp; &nbsp; */<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">public function </span><span class="default">dir_closedir</span><span class="keyword">();<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">/**<br />
+&nbsp;&nbsp; &nbsp; * Enter description here...<br />
+&nbsp;&nbsp; &nbsp; *<br />
+&nbsp;&nbsp; &nbsp; * @param string $path<br />
+&nbsp;&nbsp; &nbsp; * @param int $options<br />
+&nbsp;&nbsp; &nbsp; * @return bool<br />
+&nbsp;&nbsp; &nbsp; */<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">public function </span><span class="default">dir_opendir</span><span class="keyword">(</span><span class="default">$path </span><span class="keyword">, </span><span class="default">$options</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">/**<br />
+&nbsp;&nbsp; &nbsp; * Enter description here...<br />
+&nbsp;&nbsp; &nbsp; *<br />
+&nbsp;&nbsp; &nbsp; * @return string<br />
+&nbsp;&nbsp; &nbsp; */<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">public function </span><span class="default">dir_readdir</span><span class="keyword">();<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">/**<br />
+&nbsp;&nbsp; &nbsp; * Enter description here...<br />
+&nbsp;&nbsp; &nbsp; *<br />
+&nbsp;&nbsp; &nbsp; * @return bool<br />
+&nbsp;&nbsp; &nbsp; */<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">public function </span><span class="default">dir_rewinddir</span><span class="keyword">();<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">/**<br />
+&nbsp;&nbsp; &nbsp; * Enter description here...<br />
+&nbsp;&nbsp; &nbsp; *<br />
+&nbsp;&nbsp; &nbsp; * @param string $path<br />
+&nbsp;&nbsp; &nbsp; * @param int $mode<br />
+&nbsp;&nbsp; &nbsp; * @param int $options<br />
+&nbsp;&nbsp; &nbsp; * @return bool<br />
+&nbsp;&nbsp; &nbsp; */<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">public function </span><span class="default">mkdir</span><span class="keyword">(</span><span class="default">$path </span><span class="keyword">, </span><span class="default">$mode </span><span class="keyword">, </span><span class="default">$options</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">/**<br />
+&nbsp;&nbsp; &nbsp; * Enter description here...<br />
+&nbsp;&nbsp; &nbsp; *<br />
+&nbsp;&nbsp; &nbsp; * @param string $path_from<br />
+&nbsp;&nbsp; &nbsp; * @param string $path_to<br />
+&nbsp;&nbsp; &nbsp; * @return bool<br />
+&nbsp;&nbsp; &nbsp; */<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">public function </span><span class="default">rename</span><span class="keyword">(</span><span class="default">$path_from </span><span class="keyword">, </span><span class="default">$path_to</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">/**<br />
+&nbsp;&nbsp; &nbsp; * Enter description here...<br />
+&nbsp;&nbsp; &nbsp; *<br />
+&nbsp;&nbsp; &nbsp; * @param string $path<br />
+&nbsp;&nbsp; &nbsp; * @param int $options<br />
+&nbsp;&nbsp; &nbsp; * @return bool<br />
+&nbsp;&nbsp; &nbsp; */<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">public function </span><span class="default">rmdir</span><span class="keyword">(</span><span class="default">$path </span><span class="keyword">, </span><span class="default">$options</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">/**<br />
+&nbsp;&nbsp; &nbsp; * Enter description here...<br />
+&nbsp;&nbsp; &nbsp; *<br />
+&nbsp;&nbsp; &nbsp; * @param int $cast_as<br />
+&nbsp;&nbsp; &nbsp; * @return resource<br />
+&nbsp;&nbsp; &nbsp; */<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">public function </span><span class="default">stream_cast</span><span class="keyword">(</span><span class="default">$cast_as</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">/**<br />
+&nbsp;&nbsp; &nbsp; * Enter description here...<br />
+&nbsp;&nbsp; &nbsp; *<br />
+&nbsp;&nbsp; &nbsp; */<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">public function </span><span class="default">stream_close</span><span class="keyword">();<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">/**<br />
+&nbsp;&nbsp; &nbsp; * Enter description here...<br />
+&nbsp;&nbsp; &nbsp; *<br />
+&nbsp;&nbsp; &nbsp; * @return bool<br />
+&nbsp;&nbsp; &nbsp; */<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">public function </span><span class="default">stream_eof</span><span class="keyword">();<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">/**<br />
+&nbsp;&nbsp; &nbsp; * Enter description here...<br />
+&nbsp;&nbsp; &nbsp; *<br />
+&nbsp;&nbsp; &nbsp; * @return bool<br />
+&nbsp;&nbsp; &nbsp; */<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">public function </span><span class="default">stream_flush</span><span class="keyword">();<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">/**<br />
+&nbsp;&nbsp; &nbsp; * Enter description here...<br />
+&nbsp;&nbsp; &nbsp; *<br />
+&nbsp;&nbsp; &nbsp; * @param mode $operation<br />
+&nbsp;&nbsp; &nbsp; * @return bool<br />
+&nbsp;&nbsp; &nbsp; */<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">public function </span><span class="default">stream_lock</span><span class="keyword">(</span><span class="default">$operation</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">/**<br />
+&nbsp;&nbsp; &nbsp; * Enter description here...<br />
+&nbsp;&nbsp; &nbsp; *<br />
+&nbsp;&nbsp; &nbsp; * @param string $path<br />
+&nbsp;&nbsp; &nbsp; * @param string $mode<br />
+&nbsp;&nbsp; &nbsp; * @param int $options<br />
+&nbsp;&nbsp; &nbsp; * @param string &amp;$opened_path<br />
+&nbsp;&nbsp; &nbsp; * @return bool<br />
+&nbsp;&nbsp; &nbsp; */<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">public function </span><span class="default">stream_open</span><span class="keyword">(</span><span class="default">$path </span><span class="keyword">, </span><span class="default">$mode </span><span class="keyword">, </span><span class="default">$options </span><span class="keyword">, &amp;</span><span class="default">$opened_path</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">/**<br />
+&nbsp;&nbsp; &nbsp; * Enter description here...<br />
+&nbsp;&nbsp; &nbsp; *<br />
+&nbsp;&nbsp; &nbsp; * @param int $count<br />
+&nbsp;&nbsp; &nbsp; * @return string<br />
+&nbsp;&nbsp; &nbsp; */<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">public function </span><span class="default">stream_read</span><span class="keyword">(</span><span class="default">$count</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">/**<br />
+&nbsp;&nbsp; &nbsp; * Enter description here...<br />
+&nbsp;&nbsp; &nbsp; *<br />
+&nbsp;&nbsp; &nbsp; * @param int $offset<br />
+&nbsp;&nbsp; &nbsp; * @param int $whence = SEEK_SET<br />
+&nbsp;&nbsp; &nbsp; * @return bool<br />
+&nbsp;&nbsp; &nbsp; */<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">public function </span><span class="default">stream_seek</span><span class="keyword">(</span><span class="default">$offset </span><span class="keyword">, </span><span class="default">$whence </span><span class="keyword">= </span><span class="default">SEEK_SET</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">/**<br />
+&nbsp;&nbsp; &nbsp; * Enter description here...<br />
+&nbsp;&nbsp; &nbsp; *<br />
+&nbsp;&nbsp; &nbsp; * @param int $option<br />
+&nbsp;&nbsp; &nbsp; * @param int $arg1<br />
+&nbsp;&nbsp; &nbsp; * @param int $arg2<br />
+&nbsp;&nbsp; &nbsp; * @return bool<br />
+&nbsp;&nbsp; &nbsp; */<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">public function </span><span class="default">stream_set_option</span><span class="keyword">(</span><span class="default">$option </span><span class="keyword">, </span><span class="default">$arg1 </span><span class="keyword">, </span><span class="default">$arg2</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">/**<br />
+&nbsp;&nbsp; &nbsp; * Enter description here...<br />
+&nbsp;&nbsp; &nbsp; *<br />
+&nbsp;&nbsp; &nbsp; * @return array<br />
+&nbsp;&nbsp; &nbsp; */<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">public function </span><span class="default">stream_stat</span><span class="keyword">();<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">/**<br />
+&nbsp;&nbsp; &nbsp; * Enter description here...<br />
+&nbsp;&nbsp; &nbsp; *<br />
+&nbsp;&nbsp; &nbsp; * @return int<br />
+&nbsp;&nbsp; &nbsp; */<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">public function </span><span class="default">stream_tell</span><span class="keyword">();<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">/**<br />
+&nbsp;&nbsp; &nbsp; * Enter description here...<br />
+&nbsp;&nbsp; &nbsp; *<br />
+&nbsp;&nbsp; &nbsp; * @param string $data<br />
+&nbsp;&nbsp; &nbsp; * @return int<br />
+&nbsp;&nbsp; &nbsp; */<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">public function </span><span class="default">stream_write</span><span class="keyword">(</span><span class="default">$data</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">/**<br />
+&nbsp;&nbsp; &nbsp; * Enter description here...<br />
+&nbsp;&nbsp; &nbsp; *<br />
+&nbsp;&nbsp; &nbsp; * @param string $path<br />
+&nbsp;&nbsp; &nbsp; * @return bool<br />
+&nbsp;&nbsp; &nbsp; */<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">public function </span><span class="default">unlink</span><span class="keyword">(</span><span class="default">$path</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">/**<br />
+&nbsp;&nbsp; &nbsp; * Enter description here...<br />
+&nbsp;&nbsp; &nbsp; *<br />
+&nbsp;&nbsp; &nbsp; * @param string $path<br />
+&nbsp;&nbsp; &nbsp; * @param int $flags<br />
+&nbsp;&nbsp; &nbsp; * @return array<br />
+&nbsp;&nbsp; &nbsp; */<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">public function </span><span class="default">url_stat</span><span class="keyword">(</span><span class="default">$path </span><span class="keyword">, </span><span class="default">$flags</span><span class="keyword">);<br />
+}<br />
+<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
 <hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="stream.streamwrapper.example-1.html">Example class registered as stream wrapper</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="streamwrapper.construct.html">streamWrapper::__construct</a></div>

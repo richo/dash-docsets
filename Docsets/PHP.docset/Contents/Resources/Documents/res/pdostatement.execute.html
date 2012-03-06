@@ -183,7 +183,447 @@
  </div>
 
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="106667""></a>
+  <div class="note">
+   <strong class="user">richard at securebucket dot com</strong>
+   <a href="#106667" class="date">25-Nov-2011 01:16</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Note:&nbsp; Parameters don't work with a dash in the name like ":asd-asd" you can do a quick str_replace("-","_",$parameter) to fix the issue.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="103287""></a>
+  <div class="note">
+   <strong class="user">ElTorqiro</strong>
+   <a href="#103287" class="date">05-Apr-2011 02:51</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+When using a prepared statement to execute multiple inserts (such as in a loop etc), under sqlite the performance is dramatically improved by wrapping the loop in a transaction.<br />
+<br />
+I have an application that routinely inserts 30-50,000 records at a time.&nbsp; Without the transaction it was taking over 150 seconds, and with it only 3.<br />
+<br />
+This may affect other implementations as well, and I am sure it is something that affects all databases to some extent, but I can only test with PDO sqlite.<br />
+<br />
+e.g.<br />
+<br />
+<span class="default">&lt;?php<br />
+$data </span><span class="keyword">= array(<br />
+&nbsp; array(</span><span class="string">'name' </span><span class="keyword">=&gt; </span><span class="string">'John'</span><span class="keyword">, </span><span class="string">'age' </span><span class="keyword">=&gt; </span><span class="string">'25'</span><span class="keyword">),<br />
+&nbsp; array(</span><span class="string">'name' </span><span class="keyword">=&gt; </span><span class="string">'Wendy'</span><span class="keyword">, </span><span class="string">'age' </span><span class="keyword">=&gt; </span><span class="string">'32'</span><span class="keyword">)<br />
+);<br />
+<br />
+try {<br />
+&nbsp; </span><span class="default">$pdo </span><span class="keyword">= new </span><span class="default">PDO</span><span class="keyword">(</span><span class="string">'sqlite:myfile.sqlite'</span><span class="keyword">);<br />
+}<br />
+<br />
+catch(</span><span class="default">PDOException $e</span><span class="keyword">) {<br />
+&nbsp; die(</span><span class="string">'Unable to open database connection'</span><span class="keyword">);<br />
+}<br />
+<br />
+</span><span class="default">$insertStatement </span><span class="keyword">= </span><span class="default">$pdo</span><span class="keyword">-&gt;</span><span class="default">prepare</span><span class="keyword">(</span><span class="string">'insert into mytable (name, age) values (:name, :age)'</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">// start transaction<br />
+</span><span class="default">$pdo</span><span class="keyword">-&gt;</span><span class="default">beginTransaction</span><span class="keyword">();<br />
+<br />
+foreach(</span><span class="default">$data </span><span class="keyword">as &amp;</span><span class="default">$row</span><span class="keyword">) {<br />
+&nbsp; </span><span class="default">$pdo</span><span class="keyword">-&gt;</span><span class="default">execute</span><span class="keyword">(</span><span class="default">$row</span><span class="keyword">);<br />
+}<br />
+<br />
+</span><span class="comment">// end transaction<br />
+</span><span class="default">$pdo</span><span class="keyword">-&gt;</span><span class="default">commit</span><span class="keyword">();<br />
+<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="101777""></a>
+  <div class="note">
+   <strong class="user">Robin Millette</strong>
+   <a href="#101777" class="date">10-Jan-2011 06:30</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+If you're going to derive PDOStatement to extend the execute() method, you must define the signature with a default NULL argument, not an empty array.<br />
+<br />
+In otherwords:<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">class </span><span class="default">MyPDOStatement </span><span class="keyword">extends </span><span class="default">PDOStatement </span><span class="keyword">{<br />
+&nbsp; </span><span class="comment">// ...<br />
+<br />
+&nbsp; // don't use this form!<br />
+&nbsp; // function execute($input_parameters = array()) {<br />
+&nbsp; // use this instead:<br />
+&nbsp; </span><span class="keyword">function </span><span class="default">execute</span><span class="keyword">(</span><span class="default">$input_parameters </span><span class="keyword">= </span><span class="default">null</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="comment">// ...<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="keyword">return </span><span class="default">parent</span><span class="keyword">::</span><span class="default">execute</span><span class="keyword">(</span><span class="default">$input_parameters</span><span class="keyword">);<br />
+&nbsp; }<br />
+}<br />
+<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+As a sidenote, that's why I always set default parameter to NULL and take care of handling the actual correct default parameters in the body of the method or function. Thus, when you have to call the function with all the parameters, you know to always pass NULL for defaults.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="98804""></a>
+  <div class="note">
+   <strong class="user">Tony Casparro</strong>
+   <a href="#98804" class="date">08-Jul-2010 10:09</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+We know that you can't see the final raw SQL before its parsed by the DB, but if you want to simulate the final result, this may help.<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">public function </span><span class="default">showQuery</span><span class="keyword">(</span><span class="default">$query</span><span class="keyword">, </span><span class="default">$params</span><span class="keyword">)<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$keys </span><span class="keyword">= array();<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$values </span><span class="keyword">= array();<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment"># build a regular expression for each parameter<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">foreach (</span><span class="default">$params </span><span class="keyword">as </span><span class="default">$key</span><span class="keyword">=&gt;</span><span class="default">$value</span><span class="keyword">)<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if (</span><span class="default">is_string</span><span class="keyword">(</span><span class="default">$key</span><span class="keyword">))<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$keys</span><span class="keyword">[] = </span><span class="string">'/:'</span><span class="keyword">.</span><span class="default">$key</span><span class="keyword">.</span><span class="string">'/'</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; else<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$keys</span><span class="keyword">[] = </span><span class="string">'/[?]/'</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if(</span><span class="default">is_numeric</span><span class="keyword">(</span><span class="default">$value</span><span class="keyword">))<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$values</span><span class="keyword">[] = </span><span class="default">intval</span><span class="keyword">(</span><span class="default">$value</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; else<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$values</span><span class="keyword">[] = </span><span class="string">'"'</span><span class="keyword">.</span><span class="default">$value </span><span class="keyword">.</span><span class="string">'"'</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$query </span><span class="keyword">= </span><span class="default">preg_replace</span><span class="keyword">(</span><span class="default">$keys</span><span class="keyword">, </span><span class="default">$values</span><span class="keyword">, </span><span class="default">$query</span><span class="keyword">, </span><span class="default">1</span><span class="keyword">, </span><span class="default">$count</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">$query</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="97531""></a>
+  <div class="note">
+   <strong class="user">gx</strong>
+   <a href="#97531" class="date">24-Apr-2010 10:05</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Note that you must<br />
+- EITHER pass all values to bind in an array to PDOStatement::execute()<br />
+- OR bind every value before with PDOStatement::bindValue(), then call PDOStatement::execute() with *no* parameter (not even "array()"!).<br />
+Passing an array (empty or not) to execute() will "erase" and replace any previous bindings (and can lead to, e.g. with MySQL, "SQLSTATE[HY000]: General error: 2031" (CR_PARAMS_NOT_BOUND) if you passed an empty array).<br />
+<br />
+Thus the following function is incorrect in case the prepared statement has been "bound" before:<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">function </span><span class="default">customExecute</span><span class="keyword">(</span><span class="default">PDOStatement </span><span class="keyword">&amp;</span><span class="default">$sth</span><span class="keyword">, </span><span class="default">$params </span><span class="keyword">= </span><span class="default">NULL</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">$sth</span><span class="keyword">-&gt;</span><span class="default">execute</span><span class="keyword">(</span><span class="default">$params</span><span class="keyword">);<br />
+}<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+and should therefore be replaced by something like:<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">function </span><span class="default">customExecute</span><span class="keyword">(</span><span class="default">PDOStatement </span><span class="keyword">&amp;</span><span class="default">$sth</span><span class="keyword">, array </span><span class="default">$params </span><span class="keyword">= array()) {<br />
+&nbsp;&nbsp;&nbsp; if (empty(</span><span class="default">$params</span><span class="keyword">))<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">$sth</span><span class="keyword">-&gt;</span><span class="default">execute</span><span class="keyword">();<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">$sth</span><span class="keyword">-&gt;</span><span class="default">execute</span><span class="keyword">(</span><span class="default">$params</span><span class="keyword">);<br />
+}<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+Also note that PDOStatement::execute() doesn't require $input_parameters to be an array.<br />
+<br />
+(of course, do not use it as is ^^).</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="84990""></a>
+  <div class="note">
+   <strong class="user">Ant P.</strong>
+   <a href="#84990" class="date">08-Aug-2008 10:33</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+As of 5.2.6 you still can't use this function's $input_parameters to pass a boolean to PostgreSQL. To do that, you'll have to call bindParam() with explicit types for each parameter in the query.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="81681""></a>
+  <div class="note">
+   <strong class="user">Jean-Lou dot Dupont at jldupont dot com</strong>
+   <a href="#81681" class="date">09-Mar-2008 10:38</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Hopefully this saves time for folks: one should use $count = $stmt-&gt;rowCount() after $stmt-&gt;execute() in order to really determine if any an operation such as ' update ' or ' replace ' did succeed i.e. changed some data.<br />
+<br />
+Jean-Lou Dupont.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="80499""></a>
+  <div class="note">
+   <strong class="user">albright atat anre dotdot net</strong>
+   <a href="#80499" class="date">18-Jan-2008 08:33</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+When passing an array of values to execute when your query contains question marks, note that the array must be keyed numerically from zero. If it is not, run array_values() on it to force the array to be re-keyed.<br />
+<br />
+<span class="default">&lt;?php<br />
+$anarray </span><span class="keyword">= array(</span><span class="default">42 </span><span class="keyword">=&gt; </span><span class="string">"foo"</span><span class="keyword">, </span><span class="default">101 </span><span class="keyword">=&gt; </span><span class="string">"bar"</span><span class="keyword">);<br />
+</span><span class="default">$statement </span><span class="keyword">= </span><span class="default">$dbo</span><span class="keyword">-&gt;</span><span class="default">prepare</span><span class="keyword">(</span><span class="string">"SELECT * FROM table WHERE col1 = ? AND col2 = ?"</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">//This will not work<br />
+</span><span class="default">$statement</span><span class="keyword">-&gt;</span><span class="default">execute</span><span class="keyword">(</span><span class="default">$anarray</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">//Do this to make it work<br />
+</span><span class="default">$statement</span><span class="keyword">-&gt;</span><span class="default">execute</span><span class="keyword">(</span><span class="default">array_values</span><span class="keyword">(</span><span class="default">$anarray</span><span class="keyword">));<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="77460""></a>
+  <div class="note">
+   <strong class="user">Daniel</strong>
+   <a href="#77460" class="date">30-Aug-2007 05:20</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+You could also use switch the order of t1 and t2 to get user_id from t1 (tested on postgresql):<br />
+<br />
+SELECT<br />
+&nbsp;&nbsp; t2.*,<br />
+&nbsp;&nbsp; t1.user_id, t1.user_name<br />
+FROM table1 t1<br />
+LEFT JOIN table2 t2 ON t2.user_id = t1.user_id<br />
+WHERE t1.user_id = 2</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="76966""></a>
+  <div class="note">
+   <strong class="user">simon dot lehmann at gmx dot de</strong>
+   <a href="#76966" class="date">08-Aug-2007 03:17</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+It seems, that the quoting behaviour has changed somehow between versions, as my current project was running fine on one setup, but throwing errors on another (both setups are very similar).<br />
+<br />
+Setup 1: Ubuntu 6.10, PHP 5.1.6, MySQL 5.0.24a<br />
+Setup 2: Ubuntu 7.04, PHP 5.2.1, MySQL 5.0.38<br />
+<br />
+The code fragment which caused problems (shortened):<br />
+<span class="default">&lt;?php<br />
+$stmt </span><span class="keyword">= </span><span class="default">$pdo</span><span class="keyword">-&gt;</span><span class="default">prepare</span><span class="keyword">(</span><span class="string">"SELECT col1, col2, col3 FROM tablename WHERE col4=? LIMIT ?"</span><span class="keyword">);<br />
+</span><span class="default">$stmt</span><span class="keyword">-&gt;</span><span class="default">execute</span><span class="keyword">(array(</span><span class="string">'Foo'</span><span class="keyword">, </span><span class="default">1</span><span class="keyword">));<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+On the first Setup this executes without any problems, on the second setup it generates an Error:<br />
+<br />
+SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near ''1'' at line 1<br />
+<br />
+The problem is, that $stmt-&gt;execute() quotes the number passed to the second placeholder (resulting in: ... LIMIT '1'), which is not allowed in MySQL (tested on both setups).<br />
+<br />
+To prevent this, you have to use bindParam() or bindValue() and specify a data type.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="72216""></a>
+  <div class="note">
+   <strong class="user">narcis  at  narcisradu  dot  com</strong>
+   <a href="#72216" class="date">08-Jan-2007 01:16</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+For a query like this:<br />
+<br />
+SELECT<br />
+&nbsp;&nbsp; t1.user_id, t1.user_name,<br />
+&nbsp;&nbsp; t2.*<br />
+FROM table1 t1<br />
+LEFT JOIN table2 t2 ON t2.user_id = t1.user_id<br />
+WHERE t1.user_id = 2<br />
+<br />
+If I don't have an entry in table2 for user_id=2, the user_id in&nbsp; result will be empty.<br />
+<br />
+SELECT<br />
+&nbsp;&nbsp; t1.user_id, t1.user_name,<br />
+&nbsp;&nbsp; t2.user_pet, t2.user_color, t2.user_sign<br />
+FROM table1 t1<br />
+LEFT JOIN table2 t2 ON t2.user_id = t1.user_id<br />
+WHERE t1.user_id = 2<br />
+<br />
+This query will return nonempty user_id. <br />
+<br />
+So please be careful with wildcard select.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="71929""></a>
+  <div class="note">
+   <strong class="user">VolGas</strong>
+   <a href="#71929" class="date">22-Dec-2006 10:38</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+An array of insert values (named parameters) don't need the prefixed colon als key-value to work.<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="comment">/* Execute a prepared statement by passing an array of insert values */<br />
+</span><span class="default">$calories </span><span class="keyword">= </span><span class="default">150</span><span class="keyword">;<br />
+</span><span class="default">$colour </span><span class="keyword">= </span><span class="string">'red'</span><span class="keyword">;<br />
+</span><span class="default">$sth </span><span class="keyword">= </span><span class="default">$dbh</span><span class="keyword">-&gt;</span><span class="default">prepare</span><span class="keyword">(</span><span class="string">'SELECT name, colour, calories<br />
+&nbsp;&nbsp; FROM fruit<br />
+&nbsp;&nbsp; WHERE calories &lt; :calories AND colour = :colour'</span><span class="keyword">);<br />
+</span><span class="comment">// instead of:<br />
+//&nbsp; &nbsp;&nbsp; $sth-&gt;execute(array(':calories' =&gt; $calories, ':colour' =&gt; $colour));<br />
+// this works fine, too:<br />
+</span><span class="default">$sth</span><span class="keyword">-&gt;</span><span class="default">execute</span><span class="keyword">(array(</span><span class="string">'calories' </span><span class="keyword">=&gt; </span><span class="default">$calories</span><span class="keyword">, </span><span class="string">'colour' </span><span class="keyword">=&gt; </span><span class="default">$colour</span><span class="keyword">));<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+This allows to use "regular" assembled hash-tables (arrays).<br />
+That realy does make sense!</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="71302""></a>
+  <div class="note">
+   <strong class="user">dbrucas</strong>
+   <a href="#71302" class="date">21-Nov-2006 10:54</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+If you don't want to turn on exception raising, then try this:<br />
+<br />
+&nbsp;&nbsp;&nbsp; //$dbErr = $dbHandler-&gt;errorInfo(); OR<br />
+&nbsp;&nbsp;&nbsp; $dbErr = $dbStatement-&gt;errorInfo();<br />
+&nbsp;&nbsp;&nbsp; if ( $dbErr[0] != '00000' ) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; print_r($dbHandler-&gt;errorInfo());<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; die( "&lt;div class='redbg xlarge'&gt;FAILED:&nbsp; $msg&lt;/div&gt;&lt;br /&gt;".$foot);<br />
+&nbsp;&nbsp;&nbsp; // or handle the error your way...<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; echo "SUCCESS:&nbsp; $msg&lt;br /&gt;";<br />
+... continue if succesful</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="70713""></a>
+  <div class="note">
+   <strong class="user">inghamn at bloomington dot in dot gov</strong>
+   <a href="#70713" class="date">24-Oct-2006 01:53</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Just a note, I'm currently using 5.1.6.&nbsp; After debugging for a good amount of time, I've realized that the $array cannot be an associative array.<br />
+<br />
+For instance, the following code will fail on the execute.<br />
+<span class="default">&lt;?php<br />
+&nbsp;&nbsp;&nbsp; $fields </span><span class="keyword">= array();<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$fields</span><span class="keyword">[</span><span class="string">'name'</span><span class="keyword">] = </span><span class="string">"Someone"</span><span class="keyword">;<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$query </span><span class="keyword">= </span><span class="default">$PDO</span><span class="keyword">-&gt;</span><span class="default">prepare</span><span class="keyword">(</span><span class="string">"insert table set name=?"</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$query</span><span class="keyword">-&gt;</span><span class="default">execute</span><span class="keyword">(</span><span class="default">$fields</span><span class="keyword">);<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+For my code, I had to convert the $fields array into a non-associative array.&nbsp; Something like this:<br />
+<span class="default">&lt;?php<br />
+&nbsp;&nbsp;&nbsp; $fields </span><span class="keyword">= array();<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$fields</span><span class="keyword">[</span><span class="string">'name'</span><span class="keyword">] = </span><span class="string">"Someone"</span><span class="keyword">;<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$values </span><span class="keyword">= array();<br />
+&nbsp;&nbsp;&nbsp; foreach(</span><span class="default">$fields </span><span class="keyword">as </span><span class="default">$value</span><span class="keyword">) { </span><span class="default">$values</span><span class="keyword">[] = </span><span class="default">$value</span><span class="keyword">; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$query </span><span class="keyword">= </span><span class="default">$PDO</span><span class="keyword">-&gt;</span><span class="default">prepare</span><span class="keyword">(</span><span class="string">"insert table set name=?"</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$query</span><span class="keyword">-&gt;</span><span class="default">execute</span><span class="keyword">(</span><span class="default">$values</span><span class="keyword">);<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="70414""></a>
+  <div class="note">
+   <strong class="user">russel at sunraystudios dot com</strong>
+   <a href="#70414" class="date">15-Oct-2006 02:42</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I've used it and it returns booleans=&gt;<br />
+$passed = $stmt-&gt;execute();<br />
+if($passed){<br />
+echo "passed";<br />
+} else {<br />
+echo "failed";<br />
+}<br />
+<br />
+If the statement failed it would print failed.&nbsp; You would want to use errorInfo() to get more info, but it does seem to work for me.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="61576""></a>
+  <div class="note">
+   <strong class="user">Nei</strong>
+   <a href="#61576" class="date">06-Feb-2006 11:40</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+This does not return TRUE or FALSE. It seems to just not return anything.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="pdostatement.errorinfo.html">PDOStatement::errorInfo</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="pdostatement.fetch.html">PDOStatement::fetch</a></div>
  <div class="up"><a href="class.pdostatement.html">PDOStatement</a></div>

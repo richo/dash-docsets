@@ -288,6 +288,219 @@ the configuration directives.</p>
 
  <h2>Table of Contents</h2><ul class="chunklist chunklist_reference"><li><a href="ref.pdo-odbc.connection.html">PDO_ODBC DSN</a> â€” Connecting to ODBC or DB2 databases</li></ul>
 </div>
+<div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="107128""></a>
+  <div class="note">
+   <strong class="user">Ariz Jacinto</strong>
+   <a href="#107128" class="date">09-Jan-2012 01:50</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Using SQL Server Native Client 11.0 on Linux as a PDO_ODBC driver:<br />
+<br />
+Download the SQL Server Native Client 11.0 on Linux ODBC Driver:<br />
+<a href="http://www.microsoft.com/download/en/details.aspx?id=28160" rel="nofollow" target="_blank">http://www.microsoft.com/download/en/details.aspx?id=28160</a><br />
+<br />
+Configuration ODBC:<br />
+<br />
+/usr/local/etc/odbcsys.ini<br />
+--<br />
+[SQL Server Native Client 11.0]<br />
+Description = Microsoft SQL Server ODBC Driver V1.0 for Linux<br />
+Driver = /opt/microsoft/sqlncli/lib64/libsqlncli-11.0.so.1720.0<br />
+UsageCount = 1<br />
+<br />
+/usr/local/etc/odbc.ini<br />
+--<br />
+[MSSQLServer]<br />
+Driver = SQL Server Native Client 11.0<br />
+Description = Sample Database<br />
+Trace = Yes<br />
+Server = <br />
+Port = 1433<br />
+Database = <br />
+<br />
+Test the connection:<br />
+mssqltest.php<br />
+--<br />
+<span class="default">&lt;?php<br />
+&nbsp;&nbsp;&nbsp; putenv</span><span class="keyword">(</span><span class="string">'ODBCSYSINI=/usr/local/etc'</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">putenv</span><span class="keyword">(</span><span class="string">'ODBCINI=/usr/local/etc/odbc.ini'</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$username </span><span class="keyword">= </span><span class="string">""</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$password </span><span class="keyword">= </span><span class="string">""</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; try {<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">$dbh </span><span class="keyword">= new </span><span class="default">PDO</span><span class="keyword">(</span><span class="string">"odbc:MSSQLServer"</span><span class="keyword">,<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="string">"</span><span class="default">$username</span><span class="string">"</span><span class="keyword">,<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="string">"</span><span class="default">$password</span><span class="string">"<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; } catch (</span><span class="default">PDOException $exception</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp;&nbsp; echo </span><span class="default">$exception</span><span class="keyword">-&gt;</span><span class="default">getMessage</span><span class="keyword">();<br />
+&nbsp;&nbsp; &nbsp;&nbsp; exit;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; echo </span><span class="default">var_dump</span><span class="keyword">(</span><span class="default">$dbh</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; unset(</span><span class="default">$dbh</span><span class="keyword">);<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="98716""></a>
+  <div class="note">
+   <strong class="user">harry dot forum at p-boss dot com</strong>
+   <a href="#98716" class="date">02-Jul-2010 04:03</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+MSSQL - PHP on Apache - Linux Redhat<br />
+<br />
+When using php 5.2.10 please beaware of this error:<br />
+<br />
+<a href="http://bugs.php.net/bug.php?id=42068" rel="nofollow" target="_blank">http://bugs.php.net/bug.php?id=42068</a><br />
+<br />
+Standard odbc_connect will not work, you must use pdo_odbc<br />
+<br />
+Connecting to MSSQL using pdo odbc - walkthrough.. <br />
+<br />
+1. Download and configure FreeTDS with-unixodbc<br />
+<br />
+./configure --prefix=/opt/SYSfreetds --with-unixodbc<br />
+<br />
+make;make test; make install<br />
+<br />
+2. install php-odbc and unixODBC<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; php-odbc-5.2.10-1.x86_64.rpm<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; unixODBC.x86_64.x86x64<br />
+<br />
+3. Setup ODBC links<br />
+<br />
+a)<br />
+Create a tds.driver file with the following contents<br />
+<br />
+&nbsp; [FreeTDS]<br />
+&nbsp; Description&nbsp; &nbsp;&nbsp; = v0.63 with protocol v8.0<br />
+&nbsp; Driver&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; = /opt/SYSfreetds/lib/libtdsodbc.so<br />
+<br />
+Register the ODBC driver - the tds.driver file<br />
+<br />
+&nbsp; odbcinst -i -d -f tds.driver<br />
+<br />
+b)<br />
+Creating a tds.datasource file - ODBC Data Source with contents:<br />
+<br />
+&nbsp; [SOURCENAME]<br />
+&nbsp; Driver=FreeTDS<br />
+&nbsp; Description=Test MS SQL Database with FreeTDS<br />
+&nbsp; Trace=No<br />
+&nbsp; Server=BobTheServer<br />
+&nbsp; Port=1433<br />
+&nbsp; TDS Version=8.0<br />
+&nbsp; Database=youDBname<br />
+<br />
+Register the ODBC data source<br />
+<br />
+&nbsp; odbcinst -i -s -f tds.datasource<br />
+<br />
+Beware that the odbc.ini file will be installed in the current users home directory. This may need to be used if you are using a webserver as the apache home directory could be different.<br />
+<br />
+Ensure .odbc.ini is in apaches home directory, possibly "/var/www"<br />
+<br />
+4. Test the ODBC link on the command line<br />
+<br />
+&nbsp; isql -v SOURCENAME 'username' 'password'<br />
+<br />
+&nbsp; +---------------------------------------+<br />
+&nbsp; | Connected!&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; |<br />
+&nbsp; |&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; |<br />
+&nbsp; | sql-statement&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; |<br />
+&nbsp; | help [tablename]&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; |<br />
+&nbsp; | quit&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; |<br />
+&nbsp; |&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; |<br />
+&nbsp; +---------------------------------------+<br />
+&nbsp;SQL&gt;<br />
+<br />
+5. Edit /etc/php.ini<br />
+<br />
+&nbsp; Make sure the following is set:<br />
+&nbsp;&nbsp; &nbsp; mssql.secure_connection = On<br />
+&nbsp;<br />
+<br />
+6. Restart apache gracefully<br />
+<br />
+7. PHP to run:<br />
+<br />
+&nbsp; &lt;?<br />
+&nbsp; $dbh= new PDO('odbc:SOURCENAME', 'username', 'password');<br />
+&nbsp; $stmt = $dbh-&gt;prepare("$query");<br />
+&nbsp; $stmt-&gt;execute();<br />
+&nbsp; while ($row = $stmt-&gt;fetch()) {<br />
+&nbsp;&nbsp; &nbsp;&nbsp; print_r($row);<br />
+&nbsp; }<br />
+&nbsp; unset($dbh); unset($stmt);<br />
+&nbsp; ?&gt;<br />
+<br />
+Trouble-shooting:<br />
+<br />
+Please try strace/ truss if you encounter issues. It could be you are referencing wrong libraries somewhere.<br />
+<br />
+Ensure you have restarted apache once the odbc files are in place</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="93646""></a>
+  <div class="note">
+   <strong class="user">tuomas</strong>
+   <a href="#93646" class="date">21-Sep-2009 12:11</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+If you want to avoid installing DB2 Connect and/or PECL modules ibm_db2 and PDO_IBM, you can also use IBM DB2 databases trough unixODBC.<br />
+<br />
+If you have DB2 database on a i server you need to install IBM iAccess (<a href="http://www.ibm.com/systems/i/software/access/linux/index.html" rel="nofollow" target="_blank">http://www.ibm.com/systems/i/software/access/linux/index.html</a>) and unixODBC. Just install the libraries (rpm) and modify configurations in /etc/odbcinst.ini (sample configuration in /opt/ibm/iSeriesAccess/unixodbcregistration) and /etc/odbc.ini.<br />
+<br />
+To my experience this is much easier way than installing DB2 Connect.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="81488""></a>
+  <div class="note">
+   <strong class="user">ethan dot nelson at ltd dot org</strong>
+   <a href="#81488" class="date">29-Feb-2008 02:15</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Using SQL 2005, PDO_ODBC and datetime fields is a royal pain.&nbsp; MSDN documentation on CAST CONVERT shows that there is supposed to be an implicit convert between character types and datetime types.&nbsp; That's true... until you put it in a stored procedure and use variable declarations.<br />
+<br />
+For instance this fails:<br />
+<br />
+declare @date varchar;<br />
+SET @date = '20080101';<br />
+SELECT cast(@date AS datetime) AS poo<br />
+<br />
+While this succeeds:<br />
+declare @date varchar(19);<br />
+SET @date = '20080101';<br />
+SELECT cast(@date AS datetime) AS poo<br />
+<br />
+The PDO Driver appears to attempt an implicit conversion and so it fails whenever you try to insert data into datetime column types.<br />
+<br />
+So to workaround this nuance in SQL, declare a character column type with explicit width.&nbsp; Then your implicit type conversion will work.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
 <hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="ref.pdo-oci.connection.html">PDO_OCI DSN</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="ref.pdo-odbc.connection.html">PDO_ODBC DSN</a></div>

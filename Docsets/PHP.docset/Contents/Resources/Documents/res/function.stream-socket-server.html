@@ -208,7 +208,356 @@ bracketsâ€”for example, <i>tcp://[fe80::1]:80</i>.</span></p></blockquote>
   </ul>
  </div>
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="102878""></a>
+  <div class="note">
+   <strong class="user">Aurelien Marchand</strong>
+   <a href="#102878" class="date">11-Mar-2011 11:54</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+In the case of AF_UNIX sockets, note the named sockets that will be created respects your umask(). So if you wanted your named socket to be writeable to all, do umask(0) prior to calling stream_socket_server().<br />
+<br />
+AM</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="98616""></a>
+  <div class="note">
+   <strong class="user">frxstrem</strong>
+   <a href="#98616" class="date">26-Jun-2010 10:18</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Using the OpenSSL extension, PHP can automatically generate self-signed SSL certificates, which can be used for basic authentication and encryption (although I would recommend to use a signed certificate instead) for SSL servers.<br />
+<br />
+I have extended the script by 'e at osterman dot com' to automatically create self-signed certificates:<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="comment">// Hello World! SSL HTTP Server.<br />
+// Tested on PHP 5.1.2-1+b1 (cli) (built: Mar 20 2006 04:17:24)<br />
+<br />
+// Certificate data:<br />
+</span><span class="default">$dn </span><span class="keyword">= array(<br />
+&nbsp;&nbsp;&nbsp; </span><span class="string">"countryName" </span><span class="keyword">=&gt; </span><span class="string">"UK"</span><span class="keyword">,<br />
+&nbsp;&nbsp;&nbsp; </span><span class="string">"stateOrProvinceName" </span><span class="keyword">=&gt; </span><span class="string">"Somerset"</span><span class="keyword">,<br />
+&nbsp;&nbsp;&nbsp; </span><span class="string">"localityName" </span><span class="keyword">=&gt; </span><span class="string">"Glastonbury"</span><span class="keyword">,<br />
+&nbsp;&nbsp;&nbsp; </span><span class="string">"organizationName" </span><span class="keyword">=&gt; </span><span class="string">"The Brain Room Limited"</span><span class="keyword">,<br />
+&nbsp;&nbsp;&nbsp; </span><span class="string">"organizationalUnitName" </span><span class="keyword">=&gt; </span><span class="string">"PHP Documentation Team"</span><span class="keyword">,<br />
+&nbsp;&nbsp;&nbsp; </span><span class="string">"commonName" </span><span class="keyword">=&gt; </span><span class="string">"Wez Furlong"</span><span class="keyword">,<br />
+&nbsp;&nbsp;&nbsp; </span><span class="string">"emailAddress" </span><span class="keyword">=&gt; </span><span class="string">"wez@example.com"<br />
+</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">// Generate certificate<br />
+</span><span class="default">$privkey </span><span class="keyword">= </span><span class="default">openssl_pkey_new</span><span class="keyword">();<br />
+</span><span class="default">$cert&nbsp; &nbsp; </span><span class="keyword">= </span><span class="default">openssl_csr_new</span><span class="keyword">(</span><span class="default">$dn</span><span class="keyword">, </span><span class="default">$privkey</span><span class="keyword">);<br />
+</span><span class="default">$cert&nbsp; &nbsp; </span><span class="keyword">= </span><span class="default">openssl_csr_sign</span><span class="keyword">(</span><span class="default">$cert</span><span class="keyword">, </span><span class="default">null</span><span class="keyword">, </span><span class="default">$privkey</span><span class="keyword">, </span><span class="default">365</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">// Generate PEM file<br />
+# Optionally change the passphrase from 'comet' to whatever you want, or leave it empty for no passphrase<br />
+</span><span class="default">$pem_passphrase </span><span class="keyword">= </span><span class="string">'comet'</span><span class="keyword">;<br />
+</span><span class="default">$pem </span><span class="keyword">= array();<br />
+</span><span class="default">openssl_x509_export</span><span class="keyword">(</span><span class="default">$cert</span><span class="keyword">, </span><span class="default">$pem</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">]);<br />
+</span><span class="default">openssl_pkey_export</span><span class="keyword">(</span><span class="default">$privkey</span><span class="keyword">, </span><span class="default">$pem</span><span class="keyword">[</span><span class="default">1</span><span class="keyword">], </span><span class="default">$pem_passphrase</span><span class="keyword">);<br />
+</span><span class="default">$pem </span><span class="keyword">= </span><span class="default">implode</span><span class="keyword">(</span><span class="default">$pem</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">// Save PEM file<br />
+</span><span class="default">$pemfile </span><span class="keyword">= </span><span class="string">'./server.pem'</span><span class="keyword">;<br />
+</span><span class="default">file_put_contents</span><span class="keyword">(</span><span class="default">$pemfile</span><span class="keyword">, </span><span class="default">$pem</span><span class="keyword">);<br />
+<br />
+</span><span class="default">$context </span><span class="keyword">= </span><span class="default">stream_context_create</span><span class="keyword">();<br />
+<br />
+</span><span class="comment">// local_cert must be in PEM format<br />
+</span><span class="default">stream_context_set_option</span><span class="keyword">(</span><span class="default">$context</span><span class="keyword">, </span><span class="string">'ssl'</span><span class="keyword">, </span><span class="string">'local_cert'</span><span class="keyword">, </span><span class="default">$pemfile</span><span class="keyword">);<br />
+</span><span class="comment">// Pass Phrase (password) of private key<br />
+</span><span class="default">stream_context_set_option</span><span class="keyword">(</span><span class="default">$context</span><span class="keyword">, </span><span class="string">'ssl'</span><span class="keyword">, </span><span class="string">'passphrase'</span><span class="keyword">, </span><span class="default">$pem_passphrase</span><span class="keyword">);<br />
+<br />
+</span><span class="default">stream_context_set_option</span><span class="keyword">(</span><span class="default">$context</span><span class="keyword">, </span><span class="string">'ssl'</span><span class="keyword">, </span><span class="string">'allow_self_signed'</span><span class="keyword">, </span><span class="default">true</span><span class="keyword">);<br />
+</span><span class="default">stream_context_set_option</span><span class="keyword">(</span><span class="default">$context</span><span class="keyword">, </span><span class="string">'ssl'</span><span class="keyword">, </span><span class="string">'verify_peer'</span><span class="keyword">, </span><span class="default">false</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">// Create the server socket<br />
+</span><span class="default">$server </span><span class="keyword">= </span><span class="default">stream_socket_server</span><span class="keyword">(</span><span class="string">'ssl://0.0.0.0:9001'</span><span class="keyword">, </span><span class="default">$errno</span><span class="keyword">, </span><span class="default">$errstr</span><span class="keyword">, </span><span class="default">STREAM_SERVER_BIND</span><span class="keyword">|</span><span class="default">STREAM_SERVER_LISTEN</span><span class="keyword">, </span><span class="default">$context</span><span class="keyword">);<br />
+<br />
+while(</span><span class="default">true</span><span class="keyword">)<br />
+{<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$buffer </span><span class="keyword">= </span><span class="string">''</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; print </span><span class="string">"waiting..."</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$client </span><span class="keyword">= </span><span class="default">stream_socket_accept</span><span class="keyword">(</span><span class="default">$server</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; print </span><span class="string">"accepted " </span><span class="keyword">. </span><span class="default">stream_socket_get_name</span><span class="keyword">( </span><span class="default">$client</span><span class="keyword">, </span><span class="default">true</span><span class="keyword">) . </span><span class="string">"\n"</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; if( </span><span class="default">$client </span><span class="keyword">)<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// Read until double CRLF<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">while( !</span><span class="default">preg_match</span><span class="keyword">(</span><span class="string">'/\r?\n\r?\n/'</span><span class="keyword">, </span><span class="default">$buffer</span><span class="keyword">) )<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$buffer </span><span class="keyword">.= </span><span class="default">fread</span><span class="keyword">(</span><span class="default">$client</span><span class="keyword">, </span><span class="default">2046</span><span class="keyword">); <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// Respond to client<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">fwrite</span><span class="keyword">(</span><span class="default">$client</span><span class="keyword">,&nbsp; </span><span class="string">"200 OK HTTP/1.1\r\n"<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span class="keyword">. </span><span class="string">"Connection: close\r\n"<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span class="keyword">. </span><span class="string">"Content-Type: text/html\r\n"<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span class="keyword">. </span><span class="string">"\r\n"<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span class="keyword">. </span><span class="string">"Hello World! " </span><span class="keyword">. </span><span class="default">microtime</span><span class="keyword">(</span><span class="default">true</span><span class="keyword">)<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; . </span><span class="string">"&lt;pre&gt;</span><span class="keyword">{</span><span class="default">$buffer</span><span class="keyword">}</span><span class="string">&lt;/pre&gt;"</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">fclose</span><span class="keyword">(</span><span class="default">$client</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; } else {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; print </span><span class="string">"error.\n"</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+}<br />
+<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="95417""></a>
+  <div class="note">
+   <strong class="user">peterjb at me dot com</strong>
+   <a href="#95417" class="date">02-Jan-2010 03:48</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I had a horrible time trying to shove a TLS socket into an existing TCP program.&nbsp; It appears to me that functions like stream_socket_recvfrom and stream_socket_sendto don't work with TLS/SSL (which may be obvious to PHP gurus...sorry if it is, I'm in a bit over my head here).<br />
+<br />
+In the end I ended up doing all my IO with fread() and fwrite(), which solved all my problems.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="94749""></a>
+  <div class="note">
+   <strong class="user">davidm at marketo dot com</strong>
+   <a href="#94749" class="date">22-Nov-2009 04:15</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+In some specialized scenarios, you may want to create an AF_INET socket (UDP or TCP) but let the system select an unused port for you.&nbsp; This is a standard feature of internet sockets but it doesn't seem to be documented how to do this for the stream_socket_server function.&nbsp; It appears you can get this behavior by selecting zero for the port number, for example, my test below printed "127.0.0.1:4960".<br />
+<br />
+<span class="default">&lt;?php<br />
+&nbsp; $sock </span><span class="keyword">= </span><span class="default">stream_socket_server</span><span class="keyword">(</span><span class="string">"udp://127.0.0.1:0"</span><span class="keyword">); <br />
+&nbsp; </span><span class="default">$name </span><span class="keyword">= </span><span class="default">stream_socket_get_name</span><span class="keyword">(</span><span class="default">$sock</span><span class="keyword">);<br />
+&nbsp; echo </span><span class="default">$name</span><span class="keyword">;<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="91079""></a>
+  <div class="note">
+   <strong class="user">Julien Picalausa</strong>
+   <a href="#91079" class="date">24-May-2009 01:27</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+You may have noticed that, unlike socket_listen, stream_socket_server doesn't have a backlog parameter. From the source code of php 5.2.9, it looks like the backlog parameter to the actual listen call is hardcoded to be 5. If this value doesn't suit your needs, you'll have to use the lower-level socket functions.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="67837""></a>
+  <div class="note">
+   <strong class="user">Neil Munro</strong>
+   <a href="#67837" class="date">05-Jul-2006 01:26</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+If you want a high speed socket server, use the low-level sockets instead (socket_create/bind/listen). The stream_socket_server version appears to have internal fixed 8k buffers that will overflow if you don't keep up by reading.<br />
+<br />
+This is a serious problem if you an application that reads the socket for messages and then, say, saves the result in a database. The delay while it is busy processing means you can't read the data in time unless you get involved in muti-threading.<br />
+<br />
+With the the low-level functions, the OS quietly buffers TCP/IP packets so there is no problem (tested on Windows XP Professional).</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="66687""></a>
+  <div class="note">
+   <strong class="user">e at osterman dot com</strong>
+   <a href="#66687" class="date">25-May-2006 07:36</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Example "Hello World!" SSL HTTP Server. Note, if you don't use a signed ssl certificate, your browser will give you a warning. <br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="comment">// Hello World! SSL HTTP Server.<br />
+// Tested on PHP 5.1.2-1+b1 (cli) (built: Mar 20 2006 04:17:24)<br />
+<br />
+</span><span class="default">$context </span><span class="keyword">= </span><span class="default">stream_context_create</span><span class="keyword">();<br />
+<br />
+</span><span class="comment">// local_cert must be in PEM format<br />
+</span><span class="default">stream_context_set_option</span><span class="keyword">(</span><span class="default">$context</span><span class="keyword">, </span><span class="string">'ssl'</span><span class="keyword">, </span><span class="string">'local_cert'</span><span class="keyword">, </span><span class="string">'./server.pem'</span><span class="keyword">);&nbsp; &nbsp; &nbsp; &nbsp; <br />
+</span><span class="comment">// Pass Phrase (password) of private key<br />
+</span><span class="default">stream_context_set_option</span><span class="keyword">(</span><span class="default">$context</span><span class="keyword">, </span><span class="string">'ssl'</span><span class="keyword">, </span><span class="string">'passphrase'</span><span class="keyword">, </span><span class="string">'comet'</span><span class="keyword">);<br />
+<br />
+</span><span class="default">stream_context_set_option</span><span class="keyword">(</span><span class="default">$context</span><span class="keyword">, </span><span class="string">'ssl'</span><span class="keyword">, </span><span class="string">'allow_self_signed'</span><span class="keyword">, </span><span class="default">true</span><span class="keyword">);<br />
+</span><span class="default">stream_context_set_option</span><span class="keyword">(</span><span class="default">$context</span><span class="keyword">, </span><span class="string">'ssl'</span><span class="keyword">, </span><span class="string">'verify_peer'</span><span class="keyword">, </span><span class="default">false</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">// Create the server socket<br />
+</span><span class="default">$server </span><span class="keyword">= </span><span class="default">stream_socket_server</span><span class="keyword">(</span><span class="string">'ssl://0.0.0.0:9001'</span><span class="keyword">, </span><span class="default">$errno</span><span class="keyword">, </span><span class="default">$errstr</span><span class="keyword">, </span><span class="default">STREAM_SERVER_BIND</span><span class="keyword">|</span><span class="default">STREAM_SERVER_LISTEN</span><span class="keyword">, </span><span class="default">$context</span><span class="keyword">);<br />
+<br />
+while(</span><span class="default">true</span><span class="keyword">)<br />
+{<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$buffer </span><span class="keyword">= </span><span class="string">''</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; print </span><span class="string">"waiting..."</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$client </span><span class="keyword">= </span><span class="default">stream_socket_accept</span><span class="keyword">(</span><span class="default">$server</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; print </span><span class="string">"accepted " </span><span class="keyword">. </span><span class="default">stream_socket_get_name</span><span class="keyword">( </span><span class="default">$client</span><span class="keyword">, </span><span class="default">true</span><span class="keyword">) . </span><span class="string">"\n"</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; if( </span><span class="default">$client </span><span class="keyword">)<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// Read until double CRLF<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">while( !</span><span class="default">preg_match</span><span class="keyword">(</span><span class="string">'/\r?\n\r?\n/'</span><span class="keyword">, </span><span class="default">$buffer</span><span class="keyword">) )<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$buffer </span><span class="keyword">.= </span><span class="default">fread</span><span class="keyword">(</span><span class="default">$client</span><span class="keyword">, </span><span class="default">2046</span><span class="keyword">); <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// Respond to client<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">fwrite</span><span class="keyword">(</span><span class="default">$client</span><span class="keyword">,&nbsp; </span><span class="string">"200 OK HTTP/1.1\r\n"<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span class="keyword">. </span><span class="string">"Connection: close\r\n"<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span class="keyword">. </span><span class="string">"Content-Type: text/html\r\n"<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span class="keyword">. </span><span class="string">"\r\n"<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span class="keyword">. </span><span class="string">"Hello World! " </span><span class="keyword">. </span><span class="default">microtime</span><span class="keyword">(</span><span class="default">true</span><span class="keyword">)<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; . </span><span class="string">"&lt;pre&gt;</span><span class="keyword">{</span><span class="default">$buffer</span><span class="keyword">}</span><span class="string">&lt;/pre&gt;"</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">fclose</span><span class="keyword">(</span><span class="default">$client</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; } else {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; print </span><span class="string">"error.\n"</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+}<br />
+<br />
+</span><span class="comment">// Example PEM File below (call it server.pem, to use this example)<br />
+// Use these instructions to create your own. <a href="http://sial.org/howto/openssl/self-signed/" rel="nofollow" target="_blank">http://sial.org/howto/openssl/self-signed/</a><br />
+<br />
+/* <br />
+<br />
+-----BEGIN CERTIFICATE-----<br />
+MIIDgTCCAuqgAwIBAgIJAMgtIWVzb1oIMA0GCSqGSIb3DQEBBQUAMIGIMQswCQYD<br />
+VQQGEwJVUzETMBEGA1UECBMKQ2FsaWZvcm5pYTEUMBIGA1UEBxMLTG9zIEFuZ2Vs<br />
+ZXMxFDASBgNVBAoTC091ciBDb21wYW55MQ0wCwYDVQQLEwRUZXN0MQwwCgYDVQQD<br />
+EwNEZXYxGzAZBgkqhkiG9w0BCQEWDGFzZEBob3N0LmNvbTAeFw0wNjA1MjYwMTM4<br />
+NTRaFw0wNzA1MjYwMTM4NTRaMIGIMQswCQYDVQQGEwJVUzETMBEGA1UECBMKQ2Fs<br />
+aWZvcm5pYTEUMBIGA1UEBxMLTG9zIEFuZ2VsZXMxFDASBgNVBAoTC091ciBDb21w<br />
+YW55MQ0wCwYDVQQLEwRUZXN0MQwwCgYDVQQDEwNEZXYxGzAZBgkqhkiG9w0BCQEW<br />
+DGFzZEBob3N0LmNvbTCBnzANBgkqhkiG9w0BAQEFAAOBjQAwgYkCgYEA3mStTm74<br />
+kOQCelquoGI/WyUIOvngDdNcJGmi2xnzDpRjKfQTH/3VVDQJUwvjKcLxnBQHFg7M<br />
+nvEZrfC3LEmFajAzRKjXK5gUCQEQKqhbVsfZO+7ANq4axNldd4UgMhPeZIKr8DDt<br />
+P3pjFqFSYh/dtOq2pfDXSbstmCZ1Q3GAYDcCAwEAAaOB8DCB7TAdBgNVHQ4EFgQU<br />
+WQSzc00pkM9aCzsxKJpTYm3kwEUwgb0GA1UdIwSBtTCBsoAUWQSzc00pkM9aCzsx<br />
+KJpTYm3kwEWhgY6kgYswgYgxCzAJBgNVBAYTAlVTMRMwEQYDVQQIEwpDYWxpZm9y<br />
+bmlhMRQwEgYDVQQHEwtMb3MgQW5nZWxlczEUMBIGA1UEChMLT3VyIENvbXBhbnkx<br />
+DTALBgNVBAsTBFRlc3QxDDAKBgNVBAMTA0RldjEbMBkGCSqGSIb3DQEJARYMYXNk<br />
+QGhvc3QuY29tggkAyC0hZXNvWggwDAYDVR0TBAUwAwEB/zANBgkqhkiG9w0BAQUF<br />
+AAOBgQA7G/XKQ9kLTZOcVAG/IOxdn9tW38sEwHifNQ7zMSS5di1MmnD5JJWdK/s4<br />
+dzN06T1Ey5FCu2kafFzk48khZpoPsXMRF8DNBXLVSCGj4maPtEviJVjwtj3XwZjA<br />
+82a8A/Yil0+fo25zPX4I4oBcbl3bPqzVPXxsQ7myp9f7MDZcbQ==<br />
+-----END CERTIFICATE-----<br />
+-----BEGIN RSA PRIVATE KEY-----<br />
+Proc-Type: 4,ENCRYPTED<br />
+DEK-Info: DES-EDE3-CBC,E4476A175B6608B6<br />
+<br />
+r0sox8H5ijuOanXwYFtIDgPti3AAuIUdy5EJG9GZbrtQHEW6HL+YxdI58Ng70t4w<br />
+EfBvcuLb7XAGsJwF65yad0vSXsYv6F+0brEefEvZX3ljxUZ3yGfHVJyEdBWJty7X<br />
+A8QpqOVVQseAST1IKeWOIT16/a9ZOgwnIhQe36y43pxBwL5tumXTM+AuWPOBW8c0<br />
+s49I8GyptttGJpcFohLsmP9Jza/fMIzYFNeuOBQ93fieCcVXBd2fWNyZVEsOU5Mi<br />
+kt5FQ9Lc9F8Wc+Mh0xiodDz6H+2yNIMC2SNu/mDSAGwDCctBZ34enFDad/eBiYW+<br />
+iTjMaqWGFs+cantSgVQ6pdZWYQd5Rsb3/Qbcfia/C1vtzWipBG7wlQCsNWwceXx/<br />
+f8hqWl5kyCxvBdH9eyRNMVJkCbFABl9tnaMGRi/UnVL68wgUvosAsdCjUrdL3x7O<br />
+i6yMBrxYjACbYslPFaG5OtgXcbacBKjsVMkcRYRyGqClgVZHICYZXhZoZTjOsgT4<br />
+L9WivT1RnozmFUMPaXbnxX4h/B3v6aSYAc4mPM6oMFTiXGJ7cLoafNw7Fxug7oeF<br />
+0+04DykzFCsLw1PmnkXP/WliQ+xidKJeKl2bR0k5MjAs0ksjelk7hAbCDjE0ct0w<br />
+LAHuvf6haClaFBa0ugL90S6BBdIQad9GRmAqZlVc5tANZleXFEY2wKUSMddIKzsm<br />
+nouipBWt3flDyYaFRtF20IYYk59z3zlqk73U/cFRkpT9SvHbxdsjTX1OvsmuhMzV<br />
+5K4+1QaBK4vePOFeEHDAkwGGqI1Wj+2lC6pxdLe3tjIzNWN1eaq59Q==<br />
+-----END RSA PRIVATE KEY-----<br />
+&nbsp;<br />
+*/<br />
+<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="44501""></a>
+  <div class="note">
+   <strong class="user">andrey at php dot net</strong>
+   <a href="#44501" class="date">07-Aug-2004 09:02</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Just a small example how to use this function and also stream_select() to make a server that accepts more than one connections (can have many clients connected):<br />
+In master we hold all opened connections. Just before calling stream select we copy the array to $read and then pass it ot stream_select(). In case that we may read from at least one socket, $read will contain socket descriptors. $master is needed not to lose references to the opened connections we have.<br />
+stream_server.php : <br />
+<span class="default">&lt;?php<br />
+<br />
+$master </span><span class="keyword">= array();<br />
+</span><span class="default">$socket </span><span class="keyword">= </span><span class="default">stream_socket_server</span><span class="keyword">(</span><span class="string">"tcp://0.0.0.0:8000"</span><span class="keyword">, </span><span class="default">$errno</span><span class="keyword">, </span><span class="default">$errstr</span><span class="keyword">);<br />
+if (!</span><span class="default">$socket</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; echo </span><span class="string">"</span><span class="default">$errstr</span><span class="string"> (</span><span class="default">$errno</span><span class="string">)&lt;br /&gt;\n"</span><span class="keyword">;<br />
+} else {<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$master</span><span class="keyword">[] = </span><span class="default">$socket</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$read </span><span class="keyword">= </span><span class="default">$master</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; while (</span><span class="default">1</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$read </span><span class="keyword">= </span><span class="default">$master</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$mod_fd </span><span class="keyword">= </span><span class="default">stream_select</span><span class="keyword">(</span><span class="default">$read</span><span class="keyword">, </span><span class="default">$_w </span><span class="keyword">= </span><span class="default">NULL</span><span class="keyword">, </span><span class="default">$_e </span><span class="keyword">= </span><span class="default">NULL</span><span class="keyword">, </span><span class="default">5</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if (</span><span class="default">$mod_fd </span><span class="keyword">=== </span><span class="default">FALSE</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; break;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; for (</span><span class="default">$i </span><span class="keyword">= </span><span class="default">0</span><span class="keyword">; </span><span class="default">$i </span><span class="keyword">&lt; </span><span class="default">$mod_fd</span><span class="keyword">; ++</span><span class="default">$i</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if (</span><span class="default">$read</span><span class="keyword">[</span><span class="default">$i</span><span class="keyword">] === </span><span class="default">$socket</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$conn </span><span class="keyword">= </span><span class="default">stream_socket_accept</span><span class="keyword">(</span><span class="default">$socket</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">fwrite</span><span class="keyword">(</span><span class="default">$conn</span><span class="keyword">, </span><span class="string">"Hello! The time is "</span><span class="keyword">.</span><span class="default">date</span><span class="keyword">(</span><span class="string">"n/j/Y g:i a"</span><span class="keyword">).</span><span class="string">"\n"</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$master</span><span class="keyword">[] = </span><span class="default">$conn</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; } else {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$sock_data </span><span class="keyword">= </span><span class="default">fread</span><span class="keyword">(</span><span class="default">$read</span><span class="keyword">[</span><span class="default">$i</span><span class="keyword">], </span><span class="default">1024</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">var_dump</span><span class="keyword">(</span><span class="default">$sock_data</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if (</span><span class="default">strlen</span><span class="keyword">(</span><span class="default">$sock_data</span><span class="keyword">) === </span><span class="default">0</span><span class="keyword">) { </span><span class="comment">// connection closed<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$key_to_del </span><span class="keyword">= </span><span class="default">array_search</span><span class="keyword">(</span><span class="default">$read</span><span class="keyword">[</span><span class="default">$i</span><span class="keyword">], </span><span class="default">$master</span><span class="keyword">, </span><span class="default">TRUE</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">fclose</span><span class="keyword">(</span><span class="default">$read</span><span class="keyword">[</span><span class="default">$i</span><span class="keyword">]);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; unset(</span><span class="default">$master</span><span class="keyword">[</span><span class="default">$key_to_del</span><span class="keyword">]);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; } else if (</span><span class="default">$sock_data </span><span class="keyword">=== </span><span class="default">FALSE</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; echo </span><span class="string">"Something bad happened"</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$key_to_del </span><span class="keyword">= </span><span class="default">array_search</span><span class="keyword">(</span><span class="default">$read</span><span class="keyword">[</span><span class="default">$i</span><span class="keyword">], </span><span class="default">$master</span><span class="keyword">, </span><span class="default">TRUE</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; unset(</span><span class="default">$master</span><span class="keyword">[</span><span class="default">$key_to_del</span><span class="keyword">]);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; } else {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; echo </span><span class="string">"The client has sent :"</span><span class="keyword">; </span><span class="default">var_dump</span><span class="keyword">(</span><span class="default">$sock_data</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">fwrite</span><span class="keyword">(</span><span class="default">$read</span><span class="keyword">[</span><span class="default">$i</span><span class="keyword">], </span><span class="string">"You have sent :["</span><span class="keyword">.</span><span class="default">$sock_data</span><span class="keyword">.</span><span class="string">"]\n"</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">fclose</span><span class="keyword">(</span><span class="default">$read</span><span class="keyword">[</span><span class="default">$i</span><span class="keyword">]);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; unset(</span><span class="default">$master</span><span class="keyword">[</span><span class="default">array_search</span><span class="keyword">(</span><span class="default">$read</span><span class="keyword">[</span><span class="default">$i</span><span class="keyword">], </span><span class="default">$master</span><span class="keyword">)]);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; }<br />
+}<br />
+</span><span class="default">?&gt;<br />
+</span>stream_client.php:<br />
+<span class="default">&lt;?php<br />
+$fp </span><span class="keyword">= </span><span class="default">stream_socket_client</span><span class="keyword">(</span><span class="string">"tcp://127.0.0.1:8000"</span><span class="keyword">, </span><span class="default">$errno</span><span class="keyword">, </span><span class="default">$errstr</span><span class="keyword">, </span><span class="default">30</span><span class="keyword">);<br />
+if (!</span><span class="default">$fp</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; echo </span><span class="string">"</span><span class="default">$errstr</span><span class="string"> (</span><span class="default">$errno</span><span class="string">)&lt;br /&gt;\n"</span><span class="keyword">;<br />
+} else {<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">fwrite</span><span class="keyword">(</span><span class="default">$fp</span><span class="keyword">, </span><span class="string">"Aloha"</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; while (!</span><span class="default">feof</span><span class="keyword">(</span><span class="default">$fp</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">var_dump</span><span class="keyword">(</span><span class="default">fgets</span><span class="keyword">(</span><span class="default">$fp</span><span class="keyword">, </span><span class="default">1024</span><span class="keyword">));<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">fclose</span><span class="keyword">(</span><span class="default">$fp</span><span class="keyword">);<br />
+}<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+Thanks</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="function.stream-socket-sendto.html">stream_socket_sendto</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.stream-socket-shutdown.html">stream_socket_shutdown</a></div>
  <div class="up"><a href="ref.stream.html">Stream Functions</a></div>

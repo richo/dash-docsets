@@ -172,7 +172,239 @@
  </div>
 
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="66848""></a>
+  <div class="note">
+   <strong class="user">apolenary at mail dot ru</strong>
+   <a href="#66848" class="date">30-May-2006 06:20</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+In woking time ibase_qury() and ibase_fetch_row() with many time call thei arise the ERROR -&gt; Fatal error: Maximum execution time of 30 seconds exceeded<br />
+<br />
+ERROR arise in that script:<br />
+foreach ($vidtr_list as $vidtr)<br />
+{<br />
+&nbsp;&nbsp; foreach ($branches_train as $from)<br />
+&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; foreach ($branches_train as $to)<br />
+&nbsp;&nbsp; &nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; if (isset($pricelst_train[$vidtr][$from][$to]['ID'])) <br />
+&nbsp;&nbsp; &nbsp; &nbsp; {<br />
+&nbsp;&nbsp;&nbsp; for ($i = 1; $i &lt; 7; $i++) <br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp;&nbsp; $id = $pricelst_train[$vidtr][$from][$to]['ID'];<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; $sql_v = "SELECT * FROM P_GET_PRICE_C_VES('$id','$std_train1_ves[$i]')";<br />
+&nbsp;&nbsp; &nbsp;&nbsp; $query_rez = ibase_query($db,$sql_v) or die(ibase_errmsg());<br />
+&nbsp;&nbsp; &nbsp;&nbsp; $prc_v =&nbsp; ibase_fetch_row($query_rez);<br />
+&nbsp;&nbsp; &nbsp;&nbsp; $sql_o = "SELECT * FROM P_GET_PRICE_C_OBYOM('$id', '$std_train1_obyom[$i]')";<br />
+&nbsp;&nbsp; &nbsp; &nbsp; $query_rez = ibase_query($db,$sql_o) or die(ibase_errmsg());<br />
+&nbsp;&nbsp; &nbsp;&nbsp; $prc_o =&nbsp; ibase_fetch_row($query_rez);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; if (isset($prc_o[0])) <br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp;&nbsp; $c_obyom = $prc_o[0];<br />
+&nbsp;&nbsp;&nbsp; $c_ves = $prc_v[0];<br />
+&nbsp;&nbsp;&nbsp; $prices_train[$id][$i] = array( 'OBYOM' =&gt; $c_obyom,'VES'&nbsp; &nbsp; =&gt; $c_ves );<br />
+&nbsp;&nbsp;&nbsp; $mysql_jde_price[$cnt_price] = "INSERT INTO jde_price VALUES (default, '$id', '$std_train1_ves[$i]', '$c_ves', '$std_train1_obyom[$i]', '$c_obyom');";<br />
+&nbsp;&nbsp;&nbsp; $cnt_price++;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp; }<br />
+&nbsp; }<br />
+&nbsp;}<br />
+}<br />
+<br />
+How I can decide that Error?</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="55238""></a>
+  <div class="note">
+   <strong class="user">akach [at] exat (dot) ru</strong>
+   <a href="#55238" class="date">28-Jul-2005 04:18</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+If you use ibase_query() for SELECT without fetching result then you must know that SELECT isn't actually executed.<br />
+E.g. you perform "SELECT MY_UDF(param) from RDB$DATABASE" - MY_UDF isn't actually called until you fetch result.<br />
+<br />
+This is a feature(or bug) of php interbase drivers, not interbase/firebird itself.<br />
+<br />
+Test conditions: firebird 1.5.2, php 4.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="44830""></a>
+  <div class="note">
+   <strong class="user">escoric at latinmail dot com</strong>
+   <a href="#44830" class="date">17-Aug-2004 10:43</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+/* If your work environment is windows */<br />
+<br />
+$link=ibase_connect ($path, $usuario, $password, 'WIN1251');</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="42930""></a>
+  <div class="note">
+   <strong class="user">chrisg at cordell dot com dot au</strong>
+   <a href="#42930" class="date">03-Jun-2004 11:57</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Simple function to retrieve the results of an SQL statement into an array, will also cater for BLOB fields:<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">function </span><span class="default">interbase_sql_exec </span><span class="keyword">(</span><span class="default">$sql</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$dataArr </span><span class="keyword">= array();<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$host </span><span class="keyword">= </span><span class="string">"svrname:path\filename.GDB"</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$username </span><span class="keyword">= </span><span class="string">"whatever"</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$password </span><span class="keyword">= </span><span class="string">"******"</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$connection </span><span class="keyword">= </span><span class="default">ibase_connect </span><span class="keyword">(</span><span class="default">$host</span><span class="keyword">, </span><span class="default">$username</span><span class="keyword">, </span><span class="default">$password</span><span class="keyword">,</span><span class="string">'ISO8859_1'</span><span class="keyword">, </span><span class="string">'100'</span><span class="keyword">, </span><span class="string">'1'</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$rid </span><span class="keyword">= @</span><span class="default">ibase_query </span><span class="keyword">(</span><span class="default">$connection</span><span class="keyword">, </span><span class="default">$sql</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; if (</span><span class="default">$rid</span><span class="keyword">===</span><span class="default">false</span><span class="keyword">) </span><span class="default">errorHandle</span><span class="keyword">(</span><span class="default">ibase_errmsg</span><span class="keyword">(),</span><span class="default">$sql</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$coln </span><span class="keyword">= </span><span class="default">ibase_num_fields</span><span class="keyword">(</span><span class="default">$rid</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$blobFields </span><span class="keyword">= array();<br />
+&nbsp;&nbsp;&nbsp; for (</span><span class="default">$i</span><span class="keyword">=</span><span class="default">0</span><span class="keyword">; </span><span class="default">$i </span><span class="keyword">&lt; </span><span class="default">$coln</span><span class="keyword">; </span><span class="default">$i</span><span class="keyword">++) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$col_info </span><span class="keyword">= </span><span class="default">ibase_field_info</span><span class="keyword">(</span><span class="default">$rid</span><span class="keyword">, </span><span class="default">$i</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if (</span><span class="default">$col_info</span><span class="keyword">[</span><span class="string">"type"</span><span class="keyword">]==</span><span class="string">"BLOB"</span><span class="keyword">) </span><span class="default">$blobFields</span><span class="keyword">[</span><span class="default">$i</span><span class="keyword">] = </span><span class="default">$col_info</span><span class="keyword">[</span><span class="string">"name"</span><span class="keyword">];<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; while (</span><span class="default">$row </span><span class="keyword">= </span><span class="default">ibase_fetch_row </span><span class="keyword">(</span><span class="default">$rid</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; foreach (</span><span class="default">$blobFields </span><span class="keyword">as </span><span class="default">$field_num</span><span class="keyword">=&gt;</span><span class="default">$field_name</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$blobid </span><span class="keyword">= </span><span class="default">ibase_blob_open</span><span class="keyword">(</span><span class="default">$row</span><span class="keyword">[</span><span class="default">$field_num</span><span class="keyword">]);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$row</span><span class="keyword">[</span><span class="default">$field_num</span><span class="keyword">] = </span><span class="default">ibase_blob_get</span><span class="keyword">(</span><span class="default">$blobid</span><span class="keyword">,</span><span class="default">102400</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">ibase_blob_close</span><span class="keyword">(</span><span class="default">$blobid</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$dataArr</span><span class="keyword">[] = </span><span class="default">$row</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">ibase_close </span><span class="keyword">(</span><span class="default">$connection</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">$dataArr</span><span class="keyword">;<br />
+}<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="34335""></a>
+  <div class="note">
+   <strong class="user">SenorTZ senortz at nospam dot yahoo dot com</strong>
+   <a href="#34335" class="date">24-Jul-2003 04:18</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Two comments on interogating system tables in Interbase or Firebird; I hope it helps.<br />
+<br />
+1. if you try to build a query string to extract data from a system table (that has the form "rdb$some_name"), you should divide the "rdb$some_name" table name in your query string using the string merge operator ".".<br />
+$query = "select rdb"."$"."relation_name as TABLE_NAME from rdb"."$"."relations where rdb"."$"."system_flag=0";<br />
+<br />
+2. The second thing is related to the fact that you can later use (after the call to ibase_fetch_object) as field identifier the ALIAS used in the query for the "rdb$some_name" table.<br />
+<br />
+Example:<br />
+$get_table_names_query = "select rdb"."$"."relation_name as TABLE_NAME from rdb"."$"."relations where rdb"."$"."system_flag=0";<br />
+//<br />
+$res_table_names_query = ibase_query($dbconnection, $get_table_names_query);<br />
+//<br />
+while ($row_table_names = ibase_fetch_object($res_table_names_query))<br />
+{<br />
+&nbsp;&nbsp;&nbsp; print($row_table_names-&gt;TABLE_NAME);//alias used<br />
+}<br />
+<br />
+Editor's note:<br />
+it is easier to use a backslash to protect the $-sign.<br />
+eg. "select rdb\$relation_name as TABLE_NAME from ..."</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="20265""></a>
+  <div class="note">
+   <strong class="user">elf at royal dot net</strong>
+   <a href="#20265" class="date">28-Mar-2002 12:18</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+A BLOB can be fetched easily adding IBASE_TEXT parameter to the ibase_fetch_object() function:<br />
+<br />
+$r=ibase_query("select BLOB from BLOBS where BLOB_ID=1");<br />
+$d=ibase_fetch_object($r,IBASE_TEXT);<br />
+<br />
+and it will fetch the BLOB as a text. Thus it referres to it like this:<br />
+$d-&gt;BLOB<br />
+<br />
+*** ELF ***</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="18356""></a>
+  <div class="note">
+   <strong class="user">eric_cavalcanti at hotmail dot com</strong>
+   <a href="#18356" class="date">19-Jan-2002 12:11</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Using BLOB<br />
+<br />
+Insert BLOB:<br />
+<br />
+&nbsp;/* create blob */<br />
+$blob_id = ibase_blob_create();<br />
+<br />
+&nbsp;/* fill blob */<br />
+ibase_blob_add($blob_id, $var_datablob);<br />
+<br />
+/* close new blob */<br />
+$blob_id_str = ibase_blob_close($blob_id);<br />
+<br />
+/* insert into table&nbsp; */<br />
+ibase_query("INSERT INTO BLOB_TABLE (ID, BLOB) VALUES (1, ?)",$blob_id_str);<br />
+<br />
+Open BLOB:<br />
+<br />
+/* query */<br />
+$set = ibase_query("SELECT BLOB FROM BLOB_TABLE WHERE ID = 1");<br />
+<br />
+/* fetche a row */<br />
+$row = ibase_fetch_object($set);<br />
+<br />
+/* open BLOB for read */<br />
+$blob_id = ibase_blob_open($row-&gt;BLOB);<br />
+<br />
+/* get BLOB data */<br />
+$stringBLOB = ibase_blob_get($blob_id);<br />
+<br />
+/* print BLOB */<br />
+echo $stringBLOB;<br />
+<br />
+/* close new blob */<br />
+ibase_blob_close($blob_id);<br />
+<br />
+/* free result */<br />
+ibase_free_result($set);</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="function.ibase-prepare.html">ibase_prepare</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.ibase-restore.html">ibase_restore</a></div>
  <div class="up"><a href="ref.ibase.html">Firebird/InterBase Functions</a></div>

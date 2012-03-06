@@ -157,7 +157,147 @@ Herat (AFG)
  </div>
 
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="104189""></a>
+  <div class="note">
+   <strong class="user">ahouston at gmail dot com</strong>
+   <a href="#104189" class="date">31-May-2011 02:39</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Here is a function to return an associative array with multiple columns as keys to the array.<br />
+<br />
+This is a rough approximation of the perl DBI-&gt;fetchall_hashref function - something I find myself using quite a bit.<br />
+<br />
+Given a simple mySQL table:<br />
+<br />
+mysql&gt; select * from city;<br />
++----------------+----------------+------------------+------------+<br />
+| country&nbsp; &nbsp; &nbsp; &nbsp; | region&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; | city&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; | hemisphere |<br />
++----------------+----------------+------------------+------------+<br />
+| South Africa&nbsp;&nbsp; | KwaZulu-Natal&nbsp; | Durban&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; | South&nbsp; &nbsp; &nbsp; |<br />
+| South Africa&nbsp;&nbsp; | Gauteng&nbsp; &nbsp; &nbsp; &nbsp; | Johannesburg&nbsp; &nbsp;&nbsp; | South&nbsp; &nbsp; &nbsp; |<br />
+| South Africa&nbsp;&nbsp; | Gauteng&nbsp; &nbsp; &nbsp; &nbsp; | Tshwane&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; | South&nbsp; &nbsp; &nbsp; |<br />
+| South Africa&nbsp;&nbsp; | KwaZulu-Natal&nbsp; | Pietermaritzburg | South&nbsp; &nbsp; &nbsp; |<br />
+| United Kingdom | Greater London | City of London&nbsp;&nbsp; | North&nbsp; &nbsp; &nbsp; |<br />
+| United Kingdom | Greater London | Wimbledon&nbsp; &nbsp; &nbsp; &nbsp; | North&nbsp; &nbsp; &nbsp; |<br />
+| United Kingdom | Lancashire&nbsp; &nbsp;&nbsp; | Liverpool&nbsp; &nbsp; &nbsp; &nbsp; | North&nbsp; &nbsp; &nbsp; |<br />
+| United Kingdom | Lancashire&nbsp; &nbsp;&nbsp; | Manchester&nbsp; &nbsp; &nbsp;&nbsp; | North&nbsp; &nbsp; &nbsp; |<br />
++----------------+----------------+------------------+------------+<br />
+<br />
+*Note* - this is a simple function that makes no attempt to keep multiple values per key, so you need to specify all the unique keys you require.<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $link </span><span class="keyword">= </span><span class="default">mysqli_connect</span><span class="keyword">(</span><span class="string">"localhost"</span><span class="keyword">, </span><span class="string">"username"</span><span class="keyword">, </span><span class="string">"password"</span><span class="keyword">, </span><span class="string">"test"</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$result </span><span class="keyword">= </span><span class="default">mysqli_query</span><span class="keyword">(</span><span class="default">$link</span><span class="keyword">, </span><span class="string">"select * from city"</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$results_arr </span><span class="keyword">= </span><span class="default">fetch_all_assoc</span><span class="keyword">(</span><span class="default">$result</span><span class="keyword">,array(</span><span class="string">'hemisphere'</span><span class="keyword">,</span><span class="string">'country'</span><span class="keyword">,</span><span class="string">'region'</span><span class="keyword">,</span><span class="string">'city'</span><span class="keyword">));<br />
+<br />
+function </span><span class="default">fetch_all_assoc</span><span class="keyword">(&amp; </span><span class="default">$result</span><span class="keyword">,</span><span class="default">$index_keys</span><span class="keyword">) {<br />
+<br />
+&nbsp; </span><span class="comment">// Args :&nbsp; &nbsp; $result = mysqli result variable (passed as reference to allow a free() at the end<br />
+&nbsp; //&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $indexkeys = array of columns to index on<br />
+&nbsp; // Returns : associative array indexed by the keys array<br />
+<br />
+&nbsp; </span><span class="default">$assoc </span><span class="keyword">= array();&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// The array we're going to be returning<br />
+<br />
+&nbsp; </span><span class="keyword">while (</span><span class="default">$row </span><span class="keyword">= </span><span class="default">mysqli_fetch_array</span><span class="keyword">(</span><span class="default">$result</span><span class="keyword">, </span><span class="default">MYSQLI_ASSOC</span><span class="keyword">)) {<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$pointer </span><span class="keyword">= &amp; </span><span class="default">$assoc</span><span class="keyword">;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span class="comment">// Start the pointer off at the base of the array<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">for (</span><span class="default">$i</span><span class="keyword">=</span><span class="default">0</span><span class="keyword">; </span><span class="default">$i</span><span class="keyword">&lt;</span><span class="default">count</span><span class="keyword">(</span><span class="default">$index_keys</span><span class="keyword">); </span><span class="default">$i</span><span class="keyword">++) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$key_name </span><span class="keyword">= </span><span class="default">$index_keys</span><span class="keyword">[</span><span class="default">$i</span><span class="keyword">];<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if (!isset(</span><span class="default">$row</span><span class="keyword">[</span><span class="default">$key_name</span><span class="keyword">])) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; print </span><span class="string">"Error: Key </span><span class="default">$key_name</span><span class="string"> is not present in the results output.\n"</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; return(</span><span class="default">false</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$key_val</span><span class="keyword">= isset(</span><span class="default">$row</span><span class="keyword">[</span><span class="default">$key_name</span><span class="keyword">]) ? </span><span class="default">$row</span><span class="keyword">[</span><span class="default">$key_name</span><span class="keyword">]&nbsp; : </span><span class="string">""</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if (!isset(</span><span class="default">$pointer</span><span class="keyword">[</span><span class="default">$key_val</span><span class="keyword">])) {&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$pointer</span><span class="keyword">[</span><span class="default">$key_val</span><span class="keyword">] = </span><span class="string">""</span><span class="keyword">;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span class="comment">// Start a new node<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$pointer </span><span class="keyword">= &amp; </span><span class="default">$pointer</span><span class="keyword">[</span><span class="default">$key_val</span><span class="keyword">];&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span class="comment">// Move the pointer on to the new node<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">}<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; else {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$pointer </span><span class="keyword">= &amp; </span><span class="default">$pointer</span><span class="keyword">[</span><span class="default">$key_val</span><span class="keyword">];&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span class="comment">// Already exists, move the pointer on to the new node<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">}<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; } </span><span class="comment">// for $i<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; // At this point, $pointer should be at the furthest point on the tree of keys<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; // Now we can go through all the columns and place their values on the tree<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; // For ease of use, include the index keys and their values at this point too<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">foreach (</span><span class="default">$row </span><span class="keyword">as </span><span class="default">$key </span><span class="keyword">=&gt; </span><span class="default">$val</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$pointer</span><span class="keyword">[</span><span class="default">$key</span><span class="keyword">] = </span><span class="default">$val</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+<br />
+&nbsp; } </span><span class="comment">// $row<br />
+<br />
+&nbsp; /* free result set */<br />
+&nbsp; </span><span class="default">$result</span><span class="keyword">-&gt;</span><span class="default">close</span><span class="keyword">();<br />
+<br />
+&nbsp; return(</span><span class="default">$assoc</span><span class="keyword">);&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <br />
+}<br />
+<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="95881""></a>
+  <div class="note">
+   <strong class="user">Jammerx2</strong>
+   <a href="#95881" class="date">26-Jan-2010 07:09</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Putting multiple rows into an array:<br />
+<br />
+<span class="default">&lt;?php<br />
+$mysqli </span><span class="keyword">= new </span><span class="default">mysqli</span><span class="keyword">(</span><span class="string">"localhost"</span><span class="keyword">, </span><span class="string">"my_user"</span><span class="keyword">, </span><span class="string">"my_password"</span><span class="keyword">, </span><span class="string">"world"</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">/* check connection */<br />
+</span><span class="keyword">if (</span><span class="default">mysqli_connect_errno</span><span class="keyword">()) {<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">printf</span><span class="keyword">(</span><span class="string">"Connect failed: %s\n"</span><span class="keyword">, </span><span class="default">mysqli_connect_error</span><span class="keyword">());<br />
+&nbsp;&nbsp;&nbsp; exit();<br />
+}<br />
+<br />
+</span><span class="default">$query </span><span class="keyword">= </span><span class="string">"SELECT Name, CountryCode FROM City ORDER by ID LIMIT 3"</span><span class="keyword">;<br />
+</span><span class="default">$result </span><span class="keyword">= </span><span class="default">$mysqli</span><span class="keyword">-&gt;</span><span class="default">query</span><span class="keyword">(</span><span class="default">$query</span><span class="keyword">);<br />
+<br />
+while(</span><span class="default">$row </span><span class="keyword">= </span><span class="default">$result</span><span class="keyword">-&gt;</span><span class="default">fetch_array</span><span class="keyword">())<br />
+{<br />
+</span><span class="default">$rows</span><span class="keyword">[] = </span><span class="default">$row</span><span class="keyword">;<br />
+}<br />
+<br />
+foreach(</span><span class="default">$rows </span><span class="keyword">as </span><span class="default">$row</span><span class="keyword">)<br />
+{<br />
+echo </span><span class="default">$row</span><span class="keyword">[</span><span class="string">'CountryCode'</span><span class="keyword">];<br />
+}<br />
+<br />
+</span><span class="comment">/* free result set */<br />
+</span><span class="default">$result</span><span class="keyword">-&gt;</span><span class="default">close</span><span class="keyword">();<br />
+<br />
+</span><span class="comment">/* close connection */<br />
+</span><span class="default">$mysqli</span><span class="keyword">-&gt;</span><span class="default">close</span><span class="keyword">();<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="mysqli-result.fetch-all.html">mysqli_result::fetch_all</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="mysqli-result.fetch-assoc.html">mysqli_result::fetch_assoc</a></div>
  <div class="up"><a href="class.mysqli-result.html">mysqli_result</a></div>

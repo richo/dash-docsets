@@ -153,7 +153,167 @@
  </div>
 
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="84249""></a>
+  <div class="note">
+   <strong class="user">b dot andrew at shaw dot ca</strong>
+   <a href="#84249" class="date">04-Jul-2008 09:10</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+A response to the note below:<br />
+<br />
+Your function is also useless, as the WinNT 32 kernel only functions at a minimum of about 10+ ms (1,000 us), rendering usleep() useless, because usleep uses the C function which is provided by the system (in this case, kernel32.dll).<br />
+<br />
+You'll want to use a function that does not rely on the kernel, but rather something made for precise measurement:<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">function </span><span class="default">usleep_win</span><span class="keyword">( </span><span class="default">$micro_seconds </span><span class="keyword">)<br />
+{<br />
+&nbsp;&nbsp;&nbsp; if ( @</span><span class="default">function_exists</span><span class="keyword">( </span><span class="string">"socket_create" </span><span class="keyword">) &amp;&amp; @</span><span class="default">function_exists</span><span class="keyword">( </span><span class="string">"socket_select" </span><span class="keyword">) )<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$false </span><span class="keyword">= </span><span class="default">NULL</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$socket </span><span class="keyword">= array( </span><span class="default">socket_create</span><span class="keyword">( </span><span class="default">AF_INET</span><span class="keyword">, </span><span class="default">SOCK_RAW</span><span class="keyword">, </span><span class="default">$false </span><span class="keyword">) );<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">socket_select</span><span class="keyword">( </span><span class="default">$false</span><span class="keyword">, </span><span class="default">$false</span><span class="keyword">, </span><span class="default">$socket</span><span class="keyword">, </span><span class="default">0</span><span class="keyword">, </span><span class="default">$micro_seconds </span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">true</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; else<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">false</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+}<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+This function will allow to you sleep for a specified microsecond, although I have measured it to be off by ~5 us.<br />
+<br />
+Again, most of this depends on the hardware in your system. If you _REALLY_ need to be precise to &lt; 10 us, you shouldn't be using WinNT anyways!</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="71839""></a>
+  <div class="note">
+   <strong class="user">fantasysportswire at yahoo dot com</strong>
+   <a href="#71839" class="date">18-Dec-2006 03:27</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Just glancing at this - and the note from over a year ago with a implementation for windows.. with 5.0.0 and higher it would be simplier to just do something like......<br />
+<br />
+&lt;?<br />
+<br />
+if (!function_exists('time_nanosleep')) {<br />
+<br />
+function time_nanosleep($seconds, $nanoseconds) {<br />
+<br />
+sleep($seconds);<br />
+usleep(round($nanoseconds/100));<br />
+<br />
+return true;<br />
+<br />
+}<br />
+<br />
+}<br />
+<br />
+?&gt;<br />
+<br />
+....off the top of my head - obviously simple enough there should be no mistakes.. but those are the ones that always seem to get ya :( .....</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="69061""></a>
+  <div class="note">
+   <strong class="user">anybody (a) emuxperts.net</strong>
+   <a href="#69061" class="date">21-Aug-2006 04:03</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Documentation states that "seconds" must be positive. This is not correct, 0 is possible.<br />
+<br />
+Rather, "seconds" must be non-negative.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="55802""></a>
+  <div class="note">
+   <strong class="user">m at kufi dot net</strong>
+   <a href="#55802" class="date">13-Aug-2005 02:03</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+You should take into account, if you use the function replacement down here, the CPU will be in use of 99% for the time of execution...<br />
+<br />
+(A little bit better in this situation is to let the 'full seconds' go by a normal sleep command (makes the thread sleep!, and uses minimum cpu))<br />
+<br />
+<span class="default">&lt;?php<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">//THIS IS THE FUNCTION WE ARE TALKIN ABOUT<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">function </span><span class="default">timeWait</span><span class="keyword">(</span><span class="default">$microtime</span><span class="keyword">)<br />
+&nbsp;&nbsp;&nbsp; {<br />
+</span><span class="comment">//optimizations added by me [start]<br />
+//sleep the full seconds<br />
+</span><span class="default">sleep</span><span class="keyword">(</span><span class="default">intval</span><span class="keyword">(</span><span class="default">$microtime</span><span class="keyword">));<br />
+</span><span class="comment">//set the microtime to only resleep the last part of the nanos<br />
+</span><span class="default">$microtime </span><span class="keyword">= </span><span class="default">$microtime </span><span class="keyword">- </span><span class="default">intval</span><span class="keyword">(</span><span class="default">$microtime</span><span class="keyword">);<br />
+</span><span class="comment">//optimizations added by me [end]<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$timeLimit </span><span class="keyword">= </span><span class="default">$microtime </span><span class="keyword">+ </span><span class="default">array_sum</span><span class="keyword">(</span><span class="default">explode</span><span class="keyword">(</span><span class="string">" "</span><span class="keyword">,</span><span class="default">microtime</span><span class="keyword">()));<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; while(</span><span class="default">array_sum</span><span class="keyword">(</span><span class="default">explode</span><span class="keyword">(</span><span class="string">" "</span><span class="keyword">,</span><span class="default">microtime</span><span class="keyword">())) &lt; </span><span class="default">$timeLimit</span><span class="keyword">)<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; {</span><span class="comment">/*DO NOTHING*/</span><span class="keyword">}<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return(</span><span class="default">true</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">//THIS IS HOW WE CAN USE IT<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">echo </span><span class="string">"Process started at " </span><span class="keyword">. </span><span class="default">date</span><span class="keyword">(</span><span class="string">"H:i:s"</span><span class="keyword">) . </span><span class="string">" and " </span><span class="keyword">. </span><span class="default">current</span><span class="keyword">(</span><span class="default">explode</span><span class="keyword">(</span><span class="string">" "</span><span class="keyword">,</span><span class="default">microtime</span><span class="keyword">())) . </span><span class="string">" nanoseconds.&lt;br&gt;"</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">timeWait</span><span class="keyword">(</span><span class="default">5.5</span><span class="keyword">); </span><span class="comment">//With this call the system will wait 5 seconds and a half. You can use either integer or float.<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">echo </span><span class="string">"Process completed at " </span><span class="keyword">. </span><span class="default">date</span><span class="keyword">(</span><span class="string">"H:i:s"</span><span class="keyword">) . </span><span class="string">" and " </span><span class="keyword">. </span><span class="default">current</span><span class="keyword">(</span><span class="default">explode</span><span class="keyword">(</span><span class="string">" "</span><span class="keyword">,</span><span class="default">microtime</span><span class="keyword">())) . </span><span class="string">" nanoseconds."</span><span class="keyword">;<br />
+&nbsp;</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="55166""></a>
+  <div class="note">
+   <strong class="user">tecnomaniac at ig dot com dot br</strong>
+   <a href="#55166" class="date">26-Jul-2005 03:04</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+This is an alternative function to sleep_nanosecond that you can use with PHP versions below PHP 5.0. It is not very accurate if we talk about nanoseconds but the results are satisfatory. Enjoy!<br />
+<br />
+<span class="default">&lt;?php<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">//THIS IS THE FUNCTION WE ARE TALKIN ABOUT<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">function </span><span class="default">timeWait</span><span class="keyword">(</span><span class="default">$microtime</span><span class="keyword">)<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$timeLimit </span><span class="keyword">= </span><span class="default">$microtime </span><span class="keyword">+ </span><span class="default">array_sum</span><span class="keyword">(</span><span class="default">explode</span><span class="keyword">(</span><span class="string">" "</span><span class="keyword">,</span><span class="default">microtime</span><span class="keyword">()));<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; while(</span><span class="default">array_sum</span><span class="keyword">(</span><span class="default">explode</span><span class="keyword">(</span><span class="string">" "</span><span class="keyword">,</span><span class="default">microtime</span><span class="keyword">())) &lt; </span><span class="default">$timeLimit</span><span class="keyword">)<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; {</span><span class="comment">/*DO NOTHING*/</span><span class="keyword">}<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return(</span><span class="default">true</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">//THIS IS HOW WE CAN USE IT<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">echo </span><span class="string">"Process started at " </span><span class="keyword">. </span><span class="default">date</span><span class="keyword">(</span><span class="string">"H:i:s"</span><span class="keyword">) . </span><span class="string">" and " </span><span class="keyword">. </span><span class="default">current</span><span class="keyword">(</span><span class="default">explode</span><span class="keyword">(</span><span class="string">" "</span><span class="keyword">,</span><span class="default">microtime</span><span class="keyword">())) . </span><span class="string">" nanoseconds.&lt;br&gt;"</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">timeWait</span><span class="keyword">(</span><span class="default">5.5</span><span class="keyword">); </span><span class="comment">//With this call the system will wait 5 seconds and a half. You can use either integer or float.<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">echo </span><span class="string">"Process completed at " </span><span class="keyword">. </span><span class="default">date</span><span class="keyword">(</span><span class="string">"H:i:s"</span><span class="keyword">) . </span><span class="string">" and " </span><span class="keyword">. </span><span class="default">current</span><span class="keyword">(</span><span class="default">explode</span><span class="keyword">(</span><span class="string">" "</span><span class="keyword">,</span><span class="default">microtime</span><span class="keyword">())) . </span><span class="string">" nanoseconds."</span><span class="keyword">;<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="function.sys-getloadavg.html">sys_getloadavg</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.time-sleep-until.html">time_sleep_until</a></div>
  <div class="up"><a href="ref.misc.html">Misc. Functions</a></div>

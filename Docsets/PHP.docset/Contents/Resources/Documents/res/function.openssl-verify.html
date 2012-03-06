@@ -159,7 +159,148 @@
  </div>
 
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="105612""></a>
+  <div class="note">
+   <strong class="user">jeremie dot gomez at gmail dot com</strong>
+   <a href="#105612" class="date">31-Aug-2011 11:08</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+You can actually use the public key as third parameter and not the certificate.<br />
+<br />
+If you can't make it work, make sure that :<br />
+<br />
+1) Your public key is well formatted. It seems that it must have the ----BEGIN PUBLIC KEY---- and ----END PUBLIC KEY----<br />
+<br />
+2) Your signature is in binary format. You can use the php base64_decode for this.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="98282""></a>
+  <div class="note">
+   <strong class="user">mikey at badpenguins dot com</strong>
+   <a href="#98282" class="date">06-Jun-2010 09:04</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I spent days scouring the php openssl documentation trying to figure out how to do what sounds like a simple task - given two PEM encoded certificates, is one the signer of the other?&nbsp; Nowhere in the openssl_verify() documentation or comments is it explained where to obtain the signature of an existing certificate.&nbsp; The openssl_x509_parse() function looked promising, but it is an unstable API that may change.<br />
+<br />
+I had to write my own code to determine if one cert signed another, it is located here: <a href="http://badpenguins.com/source/misc/isCertSigner.php?viewSource" rel="nofollow" target="_blank">http://badpenguins.com/source/misc/isCertSigner.php?viewSource</a><br />
+<br />
+In a nutshell here is what I learned...<br />
+<br />
+The signature data in a signed X.509 certificate contains DER formatted data about the signature that is encrypted with the signers public key.&nbsp; The data contains a hash of the original subject certificate and information about what encryption algorithm was used to create the signature.<br />
+<br />
+So you need to get this signature data and a copy of the original certificate with the issuer and signature sequences removed.&nbsp; Hash a copy of the original certificate (sans issuer/signature sequences) with the same algorithm the issuer used and if the hashes match, you have the issuer cert that signed the certificate.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="62526""></a>
+  <div class="note">
+   <strong class="user">Stiv</strong>
+   <a href="#62526" class="date">02-Mar-2006 06:34</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I've finally found a way to verify signature. Sample in the documentation doesn't work. Code bellow DOES work :)<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="comment">// $data is assumed to contain the data to be signed<br />
+<br />
+// fetch certificate from file and ready it<br />
+</span><span class="default">$fp </span><span class="keyword">= </span><span class="default">fopen</span><span class="keyword">(</span><span class="string">"path/file.pem"</span><span class="keyword">, </span><span class="string">"r"</span><span class="keyword">);<br />
+</span><span class="default">$cert </span><span class="keyword">= </span><span class="default">fread</span><span class="keyword">(</span><span class="default">$fp</span><span class="keyword">, </span><span class="default">8192</span><span class="keyword">);<br />
+</span><span class="default">fclose</span><span class="keyword">(</span><span class="default">$fp</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">// state whether signature is okay or not<br />
+// use the certificate, not the public key<br />
+</span><span class="default">$ok </span><span class="keyword">= </span><span class="default">openssl_verify</span><span class="keyword">(</span><span class="default">$data</span><span class="keyword">, </span><span class="default">$signature</span><span class="keyword">, </span><span class="default">$cert</span><span class="keyword">);<br />
+if (</span><span class="default">$ok </span><span class="keyword">== </span><span class="default">1</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; echo </span><span class="string">"good"</span><span class="keyword">;<br />
+} elseif (</span><span class="default">$ok </span><span class="keyword">== </span><span class="default">0</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; echo </span><span class="string">"bad"</span><span class="keyword">;<br />
+} else {<br />
+&nbsp;&nbsp;&nbsp; echo </span><span class="string">"ugly, error checking signature"</span><span class="keyword">;<br />
+}<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="53841""></a>
+  <div class="note">
+   <strong class="user">devel@no-spam</strong>
+   <a href="#53841" class="date">14-Jun-2005 06:25</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+It should be noted that in order to verify a signature successfully, SHA-1 must be used to digest the data before signing. <br />
+<br />
+If, for example, you are using Java to create a signature and you want to verify it in PHP, you must not use "MD5withRSA" or "SHA512withRSA" as the signature algorithm. Use "SHA1withRSA" or the like...</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="21889""></a>
+  <div class="note">
+   <strong class="user">steve dot venable at lmco dot com</strong>
+   <a href="#21889" class="date">30-May-2002 12:36</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+A note about the openssl_verify() (and some of the other functions).&nbsp; The public key comes from a certificate in any of the support formats (as the example shows, use openssl_get_publickey() to get the resource id).&nbsp; But after some trial and error I found the signature string MUST BE BINARY.&nbsp; While no error occurs, passing a base64-formatted signature string (PEM format?), you simply get a mismatch.&nbsp; When I did the base64 decode myself, the verify returned a match (return value 1).&nbsp; You can simply drop the begin/end lines and take the output of the 'base64_decode()' function.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="13299""></a>
+  <div class="note">
+   <strong class="user">meint dot post at bigfoot dot com</strong>
+   <a href="#13299" class="date">09-Jun-2001 11:56</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Anbybody trying to get a Win32 CryptoAPI based digital signature component to work with the openssl_verify() function should be aware that the CryptoAPI PKCS1 (RSA) method uses bytes in reverse order while the openssl_verify() method expects a correctly formatted PKCS1 digital signature (as should be). I learned this the hard way and it took me some time to dig this out. A simple solution in VBScript to reverse the byte order:<br />
+<br />
+N = Len(Blob.Hex)<br />
+<br />
+' reverse bytes in the signature using Hex format <br />
+For i = 1 To N - 1 Step 2 <br />
+&nbsp;&nbsp;&nbsp; s = Mid(Blob, i, 2) &amp; s <br />
+Next <br />
+<br />
+s contains the digital signature in reverse order. Blob is an arbitrary binary container.<br />
+<br />
+Send the signature off in Hex format and use a hex2bin method in PHP to convert to the correct format for openssl_verify(), i.e.<br />
+<br />
+function hex2bin($data) {<br />
+<br />
+&nbsp;&nbsp;&nbsp; $len = strlen($data);<br />
+&nbsp;&nbsp;&nbsp; return pack("H" . $len, $data);<br />
+<br />
+} <br />
+<br />
+That's it, hope it helps out. BTW I used ASPEncrypt to toy around with on Win32 platform. Works only with Internet Explorer but you could also use a Java applet and have none of the abovementioned problems :-)</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="function.openssl-sign.html">openssl_sign</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.openssl-x509-check-private-key.html">openssl_x509_check_private_key</a></div>
  <div class="up"><a href="ref.openssl.html">OpenSSL Functions</a></div>

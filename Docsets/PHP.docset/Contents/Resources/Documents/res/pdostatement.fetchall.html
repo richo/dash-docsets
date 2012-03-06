@@ -338,7 +338,354 @@ array(3) {
   </p>
  </div>
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="104740""></a>
+  <div class="note">
+   <strong class="user">Hayley Watson</strong>
+   <a href="#104740" class="date">04-Jul-2011 04:48</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+If you use the PDO::FETCH_CLASS | PDO::FETCH_PROPS_LATE flags to map columns to object properties, fetchAll() will use any __set() method your object has when carrying out the mapping.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="104609""></a>
+  <div class="note">
+   <strong class="user">Anonymous</strong>
+   <a href="#104609" class="date">25-Jun-2011 02:10</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Note that fetchAll() can be extremely memory inefficient for large data sets. My memory limit was set to 160 MB this is what happened when I tried:<br />
+<br />
+<span class="default">&lt;?php<br />
+$arr </span><span class="keyword">= </span><span class="default">$stmt</span><span class="keyword">-&gt;</span><span class="default">fetchAll</span><span class="keyword">();<br />
+</span><span class="comment">// Fatal error: Allowed memory size of 16777216 bytes exhausted<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+If you are going to loop through the output array of fetchAll(), instead use fetch() to minimize memory usage as follows:<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">while (</span><span class="default">$arr </span><span class="keyword">= </span><span class="default">$stmt</span><span class="keyword">-&gt;</span><span class="default">fetch</span><span class="keyword">()) {<br />
+&nbsp;&nbsp;&nbsp; echo </span><span class="default">round</span><span class="keyword">(</span><span class="default">memory_get_usage</span><span class="keyword">() / (</span><span class="default">1024</span><span class="keyword">*</span><span class="default">1024</span><span class="keyword">),</span><span class="default">3</span><span class="keyword">) .</span><span class="string">' MB&lt;br /&gt;'</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// do_other_stuff();<br />
+</span><span class="keyword">}<br />
+</span><span class="comment">// Last line for the same query shows only 28.973 MB usage<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="98359""></a>
+  <div class="note">
+   <strong class="user">Dennis</strong>
+   <a href="#98359" class="date">10-Jun-2010 08:51</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Error:<br />
+SQLSTATE[HY000]: General error: 2014 Cannot execute queries while other unbuffered queries are active. Consider using PDOStatement::fetchAll(). Alternatively, if your code is only ever going to run against mysql, you may enable query buffering by setting the PDO::MYSQL_ATTR_USE_BUFFERED_QUERY attribute.<br />
+<br />
+If you're using something like:<br />
+<br />
+while ($row = $query-&gt;fetchObject()) {<br />
+&nbsp;&nbsp;&nbsp; [...]<br />
+}<br />
+<br />
+try using this instead:<br />
+<br />
+$rows = $query-&gt;fetchAll(PDO::FETCH_CLASS, 'ArrayObject');<br />
+<br />
+foreach ($rows as $row) {<br />
+&nbsp;&nbsp;&nbsp; [...]<br />
+}</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="97973""></a>
+  <div class="note">
+   <strong class="user">esw at pixeloution dot removeme dot com</strong>
+   <a href="#97973" class="date">18-May-2010 09:17</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Interestingly enough, when you use fetchAll, the constructor for your object is called AFTER the properties are assigned. For example:<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">class </span><span class="default">person </span><span class="keyword">{<br />
+&nbsp;&nbsp;&nbsp; public </span><span class="default">$name</span><span class="keyword">;<br />
+<br />
+&nbsp;&nbsp;&nbsp; function </span><span class="default">__construct</span><span class="keyword">() {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">name </span><span class="keyword">= </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">name </span><span class="keyword">. </span><span class="string">" is my name."</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+}<br />
+<br />
+</span><span class="comment"># set up select from a database here with PDO<br />
+</span><span class="default">$obj </span><span class="keyword">= </span><span class="default">$STH</span><span class="keyword">-&gt;</span><span class="default">fetchALL</span><span class="keyword">(</span><span class="default">PDO</span><span class="keyword">::</span><span class="default">FETCH_CLASS</span><span class="keyword">, </span><span class="string">'person'</span><span class="keyword">);<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+Will result in ' is my name' being appended to all the name columns. However if you call it slightly differently:<br />
+<br />
+<span class="default">&lt;?php<br />
+$obj </span><span class="keyword">= </span><span class="default">$obj </span><span class="keyword">= </span><span class="default">$STH</span><span class="keyword">-&gt;</span><span class="default">fetchAll</span><span class="keyword">(</span><span class="default">PDO</span><span class="keyword">::</span><span class="default">FETCH_CLASS </span><span class="keyword">| </span><span class="default">PDO</span><span class="keyword">::</span><span class="default">FETCH_PROPS_LATE</span><span class="keyword">, </span><span class="string">'person'</span><span class="keyword">);<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+Then the constructor will be called before properties are assigned. I can't find this documented anywhere, so I thought it would be nice to add a note here.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="94236""></a>
+  <div class="note">
+   <strong class="user">mxrgus</strong>
+   <a href="#94236" class="date">23-Oct-2009 04:22</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+In method body:<br />
+<br />
+return $pstmt-&gt;fetchAll() or die("bad");<br />
+<br />
+will not return correct value, but "1" instead.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="90692""></a>
+  <div class="note">
+   <strong class="user">Daniel Hofmann</strong>
+   <a href="#90692" class="date">05-May-2009 12:21</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+PLEASE BE AWARE: If you do an OUTER LEFT JOIN and set PDO FetchALL to PDO::FETCH_ASSOC, any primary key you used in the OUTER LEFT JOIN will be set to a blank if there are no records returned in the JOIN.<br />
+<br />
+For example:<br />
+<span class="default">&lt;?php<br />
+</span><span class="comment">//query the product table and join to the image table and return any images, if we have any, for each product<br />
+</span><span class="default">$sql </span><span class="keyword">= </span><span class="string">"SELECT * FROM product, image<br />
+LEFT OUTER JOIN image ON (product.product_id = image.product_id)"</span><span class="keyword">;<br />
+<br />
+</span><span class="default">$array </span><span class="keyword">= </span><span class="default">$stmt</span><span class="keyword">-&gt;</span><span class="default">fetchAll</span><span class="keyword">(</span><span class="default">PDO</span><span class="keyword">::</span><span class="default">FETCH_ASSOC</span><span class="keyword">);<br />
+<br />
+</span><span class="default">print_r</span><span class="keyword">(</span><span class="default">$array</span><span class="keyword">);<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+The resulting array will look something like this:<br />
+<br />
+Array<br />
+(<br />
+&nbsp;&nbsp;&nbsp; [0] =&gt; Array<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; (<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [product_id] =&gt; <br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [notes] =&gt; "this product..."<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [brand] =&gt; "Best Yet"<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; ...<br />
+<br />
+The fix is to simply specify your field names in the SELECT clause instead of using the * as a wild card, or, you can also specify the field in addition to the *. The following example returns the product_id field correctly:<br />
+<br />
+<span class="default">&lt;?php<br />
+$sql </span><span class="keyword">= </span><span class="string">"SELECT *, product.product_id FROM product, image<br />
+LEFT OUTER JOIN image ON (product.product_id = image.product_id)"</span><span class="keyword">;<br />
+<br />
+</span><span class="default">$array </span><span class="keyword">= </span><span class="default">$stmt</span><span class="keyword">-&gt;</span><span class="default">fetchAll</span><span class="keyword">(</span><span class="default">PDO</span><span class="keyword">::</span><span class="default">FETCH_ASSOC</span><span class="keyword">);<br />
+<br />
+</span><span class="default">print_r</span><span class="keyword">(</span><span class="default">$array</span><span class="keyword">);<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+The resulting array will look something like this:<br />
+<br />
+Array<br />
+(<br />
+&nbsp;&nbsp;&nbsp; [0] =&gt; Array<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; (<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [product_id] =&gt; 3<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [notes] =&gt; "this product..."<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [brand] =&gt; "Best Yet"<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; ...</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="88699""></a>
+  <div class="note">
+   <strong class="user">Ant P.</strong>
+   <a href="#88699" class="date">03-Feb-2009 06:37</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+You might find yourself wanting to use FETCH_GROUP and FETCH_ASSOC at the same time, to get your table's primary key as the array key:<br />
+<span class="default">&lt;?php<br />
+</span><span class="comment">// $stmt is some query like "SELECT rowid, username, comment"<br />
+</span><span class="default">$results </span><span class="keyword">= </span><span class="default">$stmt</span><span class="keyword">-&gt;</span><span class="default">fetchAll</span><span class="keyword">(</span><span class="default">PDO</span><span class="keyword">::</span><span class="default">FETCH_GROUP</span><span class="keyword">|</span><span class="default">PDO</span><span class="keyword">::</span><span class="default">FETCH_ASSOC</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">// It does work, but not as you might expect:<br />
+</span><span class="default">$results </span><span class="keyword">= array(<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">1234 </span><span class="keyword">=&gt; array(</span><span class="default">0 </span><span class="keyword">=&gt; array(</span><span class="string">'username' </span><span class="keyword">=&gt; </span><span class="string">'abc'</span><span class="keyword">, </span><span class="string">'comment' </span><span class="keyword">=&gt; </span><span class="string">'[...]'</span><span class="keyword">)),<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">1235 </span><span class="keyword">=&gt; array(</span><span class="default">0 </span><span class="keyword">=&gt; array(</span><span class="string">'username' </span><span class="keyword">=&gt; </span><span class="string">'def'</span><span class="keyword">, </span><span class="string">'comment' </span><span class="keyword">=&gt; </span><span class="string">'[...]'</span><span class="keyword">)),<br />
+);<br />
+<br />
+</span><span class="comment">// ...but you can at least strip the useless numbered array out easily:<br />
+</span><span class="default">$results </span><span class="keyword">= </span><span class="default">array_map</span><span class="keyword">(</span><span class="string">'reset'</span><span class="keyword">, </span><span class="default">$results</span><span class="keyword">);<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="86769""></a>
+  <div class="note">
+   <strong class="user">davey at php dot net</strong>
+   <a href="#86769" class="date">02-Nov-2008 06:54</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+When passing PDO::FETCH_CLASS as the first argument, this method will accept the class name as the second option:<br />
+<br />
+<span class="default">&lt;?php<br />
+$query </span><span class="keyword">= </span><span class="default">$pdo</span><span class="keyword">-&gt;</span><span class="default">prepare</span><span class="keyword">(</span><span class="default">$sql</span><span class="keyword">);<br />
+<br />
+</span><span class="default">$result </span><span class="keyword">= </span><span class="default">$query</span><span class="keyword">-&gt;</span><span class="default">execute</span><span class="keyword">(</span><span class="default">$values</span><span class="keyword">);<br />
+<br />
+if (</span><span class="default">$result </span><span class="keyword">&amp;&amp; </span><span class="default">$query</span><span class="keyword">-&gt;</span><span class="default">rowCount</span><span class="keyword">() &gt; </span><span class="default">0</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$records </span><span class="keyword">= </span><span class="default">$query</span><span class="keyword">-&gt;</span><span class="default">fetchAll</span><span class="keyword">(</span><span class="default">PDO</span><span class="keyword">::</span><span class="default">FETCH_CLASS</span><span class="keyword">, </span><span class="string">'Some_Class'</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// $record is now an array of Some_Class objects<br />
+</span><span class="keyword">}<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+- Davey</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="86710""></a>
+  <div class="note">
+   <strong class="user">mrshelly at hotmail dot com</strong>
+   <a href="#86710" class="date">30-Oct-2008 07:27</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+PHP fetchAll Data From SQL Server 2005 <br />
+if field's data type is varchar(nvarchar), only fetch 255 chars. but the "text" data type is ok.<br />
+<br />
+so, notice! to change the 'varchar' or 'nvarchar' (length &gt; 255) to 'text' data type..<br />
+<br />
+hope to help u.<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+$user </span><span class="keyword">= </span><span class="string">'sa'</span><span class="keyword">;<br />
+</span><span class="default">$pass </span><span class="keyword">= </span><span class="string">'pass'</span><span class="keyword">;<br />
+<br />
+</span><span class="default">$conn </span><span class="keyword">= new </span><span class="default">PDO</span><span class="keyword">(</span><span class="string">'mssql:host=127.0.0.1; dbname=tempdb;'</span><span class="keyword">, </span><span class="default">$user</span><span class="keyword">, </span><span class="default">$pass</span><span class="keyword">);<br />
+<br />
+</span><span class="default">$mainSQL </span><span class="keyword">= </span><span class="string">"SELECT field_varchar, field_text FROM table1"</span><span class="keyword">;<br />
+</span><span class="default">$sth </span><span class="keyword">= </span><span class="default">$conn</span><span class="keyword">-&gt;</span><span class="default">prepare</span><span class="keyword">(</span><span class="default">$mainSQL</span><span class="keyword">);<br />
+</span><span class="default">$sth</span><span class="keyword">-&gt;</span><span class="default">setFetchMode</span><span class="keyword">(</span><span class="default">PDO</span><span class="keyword">::</span><span class="default">FETCH_ASSOC</span><span class="keyword">);<br />
+</span><span class="default">$sth</span><span class="keyword">-&gt;</span><span class="default">execute</span><span class="keyword">();<br />
+</span><span class="default">$retRows </span><span class="keyword">= </span><span class="default">$sth</span><span class="keyword">-&gt;</span><span class="default">fetchAll</span><span class="keyword">();<br />
+</span><span class="comment">// the field_varchar field only to fetch 255 chars(max)<br />
+// the field_text is ok.<br />
+<br />
+</span><span class="default">var_dump</span><span class="keyword">(</span><span class="default">$retRows</span><span class="keyword">);<br />
+<br />
+unset(</span><span class="default">$sth</span><span class="keyword">); unset(</span><span class="default">$conn</span><span class="keyword">);<br />
+<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="83750""></a>
+  <div class="note">
+   <strong class="user">harlequin2 at gmx dot de</strong>
+   <a href="#83750" class="date">10-Jun-2008 05:01</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+There is also another fetch mode supported on Oracle and MSSQL: <br />
+PDO::FETCH_ASSOC<br />
+<br />
+&gt; fetches only column names and omits the numeric index.<br />
+<br />
+If you would like to return all columns from an sql statement with column keys as table headers, it's as simple as this:<br />
+<br />
+<span class="default">&lt;?php<br />
+$dbh </span><span class="keyword">= new </span><span class="default">PDO</span><span class="keyword">(</span><span class="string">"DS"</span><span class="keyword">, </span><span class="string">"USERNAME"</span><span class="keyword">, </span><span class="string">"PASSWORD"</span><span class="keyword">);<br />
+</span><span class="default">$stmt </span><span class="keyword">= </span><span class="default">$dbh</span><span class="keyword">-&gt;</span><span class="default">prepare</span><span class="keyword">(</span><span class="string">"SELECT * FROM tablename"</span><span class="keyword">);<br />
+</span><span class="default">$stmt</span><span class="keyword">-&gt;</span><span class="default">execute</span><span class="keyword">();<br />
+</span><span class="default">$arrValues </span><span class="keyword">= </span><span class="default">$stmt</span><span class="keyword">-&gt;</span><span class="default">fetchAll</span><span class="keyword">(</span><span class="default">PDO</span><span class="keyword">::</span><span class="default">FETCH_ASSOC</span><span class="keyword">);<br />
+</span><span class="comment">// open the table<br />
+</span><span class="keyword">print </span><span class="string">"&lt;table wdith=\"100%\"&gt;\n"</span><span class="keyword">;<br />
+print </span><span class="string">"&lt;tr&gt;\n"</span><span class="keyword">;<br />
+</span><span class="comment">// add the table headers<br />
+</span><span class="keyword">foreach (</span><span class="default">$arrValues</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">] as </span><span class="default">$key </span><span class="keyword">=&gt; </span><span class="default">$useless</span><span class="keyword">){<br />
+&nbsp;&nbsp;&nbsp; print </span><span class="string">"&lt;th&gt;</span><span class="default">$key</span><span class="string">&lt;/th&gt;"</span><span class="keyword">;<br />
+}<br />
+print </span><span class="string">"&lt;/tr&gt;"</span><span class="keyword">;<br />
+</span><span class="comment">// display data<br />
+</span><span class="keyword">foreach (</span><span class="default">$arrValues </span><span class="keyword">as </span><span class="default">$row</span><span class="keyword">){<br />
+&nbsp;&nbsp;&nbsp; print </span><span class="string">"&lt;tr&gt;"</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; foreach (</span><span class="default">$row </span><span class="keyword">as </span><span class="default">$key </span><span class="keyword">=&gt; </span><span class="default">$val</span><span class="keyword">){<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; print </span><span class="string">"&lt;td&gt;</span><span class="default">$val</span><span class="string">&lt;/td&gt;"</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; print </span><span class="string">"&lt;/tr&gt;\n"</span><span class="keyword">;<br />
+}<br />
+</span><span class="comment">// close the table<br />
+</span><span class="keyword">print </span><span class="string">"&lt;/table&gt;\n"</span><span class="keyword">;<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="80164""></a>
+  <div class="note">
+   <strong class="user">Anonymous</strong>
+   <a href="#80164" class="date">01-Jan-2008 11:13</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+If no rows have been returned, fetchAll returns an empty array.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="70480""></a>
+  <div class="note">
+   <strong class="user">stas at metalinfo dot ru</strong>
+   <a href="#70480" class="date">18-Oct-2006 06:37</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Note, that you can use PDO::FETCH_COLUMN|PDO::FETCH_GROUP pair only while selecting two columns, not like DB_common::getAssoc(), when grouping is set to true.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="pdostatement.fetch.html">PDOStatement::fetch</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="pdostatement.fetchcolumn.html">PDOStatement::fetchColumn</a></div>
  <div class="up"><a href="class.pdostatement.html">PDOStatement</a></div>

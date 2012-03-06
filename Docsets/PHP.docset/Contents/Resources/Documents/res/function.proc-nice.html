@@ -85,7 +85,115 @@
   </p></blockquote>
  </div>
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="101944""></a>
+  <div class="note">
+   <strong class="user">Marek</strong>
+   <a href="#101944" class="date">19-Jan-2011 08:40</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Regarding ionice - on linux the impact of the ionice -c3 class is similar to that of nice, because the CPU "niceness" is taken into account when calculating the io niceness.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="98574""></a>
+  <div class="note">
+   <strong class="user">php at richardneill dot org</strong>
+   <a href="#98574" class="date">24-Jun-2010 12:14</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+If a process is reniced, then all its children inherit that niceness. So a PHP script can call proc_nice on itself, then invoke system(), and the command executed via system() will also be niced.<br />
+<br />
+Also worth making a note of ionice. There's no PHP function for this, but it's important. A nice'd program will happily try to chew up all i/o bandwidth with very little CPU usage, it can therefore make the entire computer non-responsive despite the programmer's intention.&nbsp; Use "ionice -c3"&nbsp; or see "man ionice"</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="87225""></a>
+  <div class="note">
+   <strong class="user">pandi at home dot pl</strong>
+   <a href="#87225" class="date">25-Nov-2008 05:22</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Simple function for check process nice, by default returns nice of current process:<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+</span><span class="keyword">public static function </span><span class="default">getProcessNice </span><span class="keyword">(</span><span class="default">$pid </span><span class="keyword">= </span><span class="default">null</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; if (!</span><span class="default">$pid</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$pid </span><span class="keyword">= </span><span class="default">getmypid </span><span class="keyword">();<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$res </span><span class="keyword">= `</span><span class="string">ps -p </span><span class="default">$pid</span><span class="string"> -o "%p %n"</span><span class="keyword">`;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">preg_match </span><span class="keyword">(</span><span class="string">'/^\s*\w+\s+\w+\s*(\d+)\s+(\d+)/m'</span><span class="keyword">, </span><span class="default">$res</span><span class="keyword">, </span><span class="default">$matches</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; return array (</span><span class="string">'pid' </span><span class="keyword">=&gt; (isset (</span><span class="default">$matches</span><span class="keyword">[</span><span class="default">1</span><span class="keyword">]) ? </span><span class="default">$matches</span><span class="keyword">[</span><span class="default">1</span><span class="keyword">] : </span><span class="default">null</span><span class="keyword">), </span><span class="string">'nice' </span><span class="keyword">=&gt; (isset (</span><span class="default">$matches</span><span class="keyword">[</span><span class="default">2</span><span class="keyword">]) ? </span><span class="default">$matches</span><span class="keyword">[</span><span class="default">2</span><span class="keyword">] : </span><span class="default">null</span><span class="keyword">));<br />
+}<br />
+<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="44687""></a>
+  <div class="note">
+   <strong class="user">php at riggers dot me dot uk</strong>
+   <a href="#44687" class="date">12-Aug-2004 04:20</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Just an addition to the previous note re: exec('renice...'). The exit_func() will not set the priority back to normal (0) (at least on linux), unless the user that the webserver is running as is a super user (bad idea). You can decrease the priority of the running task, but not increase it again. See man page for renice.<br />
+<br />
+To prevent subsequent requests running at the lower priority I called apache_child_terminate() on shutdown.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="37320""></a>
+  <div class="note">
+   <strong class="user">griph at dd dot chalmer dot se</strong>
+   <a href="#37320" class="date">10-Nov-2003 02:34</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+If you don't have PHP5 and needs to nice your process this works good.<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+</span><span class="keyword">function </span><span class="default">proc_nice</span><span class="keyword">(</span><span class="default">$priority</span><span class="keyword">) {<br />
+&nbsp; </span><span class="default">exec</span><span class="keyword">(</span><span class="string">"renice +</span><span class="default">$priority</span><span class="string"> "</span><span class="keyword">.</span><span class="default">getmypid</span><span class="keyword">());<br />
+}<br />
+<br />
+</span><span class="comment">//You also need a shutdown function if you don't want to leave your http deamons with a modified priority<br />
+</span><span class="keyword">function </span><span class="default">exit_func</span><span class="keyword">(){<br />
+&nbsp; </span><span class="comment">// Restore priority<br />
+&nbsp; </span><span class="default">proc_nice</span><span class="keyword">(</span><span class="default">0</span><span class="keyword">);<br />
+}<br />
+<br />
+</span><span class="default">register_shutdown_function</span><span class="keyword">(</span><span class="string">'exit_func'</span><span class="keyword">);<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="function.proc-get-status.html">proc_get_status</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.proc-open.html">proc_open</a></div>
  <div class="up"><a href="ref.exec.html">Program execution Functions</a></div>

@@ -226,7 +226,442 @@ Array
  </div>
 
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="104133""></a>
+  <div class="note">
+   <strong class="user">Chris</strong>
+   <a href="#104133" class="date">25-May-2011 08:26</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Sometimes, there's not a server-based/PHP method for getting local time. You have to get it from the client via Javascript.&nbsp; Google "bitbucket timezone detect" and use it to set a "local_timezone" cookie that you can read from PHP and set via date_default_timezone_set()</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="87916""></a>
+  <div class="note">
+   <strong class="user">dev2 at heesakkers dot info</strong>
+   <a href="#87916" class="date">30-Dec-2008 07:23</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Be aware that tm_yday also starts with 0 for the first of January.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="79037""></a>
+  <div class="note">
+   <strong class="user">hutch120 at gmail dot com</strong>
+   <a href="#79037" class="date">07-Nov-2007 05:23</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+The functions shown below may help implement a timezones library.<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+</span><span class="comment">/**<br />
+&nbsp;* This function returns the server timezone offset in seconds<br />
+&nbsp;* e.g. Sydney in DST returns +1100 / 100 * 60 * 60 = 39600<br />
+&nbsp;*/<br />
+</span><span class="keyword">function </span><span class="default">getServerTimeZoneOffset</span><span class="keyword">() <br />
+{<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">date</span><span class="keyword">(</span><span class="string">"O"</span><span class="keyword">) / </span><span class="default">100 </span><span class="keyword">* </span><span class="default">60 </span><span class="keyword">* </span><span class="default">60</span><span class="keyword">; </span><span class="comment">// Seconds from GMT<br />
+</span><span class="keyword">}<br />
+<br />
+</span><span class="comment">/**<br />
+&nbsp;* This function returns the local timezone offset in seconds<br />
+&nbsp;*&nbsp;&nbsp; where getTimeZone($userid) returns a timezone see below. <br />
+&nbsp;*/<br />
+</span><span class="keyword">function </span><span class="default">getLocalTimeZoneOffset</span><span class="keyword">(</span><span class="default">$userid</span><span class="keyword">) <br />
+{<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">getTimeZone</span><span class="keyword">(</span><span class="default">$userid</span><span class="keyword">) / </span><span class="default">100 </span><span class="keyword">* </span><span class="default">60 </span><span class="keyword">* </span><span class="default">60</span><span class="keyword">; </span><span class="comment">// Seconds from user GMT<br />
+</span><span class="keyword">}<br />
+<br />
+</span><span class="comment">// Now converting a server timestamp to a local timestamp is very simple.<br />
+<br />
+/**<br />
+&nbsp;* Will take a timestamp and minus off Server GMT and add on user GMT seconds <br />
+&nbsp;* thereby making a local timestamp from a server timestamp.<br />
+&nbsp;*/<br />
+</span><span class="keyword">function </span><span class="default">getLocalTimestampFromServerTimestamp</span><span class="keyword">(</span><span class="default">$userid</span><span class="keyword">, </span><span class="default">$timestamp</span><span class="keyword">) <br />
+{<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">$timestamp </span><span class="keyword">- </span><span class="default">getServerTimeZoneOffset</span><span class="keyword">() + </span><span class="default">getLocalTimeZoneOffset</span><span class="keyword">( </span><span class="default">$userid </span><span class="keyword">);<br />
+}<br />
+<br />
+</span><span class="comment">//And getting the local time from a user entered date is a useful function.<br />
+//Combine the next two functions to achieve just that.<br />
+<br />
+</span><span class="keyword">function </span><span class="default">getLocalTimestampFromDateTime</span><span class="keyword">(</span><span class="default">$userid</span><span class="keyword">, </span><span class="default">$datetime</span><span class="keyword">)<br />
+{<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$timestamp </span><span class="keyword">= </span><span class="default">strtotime</span><span class="keyword">(</span><span class="default">$datetime</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">getLocalTimestampFromServerTimestamp</span><span class="keyword">(</span><span class="default">$userid</span><span class="keyword">, </span><span class="default">$timestamp</span><span class="keyword">);<br />
+}<br />
+<br />
+</span><span class="comment">/**<br />
+&nbsp;* If you have a localized timestamp and just want to get the date format use this.<br />
+&nbsp;*/<br />
+</span><span class="keyword">function </span><span class="default">getFormattedDate</span><span class="keyword">(</span><span class="default">$userid</span><span class="keyword">, </span><span class="default">$timestamp</span><span class="keyword">)<br />
+{<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">date</span><span class="keyword">(</span><span class="string">"Y-m-d H:i:s " </span><span class="keyword">. </span><span class="default">getTimeZone</span><span class="keyword">(</span><span class="default">$userid</span><span class="keyword">), </span><span class="default">$timestamp</span><span class="keyword">);<br />
+}<br />
+<br />
+</span><span class="comment">/**<br />
+&nbsp;* Returns a timezone in the format +0000 <br />
+&nbsp;*&nbsp; e.g. Perth in DST returns +0900<br />
+&nbsp;*/<br />
+</span><span class="keyword">function </span><span class="default">getTimeZone</span><span class="keyword">(</span><span class="default">$userid</span><span class="keyword">)<br />
+{<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="string">"+0900"</span><span class="keyword">; </span><span class="comment">// Perth in DST<br />
+</span><span class="keyword">}<br />
+<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="71632""></a>
+  <div class="note">
+   <strong class="user">anomie at users dot sourceforge dot net</strong>
+   <a href="#71632" class="date">08-Dec-2006 12:22</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Here is another version of gmtime(). This one doesn't involve messing around with timezones at all. Note that PHP4 users should check out the array_combine page for replacements for that function.<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">function </span><span class="default">gmtime</span><span class="keyword">(</span><span class="default">$ts</span><span class="keyword">=</span><span class="default">null</span><span class="keyword">, </span><span class="default">$is_associative</span><span class="keyword">=</span><span class="default">false</span><span class="keyword">){<br />
+&nbsp;&nbsp;&nbsp; if(</span><span class="default">is_null</span><span class="keyword">(</span><span class="default">$ts</span><span class="keyword">)) </span><span class="default">$ts</span><span class="keyword">=</span><span class="default">time</span><span class="keyword">();<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$t</span><span class="keyword">=</span><span class="default">array_map</span><span class="keyword">(</span><span class="string">'intval'</span><span class="keyword">,</span><span class="default">explode</span><span class="keyword">(</span><span class="string">','</span><span class="keyword">,</span><span class="default">gmdate</span><span class="keyword">(</span><span class="string">'s,i,H,d,m,Y,w,z,I'</span><span class="keyword">,</span><span class="default">$ts</span><span class="keyword">)));<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$t</span><span class="keyword">[</span><span class="default">4</span><span class="keyword">]--;<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$t</span><span class="keyword">[</span><span class="default">5</span><span class="keyword">]-=</span><span class="default">1900</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; if(!</span><span class="default">$is_associative</span><span class="keyword">) return </span><span class="default">$t</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">array_combine</span><span class="keyword">(array(</span><span class="string">'tm_sec'</span><span class="keyword">,</span><span class="string">'tm_min'</span><span class="keyword">,</span><span class="string">'tm_hour'</span><span class="keyword">,</span><span class="string">'tm_mday'</span><span class="keyword">,</span><span class="string">'tm_mon'</span><span class="keyword">,<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span class="string">'tm_year'</span><span class="keyword">,</span><span class="string">'tm_wday'</span><span class="keyword">,</span><span class="string">'tm_yday'</span><span class="keyword">,</span><span class="string">'tm_isdst'</span><span class="keyword">),<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span class="default">$t</span><span class="keyword">);<br />
+}<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="46891""></a>
+  <div class="note">
+   <strong class="user">matt (at) roughest [d0t] net</strong>
+   <a href="#46891" class="date">26-Oct-2004 10:49</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Be careful with the "tm_isdst" element. It may be incorrect for certain localities where daylight savings time is not observed (for example most of Saskatchewan in Canada).</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="40183""></a>
+  <div class="note">
+   <strong class="user">tony at speedscript dot com</strong>
+   <a href="#40183" class="date">24-Feb-2004 10:35</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Date select box for the current week, or whatever week you give for an offset (in seconds), returns the string you can echo with the select box named $name:<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">function </span><span class="default">week_date_selectbox</span><span class="keyword">( </span><span class="default">$time_offset</span><span class="keyword">, </span><span class="default">$name </span><span class="keyword">)<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp;&nbsp; if( isset( </span><span class="default">$time_offset </span><span class="keyword">) )<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$t </span><span class="keyword">= </span><span class="default">time</span><span class="keyword">() + </span><span class="default">$time_offset</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; else<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$t </span><span class="keyword">= </span><span class="default">time</span><span class="keyword">();<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$wday </span><span class="keyword">= array(</span><span class="string">"Sun "</span><span class="keyword">,</span><span class="string">"Mon "</span><span class="keyword">,</span><span class="string">"Tue "</span><span class="keyword">,</span><span class="string">"Wed "</span><span class="keyword">,</span><span class="string">"Thu "</span><span class="keyword">,</span><span class="string">"Fri "</span><span class="keyword">,</span><span class="string">"Sat "</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$mon </span><span class="keyword">= array(</span><span class="string">"Jan "</span><span class="keyword">,</span><span class="string">"Feb "</span><span class="keyword">,</span><span class="string">"Mar "</span><span class="keyword">,</span><span class="string">"Apr "</span><span class="keyword">,</span><span class="string">"May "</span><span class="keyword">,</span><span class="string">"Jun "</span><span class="keyword">,</span><span class="string">"Jul "</span><span class="keyword">,</span><span class="string">"Aug "</span><span class="keyword">,</span><span class="string">"Sep "</span><span class="keyword">,</span><span class="string">"Oct "</span><span class="keyword">,</span><span class="string">"Nov "</span><span class="keyword">,</span><span class="string">"Dec "</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$mybox </span><span class="keyword">= </span><span class="string">"&lt;select name=\"</span><span class="default">$name</span><span class="string">\"&gt;\n"</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; for(</span><span class="default">$ii </span><span class="keyword">= </span><span class="default">0</span><span class="keyword">; </span><span class="default">$ii </span><span class="keyword">&gt; -</span><span class="default">6</span><span class="keyword">; </span><span class="default">$ii</span><span class="keyword">--)<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$tarr </span><span class="keyword">= </span><span class="default">localtime</span><span class="keyword">( </span><span class="default">$t </span><span class="keyword">+ </span><span class="default">$ii </span><span class="keyword">* </span><span class="default">86400</span><span class="keyword">, </span><span class="default">1 </span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if( </span><span class="default">$tarr</span><span class="keyword">[</span><span class="string">"tm_wday"</span><span class="keyword">] == </span><span class="default">0 </span><span class="keyword">)<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// found Sunday, now make the week's strings<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">for(</span><span class="default">$jj </span><span class="keyword">= </span><span class="default">0</span><span class="keyword">; </span><span class="default">$jj </span><span class="keyword">&lt; </span><span class="default">7</span><span class="keyword">; </span><span class="default">$jj</span><span class="keyword">++)<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$tarr </span><span class="keyword">= </span><span class="default">localtime</span><span class="keyword">( </span><span class="default">$t </span><span class="keyword">+ (</span><span class="default">$jj </span><span class="keyword">+ </span><span class="default">$ii</span><span class="keyword">) * </span><span class="default">86400</span><span class="keyword">, </span><span class="default">1 </span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$mybox </span><span class="keyword">.= </span><span class="default">sprintf</span><span class="keyword">( </span><span class="string">" &lt;option value=\"%04d-%02d-%02d\"&gt;%s%s%d %d&lt;/option&gt;\n"</span><span class="keyword">,<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; ((int)</span><span class="default">$tarr</span><span class="keyword">[</span><span class="string">"tm_year"</span><span class="keyword">] + </span><span class="default">1900</span><span class="keyword">),<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$tarr</span><span class="keyword">[</span><span class="string">"tm_mon"</span><span class="keyword">],<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; ((int)</span><span class="default">$tarr</span><span class="keyword">[</span><span class="string">"tm_mday"</span><span class="keyword">] + </span><span class="default">1</span><span class="keyword">),<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$wday</span><span class="keyword">[</span><span class="default">$tarr</span><span class="keyword">[</span><span class="string">"tm_wday"</span><span class="keyword">]],<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$mon</span><span class="keyword">[</span><span class="default">$tarr</span><span class="keyword">[</span><span class="string">"tm_mon"</span><span class="keyword">]],<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; (int)</span><span class="default">$tarr</span><span class="keyword">[</span><span class="string">"tm_mday"</span><span class="keyword">],<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; ((int)</span><span class="default">$tarr</span><span class="keyword">[</span><span class="string">"tm_year"</span><span class="keyword">] + </span><span class="default">1900</span><span class="keyword">) );<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; break;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$mybox </span><span class="keyword">.= </span><span class="string">"&lt;/select&gt;\n"</span><span class="keyword">;<br />
+<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">$mybox</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="29651""></a>
+  <div class="note">
+   <strong class="user">!!emiliop!! AT nospam dot dorial dot com</strong>
+   <a href="#29651" class="date">20-Feb-2003 12:12</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+To calculate the delta between the local time and UTC:<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">function </span><span class="default">tzdelta </span><span class="keyword">( </span><span class="default">$iTime </span><span class="keyword">= </span><span class="default">0 </span><span class="keyword">)<br />
+{<br />
+&nbsp;&nbsp;&nbsp; if ( </span><span class="default">0 </span><span class="keyword">== </span><span class="default">$iTime </span><span class="keyword">) { </span><span class="default">$iTime </span><span class="keyword">= </span><span class="default">time</span><span class="keyword">(); }<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$ar </span><span class="keyword">= </span><span class="default">localtime </span><span class="keyword">( </span><span class="default">$iTime </span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$ar</span><span class="keyword">[</span><span class="default">5</span><span class="keyword">] += </span><span class="default">1900</span><span class="keyword">; </span><span class="default">$ar</span><span class="keyword">[</span><span class="default">4</span><span class="keyword">]++;<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$iTztime </span><span class="keyword">= </span><span class="default">gmmktime </span><span class="keyword">( </span><span class="default">$ar</span><span class="keyword">[</span><span class="default">2</span><span class="keyword">], </span><span class="default">$ar</span><span class="keyword">[</span><span class="default">1</span><span class="keyword">], </span><span class="default">$ar</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">],<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$ar</span><span class="keyword">[</span><span class="default">4</span><span class="keyword">], </span><span class="default">$ar</span><span class="keyword">[</span><span class="default">3</span><span class="keyword">], </span><span class="default">$ar</span><span class="keyword">[</span><span class="default">5</span><span class="keyword">], </span><span class="default">$ar</span><span class="keyword">[</span><span class="default">8</span><span class="keyword">] );<br />
+&nbsp;&nbsp;&nbsp; return ( </span><span class="default">$iTztime </span><span class="keyword">- </span><span class="default">$iTime </span><span class="keyword">);<br />
+}<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+So if your system is in DST, tzdelta should return -18000 (five hours less).</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="27516""></a>
+  <div class="note">
+   <strong class="user">arch at archtech dot yi dot org</strong>
+   <a href="#27516" class="date">09-Dec-2002 01:25</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+You can implement gmtime quote simply.<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">function </span><span class="default">GetTZOffset</span><span class="keyword">() { <br />
+&nbsp; </span><span class="default">$Offset </span><span class="keyword">= </span><span class="default">date</span><span class="keyword">(</span><span class="string">"O"</span><span class="keyword">, </span><span class="default">0</span><span class="keyword">);<br />
+&nbsp;&nbsp; <br />
+&nbsp; </span><span class="default">$Parity </span><span class="keyword">= </span><span class="default">$Offset </span><span class="keyword">&lt; </span><span class="default">0 </span><span class="keyword">? -</span><span class="default">1 </span><span class="keyword">: </span><span class="default">1</span><span class="keyword">;<br />
+&nbsp; </span><span class="default">$Offset </span><span class="keyword">= </span><span class="default">$Parity </span><span class="keyword">* </span><span class="default">$Offset</span><span class="keyword">;<br />
+&nbsp; </span><span class="default">$Offset </span><span class="keyword">= (</span><span class="default">$Offset </span><span class="keyword">- (</span><span class="default">$Offset </span><span class="keyword">% </span><span class="default">100</span><span class="keyword">))/</span><span class="default">100</span><span class="keyword">*</span><span class="default">60 </span><span class="keyword">+ </span><span class="default">$Offset </span><span class="keyword">% </span><span class="default">100</span><span class="keyword">;<br />
+<br />
+&nbsp; return </span><span class="default">$Parity </span><span class="keyword">* </span><span class="default">$Offset</span><span class="keyword">;<br />
+}<br />
+<br />
+</span><span class="default">$TZOffset </span><span class="keyword">= </span><span class="default">GetTZOffset</span><span class="keyword">();<br />
+<br />
+</span><span class="default">$t_time </span><span class="keyword">= </span><span class="default">time</span><span class="keyword">()-</span><span class="default">$TZOffset</span><span class="keyword">*</span><span class="default">60</span><span class="keyword">; </span><span class="comment">#Counter adjust for localtime()<br />
+</span><span class="default">$t_arr </span><span class="keyword">= </span><span class="default">localtime</span><span class="keyword">(</span><span class="default">$t_time</span><span class="keyword">);<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="21987""></a>
+  <div class="note">
+   <strong class="user">static</strong>
+   <a href="#21987" class="date">02-Jun-2002 07:57</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Be VERY CAREFUL with the return of this function if you intend to feed it straight back into mktime(). localtime() returns months as 0 to 11, but mktime uses months as 1 to 12. The resulting off-by-one errors can be ... unpleasant.<br />
+<br />
+You Have Been Warned.<br />
+<br />
+Wade.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="21035""></a>
+  <div class="note">
+   <strong class="user">jausions-N at SPAM-hotmail dot com</strong>
+   <a href="#21035" class="date">26-Apr-2002 12:42</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I strongly suggest to do all of your developments using GMT/UTC dates &amp; times.<br />
+<br />
+I provide here a version of a 'gmttime' function. Save it in a separate file and include it when needed.<br />
+<br />
+Please post a correction here if you find it not working for your timezone (with or without daylight saving time.). <br />
+<br />
+Thanks &amp; Enjoy.<br />
+-----------------------------------------------<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="comment">//<br />
+// File: gmttime.php<br />
+//<br />
+// Description:<br />
+//&nbsp; &nbsp; Implements the gmttime function if missing from the PHP distribution<br />
+//<br />
+<br />
+// Verifies that the function isn't already implemented<br />
+</span><span class="keyword">if (</span><span class="default">function_exists</span><span class="keyword">(</span><span class="default">gmttime</span><span class="keyword">))<br />
+&nbsp;&nbsp;&nbsp; return;<br />
+<br />
+</span><span class="comment">//<br />
+// Function: gmttime<br />
+//<br />
+// Description:<br />
+//&nbsp;&nbsp; Returns an array indexed as by the localtime() function:<br />
+//&nbsp;&nbsp; - 0 or tm_sec: Seconds<br />
+//&nbsp;&nbsp; - 1 or tm_min: Minutes<br />
+//&nbsp;&nbsp; - 2 or tm_hour: Hour<br />
+//&nbsp;&nbsp; - 3 or tm_mday: Day of the month<br />
+//&nbsp;&nbsp; - 4 or tm_mon: Month of the year<br />
+//&nbsp;&nbsp; - 5 or tm_year: Years since 1900<br />
+//&nbsp;&nbsp; - 6 or tm_wday: Day of the week<br />
+//&nbsp;&nbsp; - 7 or tm_yday: Day of the year<br />
+//&nbsp;&nbsp; - 8 or tm_isdst: Is daylight saving time in effect<br />
+//&nbsp;&nbsp; - tm_fyear: Full year (only available with associative array)<br />
+//<br />
+// Arguments:<br />
+//&nbsp;&nbsp; - Timestamp<br />
+//&nbsp;&nbsp; - Boolean (for associative indexing: 0 = off, 1 = on)<br />
+//<br />
+// Returns:<br />
+//&nbsp;&nbsp; An array on success,<br />
+//&nbsp;&nbsp; false on failure.<br />
+//<br />
+</span><span class="keyword">function </span><span class="default">gmttime</span><span class="keyword">(</span><span class="default">$dTimestamp </span><span class="keyword">= </span><span class="string">''</span><span class="keyword">, </span><span class="default">$bAssoc </span><span class="keyword">= </span><span class="default">0</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// Evaluate how much difference there is between local and GTM/UTC<br />
+&nbsp;&nbsp;&nbsp; // Don't forget to correct for daylight saving time...<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$aNow </span><span class="keyword">= </span><span class="default">localtime</span><span class="keyword">();<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$iDelta </span><span class="keyword">= </span><span class="default">gmmktime</span><span class="keyword">(</span><span class="default">1</span><span class="keyword">, </span><span class="default">1</span><span class="keyword">, </span><span class="default">1</span><span class="keyword">, </span><span class="default">1</span><span class="keyword">, </span><span class="default">1</span><span class="keyword">, </span><span class="default">1970</span><span class="keyword">, </span><span class="default">$aNow</span><span class="keyword">[</span><span class="default">8</span><span class="keyword">]) - </span><span class="default">mktime</span><span class="keyword">(</span><span class="default">1</span><span class="keyword">, </span><span class="default">1</span><span class="keyword">, </span><span class="default">1</span><span class="keyword">, </span><span class="default">1</span><span class="keyword">, </span><span class="default">1</span><span class="keyword">, </span><span class="default">1970</span><span class="keyword">, </span><span class="default">$aNow</span><span class="keyword">[</span><span class="default">8</span><span class="keyword">]);<br />
+<br />
+&nbsp;&nbsp;&nbsp; if (!</span><span class="default">$bAssoc</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if (</span><span class="default">$dTimestamp </span><span class="keyword">== </span><span class="string">''</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">localtime</span><span class="keyword">(</span><span class="default">time</span><span class="keyword">() - </span><span class="default">$iDelta</span><span class="keyword">, </span><span class="default">0</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; } else {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">localtime</span><span class="keyword">(</span><span class="default">$dTimestamp </span><span class="keyword">- </span><span class="default">$iDelta</span><span class="keyword">, </span><span class="default">0</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; } else {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// For associative array, add full year index<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">if (</span><span class="default">$dTimestamp </span><span class="keyword">== </span><span class="string">''</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$aGMTTime </span><span class="keyword">= </span><span class="default">localtime</span><span class="keyword">(</span><span class="default">time</span><span class="keyword">() - </span><span class="default">$iDelta</span><span class="keyword">, </span><span class="default">1</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; } else {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$aGMTTime </span><span class="keyword">= </span><span class="default">localtime</span><span class="keyword">(</span><span class="default">$dTimestamp </span><span class="keyword">- </span><span class="default">$iDelta</span><span class="keyword">, </span><span class="default">1</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$aGMTTime</span><span class="keyword">[</span><span class="string">'tm_fyear'</span><span class="keyword">] = </span><span class="default">$aGMTTime</span><span class="keyword">[</span><span class="string">'tm_year'</span><span class="keyword">] + </span><span class="default">1900</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">$aGMTTime</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; } </span><span class="comment">// End [IF] return associative array?<br />
+</span><span class="keyword">} </span><span class="comment">// End [FUNCTION] gmttime<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="20336""></a>
+  <div class="note">
+   <strong class="user">bens_nospam at benjamindsmith dot com</strong>
+   <a href="#20336" class="date">30-Mar-2002 06:29</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+You must keep in mind the difference between your server's time and your client's time! <br />
+<br />
+I ran into this one when I wrote a calendar-based reminder system with SMS messaging - guys back east were always getting their messages late. (!?!) <br />
+<br />
+I wrote two functions as wrappers for date handling, ServerTime() and ClientTime() that take client time (integer timestamp) and translate to server time and vice-versa based on config file settings. <br />
+<br />
+Needless to say, you CANNOT FORGET THIS.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="14936""></a>
+  <div class="note">
+   <strong class="user">test at test dot de</strong>
+   <a href="#14936" class="date">21-Aug-2001 10:05</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+to set up berlin time it could look like this:<br />
+<br />
+<span class="default">&lt;?php<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">print </span><span class="string">"&lt;HTML&gt;&lt;body&gt;&lt;pre&gt;"</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">setlocale</span><span class="keyword">( </span><span class="string">"LC_ALL"</span><span class="keyword">, </span><span class="string">"de_DE" </span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">putenv</span><span class="keyword">( </span><span class="string">"PHP_TZ=Europe/Berlin" </span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$now </span><span class="keyword">= </span><span class="default">time</span><span class="keyword">();<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">print_r</span><span class="keyword">( </span><span class="default">localtime</span><span class="keyword">(</span><span class="default">time</span><span class="keyword">(),</span><span class="default">true</span><span class="keyword">) );<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">print_r</span><span class="keyword">( </span><span class="default">getdate</span><span class="keyword">() );<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; print </span><span class="default">date</span><span class="keyword">(</span><span class="string">"H:i:s"</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; print </span><span class="default">date</span><span class="keyword">(</span><span class="string">"T"</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; <br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="14203""></a>
+  <div class="note">
+   <strong class="user">verdy_p at wanadoo dot fr</strong>
+   <a href="#14203" class="date">22-Jul-2001 05:23</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+The corresponding function call to get the GMT time is not specified here. Only local time is reported, according to the current TZ environment setting.<br />
+One could try to use putenv() to set another timezone temporarily, however when running PHP in safe mode, putenv() is disabled and cannot be used in scripts.<br />
+However it's possible to simulate gmttime() by using localtime() and by transforming the results in the returned array.<br />
+The biggest problem with this function is that it is using an OS-dependent and localtime() function which is also depending on the standard C library implementation (some of them, do not support accurate locales). The second problem is that localtime() does not return an index specifying the local timezone offset, so transforming this date to UTC will become very ugly. Some systems support the gmtime() C function call, some don't. To get the timezone, some C libraries provide a global _timezone variable, some provide it as a macro that use a function call, some do not provide any variable, and one must deduce it by interpreting the TZ environment. This is too much ugly for PHP.<br />
+<br />
+PHP should be extended by adding support to gmttime() with the same parameters, but the returned array should include additional indices to store the timezone offsets in seconds and names for both standard time and DST, for example:<br />
+&nbsp;[tz_offset_std] = 3600,<br />
+&nbsp;[tz_offset_dst]= 7200,<br />
+&nbsp;[tz_name_std] = 'CET', (GMT+01:00)<br />
+&nbsp;[tz_name_dst] = 'CEDT'. (GMT+02:00)<br />
+Or for the international, locale-independant, Zulu time (also known as UCT or simply UT), returned by gmtime():<br />
+&nbsp;[tz_offset] = 0,<br />
+&nbsp;[tz_offset_dst]= 0,<br />
+&nbsp;[tz_name] = 'Z',<br />
+&nbsp;[tz_name_dst] = 'Z'.<br />
+<br />
+But it's much easier to use PHP's date() and gmdate() to make such transformations.<br />
+<br />
+Beware of DST rules! In the southern hemisphere, standard time still occurs during winter, but the southern Winter is in June, not in December ! Use the tm_isdst indicator to know which timezone to display or interpret !</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="function.idate.html">idate</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.microtime.html">microtime</a></div>
  <div class="up"><a href="ref.datetime.html">Date/Time Functions</a></div>

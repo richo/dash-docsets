@@ -222,6 +222,270 @@
 
 <h2>Table of Contents</h2><ul class="chunklist chunklist_reference"><li><a href="soapclient.call.html">SoapClient::__call</a> â€” Calls a SOAP function (deprecated)</li><li><a href="soapclient.construct.html">SoapClient::__construct</a> â€” SoapClient constructor</li><li><a href="soapclient.dorequest.html">SoapClient::__doRequest</a> â€” Performs a SOAP request</li><li><a href="soapclient.getfunctions.html">SoapClient::__getFunctions</a> â€” Returns list of available SOAP functions</li><li><a href="soapclient.getlastrequest.html">SoapClient::__getLastRequest</a> â€” Returns last SOAP request</li><li><a href="soapclient.getlastrequestheaders.html">SoapClient::__getLastRequestHeaders</a> â€” Returns the SOAP headers from the last request</li><li><a href="soapclient.getlastresponse.html">SoapClient::__getLastResponse</a> â€” Returns last SOAP response</li><li><a href="soapclient.getlastresponseheaders.html">SoapClient::__getLastResponseHeaders</a> â€” Returns the SOAP headers from the last response</li><li><a href="soapclient.gettypes.html">SoapClient::__getTypes</a> â€” Returns a list of SOAP types</li><li><a href="soapclient.setcookie.html">SoapClient::__setCookie</a> â€” The __setCookie purpose</li><li><a href="soapclient.setlocation.html">SoapClient::__setLocation</a> â€” Sets the location of the Web service to use</li><li><a href="soapclient.setsoapheaders.html">SoapClient::__setSoapHeaders</a> â€” Sets SOAP headers for subsequent calls</li><li><a href="soapclient.soapcall.html">SoapClient::__soapCall</a> â€” Calls a SOAP function</li><li><a href="soapclient.soapclient.html">SoapClient::SoapClient</a> â€” SoapClient constructor</li></ul>
 </div>
+<div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="105226""></a>
+  <div class="note">
+   <strong class="user">egiardina at badatmath dot com</strong>
+   <a href="#105226" class="date">03-Aug-2011 06:05</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+This one drove me nuts... if you are connecting to a web service run on Cassini, (Visual Studio's web server) from php, you may not be able to call web service functions or load a WSDL out-of-the-box. <br />
+<br />
+My set up is that I am using xampp on my windows development machine, and also using Visual Studio's built in web-server. I built a web service in visual studio. I wrote a simple PHP script, running under xampp, to access this service, so the two projects can 'talk' to each other. What I found was the WSDL was never loaded. <br />
+<br />
+So I moved the WSDL local to the PHP file and accessed it directly. Still no calls. Turns out, PHP's SoapClient seems to have a problem with 'localhost' as a web service endpoint. So I hand-edited the web service endpoint URL to read 127.0.0.1 instead of localhost, and Voila! Web Service calls work:<br />
+<br />
+Here is my PHP, now working:<br />
+<span class="default">&lt;?php<br />
+$client </span><span class="keyword">= new </span><span class="default">SoapClient</span><span class="keyword">(</span><span class="string">"<a href="http://localhost/code/soap.wsdl" rel="nofollow" target="_blank">http://localhost/code/soap.wsdl</a>"</span><span class="keyword">);<br />
+</span><span class="default">$something </span><span class="keyword">=&nbsp; </span><span class="default">$client</span><span class="keyword">-&gt;</span><span class="default">HelloWorld</span><span class="keyword">(array());<br />
+echo </span><span class="default">$something</span><span class="keyword">-&gt;</span><span class="default">HelloWorldResult</span><span class="keyword">;<br />
+die();<br />
+<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+Here is my modified WSDL:<br />
+&nbsp; &lt;wsdl:service name="MyService"&gt;<br />
+&nbsp;&nbsp;&nbsp; &lt;wsdl:port name="MyServiceSoap" binding="tns:MyServiceSoap"&gt;<br />
+&nbsp;&nbsp; &nbsp;&nbsp; &lt;soap:address location="<a href="http://127.0.0.1:55274/MyService/MyService.asmx" rel="nofollow" target="_blank">http://127.0.0.1:55274/MyService/MyService.asmx</a>" /&gt;<br />
+....<br />
+<br />
+&nbsp;&nbsp;&nbsp; &lt;/wsdl:port&gt;</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="104688""></a>
+  <div class="note">
+   <strong class="user">stepan dot zarubin at gmail dot com</strong>
+   <a href="#104688" class="date">30-Jun-2011 11:51</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Well, this example works fine:<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">try {&nbsp; <br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$x </span><span class="keyword">= @new </span><span class="default">SoapClient</span><span class="keyword">(</span><span class="string">"non-existent.wsdl"</span><span class="keyword">);&nbsp; <br />
+} catch (</span><span class="default">Exception $e</span><span class="keyword">) {&nbsp; <br />
+&nbsp;&nbsp;&nbsp; echo </span><span class="default">$e</span><span class="keyword">-&gt;</span><span class="default">getMessage</span><span class="keyword">();<br />
+} <br />
+</span><span class="default">?&gt;<br />
+</span><br />
+Just make sure use NEW with @.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="104046""></a>
+  <div class="note">
+   <strong class="user">tlk</strong>
+   <a href="#104046" class="date">19-May-2011 06:35</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Make sure to prefix constructor calls with @ and catch SoapFault exceptions, otherwise you risk having the php interpreter exit/die on simple network issues.<br />
+<br />
+Robust sample code by Rasmus from <a href="http://bugs.php.net/bug.php?id=47584" rel="nofollow" target="_blank">http://bugs.php.net/bug.php?id=47584</a><br />
+<br />
+<span class="default">&lt;?php&nbsp; <br />
+</span><span class="keyword">try {&nbsp; <br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$x </span><span class="keyword">= @new </span><span class="default">SoapClient</span><span class="keyword">(</span><span class="string">"non-existent.wsdl"</span><span class="keyword">,array(</span><span class="string">"exceptions" </span><span class="keyword">=&gt; </span><span class="default">1</span><span class="keyword">));&nbsp; <br />
+} catch (</span><span class="default">SoapFault $E</span><span class="keyword">) {&nbsp; <br />
+&nbsp;&nbsp;&nbsp; echo </span><span class="default">$E</span><span class="keyword">-&gt;</span><span class="default">faultstring</span><span class="keyword">; <br />
+}&nbsp; <br />
+echo </span><span class="string">"ok\n"</span><span class="keyword">;<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="102839""></a>
+  <div class="note">
+   <strong class="user">jjlopez</strong>
+   <a href="#102839" class="date">09-Mar-2011 11:36</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+If you are making soap calls in WSDL mode , and the address of your web service includes a port different from 80 (like <a href="http://my_ip_address:8080//service.asmx?wsdl" rel="nofollow" target="_blank">http://my_ip_address:8080//service.asmx?wsdl</a>), the WSDL file is fetched correctly, but all subsequent requests are made without any port in the host field. This causes a SoapFault exception when trying to call any of the serviceâ€™s methods.<br />
+<br />
+You need to redefine the soapClient class and force the port in each call.<br />
+<br />
+See this example:<br />
+<br />
+<a href="http://www.victorstanciu.ro/php-soapclient-port-bug-workaround/" rel="nofollow" target="_blank">http://www.victorstanciu.ro/php-soapclient-port-bug-workaround/</a></span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="102503""></a>
+  <div class="note">
+   <strong class="user">hugues at zonereseau dot com</strong>
+   <a href="#102503" class="date">17-Feb-2011 09:17</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+When you need to connect to services requiring to send extra header use this method.<br />
+<br />
+Here how we can to it with PHP and SoapClient<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">class </span><span class="default">exampleChannelAdvisorAuth<br />
+</span><span class="keyword">{<br />
+&nbsp;&nbsp;&nbsp; public </span><span class="default">$DeveloperKey</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; public </span><span class="default">$Password</span><span class="keyword">;<br />
+<br />
+&nbsp;&nbsp;&nbsp; public function </span><span class="default">__construct</span><span class="keyword">(</span><span class="default">$key</span><span class="keyword">, </span><span class="default">$pass</span><span class="keyword">)<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">DeveloperKey </span><span class="keyword">= </span><span class="default">$key</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">Password </span><span class="keyword">= </span><span class="default">$pass</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+}<br />
+<br />
+</span><span class="default">$devKey&nbsp; &nbsp; &nbsp; &nbsp; </span><span class="keyword">= </span><span class="string">""</span><span class="keyword">;<br />
+</span><span class="default">$password&nbsp; &nbsp; </span><span class="keyword">= </span><span class="string">""</span><span class="keyword">;<br />
+</span><span class="default">$accountId&nbsp; &nbsp; </span><span class="keyword">= </span><span class="string">""</span><span class="keyword">;<br />
+<br />
+</span><span class="comment">// Create the SoapClient instance<br />
+</span><span class="default">$url&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">= </span><span class="string">""</span><span class="keyword">;<br />
+</span><span class="default">$client&nbsp; &nbsp;&nbsp; </span><span class="keyword">= new </span><span class="default">SoapClient</span><span class="keyword">(</span><span class="default">$url</span><span class="keyword">, array(</span><span class="string">"trace" </span><span class="keyword">=&gt; </span><span class="default">1</span><span class="keyword">, </span><span class="string">"exception" </span><span class="keyword">=&gt; </span><span class="default">0</span><span class="keyword">));<br />
+<br />
+</span><span class="comment">// Create the header<br />
+</span><span class="default">$auth&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">= new </span><span class="default">ChannelAdvisorAuth</span><span class="keyword">(</span><span class="default">$devKey</span><span class="keyword">, </span><span class="default">$password</span><span class="keyword">);<br />
+</span><span class="default">$header&nbsp; &nbsp;&nbsp; </span><span class="keyword">= new </span><span class="default">SoapHeader</span><span class="keyword">(</span><span class="string">"<a href="http://www.example.com/webservices/" rel="nofollow" target="_blank">http://www.example.com/webservices/</a>"</span><span class="keyword">, </span><span class="string">"APICredentials"</span><span class="keyword">, </span><span class="default">$auth</span><span class="keyword">, </span><span class="default">false</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">// Call wsdl function<br />
+</span><span class="default">$result </span><span class="keyword">= </span><span class="default">$client</span><span class="keyword">-&gt;</span><span class="default">__soapCall</span><span class="keyword">(</span><span class="string">"DeleteMarketplaceAd"</span><span class="keyword">, array(<br />
+&nbsp;&nbsp;&nbsp; </span><span class="string">"DeleteMarketplaceAd" </span><span class="keyword">=&gt; array(<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="string">"accountID"&nbsp; &nbsp; &nbsp; &nbsp; </span><span class="keyword">=&gt; </span><span class="default">$accountId</span><span class="keyword">,<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="string">"marketplaceAdID"&nbsp; &nbsp; </span><span class="keyword">=&gt; </span><span class="string">"9938745"&nbsp; &nbsp; &nbsp; &nbsp; </span><span class="comment">// The ads ID<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">)<br />
+), </span><span class="default">NULL</span><span class="keyword">, </span><span class="default">$header</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">// Echo the result<br />
+</span><span class="keyword">echo </span><span class="string">"&lt;pre&gt;"</span><span class="keyword">.</span><span class="default">print_r</span><span class="keyword">(</span><span class="default">$result</span><span class="keyword">, </span><span class="default">true</span><span class="keyword">).</span><span class="string">"&lt;/pre&gt;"</span><span class="keyword">;<br />
+if(</span><span class="default">$result</span><span class="keyword">-&gt;</span><span class="default">DeleteMarketplaceAdResult</span><span class="keyword">-&gt;</span><span class="default">Status </span><span class="keyword">== </span><span class="string">"Success"</span><span class="keyword">)<br />
+{<br />
+&nbsp;&nbsp;&nbsp; echo </span><span class="string">"Item deleted!"</span><span class="keyword">;<br />
+}<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="102041""></a>
+  <div class="note">
+   <strong class="user">jeffmixpute</strong>
+   <a href="#102041" class="date">24-Jan-2011 03:15</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Simple php client and server:<br />
+<br />
+Client:<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+</span><span class="comment">// bind SOAP/Client.php -&gt; path of the php file<br />
+</span><span class="keyword">require_once </span><span class="string">"SOAP/Client.php"</span><span class="keyword">;<br />
+<br />
+</span><span class="comment">// URI delivered to web service<br />
+</span><span class="default">$sc </span><span class="keyword">= new </span><span class="default">SOAP_Client</span><span class="keyword">(</span><span class="string">"<a href="http://localhost/SOAP/Server.php" rel="nofollow" target="_blank">http://localhost/SOAP/Server.php</a>"</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">// start call function to use the function of the Web Service<br />
+</span><span class="default">$parameter </span><span class="keyword">= array();<br />
+</span><span class="default">$result </span><span class="keyword">= </span><span class="default">$sc</span><span class="keyword">-&gt;</span><span class="default">call </span><span class="keyword">(</span><span class="string">"now"</span><span class="keyword">, &amp;</span><span class="default">$parameter</span><span class="keyword">, </span><span class="string">"urn:TimeSerivce"</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">// print result<br />
+</span><span class="keyword">print </span><span class="default">$result</span><span class="keyword">.</span><span class="string">"\n"</span><span class="keyword">;<br />
+<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+Server:<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+</span><span class="comment">// bind PEAR::SOAP <br />
+</span><span class="keyword">require_once </span><span class="string">"SOAP/Server.php"</span><span class="keyword">;<br />
+</span><span class="default">$skiptrace </span><span class="keyword">=&amp; </span><span class="default">PEAR</span><span class="keyword">::</span><span class="default">getStaticProperty</span><span class="keyword">(</span><span class="string">'PEAR_Error'</span><span class="keyword">, </span><span class="string">'skiptrace'</span><span class="keyword">);<br />
+</span><span class="default">$skiptrace </span><span class="keyword">= </span><span class="default">true</span><span class="keyword">;<br />
+<br />
+</span><span class="comment">// program service class<br />
+</span><span class="keyword">class </span><span class="default">TimeSerivce </span><span class="keyword">{<br />
+&nbsp;&nbsp;&nbsp; public function </span><span class="default">now </span><span class="keyword">() {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">date_default_timezone_set</span><span class="keyword">(</span><span class="string">"Europe/Berlin"</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return (</span><span class="default">date </span><span class="keyword">(</span><span class="string">"H:i"</span><span class="keyword">));<br />
+&nbsp;&nbsp;&nbsp; }<br />
+}<br />
+<br />
+</span><span class="comment">// web service classs develop<br />
+</span><span class="default">$service </span><span class="keyword">= new </span><span class="default">TimeSerivce</span><span class="keyword">();<br />
+<br />
+</span><span class="comment">// server develop<br />
+</span><span class="default">$ss </span><span class="keyword">= new </span><span class="default">SOAP_SERVER</span><span class="keyword">();<br />
+<br />
+</span><span class="comment">// assing the name to the service<br />
+</span><span class="default">$ss</span><span class="keyword">-&gt;</span><span class="default">addObjectMap</span><span class="keyword">(</span><span class="default">$service</span><span class="keyword">, </span><span class="string">"urn:TimeSerivce"</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">// Einstellung, dass POST-Daten an den Service weiter gegeben werden<br />
+// preferene to forword POST data to the service<br />
+</span><span class="default">$ss</span><span class="keyword">-&gt;</span><span class="default">service </span><span class="keyword">(</span><span class="default">$HTTP_RAW_POST_DATA</span><span class="keyword">);<br />
+<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="91634""></a>
+  <div class="note">
+   <strong class="user">fourat dot zouari at tritux dot com</strong>
+   <a href="#91634" class="date">20-Jun-2009 08:08</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+In addition to the KeepAlive trick which is a "server-side" modification, on the "client side" default_socket_timeout should be increased from its default value (60) when you deal with ~slow SOAP servers.<br />
+As for the KeepAlive, if creating a new separate vhost for the soap api is not possible, you can add this to your existing vhost: BrowserMatch "^PHP-SOAP" nokeepalive<br />
+where PHP-SOAP is the agent name of your soap client, if you dont know what agent name your client use, just checkout the access.log of your apache.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="90631""></a>
+  <div class="note">
+   <strong class="user">peter dot hansen at fastit dot net</strong>
+   <a href="#90631" class="date">01-May-2009 06:57</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+When you get errors like:<br />
+"Fatal error: Uncaught SoapFault exception: [HTTP] Error Fetching http headers in" <br />
+after a few (time intensive) SOAP-Calls, check your webserver-config. <br />
+<br />
+Sometimes the webservers "KeepAlive"-Setting tends to result in this error. For SOAP-Environments I recommend you to disable KeepAlive. <br />
+<br />
+Hint: It might be tricky to create a dedicated vhost for your SOAP-Gateways and disable keepalive just for this vhost because for normal webpages Keepalive is a nice speed-boost.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
 <hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="function.use-soap-error-handler.html">use_soap_error_handler</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="soapclient.call.html">SoapClient::__call</a></div>

@@ -177,7 +177,401 @@ Fatal error: Class &#039;Foobar\InexistentClass&#039; not found in ...
  </div>
 
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="102180""></a>
+  <div class="note">
+   <strong class="user">(delphists) at (apollo) dot (lv)</strong>
+   <a href="#102180" class="date">01-Feb-2011 01:57</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+When using spl_autoload_register() with class methods, it might seem that it can use only public methods, though it can use private/protected methods as well, if registered from inside the class:<br />
+<span class="default">&lt;?php<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">class </span><span class="default">ClassAutoloader </span><span class="keyword">{<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; public function </span><span class="default">__construct</span><span class="keyword">() {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">spl_autoload_register</span><span class="keyword">(array(</span><span class="default">$this</span><span class="keyword">, </span><span class="string">'loader'</span><span class="keyword">));<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; private function </span><span class="default">loader</span><span class="keyword">(</span><span class="default">$className</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; echo </span><span class="string">'Trying to load '</span><span class="keyword">, </span><span class="default">$className</span><span class="keyword">, </span><span class="string">' via '</span><span class="keyword">, </span><span class="default">__METHOD__</span><span class="keyword">, </span><span class="string">"()\n"</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; include </span><span class="default">$className </span><span class="keyword">. </span><span class="string">'.php'</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$autoloader </span><span class="keyword">= new </span><span class="default">ClassAutoloader</span><span class="keyword">();<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$obj </span><span class="keyword">= new </span><span class="default">Class1</span><span class="keyword">();<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$obj </span><span class="keyword">= new </span><span class="default">Class2</span><span class="keyword">();<br />
+<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+Output:<br />
+--------<br />
+Trying to load Class1 via ClassAutoloader::loader()<br />
+Class1::__construct()<br />
+Trying to load Class2 via ClassAutoloader::loader()<br />
+Class2::__construct()</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="98746""></a>
+  <div class="note">
+   <strong class="user">anthon at piwik dot org</strong>
+   <a href="#98746" class="date">04-Jul-2010 09:02</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Think twice about throwing an exception from a registered autoloader.<br />
+<br />
+If you have multiple autoloaders registered, and one (or more) throws an exception before a later autoloader loads the class, stacked exceptions are thrown (and must be caught) even though the class was loaded successfully.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="96952""></a>
+  <div class="note">
+   <strong class="user">sebastian dot krebs at kingcrunch dot de</strong>
+   <a href="#96952" class="date">24-Mar-2010 10:54</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+It seems, that&nbsp; spl_autoload tests, if the class exists, after calling every registered loader. So it breaks the chain, if the class exists and will not call the other loaders<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">function </span><span class="default">a </span><span class="keyword">(</span><span class="default">$c</span><span class="keyword">) {<br />
+&nbsp; echo </span><span class="string">"a\n"</span><span class="keyword">;<br />
+&nbsp; class </span><span class="default">Bla </span><span class="keyword">{} </span><span class="comment">// Usually "include 'path/to/file.php';"<br />
+</span><span class="keyword">}<br />
+function </span><span class="default">b </span><span class="keyword">(</span><span class="default">$c</span><span class="keyword">) {<br />
+&nbsp; echo </span><span class="string">"b\n"</span><span class="keyword">;<br />
+}<br />
+</span><span class="default">spl_autoload_register</span><span class="keyword">(</span><span class="string">'a'</span><span class="keyword">);<br />
+</span><span class="default">spl_autoload_register</span><span class="keyword">(</span><span class="string">'b'</span><span class="keyword">);<br />
+<br />
+</span><span class="default">$c </span><span class="keyword">= new </span><span class="default">Bla</span><span class="keyword">();<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="96804""></a>
+  <div class="note">
+   <strong class="user">Anonymous</strong>
+   <a href="#96804" class="date">16-Mar-2010 08:30</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Be careful using this function on case sensitive file systems.<br />
+<br />
+<span class="default">&lt;?php<br />
+spl_autoload_extensions</span><span class="keyword">(</span><span class="string">'.php'</span><span class="keyword">);<br />
+</span><span class="default">spl_autoload_register</span><span class="keyword">();<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+I develop on OS X and everything was working fine. But when releasing to my linux server, none of my class files were loading. I had to lowercase all my filenames, because calling a class "DatabaseObject" would try including "databaseobject.php", instead of "DatabaseObject.php"<br />
+<br />
+I think i'll go back to using the slower __autoload() function, just so i can keep my class files readable</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="95456""></a>
+  <div class="note">
+   <strong class="user">rayro at gmx dot de</strong>
+   <a href="#95456" class="date">04-Jan-2010 03:14</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+It is never a good idea and a unconscienable concept to create the classes in the autoload function via eval. <br />
+It should be a nice feature with these Exception, but i think anyone is able to handle it without this method although. Atm i dont realize for what this is good for...<br />
+<br />
+As i might note, class_exists() will ever define the classes u only want to check for existance, and will therefor ever return true:<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">function </span><span class="default">EvalIsEvil</span><span class="keyword">(</span><span class="default">$class</span><span class="keyword">) {<br />
+&nbsp; eval(</span><span class="string">'class '</span><span class="keyword">.</span><span class="default">$className</span><span class="keyword">.</span><span class="string">'{}'</span><span class="keyword">);<br />
+}<br />
+</span><span class="default">spl_autoload_register</span><span class="keyword">(</span><span class="string">'EvalIsEvil'</span><span class="keyword">);<br />
+if (</span><span class="default">class_exists</span><span class="keyword">(</span><span class="default">$s</span><span class="keyword">=</span><span class="string">"IsMyModuleHere"</span><span class="keyword">)) {<br />
+&nbsp; </span><span class="comment">// this is no module, but get there with eval()...<br />
+&nbsp; </span><span class="keyword">return new </span><span class="default">$s</span><span class="keyword">();<br />
+}<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="92514""></a>
+  <div class="note">
+   <strong class="user">a dot schaffhirt at sedna-soft dot de</strong>
+   <a href="#92514" class="date">27-Jul-2009 07:05</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Good news for PHP 5.3 users with namespaced classes:<br />
+<br />
+When you create a subfolder structure matching the namespaces of the containing classes, you will never even have to define an autoloader.<br />
+<br />
+<span class="default">&lt;?php<br />
+&nbsp;&nbsp;&nbsp; spl_autoload_extensions</span><span class="keyword">(</span><span class="string">".php"</span><span class="keyword">); </span><span class="comment">// comma-separated list<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">spl_autoload_register</span><span class="keyword">();<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+It is recommended to use only one extension for all classes. PHP (more exactly spl_autoload) does the rest for you and is even quicker than a semantically equal self-defined autoload function like this one:<br />
+<br />
+<span class="default">&lt;?php<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">function </span><span class="default">my_autoload </span><span class="keyword">(</span><span class="default">$pClassName</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; include(</span><span class="default">__DIR__ </span><span class="keyword">. </span><span class="string">"/" </span><span class="keyword">. </span><span class="default">$pClassName </span><span class="keyword">. </span><span class="string">".php"</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">spl_autoload_register</span><span class="keyword">(</span><span class="string">"my_autoload"</span><span class="keyword">);<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+I compared them with the following setting: There are 10 folders, each having 10 subfolders, each having 10 subfolders, each containing 10 classes.<br />
+<br />
+To load and instantiate these 1000 classes (parameterless no-action constructor), the user-definded autoload function approach took 50ms longer in average than the spl_autoload function in a series of 10 command-line calls for each approach.<br />
+<br />
+I made this benchmark to ensure that I don't recommend something that could be called "nice, but slow" later.<br />
+<br />
+Best regards,</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="90907""></a>
+  <div class="note">
+   <strong class="user">djames at dealerspan dot com</strong>
+   <a href="#90907" class="date">15-May-2009 09:39</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+This behaves more like a QUEUE than a STACK, since the registry is accessed in FIFO order. The autoloaders are attempted in the order they are defined.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="84086""></a>
+  <div class="note">
+   <strong class="user">mailinglist dot php at hydras-world dot com</strong>
+   <a href="#84086" class="date">26-Jun-2008 04:07</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+The automatic generation of classes can be further improved to cater for files that don't actually contain the class they were supposed to contain:<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+</span><span class="comment">// code to set include_path...<br />
+<br />
+</span><span class="keyword">class </span><span class="default">AutoloadException </span><span class="keyword">extends </span><span class="default">Exception </span><span class="keyword">{ }<br />
+<br />
+class </span><span class="default">AutoloadClass </span><span class="keyword">{<br />
+<br />
+&nbsp;&nbsp;&nbsp; public static function </span><span class="default">autoload</span><span class="keyword">(</span><span class="default">$sClassName</span><span class="keyword">) {<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; @include_once(</span><span class="default">$sClassName </span><span class="keyword">. </span><span class="string">'.class.php'</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// does the class requested actually exist now?<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">if (</span><span class="default">class_exists</span><span class="keyword">(</span><span class="default">$sClassName</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// yes, we're done<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">return;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// no, create a new one!<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">eval(</span><span class="string">"class </span><span class="default">$sClassName</span><span class="string"> {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; function __construct() {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; throw new AutoloadException('Class </span><span class="default">$sClassName</span><span class="string"> not found');<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; static function __callstatic(\$m, \$args) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; throw new AutoloadException('Class </span><span class="default">$sClassName</span><span class="string"> not found');<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }"</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+}<br />
+<br />
+</span><span class="default">spl_autoload_register</span><span class="keyword">(array(</span><span class="string">'AutoloadClass'</span><span class="keyword">, </span><span class="string">'autoload'</span><span class="keyword">));<br />
+<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+You might be able to expand the example above to automatically generate interfaces too...<br />
+<br />
+Enjoy!<br />
+<br />
+DominicC</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="78122""></a>
+  <div class="note">
+   <strong class="user">stanlemon at mac dot com</strong>
+   <a href="#78122" class="date">28-Sep-2007 10:20</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Editorial note: The appropriate PHP bug that requests behavior this function emulates is <a href="http://bugs.php.net/bug.php?id=42823 . This function does NOT work if there has been an array($obj, " rel="nofollow" target="_blank">http://bugs.php.net/bug.php?id=42823 . This function does NOT work if there has been an array($obj, </a>'nonStaticMethod') registered in the autoload stack--while the autoload will be removed, it will be re-registered incorrectly.<br />
+<br />
+The spl_autoload_register() method registers functions in its stack in the order that spl_autoload_register() was called, and subsequently if you want an autoload function to override previous autoload functions you will either need to unregister the previous ones or change the order of the autoload stack.<br />
+<br />
+For example, say in your default implementation of an autoload function you throw an exception if the class cannot be found, or perhaps a fatal error.&nbsp; Later on in your code you add a second implementation of an autoload function which will load a library that the previous method would fail on.&nbsp; This will not call the second autoloader method first, but rather will continue to error out on the first method.<br />
+<br />
+As previously mentioned, you can unregister the existing autoloader that errors out, or you can create a mechanism for unregistering and re-registering the autoloaders in the order you want.<br />
+<br />
+Here is a sample/example of how you might consider re-registering autoloaders so that the newest autoloader is called first, and the oldest last:<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+</span><span class="comment">// Editorial notes: Small bug and compatibility fixes<br />
+// added to the function<br />
+<br />
+</span><span class="keyword">function </span><span class="default">spl_autoload_preregister</span><span class="keyword">( </span><span class="default">$autoload </span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// No functions currently in the stack.<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">if ( (</span><span class="default">$funcs </span><span class="keyword">= </span><span class="default">spl_autoload_functions</span><span class="keyword">()) === </span><span class="default">false </span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">spl_autoload_register</span><span class="keyword">(</span><span class="default">$autoload</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; } else {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// Unregister existing autoloaders...<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$compat </span><span class="keyword">=<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">version_compare</span><span class="keyword">(</span><span class="default">PHP_VERSION</span><span class="keyword">, </span><span class="string">'5.1.2'</span><span class="keyword">, </span><span class="string">'&lt;='</span><span class="keyword">) &amp;&amp;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">version_compare</span><span class="keyword">(</span><span class="default">PHP_VERSION</span><span class="keyword">, </span><span class="string">'5.1.0'</span><span class="keyword">, </span><span class="string">'&gt;='</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; foreach (</span><span class="default">$funcs </span><span class="keyword">as </span><span class="default">$func</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if (</span><span class="default">is_array</span><span class="keyword">(</span><span class="default">$func</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// :TRICKY: There are some compatibility issues and some<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; // places where we need to error out<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$reflector </span><span class="keyword">= new </span><span class="default">ReflectionMethod</span><span class="keyword">(</span><span class="default">$func</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">], </span><span class="default">$func</span><span class="keyword">[</span><span class="default">1</span><span class="keyword">]);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if (!</span><span class="default">$reflector</span><span class="keyword">-&gt;</span><span class="default">isStatic</span><span class="keyword">()) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; throw new </span><span class="default">Exception</span><span class="keyword">(</span><span class="string">'<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; This function is not compatible<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; with non-static object methods due to PHP Bug #44144.<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; '</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// Suprisingly, spl_autoload_register supports the<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; // Class::staticMethod callback format, although call_user_func doesn't<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">if (</span><span class="default">$compat</span><span class="keyword">) </span><span class="default">$func </span><span class="keyword">= </span><span class="default">implode</span><span class="keyword">(</span><span class="string">'::'</span><span class="keyword">, </span><span class="default">$func</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">spl_autoload_unregister</span><span class="keyword">(</span><span class="default">$func</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// Register the new one, thus putting it at the front of the stack...<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">spl_autoload_register</span><span class="keyword">(</span><span class="default">$autoload</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// Now, go back and re-register all of our old ones.<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">foreach (</span><span class="default">$funcs </span><span class="keyword">as </span><span class="default">$func</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">spl_autoload_register</span><span class="keyword">(</span><span class="default">$func</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; }<br />
+}<br />
+<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+Note: I have not tested this for overhead, so I am not 100% sure what the performance implication of the above example are.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="73146""></a>
+  <div class="note">
+   <strong class="user">harvey dot NO_SPAM dot robin at gmail dot com</strong>
+   <a href="#73146" class="date">10-Feb-2007 05:54</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+This function is smart enough not to add the same loader twice.&nbsp; This seems to work for all of the different loader formats.&nbsp; Example:<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">class </span><span class="default">ALoader<br />
+</span><span class="keyword">{<br />
+&nbsp; static function </span><span class="default">load</span><span class="keyword">(</span><span class="default">$class</span><span class="keyword">) { return </span><span class="default">true</span><span class="keyword">; }<br />
+}<br />
+<br />
+function </span><span class="default">anotherLoader</span><span class="keyword">(</span><span class="default">$class</span><span class="keyword">) {<br />
+&nbsp; return </span><span class="default">true</span><span class="keyword">;<br />
+}<br />
+<br />
+</span><span class="default">$F </span><span class="keyword">= new </span><span class="default">ALoader</span><span class="keyword">;<br />
+<br />
+</span><span class="default">spl_autoload_register</span><span class="keyword">(array(</span><span class="string">'ALoader'</span><span class="keyword">, </span><span class="string">'load'</span><span class="keyword">));<br />
+</span><span class="default">spl_autoload_register</span><span class="keyword">(array(</span><span class="string">'ALoader'</span><span class="keyword">, </span><span class="string">'load'</span><span class="keyword">));<br />
+</span><span class="default">spl_autoload_register</span><span class="keyword">(array(</span><span class="default">$F</span><span class="keyword">, </span><span class="string">'load'</span><span class="keyword">));<br />
+</span><span class="default">spl_autoload_register</span><span class="keyword">(</span><span class="string">'anotherLoader'</span><span class="keyword">);<br />
+</span><span class="default">spl_autoload_register</span><span class="keyword">(</span><span class="string">'anotherLoader'</span><span class="keyword">);<br />
+</span><span class="default">var_dump</span><span class="keyword">(</span><span class="default">spl_autoload_functions</span><span class="keyword">());<br />
+<br />
+</span><span class="comment">/*<br />
+&nbsp;* Results on PHP5.2 CLI, linux.<br />
+&nbsp;* array(2) {<br />
+&nbsp;*&nbsp; [0]=&gt;<br />
+&nbsp;*&nbsp; array(2) {<br />
+&nbsp;*&nbsp; &nbsp; [0]=&gt;<br />
+&nbsp;*&nbsp; &nbsp; string(7) "ALoader"<br />
+&nbsp;*&nbsp; &nbsp; [1]=&gt;<br />
+&nbsp;*&nbsp; &nbsp; string(4) "load"<br />
+&nbsp;*&nbsp; }<br />
+&nbsp;*&nbsp; [1]=&gt;<br />
+&nbsp;*&nbsp; string(13) "anotherLoader"<br />
+&nbsp;* }<br />
+&nbsp;*/<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="71155""></a>
+  <div class="note">
+   <strong class="user">florent at mediagonale dot com</strong>
+   <a href="#71155" class="date">14-Nov-2006 01:19</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+If your autoload function is a class method, you can call spl_autoload_register with an array specifying the class and the method to run.<br />
+<br />
+* You can use a static method :<br />
+<span class="default">&lt;?php<br />
+<br />
+</span><span class="keyword">class </span><span class="default">MyClass </span><span class="keyword">{<br />
+&nbsp; public static function </span><span class="default">autoload</span><span class="keyword">(</span><span class="default">$className</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// ...<br />
+&nbsp; </span><span class="keyword">}<br />
+}<br />
+<br />
+</span><span class="default">spl_autoload_register</span><span class="keyword">(array(</span><span class="string">'MyClass'</span><span class="keyword">, </span><span class="string">'autoload'</span><span class="keyword">));<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+* Or you can use an instance :<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">class </span><span class="default">MyClass </span><span class="keyword">{<br />
+&nbsp; public function </span><span class="default">autoload</span><span class="keyword">(</span><span class="default">$className</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// ...<br />
+&nbsp; </span><span class="keyword">}<br />
+}<br />
+<br />
+</span><span class="default">$instance </span><span class="keyword">= new </span><span class="default">MyClass</span><span class="keyword">();<br />
+</span><span class="default">spl_autoload_register</span><span class="keyword">(array(</span><span class="default">$instance</span><span class="keyword">, </span><span class="string">'autoload'</span><span class="keyword">));<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="function.spl-autoload-functions.html">spl_autoload_functions</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.spl-autoload-unregister.html">spl_autoload_unregister</a></div>
  <div class="up"><a href="ref.spl.html">SPL Functions</a></div>

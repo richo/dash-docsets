@@ -159,7 +159,793 @@
   </p>
  </div>
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="105173""></a>
+  <div class="note">
+   <strong class="user">antonio dot daeliminare dot bonifati at gmail dot com</strong>
+   <a href="#105173" class="date">01-Aug-2011 05:57</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+If you want to be interoperable with other PKCS #7 padding implementations, like the Legion of the Bouncy Castle Java cryptography APIs, you should always pad, that is a 8-byte (block size) padding should be added, even if not necessary:<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+</span><span class="keyword">function </span><span class="default">encrypt</span><span class="keyword">(</span><span class="default">$str</span><span class="keyword">, </span><span class="default">$key</span><span class="keyword">)<br />
+{<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$block </span><span class="keyword">= </span><span class="default">mcrypt_get_block_size</span><span class="keyword">(</span><span class="string">'des'</span><span class="keyword">, </span><span class="string">'ecb'</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$pad </span><span class="keyword">= </span><span class="default">$block </span><span class="keyword">- (</span><span class="default">strlen</span><span class="keyword">(</span><span class="default">$str</span><span class="keyword">) % </span><span class="default">$block</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$str </span><span class="keyword">.= </span><span class="default">str_repeat</span><span class="keyword">(</span><span class="default">chr</span><span class="keyword">(</span><span class="default">$pad</span><span class="keyword">), </span><span class="default">$pad</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">mcrypt_encrypt</span><span class="keyword">(</span><span class="default">MCRYPT_DES</span><span class="keyword">, </span><span class="default">$key</span><span class="keyword">, </span><span class="default">$str</span><span class="keyword">, </span><span class="default">MCRYPT_MODE_ECB</span><span class="keyword">);<br />
+}<br />
+<br />
+function </span><span class="default">decrypt</span><span class="keyword">(</span><span class="default">$str</span><span class="keyword">, </span><span class="default">$key</span><span class="keyword">)<br />
+{&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$str </span><span class="keyword">= </span><span class="default">mcrypt_decrypt</span><span class="keyword">(</span><span class="default">MCRYPT_DES</span><span class="keyword">, </span><span class="default">$key</span><span class="keyword">, </span><span class="default">$str</span><span class="keyword">, </span><span class="default">MCRYPT_MODE_ECB</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$block </span><span class="keyword">= </span><span class="default">mcrypt_get_block_size</span><span class="keyword">(</span><span class="string">'des'</span><span class="keyword">, </span><span class="string">'ecb'</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$pad </span><span class="keyword">= </span><span class="default">ord</span><span class="keyword">(</span><span class="default">$str</span><span class="keyword">[(</span><span class="default">$len </span><span class="keyword">= </span><span class="default">strlen</span><span class="keyword">(</span><span class="default">$str</span><span class="keyword">)) - </span><span class="default">1</span><span class="keyword">]);<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">substr</span><span class="keyword">(</span><span class="default">$str</span><span class="keyword">, </span><span class="default">0</span><span class="keyword">, </span><span class="default">strlen</span><span class="keyword">(</span><span class="default">$str</span><span class="keyword">) - </span><span class="default">$pad</span><span class="keyword">);<br />
+}<br />
+<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="105166""></a>
+  <div class="note">
+   <strong class="user">antonio dot daeliminare dot bonifati at gmail dot com</strong>
+   <a href="#105166" class="date">01-Aug-2011 03:24</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Simple DES-ECB binary string encryption/decryption (no initialization vector). I implement PKCS7-padding the right way. This is better than Mcrypt default zero-padding.<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+</span><span class="keyword">function </span><span class="default">encrypt</span><span class="keyword">(</span><span class="default">$str</span><span class="keyword">, </span><span class="default">$key</span><span class="keyword">)<br />
+{<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment"># Add PKCS7 padding.<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$block </span><span class="keyword">= </span><span class="default">mcrypt_get_block_size</span><span class="keyword">(</span><span class="string">'des'</span><span class="keyword">, </span><span class="string">'ecb'</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; if ((</span><span class="default">$pad </span><span class="keyword">= </span><span class="default">$block </span><span class="keyword">- (</span><span class="default">strlen</span><span class="keyword">(</span><span class="default">$str</span><span class="keyword">) % </span><span class="default">$block</span><span class="keyword">)) &lt; </span><span class="default">$block</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">$str </span><span class="keyword">.= </span><span class="default">str_repeat</span><span class="keyword">(</span><span class="default">chr</span><span class="keyword">(</span><span class="default">$pad</span><span class="keyword">), </span><span class="default">$pad</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">mcrypt_encrypt</span><span class="keyword">(</span><span class="default">MCRYPT_DES</span><span class="keyword">, </span><span class="default">$key</span><span class="keyword">, </span><span class="default">$str</span><span class="keyword">, </span><span class="default">MCRYPT_MODE_ECB</span><span class="keyword">);<br />
+}<br />
+<br />
+function </span><span class="default">decrypt</span><span class="keyword">(</span><span class="default">$str</span><span class="keyword">, </span><span class="default">$key</span><span class="keyword">)<br />
+{<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$str </span><span class="keyword">= </span><span class="default">mcrypt_decrypt</span><span class="keyword">(</span><span class="default">MCRYPT_DES</span><span class="keyword">, </span><span class="default">$key</span><span class="keyword">, </span><span class="default">$str</span><span class="keyword">, </span><span class="default">MCRYPT_MODE_ECB</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment"># Strip padding out.<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$block </span><span class="keyword">= </span><span class="default">mcrypt_get_block_size</span><span class="keyword">(</span><span class="string">'des'</span><span class="keyword">, </span><span class="string">'ecb'</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$pad </span><span class="keyword">= </span><span class="default">ord</span><span class="keyword">(</span><span class="default">$str</span><span class="keyword">[(</span><span class="default">$len </span><span class="keyword">= </span><span class="default">strlen</span><span class="keyword">(</span><span class="default">$str</span><span class="keyword">)) - </span><span class="default">1</span><span class="keyword">]);<br />
+&nbsp;&nbsp;&nbsp; if (</span><span class="default">$pad </span><span class="keyword">&amp;&amp; </span><span class="default">$pad </span><span class="keyword">&lt; </span><span class="default">$block </span><span class="keyword">&amp;&amp; </span><span class="default">preg_match</span><span class="keyword">(<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="string">'/' </span><span class="keyword">. </span><span class="default">chr</span><span class="keyword">(</span><span class="default">$pad</span><span class="keyword">) . </span><span class="string">'{' </span><span class="keyword">. </span><span class="default">$pad </span><span class="keyword">. </span><span class="string">'}$/'</span><span class="keyword">, </span><span class="default">$str<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">)<br />
+&nbsp;&nbsp; &nbsp; &nbsp; ) {<br />
+&nbsp;&nbsp; &nbsp;&nbsp; return </span><span class="default">substr</span><span class="keyword">(</span><span class="default">$str</span><span class="keyword">, </span><span class="default">0</span><span class="keyword">, </span><span class="default">strlen</span><span class="keyword">(</span><span class="default">$str</span><span class="keyword">) - </span><span class="default">$pad</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">$str</span><span class="keyword">;<br />
+}<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+I am using these functions to encrypt query strings:<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">const </span><span class="default">KEY </span><span class="keyword">= </span><span class="string">"\xc8\xd9\xb9\x06\xd9\xe8\xc9\xd2"</span><span class="keyword">; </span><span class="comment"># Change this<br />
+<br />
+# Send encrypted GET query string<br />
+</span><span class="default">$query </span><span class="keyword">= </span><span class="default">encrypt</span><span class="keyword">(</span><span class="string">'field1=value1&amp;field2=value2'</span><span class="keyword">, </span><span class="default">KEY</span><span class="keyword">);<br />
+echo </span><span class="string">'&lt;a href="script.php?' </span><span class="keyword">. </span><span class="default">urlencode</span><span class="keyword">(</span><span class="default">$query</span><span class="keyword">) . </span><span class="string">'"&gt;link&lt;/a&gt;'</span><span class="keyword">;<br />
+<br />
+</span><span class="comment"># Receive encrypted GET query string<br />
+</span><span class="default">$query </span><span class="keyword">= </span><span class="default">decrypt</span><span class="keyword">(</span><span class="default">urldecode</span><span class="keyword">(</span><span class="default">$_SERVER</span><span class="keyword">[</span><span class="string">'QUERY_STRING'</span><span class="keyword">]), </span><span class="default">KEY</span><span class="keyword">);<br />
+</span><span class="default">parse_str</span><span class="keyword">(</span><span class="default">$query</span><span class="keyword">, </span><span class="default">$query</span><span class="keyword">);<br />
+</span><span class="default">$query </span><span class="keyword">= </span><span class="default">filter_var_array</span><span class="keyword">(</span><span class="default">$query</span><span class="keyword">, array(...));<br />
+<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="103943""></a>
+  <div class="note">
+   <strong class="user">Anonymous</strong>
+   <a href="#103943" class="date">12-May-2011 07:03</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+In the other notes there are some misconceptions about crypto and the IV, especially for CBC mode.<br />
+<br />
+The most important point: Encryption DOES NOT provide any proof of data integrity or authentication WHATSOEVER. If you need to be sure that the data is secret and not tampered with, you need to encrypt THEN use a keyed HMAC.<br />
+<br />
+For CBC mode, the IV DOES NOT need to be secret. It can be sent along with the plaintext. It needs to be UNIQUE and RANDOM. So that every message is encrypted with a different IV.<br />
+<br />
+The best way to generate an IV is to use mcrypt_create_iv().<br />
+<br />
+Keys must be binary, not ASCII. To create a key from a password:<br />
+<br />
+<span class="default">&lt;?php<br />
+$password </span><span class="keyword">= </span><span class="string">"MyPassword!1!"</span><span class="keyword">;<br />
+</span><span class="default">$aes256Key </span><span class="keyword">= </span><span class="default">hash</span><span class="keyword">(</span><span class="string">"SHA256"</span><span class="keyword">, </span><span class="default">$password</span><span class="keyword">, </span><span class="default">true</span><span class="keyword">); </span><span class="comment">//we want a 32 byte binary blob<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="102428""></a>
+  <div class="note">
+   <strong class="user">das700 at gmail dot com</strong>
+   <a href="#102428" class="date">13-Feb-2011 07:58</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+For anyone that wants PKCS7 compatibility (since PHP default is to use Zeros padding) I've found this to work rather well (and seems binary compatible)<br />
+<span class="default">&lt;?php<br />
+header</span><span class="keyword">(</span><span class="string">"Content-type: text/plain"</span><span class="keyword">);<br />
+function </span><span class="default">addpadding</span><span class="keyword">(</span><span class="default">$string</span><span class="keyword">, </span><span class="default">$blocksize </span><span class="keyword">= </span><span class="default">32</span><span class="keyword">){<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$len </span><span class="keyword">= </span><span class="default">strlen</span><span class="keyword">(</span><span class="default">$string</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$pad </span><span class="keyword">= </span><span class="default">$blocksize </span><span class="keyword">- (</span><span class="default">$len </span><span class="keyword">% </span><span class="default">$blocksize</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$string </span><span class="keyword">.= </span><span class="default">str_repeat</span><span class="keyword">(</span><span class="default">chr</span><span class="keyword">(</span><span class="default">$pad</span><span class="keyword">), </span><span class="default">$pad</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">$string</span><span class="keyword">;<br />
+}<br />
+function </span><span class="default">strippadding</span><span class="keyword">(</span><span class="default">$string</span><span class="keyword">){<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$slast </span><span class="keyword">= </span><span class="default">ord</span><span class="keyword">(</span><span class="default">substr</span><span class="keyword">(</span><span class="default">$string</span><span class="keyword">, -</span><span class="default">1</span><span class="keyword">));<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$slastc </span><span class="keyword">= </span><span class="default">chr</span><span class="keyword">(</span><span class="default">$slast</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$pcheck </span><span class="keyword">= </span><span class="default">substr</span><span class="keyword">(</span><span class="default">$string</span><span class="keyword">, -</span><span class="default">$slast</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; if(</span><span class="default">preg_match</span><span class="keyword">(</span><span class="string">"/</span><span class="default">$slastc</span><span class="string">{"</span><span class="keyword">.</span><span class="default">$slast</span><span class="keyword">.</span><span class="string">"}/"</span><span class="keyword">, </span><span class="default">$string</span><span class="keyword">)){<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$string </span><span class="keyword">= </span><span class="default">substr</span><span class="keyword">(</span><span class="default">$string</span><span class="keyword">, </span><span class="default">0</span><span class="keyword">, </span><span class="default">strlen</span><span class="keyword">(</span><span class="default">$string</span><span class="keyword">)-</span><span class="default">$slast</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">$string</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; } else {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">false</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+}<br />
+function </span><span class="default">keytest</span><span class="keyword">(</span><span class="default">$keyfile </span><span class="keyword">= </span><span class="string">"key.key"</span><span class="keyword">){<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$keyfile </span><span class="keyword">= </span><span class="default">file</span><span class="keyword">(</span><span class="default">$keyfile</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$key </span><span class="keyword">= </span><span class="default">base64_decode</span><span class="keyword">(</span><span class="default">$keyfile</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">]);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$iv </span><span class="keyword">= </span><span class="default">base64_decode</span><span class="keyword">(</span><span class="default">$keyfile</span><span class="keyword">[</span><span class="default">1</span><span class="keyword">]);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$enc </span><span class="keyword">= </span><span class="default">mcrypt_encrypt</span><span class="keyword">(</span><span class="default">MCRYPT_RIJNDAEL_256</span><span class="keyword">, </span><span class="default">$key</span><span class="keyword">, </span><span class="default">addpadding</span><span class="keyword">(</span><span class="string">"Hello World"</span><span class="keyword">), </span><span class="default">MCRYPT_MODE_CBC</span><span class="keyword">, </span><span class="default">$iv</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$dec </span><span class="keyword">= </span><span class="default">strippadding</span><span class="keyword">(</span><span class="default">mcrypt_decrypt</span><span class="keyword">(</span><span class="default">MCRYPT_RIJNDAEL_256</span><span class="keyword">, </span><span class="default">$key</span><span class="keyword">, </span><span class="default">$enc</span><span class="keyword">, </span><span class="default">MCRYPT_MODE_CBC</span><span class="keyword">, </span><span class="default">$iv</span><span class="keyword">));<br />
+&nbsp;&nbsp;&nbsp; echo </span><span class="string">"Encrypted:"</span><span class="keyword">.</span><span class="default">base64_encode</span><span class="keyword">(</span><span class="default">$enc</span><span class="keyword">).</span><span class="string">"\n"</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; echo </span><span class="string">"Decrypted:</span><span class="default">$dec</span><span class="string">"</span><span class="keyword">;<br />
+}<br />
+</span><span class="default">keytest</span><span class="keyword">();<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+The key.key file basically just looks like this<br />
+<br />
+jZjneNba78tqCuB8l8eQrXo4nCs6LmlRMflfjEdnnLg=<br />
+Uty9weAigmbjIwwng3532FJbeXxGJzhl4Ymw9ry6Slc=<br />
+<br />
+And from this it is entirely compatible with C#'s PaddingMode.PKCS7 which I needed for an application I wrote, I hope this helps!</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="101889""></a>
+  <div class="note">
+   <strong class="user">Anonymous</strong>
+   <a href="#101889" class="date">16-Jan-2011 11:40</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I've noticed some people using a-z, A-Z and 0-9 for keys and stating things like "16 characters is a 128-bit key". This isn't true. Using only these characters, you will get at most 6 bits of entropy per chartacter:<br />
+<br />
+log2(26 + 26 + 10) = 5.954196310386876<br />
+<br />
+So you're actually only getting 95 bits of entropy in 16 characters, which is 0.0000000117% of the keyspace you would get if you were using the full range.<br />
+<br />
+In order to get the full entropy from a key using just a-z, A-Z and 0-9 you should multiply your key length by 1.3333 to account for the 2 bits of lost entropy per byte.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="96635""></a>
+  <div class="note">
+   <strong class="user">Robin Leffmann</strong>
+   <a href="#96635" class="date">09-Mar-2010 05:58</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Contrary to what is implied in the mcrypt_encrypt() manual page, as well as the info given regarding the CBC vs CFB modes, mcrypt_encrypt() works just fine for encrypting binary data as well.<br />
+&nbsp;<br />
+A simple example verifies that the decrypted output is binary identical once cut to its original length:<br />
+&nbsp;<br />
+<span class="default">&lt;?php<br />
+<br />
+</span><span class="comment">// 448-bit key (56 bytes) - the only size that mcrypt/php uses for the Blowfish cipher<br />
+// (using a smaller key works just fine, as mcrypt appends \0 to reach proper key-size)<br />
+</span><span class="default">$key </span><span class="keyword">= </span><span class="string">'SADFo92jzVnzSj39IUYGvi6eL8v6RvJH8Cytuiouh547vCytdyUFl76R'</span><span class="keyword">;<br />
+<br />
+</span><span class="comment">// Blowfish/CBC uses an 8-byte IV<br />
+</span><span class="default">$iv </span><span class="keyword">= </span><span class="default">substr</span><span class="keyword">( </span><span class="default">md5</span><span class="keyword">(</span><span class="default">mt_rand</span><span class="keyword">(),</span><span class="default">true</span><span class="keyword">), </span><span class="default">0</span><span class="keyword">, </span><span class="default">8 </span><span class="keyword">);<br />
+<br />
+</span><span class="comment">// do 50 encrypt/decrypt operations on some random data, and verify integrity with md5()<br />
+</span><span class="keyword">for( </span><span class="default">$i </span><span class="keyword">= </span><span class="default">0</span><span class="keyword">; </span><span class="default">$i </span><span class="keyword">&lt; </span><span class="default">50</span><span class="keyword">; </span><span class="default">$i</span><span class="keyword">++ )<br />
+{<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// create a random, binary string of random length<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$size </span><span class="keyword">= </span><span class="default">mt_rand</span><span class="keyword">( </span><span class="default">25000</span><span class="keyword">, </span><span class="default">500000 </span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$c </span><span class="keyword">= </span><span class="default">0</span><span class="keyword">; </span><span class="default">$data </span><span class="keyword">= </span><span class="default">null</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; while( </span><span class="default">$c</span><span class="keyword">++ * </span><span class="default">16 </span><span class="keyword">&lt; </span><span class="default">$size </span><span class="keyword">)<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$data </span><span class="keyword">.= </span><span class="default">md5</span><span class="keyword">( </span><span class="default">mt_rand</span><span class="keyword">(), </span><span class="default">true </span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$data </span><span class="keyword">= </span><span class="default">substr</span><span class="keyword">( </span><span class="default">$data</span><span class="keyword">, </span><span class="default">0</span><span class="keyword">, </span><span class="default">$size </span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$cksum </span><span class="keyword">= </span><span class="default">md5</span><span class="keyword">( </span><span class="default">$data </span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// encrypt using Blowfish/CBC<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$enc </span><span class="keyword">= </span><span class="default">mcrypt_encrypt</span><span class="keyword">( </span><span class="default">MCRYPT_BLOWFISH</span><span class="keyword">, </span><span class="default">$key</span><span class="keyword">, </span><span class="default">$data</span><span class="keyword">, </span><span class="default">MCRYPT_MODE_CBC</span><span class="keyword">, </span><span class="default">$iv </span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp;&nbsp; echo </span><span class="default">$size </span><span class="keyword">. </span><span class="string">' -&gt; ' </span><span class="keyword">. </span><span class="default">strlen</span><span class="keyword">( </span><span class="default">$enc </span><span class="keyword">) . </span><span class="string">' -&gt; '</span><span class="keyword">;<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// decrypt (using same IV - a must for the CBC mode)<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$dec </span><span class="keyword">= </span><span class="default">mcrypt_decrypt</span><span class="keyword">( </span><span class="default">MCRYPT_BLOWFISH</span><span class="keyword">, </span><span class="default">$key</span><span class="keyword">, </span><span class="default">$enc</span><span class="keyword">, </span><span class="default">MCRYPT_MODE_CBC</span><span class="keyword">, </span><span class="default">$iv </span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// cut the output with substr(), NOT by using rtrim() as is suggested in some of<br />
+&nbsp;&nbsp;&nbsp; // the mcrypt manual pages - this is binary data, not plaintext<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">echo ( </span><span class="default">md5</span><span class="keyword">(</span><span class="default">substr</span><span class="keyword">(</span><span class="default">$dec</span><span class="keyword">, </span><span class="default">0</span><span class="keyword">, </span><span class="default">$size</span><span class="keyword">)) == </span><span class="default">$cksum </span><span class="keyword">? </span><span class="string">'ok' </span><span class="keyword">: </span><span class="string">'bad' </span><span class="keyword">) . </span><span class="default">PHP_EOL</span><span class="keyword">;<br />
+}<br />
+<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="96349""></a>
+  <div class="note">
+   <strong class="user">jamesthome at yahoo dot com</strong>
+   <a href="#96349" class="date">22-Feb-2010 10:05</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+If you are encrypting a password and saving it into a MySQL blob field, be aware that MySQL will trim the encoded password while doing the insert.&nbsp; If your encoded password has a trailing space, it will be removed on insert and decrypt will not work correctly.&nbsp; However you use the encrypt function, make sure your encrypted password does not have a trailing space.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="96200""></a>
+  <div class="note">
+   <strong class="user">MiroBasha</strong>
+   <a href="#96200" class="date">13-Feb-2010 09:04</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+For anyone using bouncycastle lite (J2ME), don't forget to use "ZeroBytePadding".<br />
+<br />
+I.e,<br />
+<br />
+cipher = new PaddedBufferedBlockCipher (new CBCBlockCipher(new BlowfishEngine()), new ZeroBytePadding());</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="96180""></a>
+  <div class="note">
+   <strong class="user">Roman Solomatin</strong>
+   <a href="#96180" class="date">12-Feb-2010 08:58</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Keep in mind, that when you use MCRYPT_MODE_CBC then the key and IV must be the same when encrypting and decrypting data. Randomising IV does not work with MCRYPT_MODE_CBC.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="91186""></a>
+  <div class="note">
+   <strong class="user">Jon</strong>
+   <a href="#91186" class="date">28-May-2009 11:42</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+ECB mode has weaknesses. Use CBC mode instead.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="89554""></a>
+  <div class="note">
+   <strong class="user">Kai Sellgren</strong>
+   <a href="#89554" class="date">13-Mar-2009 03:03</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+There are a couple of things to remember when encrypting data.<br />
+<br />
+1) For CBC, the IV must be random, but not unique. It also must not be known.<br />
+2) For CTR, the IV must be unique and not known, but does not need to be random.<br />
+3) The key of the encryption is really important.<br />
+4) The random used in the previous example of mine is not that great. The post was a response to earlier post saying "for those that just want some simple encryption/decryption". Use better random functions. MCRYPT_RAND just uses the built-in linear congruential generator, which is poor.<br />
+5) You may consider using RIJNDAEL-512 or even -1024.<br />
+6) If you want to be able to have NULL bytes in your plaintext, then you should store the plaintext length within the encrypted text to strip out padded NULL bytes.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="87526""></a>
+  <div class="note">
+   <strong class="user">bantam at banime dot com</strong>
+   <a href="#87526" class="date">08-Dec-2008 09:06</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+There's a lot of old information on this page, for those that just want some simple encryption/decryption try this out.<br />
+<br />
+<span class="default">&lt;?php<br />
+&nbsp;&nbsp;&nbsp; define</span><span class="keyword">(</span><span class="string">'SALT'</span><span class="keyword">, </span><span class="string">'whateveryouwant'</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; function </span><span class="default">encrypt</span><span class="keyword">(</span><span class="default">$text</span><span class="keyword">)<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">trim</span><span class="keyword">(</span><span class="default">base64_encode</span><span class="keyword">(</span><span class="default">mcrypt_encrypt</span><span class="keyword">(</span><span class="default">MCRYPT_RIJNDAEL_256</span><span class="keyword">, </span><span class="default">SALT</span><span class="keyword">, </span><span class="default">$text</span><span class="keyword">, </span><span class="default">MCRYPT_MODE_ECB</span><span class="keyword">, </span><span class="default">mcrypt_create_iv</span><span class="keyword">(</span><span class="default">mcrypt_get_iv_size</span><span class="keyword">(</span><span class="default">MCRYPT_RIJNDAEL_256</span><span class="keyword">, </span><span class="default">MCRYPT_MODE_ECB</span><span class="keyword">), </span><span class="default">MCRYPT_RAND</span><span class="keyword">))));<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; function </span><span class="default">decrypt</span><span class="keyword">(</span><span class="default">$text</span><span class="keyword">)<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">trim</span><span class="keyword">(</span><span class="default">mcrypt_decrypt</span><span class="keyword">(</span><span class="default">MCRYPT_RIJNDAEL_256</span><span class="keyword">, </span><span class="default">SALT</span><span class="keyword">, </span><span class="default">base64_decode</span><span class="keyword">(</span><span class="default">$text</span><span class="keyword">), </span><span class="default">MCRYPT_MODE_ECB</span><span class="keyword">, </span><span class="default">mcrypt_create_iv</span><span class="keyword">(</span><span class="default">mcrypt_get_iv_size</span><span class="keyword">(</span><span class="default">MCRYPT_RIJNDAEL_256</span><span class="keyword">, </span><span class="default">MCRYPT_MODE_ECB</span><span class="keyword">), </span><span class="default">MCRYPT_RAND</span><span class="keyword">)));<br />
+&nbsp;&nbsp;&nbsp; }<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+then try out something like:<br />
+<br />
+<span class="default">&lt;?php<br />
+$encryptedmessage </span><span class="keyword">= </span><span class="default">encrypt</span><span class="keyword">(</span><span class="string">"You're my only hope!"</span><span class="keyword">);<br />
+echo </span><span class="default">decrypt</span><span class="keyword">(</span><span class="default">$encryptedmessage</span><span class="keyword">);<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+It should return your original message. You can remove the base64_encode and base64_decode from the functions if you want to save space on the encoded string, I use it to simplify database storage.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="78543""></a>
+  <div class="note">
+   <strong class="user">Anonymous</strong>
+   <a href="#78543" class="date">16-Oct-2007 04:15</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I should mention that ECB mode ignores the IV, so it is misleading to show an example using both MCRYPT_MODE_ECB and an IV (the example in the manual shows the same thing).&nbsp; Also, it's important to know that ECB is useful for random data, but structured data should use a stronger mode like MCRYPT_MODE_CBC<br />
+<br />
+Also, rtrim($decryptedtext, "\0") would be a better option to remove NULL padding than my lazy trim()...</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="78531""></a>
+  <div class="note">
+   <strong class="user">dylan at wedefy dot com</strong>
+   <a href="#78531" class="date">16-Oct-2007 08:27</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I wasn't too impressed with the suggested functions/classes for using mcrypt, so I wrote my own class.&nbsp; The encypted output is base64 encoded so it can be used in URLs, emails, etc.&nbsp; MCRYPT_RIJNDAEL_256 is probably too secure for most uses, using a less secure algorithm should mean that the encryption will be faster and the encrypted output shorter (make sure to update iv_size in mcrypt_create_iv() and key length to match the new algorithm).&nbsp; If you are going to use only 1 passphrase, you should define it inside __construct($this-&gt;securekey) instead of when creating the object. Keep the class in a separate include file which is only readable by your webserver (or whatever needs it) for added security.<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">class </span><span class="default">Cipher </span><span class="keyword">{<br />
+&nbsp;&nbsp;&nbsp; private </span><span class="default">$securekey</span><span class="keyword">, </span><span class="default">$iv</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; function </span><span class="default">__construct</span><span class="keyword">(</span><span class="default">$textkey</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">securekey </span><span class="keyword">= </span><span class="default">hash</span><span class="keyword">(</span><span class="string">'sha256'</span><span class="keyword">,</span><span class="default">$textkey</span><span class="keyword">,</span><span class="default">TRUE</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">iv </span><span class="keyword">= </span><span class="default">mcrypt_create_iv</span><span class="keyword">(</span><span class="default">32</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; function </span><span class="default">encrypt</span><span class="keyword">(</span><span class="default">$input</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">base64_encode</span><span class="keyword">(</span><span class="default">mcrypt_encrypt</span><span class="keyword">(</span><span class="default">MCRYPT_RIJNDAEL_256</span><span class="keyword">, </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">securekey</span><span class="keyword">, </span><span class="default">$input</span><span class="keyword">, </span><span class="default">MCRYPT_MODE_ECB</span><span class="keyword">, </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">iv</span><span class="keyword">));<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; function </span><span class="default">decrypt</span><span class="keyword">(</span><span class="default">$input</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">trim</span><span class="keyword">(</span><span class="default">mcrypt_decrypt</span><span class="keyword">(</span><span class="default">MCRYPT_RIJNDAEL_256</span><span class="keyword">, </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">securekey</span><span class="keyword">, </span><span class="default">base64_decode</span><span class="keyword">(</span><span class="default">$input</span><span class="keyword">), </span><span class="default">MCRYPT_MODE_ECB</span><span class="keyword">, </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">iv</span><span class="keyword">));<br />
+&nbsp;&nbsp;&nbsp; }<br />
+}<br />
+<br />
+</span><span class="default">$cipher </span><span class="keyword">= new </span><span class="default">Cipher</span><span class="keyword">(</span><span class="string">'secret passphrase'</span><span class="keyword">);<br />
+<br />
+</span><span class="default">$encryptedtext </span><span class="keyword">= </span><span class="default">$cipher</span><span class="keyword">-&gt;</span><span class="default">encrypt</span><span class="keyword">(</span><span class="string">"hide me"</span><span class="keyword">);<br />
+echo </span><span class="string">"-&gt;encrypt = </span><span class="default">$encryptedtext</span><span class="string">&lt;br /&gt;"</span><span class="keyword">;<br />
+<br />
+</span><span class="default">$decryptedtext </span><span class="keyword">= </span><span class="default">$cipher</span><span class="keyword">-&gt;</span><span class="default">decrypt</span><span class="keyword">(</span><span class="default">$encryptedtext</span><span class="keyword">);<br />
+echo </span><span class="string">"-&gt;decrypt = </span><span class="default">$decryptedtext</span><span class="string">&lt;br /&gt;"</span><span class="keyword">;<br />
+<br />
+</span><span class="default">var_dump</span><span class="keyword">(</span><span class="default">$cipher</span><span class="keyword">);<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="71486""></a>
+  <div class="note">
+   <strong class="user">davidwhthomas at gmail</strong>
+   <a href="#71486" class="date">30-Nov-2006 06:52</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I forgot to add the sample usage for encrypting and decrypting cookies:<br />
+<br />
+Set encrypted cookie:<br />
+<span class="default">&lt;?php<br />
+<br />
+$time </span><span class="keyword">= </span><span class="default">time</span><span class="keyword">()+</span><span class="default">60</span><span class="keyword">*</span><span class="default">60</span><span class="keyword">*</span><span class="default">24</span><span class="keyword">*</span><span class="default">30</span><span class="keyword">*</span><span class="default">12</span><span class="keyword">; </span><span class="comment">//store cookie for one year<br />
+</span><span class="default">setcookie</span><span class="keyword">(</span><span class="string">'cookie_name'</span><span class="keyword">, </span><span class="default">encryptCookie</span><span class="keyword">(</span><span class="string">'cookie_value'</span><span class="keyword">),</span><span class="default">$time</span><span class="keyword">,</span><span class="string">'/'</span><span class="keyword">);<br />
+<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+Get encrypted cookie value:<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+$cookie_value </span><span class="keyword">= </span><span class="default">decryptCookie</span><span class="keyword">(</span><span class="default">$_COOKIE</span><span class="keyword">[</span><span class="string">'cookie_name'</span><span class="keyword">]);<br />
+<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+hope it helps.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="71452""></a>
+  <div class="note">
+   <strong class="user">davidwhthomas at gmail</strong>
+   <a href="#71452" class="date">29-Nov-2006 12:41</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+And two more similar functions for encrypting and decrypting cookies:<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+</span><span class="keyword">function </span><span class="default">encryptCookie</span><span class="keyword">(</span><span class="default">$value</span><span class="keyword">){<br />
+&nbsp;&nbsp; if(!</span><span class="default">$value</span><span class="keyword">){return </span><span class="default">false</span><span class="keyword">;}<br />
+&nbsp;&nbsp; </span><span class="default">$key </span><span class="keyword">= </span><span class="string">'The Line Secret Key'</span><span class="keyword">;<br />
+&nbsp;&nbsp; </span><span class="default">$text </span><span class="keyword">= </span><span class="default">$value</span><span class="keyword">;<br />
+&nbsp;&nbsp; </span><span class="default">$iv_size </span><span class="keyword">= </span><span class="default">mcrypt_get_iv_size</span><span class="keyword">(</span><span class="default">MCRYPT_RIJNDAEL_256</span><span class="keyword">, </span><span class="default">MCRYPT_MODE_ECB</span><span class="keyword">);<br />
+&nbsp;&nbsp; </span><span class="default">$iv </span><span class="keyword">= </span><span class="default">mcrypt_create_iv</span><span class="keyword">(</span><span class="default">$iv_size</span><span class="keyword">, </span><span class="default">MCRYPT_RAND</span><span class="keyword">);<br />
+&nbsp;&nbsp; </span><span class="default">$crypttext </span><span class="keyword">= </span><span class="default">mcrypt_encrypt</span><span class="keyword">(</span><span class="default">MCRYPT_RIJNDAEL_256</span><span class="keyword">, </span><span class="default">$key</span><span class="keyword">, </span><span class="default">$text</span><span class="keyword">, </span><span class="default">MCRYPT_MODE_ECB</span><span class="keyword">, </span><span class="default">$iv</span><span class="keyword">);<br />
+&nbsp;&nbsp; return </span><span class="default">trim</span><span class="keyword">(</span><span class="default">base64_encode</span><span class="keyword">(</span><span class="default">$crypttext</span><span class="keyword">)); </span><span class="comment">//encode for cookie<br />
+</span><span class="keyword">}<br />
+<br />
+function </span><span class="default">decryptCookie</span><span class="keyword">(</span><span class="default">$value</span><span class="keyword">){<br />
+&nbsp;&nbsp; if(!</span><span class="default">$value</span><span class="keyword">){return </span><span class="default">false</span><span class="keyword">;}<br />
+&nbsp;&nbsp; </span><span class="default">$key </span><span class="keyword">= </span><span class="string">'The Line Secret Key'</span><span class="keyword">;<br />
+&nbsp;&nbsp; </span><span class="default">$crypttext </span><span class="keyword">= </span><span class="default">base64_decode</span><span class="keyword">(</span><span class="default">$value</span><span class="keyword">); </span><span class="comment">//decode cookie<br />
+&nbsp;&nbsp; </span><span class="default">$iv_size </span><span class="keyword">= </span><span class="default">mcrypt_get_iv_size</span><span class="keyword">(</span><span class="default">MCRYPT_RIJNDAEL_256</span><span class="keyword">, </span><span class="default">MCRYPT_MODE_ECB</span><span class="keyword">);<br />
+&nbsp;&nbsp; </span><span class="default">$iv </span><span class="keyword">= </span><span class="default">mcrypt_create_iv</span><span class="keyword">(</span><span class="default">$iv_size</span><span class="keyword">, </span><span class="default">MCRYPT_RAND</span><span class="keyword">);<br />
+&nbsp;&nbsp; </span><span class="default">$decrypttext </span><span class="keyword">= </span><span class="default">mcrypt_decrypt</span><span class="keyword">(</span><span class="default">MCRYPT_RIJNDAEL_256</span><span class="keyword">, </span><span class="default">$key</span><span class="keyword">, </span><span class="default">$crypttext</span><span class="keyword">, </span><span class="default">MCRYPT_MODE_ECB</span><span class="keyword">, </span><span class="default">$iv</span><span class="keyword">);<br />
+&nbsp;&nbsp; return </span><span class="default">trim</span><span class="keyword">(</span><span class="default">$decrypttext</span><span class="keyword">);<br />
+}<br />
+<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="71415""></a>
+  <div class="note">
+   <strong class="user">d a v i d w h t h o m a s @ g m a i l</strong>
+   <a href="#71415" class="date">27-Nov-2006 05:37</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Here's two simple functions to encrypt and decrypt a string:<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">function </span><span class="default">encryptData</span><span class="keyword">(</span><span class="default">$value</span><span class="keyword">){<br />
+&nbsp;&nbsp; </span><span class="default">$key </span><span class="keyword">= </span><span class="string">"top secret key"</span><span class="keyword">;<br />
+&nbsp;&nbsp; </span><span class="default">$text </span><span class="keyword">= </span><span class="default">$value</span><span class="keyword">;<br />
+&nbsp;&nbsp; </span><span class="default">$iv_size </span><span class="keyword">= </span><span class="default">mcrypt_get_iv_size</span><span class="keyword">(</span><span class="default">MCRYPT_RIJNDAEL_256</span><span class="keyword">, </span><span class="default">MCRYPT_MODE_ECB</span><span class="keyword">);<br />
+&nbsp;&nbsp; </span><span class="default">$iv </span><span class="keyword">= </span><span class="default">mcrypt_create_iv</span><span class="keyword">(</span><span class="default">$iv_size</span><span class="keyword">, </span><span class="default">MCRYPT_RAND</span><span class="keyword">);<br />
+&nbsp;&nbsp; </span><span class="default">$crypttext </span><span class="keyword">= </span><span class="default">mcrypt_encrypt</span><span class="keyword">(</span><span class="default">MCRYPT_RIJNDAEL_256</span><span class="keyword">, </span><span class="default">$key</span><span class="keyword">, </span><span class="default">$text</span><span class="keyword">, </span><span class="default">MCRYPT_MODE_ECB</span><span class="keyword">, </span><span class="default">$iv</span><span class="keyword">);<br />
+&nbsp;&nbsp; return </span><span class="default">$crypttext</span><span class="keyword">;<br />
+}<br />
+<br />
+function </span><span class="default">decryptData</span><span class="keyword">(</span><span class="default">$value</span><span class="keyword">){<br />
+&nbsp;&nbsp; </span><span class="default">$key </span><span class="keyword">= </span><span class="string">"top secret key"</span><span class="keyword">;<br />
+&nbsp;&nbsp; </span><span class="default">$crypttext </span><span class="keyword">= </span><span class="default">$value</span><span class="keyword">;<br />
+&nbsp;&nbsp; </span><span class="default">$iv_size </span><span class="keyword">= </span><span class="default">mcrypt_get_iv_size</span><span class="keyword">(</span><span class="default">MCRYPT_RIJNDAEL_256</span><span class="keyword">, </span><span class="default">MCRYPT_MODE_ECB</span><span class="keyword">);<br />
+&nbsp;&nbsp; </span><span class="default">$iv </span><span class="keyword">= </span><span class="default">mcrypt_create_iv</span><span class="keyword">(</span><span class="default">$iv_size</span><span class="keyword">, </span><span class="default">MCRYPT_RAND</span><span class="keyword">);<br />
+&nbsp;&nbsp; </span><span class="default">$decrypttext </span><span class="keyword">= </span><span class="default">mcrypt_decrypt</span><span class="keyword">(</span><span class="default">MCRYPT_RIJNDAEL_256</span><span class="keyword">, </span><span class="default">$key</span><span class="keyword">, </span><span class="default">$crypttext</span><span class="keyword">, </span><span class="default">MCRYPT_MODE_ECB</span><span class="keyword">, </span><span class="default">$iv</span><span class="keyword">);<br />
+&nbsp;&nbsp; return </span><span class="default">trim</span><span class="keyword">(</span><span class="default">$decrypttext</span><span class="keyword">);<br />
+}<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="69580""></a>
+  <div class="note">
+   <strong class="user">stonecypher at gmail dot com</strong>
+   <a href="#69580" class="date">11-Sep-2006 01:11</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Most of the user-written cipher examples here are badly broken, and there are a few cases where the manual says things that are outright incorrect, such as that it's "safe to transmit the initialization vector in plaintext" (this is incorrect: see Ciphers By Ritter, <a href="http://www.ciphersbyritter.com/GLOSSARY.HTM#IV ,&nbsp; for details." rel="nofollow" target="_blank">http://www.ciphersbyritter.com/GLOSSARY.HTM#IV ,&nbsp; for details.</a>)<br />
+<br />
+mcrypt itself is perfectly safe, but correct and therefore safe usage is inobvious.&nbsp; It is important to use a cryptographic library correctly; a simple usage error, even when it produces results that can be unpacked at the other side, can render a strong algorithm completely useless.<br />
+<br />
+The initialization vector must be permuted with a recoverable noise source (an arbitrary md5 hash is acceptable, since it's just a fake OTP and its origin contents are wholly unimportant.) <br />
+<br />
+Passwords should be remade with a salted one-way hash (md5 is again acceptable even though it's been damaged, since the only thing you could recover from a cracked md5 hash is the source data to generate the password, which is useless.) <br />
+<br />
+It's important to use a sane block mode (OFB is unsafe for almost all algorithms; never use it.&nbsp; Prefer CBC in all cases except where you need to deal with a degraded signal and cannot retransmit.)<br />
+<br />
+A correct usage example is actually pretty long and needs a lot of explanation, so I developed a safe wrapper library which doesn't constrain usage and which comments itself very heavily.&nbsp; It's appropriate for use or for learning.&nbsp; Please see my blog for details on Stone PHP SafeCrypt:<br />
+<br />
+<a href="http://blog.sc.tri-bit.com/archives/101" rel="nofollow" target="_blank">http://blog.sc.tri-bit.com/archives/101</a></span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="68368""></a>
+  <div class="note">
+   <strong class="user">ale_ferrer at yahoo dot com</strong>
+   <a href="#68368" class="date">24-Jul-2006 02:35</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Mcript - Dot NET - 3DES problem.<br />
+<br />
+This is a solution for the 3DES algorithm's problem in his interaction with .NET TripleDESCryptoServiceProvider (System.Security.Cryptography), CBC mode,&nbsp; because the key is completed to 192bits and the text is padded.<br />
+<br />
+So, we has two problems:<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; - The key's completion&nbsp; was posted by "jesse at pctest dot com".<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; - The text padding also posted by him, but the completion is a little different. The padding bytes are 0x01 to 0x08 because completed to 8 bytes blocks. If your text have a whole number of 8 bytes blocks, the algorithm add other block with padded bytes (0x08).<br />
+<br />
+This is a function to encrypt a text in a equal form that the Dot NET algorithm:<br />
+<br />
+<span class="default">&lt;?PHP<br />
+</span><span class="keyword">function </span><span class="default">encryptNET3DES</span><span class="keyword">(</span><span class="default">$key</span><span class="keyword">, </span><span class="default">$vector</span><span class="keyword">, </span><span class="default">$text</span><span class="keyword">){<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$td </span><span class="keyword">= </span><span class="default">mcrypt_module_open </span><span class="keyword">(</span><span class="default">MCRYPT_3DES</span><span class="keyword">, </span><span class="string">''</span><span class="keyword">, </span><span class="default">MCRYPT_MODE_CBC</span><span class="keyword">, </span><span class="string">''</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// Complete the key<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$key_add </span><span class="keyword">= </span><span class="default">24</span><span class="keyword">-</span><span class="default">strlen</span><span class="keyword">(</span><span class="default">$key</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$key </span><span class="keyword">.= </span><span class="default">substr</span><span class="keyword">(</span><span class="default">$key</span><span class="keyword">,</span><span class="default">0</span><span class="keyword">,</span><span class="default">$key_add</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// Padding the text<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$text_add </span><span class="keyword">= </span><span class="default">strlen</span><span class="keyword">(</span><span class="default">$text</span><span class="keyword">)%</span><span class="default">8</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; for(</span><span class="default">$i</span><span class="keyword">=</span><span class="default">$text_add</span><span class="keyword">; </span><span class="default">$i</span><span class="keyword">&lt;</span><span class="default">8</span><span class="keyword">; </span><span class="default">$i</span><span class="keyword">++){<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$text </span><span class="keyword">.= </span><span class="default">chr</span><span class="keyword">(</span><span class="default">8</span><span class="keyword">-</span><span class="default">$text_add</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">mcrypt_generic_init </span><span class="keyword">(</span><span class="default">$td</span><span class="keyword">, </span><span class="default">$key</span><span class="keyword">, </span><span class="default">$vector</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$encrypt64 </span><span class="keyword">= </span><span class="default">mcrypt_generic </span><span class="keyword">(</span><span class="default">$td</span><span class="keyword">, </span><span class="default">$text</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">mcrypt_generic_deinit</span><span class="keyword">(</span><span class="default">$td</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">mcrypt_module_close</span><span class="keyword">(</span><span class="default">$td</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp; &nbsp; </span><span class="comment">// Return the encrypt text in 64 bits code<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">return </span><span class="default">$encrypt64</span><span class="keyword">;<br />
+}<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="57137""></a>
+  <div class="note">
+   <strong class="user">alexandrub83 at yahoo dot com</strong>
+   <a href="#57137" class="date">24-Sep-2005 06:53</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+A class to encrypt, decrypt data! if you have problems with using it please visit my site <a href="http://www.alexandrub.tk and mail me using Contact section! I use it to encrypt POST and GET data! I don" rel="nofollow" target="_blank">http://www.alexandrub.tk and mail me using Contact section! I use it to encrypt POST and GET data! I don</a>'t remember his name but thanks to how recognize his code in the binFromHex function!<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="comment">//copyright www.alexandrub.tk<br />
+//ver 1.00<br />
+</span><span class="keyword">class </span><span class="default">cript<br />
+</span><span class="keyword">{<br />
+var </span><span class="default">$key</span><span class="keyword">;<br />
+var </span><span class="default">$td</span><span class="keyword">;<br />
+var </span><span class="default">$time4keyToChange</span><span class="keyword">;<br />
+var </span><span class="default">$iv</span><span class="keyword">;<br />
+<br />
+function </span><span class="default">cript</span><span class="keyword">(</span><span class="default">$aKey</span><span class="keyword">=</span><span class="string">'time'</span><span class="keyword">,</span><span class="default">$aTime4keyToChange</span><span class="keyword">=</span><span class="default">3600</span><span class="keyword">)<br />
+&nbsp;{<br />
+&nbsp;</span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">time4keyToChange</span><span class="keyword">=</span><span class="default">$aTime4keyToChange</span><span class="keyword">;<br />
+&nbsp;if(</span><span class="default">$aKey</span><span class="keyword">!=</span><span class="string">'time'</span><span class="keyword">)<br />
+&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">key</span><span class="keyword">=</span><span class="default">$aKey</span><span class="keyword">.</span><span class="string">"&amp;"</span><span class="keyword">.</span><span class="default">intval</span><span class="keyword">(</span><span class="default">time</span><span class="keyword">()/</span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">time4keyToChange</span><span class="keyword">);<br />
+&nbsp;&nbsp; }<br />
+&nbsp;&nbsp; else<br />
+&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">key</span><span class="keyword">=</span><span class="default">intval</span><span class="keyword">(</span><span class="default">time</span><span class="keyword">()/</span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">time4keyToChange</span><span class="keyword">);<br />
+&nbsp;&nbsp; }<br />
+&nbsp;</span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">td </span><span class="keyword">= </span><span class="default">MCRYPT_RIJNDAEL_256</span><span class="keyword">;<br />
+&nbsp;</span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">iv </span><span class="keyword">= </span><span class="string">"qe3jigneqfrgnqw2egfmas4qetjkn5lg"</span><span class="keyword">;<br />
+&nbsp;}<br />
+<br />
+function </span><span class="default">hexFromBin</span><span class="keyword">(</span><span class="default">$data</span><span class="keyword">)<br />
+{<br />
+return </span><span class="default">bin2hex</span><span class="keyword">(</span><span class="default">$data</span><span class="keyword">);<br />
+}<br />
+<br />
+function </span><span class="default">binFromHex</span><span class="keyword">(</span><span class="default">$data</span><span class="keyword">)<br />
+&nbsp;{<br />
+&nbsp;</span><span class="default">$len </span><span class="keyword">= </span><span class="default">strlen</span><span class="keyword">(</span><span class="default">$data</span><span class="keyword">);<br />
+&nbsp;return </span><span class="default">pack</span><span class="keyword">(</span><span class="string">"H" </span><span class="keyword">. </span><span class="default">$len</span><span class="keyword">, </span><span class="default">$data</span><span class="keyword">);<br />
+&nbsp;}<br />
+<br />
+function </span><span class="default">criptData</span><span class="keyword">(</span><span class="default">$data</span><span class="keyword">)<br />
+&nbsp;{<br />
+&nbsp;return </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">hexFromBin</span><span class="keyword">(</span><span class="default">mcrypt_encrypt</span><span class="keyword">(</span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">td</span><span class="keyword">, </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">key</span><span class="keyword">, </span><span class="default">$data</span><span class="keyword">, </span><span class="default">MCRYPT_MODE_CBC</span><span class="keyword">, </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">iv</span><span class="keyword">));<br />
+&nbsp;}<br />
+function </span><span class="default">decriptData</span><span class="keyword">(</span><span class="default">$eData</span><span class="keyword">)<br />
+&nbsp;{<br />
+&nbsp;return </span><span class="default">trim</span><span class="keyword">(</span><span class="default">mcrypt_decrypt</span><span class="keyword">(</span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">td</span><span class="keyword">, </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">key</span><span class="keyword">, </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">binFromHex</span><span class="keyword">(</span><span class="default">$eData</span><span class="keyword">), </span><span class="default">MCRYPT_MODE_CBC</span><span class="keyword">, </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">iv</span><span class="keyword">));<br />
+&nbsp;}<br />
+}<br />
+return </span><span class="default">true</span><span class="keyword">;<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="47973""></a>
+  <div class="note">
+   <strong class="user">jesse at pctest dot com</strong>
+   <a href="#47973" class="date">07-Dec-2004 02:43</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Solving 3DES incompatibilities with .NET's TripleDESCryptoServiceProvider<br />
+<br />
+mcrypt's 3DES only accepts 192 bit keys, but Microsoft's .NET and many other tools accept both 128 and 192 bit keys.<br />
+If your key is too short, mcrypt will 'helpfully' pad null characters onto the end, but .NET refuses to use a key where the last third is all null (this is a Bad Key). This prevents you from emulating mcrypt's "short key" behaviour in .NET.<br />
+<br />
+How to reconcile this? A little DES theory is in order<br />
+3DES runs the DES algorithm three times, using each third of your 192 bit key as the 64 bit DES key<br />
+<br />
+Encrypt Key1 -&gt; Decrypt Key2 -&gt; Encrypt Key3<br />
+<br />
+and both .NET and PHP's mcrypt do this the same way.<br />
+The problem arises in short key mode on .NET, since 128 bits is only two 64 bit DES keys<br />
+The algorithm that they use then is:<br />
+<br />
+Encrypt Key1 -&gt; Decrypt Key2 -&gt; Encrypt Key1<br />
+<br />
+mcrypt does not have this mode of operation natively.<br />
+but before you go and start running DES three times yourself, here's a Quick Fix<br />
+<span class="default">&lt;?php<br />
+$my_key </span><span class="keyword">= </span><span class="string">"12345678abcdefgh"</span><span class="keyword">; </span><span class="comment">// a 128 bit (16 byte) key<br />
+</span><span class="default">$my_key </span><span class="keyword">.= </span><span class="default">substr</span><span class="keyword">(</span><span class="default">$my_key</span><span class="keyword">,</span><span class="default">0</span><span class="keyword">,</span><span class="default">8</span><span class="keyword">); </span><span class="comment">// append the first 8 bytes onto the end<br />
+</span><span class="default">$secret </span><span class="keyword">= </span><span class="default">mcrypt_encrypt</span><span class="keyword">(</span><span class="default">MCRYPT_3DES</span><span class="keyword">, </span><span class="default">$my_key</span><span class="keyword">, </span><span class="default">$data</span><span class="keyword">, </span><span class="default">MCRYPT_MODE_CBC</span><span class="keyword">, </span><span class="default">$iv</span><span class="keyword">);&nbsp; </span><span class="comment">//CBC is the default mode in .NET<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+And, like magic, it works.<br />
+<br />
+There's one more caveat: Data padding<br />
+mcrypt always pads data will the null character<br />
+but .NET has two padding modes: "Zeros" and "PKCS7"<br />
+Zeros is identical to the mcrypt scheme, but PKCS7 is the default.<br />
+PKCS7 isn't much more complex, though:<br />
+instead of nulls, it appends the total number of padding bytes (which means, for 3DES, it can be a value from 0x01 to 0x07)<br />
+if your plaintext is "ABC", it will be padded into:<br />
+0x41 0x42 0x43 0x05 0x05 0x05 0x05 0x05<br />
+<br />
+You can remove these from a decrypted string in PHP by counting the number of times that last character appears, and if it matches it's ordinal value, truncating the string by that many characters:<br />
+<span class="default">&lt;?php<br />
+&nbsp;&nbsp;&nbsp; $block </span><span class="keyword">= </span><span class="default">mcrypt_get_block_size</span><span class="keyword">(</span><span class="string">'tripledes'</span><span class="keyword">, </span><span class="string">'cbc'</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$packing </span><span class="keyword">= </span><span class="default">ord</span><span class="keyword">(</span><span class="default">$text</span><span class="keyword">{</span><span class="default">strlen</span><span class="keyword">(</span><span class="default">$text</span><span class="keyword">) - </span><span class="default">1</span><span class="keyword">});<br />
+&nbsp;&nbsp;&nbsp; if(</span><span class="default">$packing </span><span class="keyword">and (</span><span class="default">$packing </span><span class="keyword">&lt; </span><span class="default">$block</span><span class="keyword">)){<br />
+&nbsp;&nbsp; &nbsp;&nbsp; for(</span><span class="default">$P </span><span class="keyword">= </span><span class="default">strlen</span><span class="keyword">(</span><span class="default">$text</span><span class="keyword">) - </span><span class="default">1</span><span class="keyword">; </span><span class="default">$P </span><span class="keyword">&gt;= </span><span class="default">strlen</span><span class="keyword">(</span><span class="default">$text</span><span class="keyword">) - </span><span class="default">$packing</span><span class="keyword">; </span><span class="default">$P</span><span class="keyword">--){<br />
+&nbsp;&nbsp;&nbsp; if(</span><span class="default">ord</span><span class="keyword">(</span><span class="default">$text</span><span class="keyword">{</span><span class="default">$P</span><span class="keyword">}) != </span><span class="default">$packing</span><span class="keyword">){<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">$packing </span><span class="keyword">= </span><span class="default">0</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$text </span><span class="keyword">= </span><span class="default">substr</span><span class="keyword">(</span><span class="default">$text</span><span class="keyword">,</span><span class="default">0</span><span class="keyword">,</span><span class="default">strlen</span><span class="keyword">(</span><span class="default">$text</span><span class="keyword">) - </span><span class="default">$packing</span><span class="keyword">);<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+And to pad a string that you intend to decrypt with .NET, just add the chr() value of the number of padding bytes:<br />
+<span class="default">&lt;?php<br />
+&nbsp;&nbsp;&nbsp; $block </span><span class="keyword">= </span><span class="default">mcrypt_get_block_size</span><span class="keyword">(</span><span class="string">'tripledes'</span><span class="keyword">, </span><span class="string">'cbc'</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$len </span><span class="keyword">= </span><span class="default">strlen</span><span class="keyword">(</span><span class="default">$dat</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$padding </span><span class="keyword">= </span><span class="default">$block </span><span class="keyword">- (</span><span class="default">$len </span><span class="keyword">% </span><span class="default">$block</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$dat </span><span class="keyword">.= </span><span class="default">str_repeat</span><span class="keyword">(</span><span class="default">chr</span><span class="keyword">(</span><span class="default">$padding</span><span class="keyword">),</span><span class="default">$padding</span><span class="keyword">);<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+That's all there is to it.<br />
+Knowing this, you can encrypt, decrypt, and duplicate exactly any .NET 3DES behaviour in PHP.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="47887""></a>
+  <div class="note">
+   <strong class="user">cleong at nflc dot org</strong>
+   <a href="#47887" class="date">03-Dec-2004 02:04</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Note that the key need to be a binary string--not a hex string. A 128-bit key would be 16 characters long, for example.<br />
+<br />
+Use the pack() function to quickly convert a hex string into the actual binary data:<br />
+<br />
+<span class="default">&lt;?php<br />
+$key_hex </span><span class="keyword">= </span><span class="string">'66e94bd4ef8a2c3b884cfa59ca342b2e'</span><span class="keyword">;<br />
+</span><span class="default">$key_bin </span><span class="keyword">= </span><span class="default">pack</span><span class="keyword">(</span><span class="string">'H*'</span><span class="keyword">, </span><span class="default">$key_hex</span><span class="keyword">);<br />
+</span><span class="default">$pt </span><span class="keyword">= </span><span class="default">mcrypt_decrypt</span><span class="keyword">(</span><span class="default">MCRYPT_RIJNDAEL_128</span><span class="keyword">, </span><span class="default">$key_bin</span><span class="keyword">, </span><span class="default">$et</span><span class="keyword">, </span><span class="default">MCRYPT_MODE_ECB</span><span class="keyword">);<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="44728""></a>
+  <div class="note">
+   <strong class="user">chris at TRIMTHIS dot chriscodes dot com</strong>
+   <a href="#44728" class="date">14-Aug-2004 07:31</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+[Editor's note: original script posted by<br />
+andrewcare at execulink dot com<br />
+07-Jul-2004 04:45]<br />
+<br />
+I needed to add<br />
+trim($data)<br />
+to andrew's example for it to remove some leftover hex garbage from the decrypted string.<br />
+<br />
+Here's the working example:<br />
+<span class="default">&lt;?php<br />
+$data </span><span class="keyword">= </span><span class="string">"Plaintext"</span><span class="keyword">; </span><span class="comment">// Data to encrypt (<a href="http://www.ciphersbyritter.com/glossary.htm#Encryption" rel="nofollow" target="_blank">http://www.ciphersbyritter.com/glossary.htm#Encryption</a>)<br />
+</span><span class="default">$key </span><span class="keyword">= </span><span class="string">"Secret"</span><span class="keyword">; </span><span class="comment">// Encryption key (<a href="http://www.ciphersbyritter.com/glossary.htm#Key" rel="nofollow" target="_blank">http://www.ciphersbyritter.com/glossary.htm#Key</a>)<br />
+</span><span class="default">$td </span><span class="keyword">= </span><span class="default">MCRYPT_RIJNDAEL_256</span><span class="keyword">; </span><span class="comment">// Encryption cipher (<a href="http://www.ciphersbyritter.com/glossary.htm#Cipher" rel="nofollow" target="_blank">http://www.ciphersbyritter.com/glossary.htm#Cipher</a>)<br />
+<br />
+</span><span class="default">$iv_size </span><span class="keyword">= </span><span class="default">mcrypt_get_iv_size</span><span class="keyword">(</span><span class="default">$td</span><span class="keyword">, </span><span class="default">MCRYPT_MODE_ECB</span><span class="keyword">); </span><span class="comment">// Dependant on cipher/mode combination (<a href="http://www.php.net/manual/en/function.mcrypt-get-iv-size.php" rel="nofollow" target="_blank">http://www.php.net/manual/en/function.mcrypt-get-iv-size.php</a>)<br />
+</span><span class="default">$iv </span><span class="keyword">= </span><span class="default">mcrypt_create_iv</span><span class="keyword">(</span><span class="default">$iv_size</span><span class="keyword">, </span><span class="default">MCRYPT_RAND</span><span class="keyword">); </span><span class="comment">// Creates an IV (<a href="http://www.ciphersbyritter.com/glossary.htm#IV" rel="nofollow" target="_blank">http://www.ciphersbyritter.com/glossary.htm#IV</a>)<br />
+<br />
+</span><span class="keyword">echo </span><span class="string">"Original data: </span><span class="default">$data</span><span class="string">&lt;br /&gt;"</span><span class="keyword">;<br />
+<br />
+</span><span class="default">$encrypted_data </span><span class="keyword">= </span><span class="default">mcrypt_encrypt</span><span class="keyword">(</span><span class="default">$td</span><span class="keyword">, </span><span class="default">$key</span><span class="keyword">, </span><span class="default">$data</span><span class="keyword">, </span><span class="default">MCRYPT_MODE_CBC</span><span class="keyword">, </span><span class="default">$iv</span><span class="keyword">); </span><span class="comment">// Encrypts data (<a href="http://www.php.net/manual/en/function.mcrypt-encrypt.php" rel="nofollow" target="_blank">http://www.php.net/manual/en/function.mcrypt-encrypt.php</a>)<br />
+<br />
+</span><span class="keyword">echo </span><span class="string">"Encrypted data: " </span><span class="keyword">. </span><span class="default">bin2hex</span><span class="keyword">(</span><span class="default">$encrypted_data</span><span class="keyword">)&nbsp; . </span><span class="string">"&lt;br /&gt;"</span><span class="keyword">; </span><span class="comment">// bin2hex to compensate for random character values<br />
+<br />
+</span><span class="default">$data </span><span class="keyword">= </span><span class="default">mcrypt_decrypt</span><span class="keyword">(</span><span class="default">$td</span><span class="keyword">, </span><span class="default">$key</span><span class="keyword">, </span><span class="default">$encrypted_data</span><span class="keyword">, </span><span class="default">MCRYPT_MODE_CBC</span><span class="keyword">, </span><span class="default">$iv</span><span class="keyword">); </span><span class="comment">// Decrypts data (<a href="http://www.php.net/manual/en/function.mcrypt-decrypt.php" rel="nofollow" target="_blank">http://www.php.net/manual/en/function.mcrypt-decrypt.php</a>)<br />
+<br />
+</span><span class="keyword">echo </span><span class="default">trim</span><span class="keyword">(</span><span class="default">$data</span><span class="keyword">);<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+Thanks andrew, you saved me some time! Hope this saves someone else!</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="function.mcrypt-enc-self-test.html">mcrypt_enc_self_test</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.mcrypt-generic-deinit.html">mcrypt_generic_deinit</a></div>
  <div class="up"><a href="ref.mcrypt.html">Mcrypt Functions</a></div>

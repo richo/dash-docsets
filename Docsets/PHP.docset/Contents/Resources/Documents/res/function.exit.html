@@ -158,7 +158,398 @@ language construct and not a function, it cannot be called using
  </div>
 
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="101204""></a>
+  <div class="note">
+   <strong class="user">nicoladinh at gmail dot com</strong>
+   <a href="#101204" class="date">02-Dec-2010 12:09</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Calling to exit() will flush all buffers started by ob_start() to default output.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="100731""></a>
+  <div class="note">
+   <strong class="user">dexen dot devries at gmail dot com</strong>
+   <a href="#100731" class="date">03-Nov-2010 05:54</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+If you want to avoid calling exit() in FastCGI as per the comments below, but really, positively want to exit cleanly from nested function call or include, consider doing it the Python way:<br />
+<br />
+define an exception named `SystemExit', throw it instead of calling exit() and catch it in index.php with an empty handler to finish script execution cleanly.<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+</span><span class="comment">// file: index.php<br />
+</span><span class="keyword">class </span><span class="default">SystemExit </span><span class="keyword">extends </span><span class="default">Exception </span><span class="keyword">{}<br />
+try {<br />
+&nbsp;&nbsp; </span><span class="comment">/* code code */<br />
+</span><span class="keyword">}<br />
+catch (</span><span class="default">SystemExit $e</span><span class="keyword">) { </span><span class="comment">/* do nothing */ </span><span class="keyword">}<br />
+</span><span class="comment">// end of file: index.php<br />
+<br />
+// some deeply nested function or .php file&nbsp; &nbsp; <br />
+<br />
+</span><span class="keyword">if (</span><span class="default">SOME_EXIT_CONDITION</span><span class="keyword">)<br />
+&nbsp;&nbsp; throw new </span><span class="default">SystemExit</span><span class="keyword">(); </span><span class="comment">// instead of exit()<br />
+<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="100100""></a>
+  <div class="note">
+   <strong class="user">vincent dot laag at gmail dot com</strong>
+   <a href="#100100" class="date">24-Sep-2010 12:51</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Don't use the&nbsp; exit() function in the auto prepend file with fastcgi (linux/bsd os).<br />
+It has the effect of leaving opened files with for result at least a nice&nbsp; "Too many open files&nbsp; ..." error.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="96930""></a>
+  <div class="note">
+   <strong class="user">matt at serverboy dot net</strong>
+   <a href="#96930" class="date">23-Mar-2010 12:11</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+It should be noted that if building a site that runs on FastCGI, calling exit will generate an error in the server's log file. This can quickly fill up.<br />
+<br />
+Also, using exit will diminish the performance benefit gained on FastCGI setups. Instead, consider using code like this:<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+</span><span class="keyword">if( </span><span class="comment">/* error case */ </span><span class="keyword">)<br />
+&nbsp;&nbsp;&nbsp; echo </span><span class="string">"Invalid request"</span><span class="keyword">;<br />
+else {<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">/* The rest of your application */<br />
+</span><span class="keyword">}<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+I've also seen developers get around this issue with FastCGI by wrapping their code in a switch statement and using breaks:<br />
+<br />
+index.php:<br />
+<span class="default">&lt;?php<br />
+<br />
+</span><span class="keyword">switch(</span><span class="default">true</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; case </span><span class="default">true</span><span class="keyword">:<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; require(</span><span class="string">'application.php'</span><span class="keyword">);<br />
+}<br />
+<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+application.php:<br />
+<span class="default">&lt;?php<br />
+<br />
+</span><span class="keyword">if(</span><span class="default">$x </span><span class="keyword">&gt; </span><span class="default">$y</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; echo </span><span class="string">"Sorry, that didn't work."</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; break;<br />
+}<br />
+<br />
+</span><span class="comment">// ...<br />
+<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+It does carry some overhead, but compared to the alternative, it does the job well.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="90713""></a>
+  <div class="note">
+   <strong class="user">albert at removethis dot peschar dot net</strong>
+   <a href="#90713" class="date">05-May-2009 11:50</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+jbezorg at gmail proposed the following:<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+</span><span class="keyword">if(</span><span class="default">$_SERVER</span><span class="keyword">[</span><span class="string">'SCRIPT_FILENAME'</span><span class="keyword">] == </span><span class="default">__FILE__ </span><span class="keyword">)<br />
+&nbsp; </span><span class="default">header</span><span class="keyword">(</span><span class="string">'Location: /'</span><span class="keyword">);<br />
+<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+After sending the `Location:' header PHP _will_ continue parsing, and all code below the header() call will still be executed.&nbsp; So instead use:<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+</span><span class="keyword">if(</span><span class="default">$_SERVER</span><span class="keyword">[</span><span class="string">'SCRIPT_FILENAME'</span><span class="keyword">] == </span><span class="default">__FILE__</span><span class="keyword">)<br />
+{<br />
+&nbsp; </span><span class="default">header</span><span class="keyword">(</span><span class="string">'Location: /'</span><span class="keyword">);<br />
+&nbsp; exit;<br />
+}<br />
+<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="89162""></a>
+  <div class="note">
+   <strong class="user">jbezNULLorg at gmNULLail dot com</strong>
+   <a href="#89162" class="date">24-Feb-2009 12:26</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+If you are retroactively going through included files to prevent them from being accessed, you can use the following.<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">if(</span><span class="default">$_SERVER</span><span class="keyword">[</span><span class="string">'SCRIPT_FILENAME'</span><span class="keyword">] == </span><span class="default">__FILE__ </span><span class="keyword">)<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">header</span><span class="keyword">(</span><span class="string">'location: /'</span><span class="keyword">); </span><span class="comment">// or exit();<br />
+<br />
+// rest of code<br />
+<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="86620""></a>
+  <div class="note">
+   <strong class="user">void a t informance d o t info</strong>
+   <a href="#86620" class="date">26-Oct-2008 02:11</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+To rich dot lovely at klikzltd dot co dot uk:<br />
+<br />
+Using a "@" before header() to suppress its error, and relying on the "headers already sent" error seems to me a very bad idea while building any serious website.<br />
+<br />
+This is *not* a clean way to prevent a file from being called directly. At least this is not a secure method, as you rely on the presence of an exception sent by the parser at runtime.<br />
+<br />
+I recommend using a more common way as defining a constant or assigning a variable with any value, and checking for its presence in the included script, like:<br />
+<br />
+in index.php:<br />
+<span class="default">&lt;?php<br />
+define </span><span class="keyword">(</span><span class="string">'INDEX'</span><span class="keyword">, </span><span class="default">true</span><span class="keyword">);<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+in your included file:<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">if (!</span><span class="default">defined</span><span class="keyword">(</span><span class="string">'INDEX'</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; die(</span><span class="string">'You cannot call this script directly !'</span><span class="keyword">);<br />
+}<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+BR.<br />
+<br />
+Ninj</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="84571""></a>
+  <div class="note">
+   <strong class="user">rich dot lovely at klikzltd dot co dot uk</strong>
+   <a href="#84571" class="date">19-Jul-2008 06:24</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+usefull feature:<br />
+<br />
+@header("location: path/to/home/page") and exit();<br />
+<br />
+EG:<br />
+<br />
+We have a "modular" website, with common header and footer files, and different content modules, eg photos, usually accessed via index.php?p=photos<br />
+<br />
+index.php:<br />
+<span class="default">&lt;?php </span><span class="keyword">include </span><span class="string">"head.php"</span><span class="keyword">;<br />
+include </span><span class="default">$_GET</span><span class="keyword">[</span><span class="string">'p'</span><span class="keyword">] . </span><span class="string">".php"</span><span class="keyword">;&nbsp; </span><span class="comment">//Change this - SECURITY!<br />
+</span><span class="keyword">include </span><span class="string">"foot.php"</span><span class="keyword">;<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+photos.php:<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">@</span><span class="default">header</span><span class="keyword">(</span><span class="string">"location: index.php?p=photos"</span><span class="keyword">) and exit();<br />
+<br />
+</span><span class="comment">//Code to display photos etc<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+If someone tries to access photos.php, which doesn't produce a full html page by definition, the header directive sends them to the full version, returns true, and therefore runs the exit() function.<br />
+<br />
+If they go in normally, the header function should die with the "headers already sent" error, which is supressed by the @ and returns false, preventing the exit statement from running due to lazy execution.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="76360""></a>
+  <div class="note">
+   <strong class="user">dan</strong>
+   <a href="#76360" class="date">11-Jul-2007 03:11</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+In relation to the below comment, you may find that using the following may be more appropriate:<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="comment"># ... user has pressed log out, cookies have been wiped, etc.<br />
+<br />
+// Stay on the same page at time of logout (useful if a page is also available to anyone who isn't logged in<br />
+</span><span class="default">header </span><span class="keyword">(</span><span class="string">"Location: <a href="http://" rel="nofollow" target="_blank">http://</a>" </span><span class="keyword">. </span><span class="default">$_SERVER</span><span class="keyword">[</span><span class="string">'HTTP_HOST'</span><span class="keyword">] . </span><span class="default">$_SERVER</span><span class="keyword">[</span><span class="string">'PHP_SELF'</span><span class="keyword">]);<br />
+<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+Of course $_SERVER['PHP_SELF'] can be omitted if you wish to redirect to the root directory of the site (<a href="http://www.example.com" rel="nofollow" target="_blank">http://www.example.com</a>) or a path of your choosing can be used instead.<br />
+<br />
+Alternatively, if you've a solid system implemented and logged out users can access the page too, you can continue with showing the page without using exit() or header().</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="61987""></a>
+  <div class="note">
+   <strong class="user">Roumen Semov</strong>
+   <a href="#61987" class="date">16-Feb-2006 11:54</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Please note in PHP "exit(0)" or simply "exit" returns true.<br />
+Any other value but zero will return false. This is good to know in case you are writing command-line php scripts where you need the result of the php script to determine if the next script will run. Example:<br />
+shell&gt; ./my_php_script &amp;&amp; echo "It ran successfully!"<br />
+If you know my_php_script can break somewhere you could do a conditional with an "exit(-1)" and then if the script breaks the command after the &amp;&amp; will not execute.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="46022""></a>
+  <div class="note">
+   <strong class="user">nospam at mydomain dot com</strong>
+   <a href="#46022" class="date">27-Sep-2004 02:12</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Using return instead of exit is to prefer when you want the script that you have included inside another script to die but continue to execute the main script.<br />
+// Radcliff</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="35203""></a>
+  <div class="note">
+   <strong class="user">emils at tvnet dot lv</strong>
+   <a href="#35203" class="date">23-Aug-2003 08:14</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Note, that using exit() will explicitly cause Roxen webserver to die, if PHP is used as Roxen SAPI module. There is no known workaround for that, except not to use exit(). CGI versions of PHP are not affected.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="29847""></a>
+  <div class="note">
+   <strong class="user">mbostrom at paragee dot com</strong>
+   <a href="#29847" class="date">26-Feb-2003 12:45</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+In PHP 4.3.1 (and possibly 4.3.0), running scripts from the command line works a lot better.&nbsp; This is probably because 4.3.x has a whole new CLI mode.<br />
+<br />
+Specifically, exit status is now returned (to the shell) as you would expect.&nbsp; This is a godsend for writing embedded email processing scripts, as much email infrastructure (fetchmail, qmail, mutt, etc.) is dependant upon correctly returned status codes, and the inability to return a status code (as in PHP 4.2.x) is an insurmountable obstacle.<br />
+<br />
+$_SERVER["argv"] is also always available in 4.3.x, I think, whereas in 4.2.x php.ini could prevent it from being available.<br />
+<br />
+(On the downside, I had to ./configure --without-mysql in order to get 4.3.1 to compile on RedHat 8.0.&nbsp; Otherwise there was what looked like a fatal compile warning (that I might also have been able to ignore somehow).<br />
+<br />
+The "fatal warning" FYI:<br />
+ext/mysql/libmysql/my_tempnam.o: In function `my_tempnam':<br />
+ext/mysql/libmysql/my_tempnam.c:103: the use of `tempnam' is dangerous, better use `mkstemp'<br />
+<br />
+Changing the code from tempnam to mkstemp would probably not be overly complicated, but it is non-trivial.)</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="24201""></a>
+  <div class="note">
+   <strong class="user">shaun at NOshatSPAM dot net</strong>
+   <a href="#24201" class="date">09-Aug-2002 04:13</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+return may be preferable to exit in certain situations, especially when dealing with the PHP binary and the shell.<br />
+<br />
+I have a script which is the recipient of a mail alias, i.e. mail sent to that alias is piped to the script instead of being delivered to a mailbox. Using exit in this script resulted in the sender of the email getting a delivery failure notice. This was not the desired behavior, I wanted to silently discard messages which did not satisfy the script's requirements.<br />
+<br />
+After several hours of trying to figure out what integer value I should pass to exit() to satisfy sendmail, I tried using return instead of exit. Worked like a charm. Sendmail didn't like exit but it was perfectly happy with return. So, if you're running into trouble with exit and other system binaries, try using return instead.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="23280""></a>
+  <div class="note">
+   <strong class="user">iamfast at tampabay dot rr dot com</strong>
+   <a href="#23280" class="date">13-Jul-2002 08:12</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+If you are working with images or something of the sort that is not html, and use auto appending, call exit before you close your php tag, so that the footer is not included, corrupting the end of the file.<br />
+--Nate</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="18120""></a>
+  <div class="note">
+   <strong class="user">devinemke at devinemke dot com</strong>
+   <a href="#18120" class="date">11-Jan-2002 12:38</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+If you are using templates with numerous includes then exit() will end you script and your template will not complete (no &lt;/table&gt;, &lt;/body&gt;, &lt;/html&gt; etc...).&nbsp; Rather than having complex nested conditional logic within your content, just create a "footer.php" file that closes all of your HTML and if you want to exit out of a script just include() the footer before you exit().<br />
+<br />
+for example:<br />
+<br />
+include ('header.php');<br />
+blah blah blah <br />
+if (!$mysql_connect) {<br />
+echo "unable to connect";<br />
+include ('footer.php');<br />
+exit;<br />
+}<br />
+blah blah blah<br />
+include ('footer.php');</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="function.eval.html">eval</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.get-browser.html">get_browser</a></div>
  <div class="up"><a href="ref.misc.html">Misc. Functions</a></div>

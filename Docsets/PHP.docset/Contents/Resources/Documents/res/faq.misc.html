@@ -180,6 +180,153 @@
    </dl>
   
  </div>
+<div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="101596""></a>
+  <div class="note">
+   <strong class="user">doerr at apkk dot de</strong>
+   <a href="#101596" class="date">28-Dec-2010 05:41</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+If you only needed register_globals for get/post variables, the effictive solution for 5.3 is:<br />
+&nbsp; import_request_variables("GPC", "");<br />
+<br />
+But if the skripts relied on session_register() you'll have to do more:<br />
+- Replace all variables that appeared after session_register with _SESSION equivalents - so $myvar becomes $_SESSION['myvar']<br />
+- Take care if your variables appeared inside strings - 'Hello $user !' works, but 'Hello $_SESSION['user'] !' not - so you have to concatenate the string: 'Hello '.$_SESSION['user'] .' !'<br />
+- Session variables in function declarations (for whatever purpose) will not work - keeping the old (local) names will work in most cases. <br />
+- Finally, replace the session_register(..) line with session_start()</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="54918""></a>
+  <div class="note">
+   
+   <a href="#54918" class="date">19-Jul-2005 09:08</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+using .htaccess file to disable register globals (register_globals)<br />
+<br />
+The syntax for setting an option is:<br />
+<br />
+php_value name value<br />
+php_flag name on or off<br />
+<br />
+Example:<br />
+<br />
+php_flag register_globals off<br />
+php_value arg_separator.output &amp;amp;<br />
+<br />
+The example turns off register_globals and sets the value of arg_separator.output to &amp;amp; which is preferred rather than the default &amp;.<br />
+<br />
+Note: you can also set boolean options with the php_value directive, the string will be converted to boolean before assignment. <br />
+<br />
+you can also use .htaccess to&nbsp; turn magic quotes on or off.<br />
+Search php.net and you'll find it</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="53961""></a>
+  <div class="note">
+   <strong class="user">markus</strong>
+   <a href="#53961" class="date">18-Jun-2005 03:34</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Considering the comment below. I think there's a way to avoid that "problem":<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="comment">//<br />
+// $starttime is an example of a variable that we might need to define,<br />
+// even before, running the "register_globals OFF" emulator below.<br />
+//<br />
+</span><span class="keyword">list(</span><span class="default">$msec</span><span class="keyword">, </span><span class="default">$sec</span><span class="keyword">) = </span><span class="default">explode</span><span class="keyword">(</span><span class="string">' '</span><span class="keyword">, </span><span class="default">microtime</span><span class="keyword">());<br />
+</span><span class="default">$starttime </span><span class="keyword">= ((float)</span><span class="default">$msec </span><span class="keyword">+ (float)</span><span class="default">$sec</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">//<br />
+// If register_globals is ON, ensure no unexpected globals are defined.<br />
+// ie. We'll try to emulate a register_globals OFF environment.<br />
+//<br />
+</span><span class="keyword">if( (bool)@</span><span class="default">ini_get</span><span class="keyword">(</span><span class="string">'register_globals'</span><span class="keyword">) )<br />
+{<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$superglobals </span><span class="keyword">= array(</span><span class="default">$_ENV</span><span class="keyword">, </span><span class="default">$_GET</span><span class="keyword">, </span><span class="default">$_POST</span><span class="keyword">, </span><span class="default">$_COOKIE</span><span class="keyword">, </span><span class="default">$_FILES</span><span class="keyword">, </span><span class="default">$_SERVER</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; if( isset(</span><span class="default">$_SESSION</span><span class="keyword">) )<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">array_unshift</span><span class="keyword">(</span><span class="default">$superglobals</span><span class="keyword">, </span><span class="default">$_SESSION</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$knownglobals </span><span class="keyword">= array(<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">//<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; // Known PHP Reserved globals and superglobals:<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; //<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="string">'_ENV'</span><span class="keyword">,&nbsp; &nbsp; &nbsp; &nbsp; </span><span class="string">'HTTP_ENV_VARS'</span><span class="keyword">,<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="string">'_GET'</span><span class="keyword">,&nbsp; &nbsp; &nbsp; &nbsp; </span><span class="string">'HTTP_GET_VARS'</span><span class="keyword">,<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="string">'_POST'</span><span class="keyword">,&nbsp; &nbsp; </span><span class="string">'HTTP_POST_VARS'</span><span class="keyword">,<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="string">'_COOKIE'</span><span class="keyword">,&nbsp; &nbsp; </span><span class="string">'HTTP_COOKIE_VARS'</span><span class="keyword">,<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="string">'_FILES'</span><span class="keyword">,&nbsp; &nbsp; </span><span class="string">'HTTP_FILES_VARS'</span><span class="keyword">,<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="string">'_SERVER'</span><span class="keyword">,&nbsp; &nbsp; </span><span class="string">'HTTP_SERVER_VARS'</span><span class="keyword">,<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="string">'_SESSION'</span><span class="keyword">,&nbsp; &nbsp; </span><span class="string">'HTTP_SESSION_VARS'</span><span class="keyword">,<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="string">'_REQUEST'</span><span class="keyword">,<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">//<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; // Global variables used by this code snippet:<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; //<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="string">'superglobals'</span><span class="keyword">,<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="string">'knownglobals'</span><span class="keyword">,<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="string">'superglobal'</span><span class="keyword">,<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="string">'global'</span><span class="keyword">,<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="string">'void'</span><span class="keyword">,<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">//<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; // Known global variables defined before this code snippet is reached.<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; //<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="string">'starttime'</span><span class="keyword">,<br />
+&nbsp;&nbsp;&nbsp; );<br />
+&nbsp;&nbsp;&nbsp; foreach( </span><span class="default">$superglobals </span><span class="keyword">as </span><span class="default">$superglobal </span><span class="keyword">)<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; foreach( </span><span class="default">$superglobal </span><span class="keyword">as </span><span class="default">$global </span><span class="keyword">=&gt; </span><span class="default">$void </span><span class="keyword">)<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if( !</span><span class="default">in_array</span><span class="keyword">(</span><span class="default">$global</span><span class="keyword">, </span><span class="default">$knownglobals</span><span class="keyword">) )<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; unset(</span><span class="default">$GLOBALS</span><span class="keyword">[</span><span class="default">$global</span><span class="keyword">]);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; }<br />
+}<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+Note the stuff related to the $_SESSION array depends on whether the PHP session has been started or not. You might want to call session_start() before this point (or set session.auto_start ON).<br />
+<br />
+HTH+ :)</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="51858""></a>
+  <div class="note">
+   <strong class="user">php at REMOVEMEkennel17 dot co dot uk</strong>
+   <a href="#51858" class="date">12-Apr-2005 08:22</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Regarding simulating register_globals = off, note that it is impossible to adequately prevent $_SESSION variables from being globalised, as the array (and thus the globals) are created on a call to session_start().&nbsp; You would therefore have to 'undo' this when you start a session as using it at the start of your script will have no effect.<br />
+<br />
+To avoid potential problems, use a prefix that is unique for all session variables (e.g. 'SESS_'), and only access them via the $_SESSION array.&nbsp; The prefix ensures that you don't have a naming clash (and therefore a security risk) with any non-session globals.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
 <hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="faq.migration5.html">Migrating from PHP 4 to PHP 5</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="appendices.html">Appendices</a></div>

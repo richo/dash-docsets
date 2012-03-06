@@ -99,7 +99,116 @@
  </div>
 
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="63226""></a>
+  <div class="note">
+   <strong class="user">richard at wojthegame dot com</strong>
+   <a href="#63226" class="date">16-Mar-2006 06:06</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+If you have a query<br />
+<br />
+"select ... from table1 where ..."<br />
+<br />
+and would like to know the cardinality of the result set by issuing a separate query<br />
+<br />
+"select count(*) from table1 where ..."<br />
+<br />
+then you might end up with an incorrect value since an insert or delete can occur between the running of these queries (unlikely, but possible).<br />
+The only way i can think of getting the correct value would be something along the lines of<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+$qry </span><span class="keyword">= </span><span class="string">"select ... from table1 where ..."</span><span class="keyword">;<br />
+</span><span class="default">$result </span><span class="keyword">= </span><span class="default">ibase_query</span><span class="keyword">(</span><span class="default">$tr</span><span class="keyword">, </span><span class="default">$qry</span><span class="keyword">) </span><span class="comment">// assume $tr is a transaction <br />
+<br />
+</span><span class="default">$count </span><span class="keyword">= </span><span class="default">0</span><span class="keyword">;<br />
+while (</span><span class="default">$row</span><span class="keyword">[</span><span class="default">$count</span><span class="keyword">] = </span><span class="default">ibase_fetch_assoc</span><span class="keyword">(</span><span class="default">$result</span><span class="keyword">))<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$count</span><span class="keyword">++;<br />
+<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+then $count is the cardinality, and $row the result set.<br />
+Then you can work with the result set:<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+</span><span class="keyword">for (</span><span class="default">$i </span><span class="keyword">= </span><span class="default">0</span><span class="keyword">; </span><span class="default">$i </span><span class="keyword">&lt; </span><span class="default">$count</span><span class="keyword">; </span><span class="default">$i</span><span class="keyword">++)<br />
+{<br />
+&nbsp; </span><span class="comment">// do something with $row[$i]<br />
+</span><span class="keyword">}<br />
+<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="33820""></a>
+  <div class="note">
+   <strong class="user">gurroa at gurroa dot cz</strong>
+   <a href="#33820" class="date">08-Jul-2003 12:41</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I had some troubles with moving php application from one dbase to another. From SyBase to Interbase. <br />
+Especially with missing function "ibase_num_rows($result)".<br />
+<br />
+These are functions that helped me. <br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">...<br />
+</span><span class="default">$dbh </span><span class="keyword">= </span><span class="default">ibase_connect </span><span class="keyword">(</span><span class="default">$host</span><span class="keyword">, </span><span class="default">$username</span><span class="keyword">, </span><span class="default">$password</span><span class="keyword">);<br />
+...<br />
+</span><span class="default">$ar_count_queries </span><span class="keyword">= array();<br />
+<br />
+function </span><span class="default">ibasequery</span><span class="keyword">(</span><span class="default">$query</span><span class="keyword">) {<br />
+&nbsp; </span><span class="default">$cquery </span><span class="keyword">= </span><span class="default">preg_replace</span><span class="keyword">(</span><span class="string">"/SELECT(.*?)FROM(.*?)/"</span><span class="keyword">,</span><span class="string">"SELECT COUNT(*) FROM \\2"</span><span class="keyword">,</span><span class="default">$query</span><span class="keyword">);<br />
+&nbsp; if (</span><span class="default">$cquery </span><span class="keyword">!= </span><span class="default">$query</span><span class="keyword">) {<br />
+&nbsp;&nbsp; </span><span class="default">$crow</span><span class="keyword">=</span><span class="default">get_object_vars</span><span class="keyword">( </span><span class="default">ibase_fetch_object</span><span class="keyword">( </span><span class="default">ibase_query</span><span class="keyword">( </span><span class="default">$GLOBALS</span><span class="keyword">[</span><span class="string">"dbh"</span><span class="keyword">], </span><span class="default">$cquery </span><span class="keyword">) ) );<br />
+&nbsp;&nbsp; }<br />
+&nbsp; @</span><span class="default">$res </span><span class="keyword">= </span><span class="default">ibase_query</span><span class="keyword">(</span><span class="default">$GLOBALS</span><span class="keyword">[</span><span class="string">"dbh"</span><span class="keyword">],</span><span class="default">$query</span><span class="keyword">);<br />
+&nbsp; if (isset(</span><span class="default">$res</span><span class="keyword">)) {<br />
+&nbsp;&nbsp;&nbsp; if (isset(</span><span class="default">$crow</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp; </span><span class="default">$GLOBALS</span><span class="keyword">[</span><span class="string">"ar_count_queries"</span><span class="keyword">][</span><span class="default">$res</span><span class="keyword">] = </span><span class="default">$radcountselect</span><span class="keyword">[</span><span class="string">"COUNT"</span><span class="keyword">];<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">$res</span><span class="keyword">;<br />
+&nbsp; }<br />
+&nbsp;&nbsp; return </span><span class="default">false</span><span class="keyword">;<br />
+}<br />
+<br />
+function </span><span class="default">ibasenumrows</span><span class="keyword">(</span><span class="default">$result</span><span class="keyword">) {<br />
+&nbsp; return </span><span class="default">$GLOBALS</span><span class="keyword">[</span><span class="string">"ar_count_queries"</span><span class="keyword">][</span><span class="default">$res</span><span class="keyword">];<br />
+}<br />
+<br />
+function </span><span class="default">ibasefetchrow</span><span class="keyword">(</span><span class="default">$result</span><span class="keyword">) {<br />
+&nbsp; return </span><span class="default">get_object_vars</span><span class="keyword">(</span><span class="default">ibase_fetch_object</span><span class="keyword">(</span><span class="default">$result</span><span class="keyword">));<br />
+}<br />
+<br />
+</span><span class="comment">// example<br />
+</span><span class="default">$result </span><span class="keyword">= </span><span class="default">ibasequery</span><span class="keyword">(</span><span class="string">"SELECT * FROM TABLE"</span><span class="keyword">);<br />
+</span><span class="default">$numrows </span><span class="keyword">= </span><span class="default">ibasenumrows</span><span class="keyword">(</span><span class="default">$result</span><span class="keyword">);<br />
+echo </span><span class="string">"Number of rows: </span><span class="default">$numrows</span><span class="string">.\nContent: \n"</span><span class="keyword">;<br />
+while (</span><span class="default">$onerow </span><span class="keyword">= </span><span class="default">ibasefetchrow</span><span class="keyword">(</span><span class="default">$res</span><span class="keyword">)) {<br />
+&nbsp; foreach(</span><span class="default">$onerow </span><span class="keyword">as </span><span class="default">$key </span><span class="keyword">=&gt; </span><span class="default">$value</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; echo </span><span class="default">$key</span><span class="keyword">.</span><span class="string">": "</span><span class="keyword">.</span><span class="default">$value</span><span class="keyword">.</span><span class="string">", "</span><span class="keyword">;<br />
+&nbsp; }<br />
+&nbsp; echo </span><span class="string">"\n"</span><span class="keyword">;<br />
+}<br />
+</span><span class="default">?&gt;<br />
+</span>Gurroa</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="function.ibase-fetch-object.html">ibase_fetch_object</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.ibase-field-info.html">ibase_field_info</a></div>
  <div class="up"><a href="ref.ibase.html">Firebird/InterBase Functions</a></div>

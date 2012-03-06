@@ -120,6 +120,99 @@
 
 <h2>Table of Contents</h2><ul class="chunklist chunklist_reference"><li><a href="sqlite3result.columnname.html">SQLite3Result::columnName</a> â€” Returns the name of the nth column</li><li><a href="sqlite3result.columntype.html">SQLite3Result::columnType</a> â€” Returns the type of the nth column</li><li><a href="sqlite3result.fetcharray.html">SQLite3Result::fetchArray</a> â€” Fetches a result row as an associative or numerically indexed array or both</li><li><a href="sqlite3result.finalize.html">SQLite3Result::finalize</a> â€” Closes the result set</li><li><a href="sqlite3result.numcolumns.html">SQLite3Result::numColumns</a> â€” Returns the number of columns in the result set</li><li><a href="sqlite3result.reset.html">SQLite3Result::reset</a> â€” Resets the result set back to the first row</li></ul>
 </div>
+<div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="101589""></a>
+  <div class="note">
+   <strong class="user">alan71-at-free-fr</strong>
+   <a href="#101589" class="date">28-Dec-2010 06:34</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Here's a snippet that might help you to write a fetchObject function that is also missing:<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+</span><span class="keyword">function </span><span class="default">fetchObject</span><span class="keyword">(</span><span class="default">$sqlite3result</span><span class="keyword">, </span><span class="default">$objectType </span><span class="keyword">= </span><span class="default">NULL</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$array </span><span class="keyword">= </span><span class="default">$sqlite3result</span><span class="keyword">-&gt;</span><span class="default">fetchArray</span><span class="keyword">();<br />
+<br />
+&nbsp;&nbsp;&nbsp; if(</span><span class="default">is_null</span><span class="keyword">(</span><span class="default">$objectType</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$object </span><span class="keyword">= new </span><span class="default">stdClass</span><span class="keyword">();<br />
+&nbsp;&nbsp;&nbsp; } else {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// does not call this class' constructor<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$object </span><span class="keyword">= </span><span class="default">unserialize</span><span class="keyword">(</span><span class="default">sprintf</span><span class="keyword">(</span><span class="string">'O:%d:"%s":0:{}'</span><span class="keyword">, </span><span class="default">strlen</span><span class="keyword">(</span><span class="default">$objectType</span><span class="keyword">), </span><span class="default">$objectType</span><span class="keyword">));<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$reflector </span><span class="keyword">= new </span><span class="default">ReflectionObject</span><span class="keyword">(</span><span class="default">$object</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; for(</span><span class="default">$i </span><span class="keyword">= </span><span class="default">0</span><span class="keyword">; </span><span class="default">$i </span><span class="keyword">&lt; </span><span class="default">$sqlite3result</span><span class="keyword">-&gt;</span><span class="default">numColumns</span><span class="keyword">(); </span><span class="default">$i</span><span class="keyword">++) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$name </span><span class="keyword">= </span><span class="default">$sqlite3result</span><span class="keyword">-&gt;</span><span class="default">columnName</span><span class="keyword">(</span><span class="default">$i</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$value </span><span class="keyword">= </span><span class="default">$array</span><span class="keyword">[</span><span class="default">$name</span><span class="keyword">];<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; try {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$attribute </span><span class="keyword">= </span><span class="default">$reflector</span><span class="keyword">-&gt;</span><span class="default">getProperty</span><span class="keyword">(</span><span class="default">$name</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$attribute</span><span class="keyword">-&gt;</span><span class="default">setAccessible</span><span class="keyword">(</span><span class="default">TRUE</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$attribute</span><span class="keyword">-&gt;</span><span class="default">setValue</span><span class="keyword">(</span><span class="default">$object</span><span class="keyword">, </span><span class="default">$value</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; } catch (</span><span class="default">ReflectionException $e</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$object</span><span class="keyword">-&gt;</span><span class="default">$name </span><span class="keyword">= </span><span class="default">$value</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">$object</span><span class="keyword">;<br />
+}<br />
+<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+Heavily inspired of Bergmann's Object Freezer :<br />
+https://github.com/sebastianbergmann/php-object-freezer/blob/master/Object/Freezer.php</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="96612""></a>
+  <div class="note">
+   <strong class="user">claudiu at virtuamagic dot com</strong>
+   <a href="#96612" class="date">08-Mar-2010 02:34</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+fetchArray() will return bool(false) in case of 0 rows.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="94873""></a>
+  <div class="note">
+   <strong class="user">jonscully at gmail dot com</strong>
+   <a href="#94873" class="date">30-Nov-2009 01:35</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Since SQLite3Result::numRows is unavailable, use:<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">if (</span><span class="default">$res</span><span class="keyword">-&gt;</span><span class="default">numColumns</span><span class="keyword">() &amp;&amp; </span><span class="default">$res</span><span class="keyword">-&gt;</span><span class="default">columnType</span><span class="keyword">(</span><span class="default">0</span><span class="keyword">) != </span><span class="default">SQLITE3_NULL</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// have rows<br />
+</span><span class="keyword">} else {<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// zero rows<br />
+</span><span class="keyword">}<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+Because when there are zero rows:<br />
+* SQLite3Result::fetchArray will return '1'<br />
+* SQLite3Result::numColumns will return '1'<br />
+* Column type for column '0' will be SQLITE3_NULL</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
 <hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="sqlite3stmt.reset.html">SQLite3Stmt::reset</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="sqlite3result.columnname.html">SQLite3Result::columnName</a></div>

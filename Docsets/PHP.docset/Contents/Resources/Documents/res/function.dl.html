@@ -205,7 +205,364 @@
  </div>
 
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="101240""></a>
+  <div class="note">
+   <strong class="user">Anonymous</strong>
+   <a href="#101240" class="date">04-Dec-2010 10:36</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+this function errors out as the dl() cannot take the absolute path..."Warning: dl() [function.dl]: Temporary module name should contain only filename in /home/..."</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="89038""></a>
+  <div class="note">
+   <strong class="user">CLI workaround</strong>
+   <a href="#89038" class="date">18-Feb-2009 03:18</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+NOTE:&nbsp; This only works using the CLI<br />
+<br />
+If you need to use dl() with the CLI, but you get this warning:<br />
+<br />
+"PHP Warning:&nbsp; dl(): Dynamically loaded extensions aren't enabled"<br />
+<br />
+Then the 'enable_dl' setting in the php.ini needs to be set to 'On' - the set_ini() function does not work with this INI option.<br />
+<br />
+If, however, you do not wish (or don't have access) to alter the system php.ini, then you can do the following:<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+</span><span class="keyword">if ( !</span><span class="default">ini_get</span><span class="keyword">(</span><span class="string">'enable_dl'</span><span class="keyword">) ) {<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">exec</span><span class="keyword">(</span><span class="string">"php -d enable_dl=On </span><span class="default">$argv</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">]</span><span class="string">"</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; exit;<br />
+}<br />
+<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+This simply calls itself and defines the enable_dl INI entry on the command line so you dont have to start the script with options in the first place (or use another script to call it.)</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="88566""></a>
+  <div class="note">
+   <strong class="user">shaunspiller at spammenot-gmail dot com</strong>
+   <a href="#88566" class="date">29-Jan-2009 12:34</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+dl is awkward because the filename format is OS-dependent and because it can complain if the extension is already loaded. This wrapper function fixes that:<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+</span><span class="keyword">function </span><span class="default">load_lib</span><span class="keyword">(</span><span class="default">$n</span><span class="keyword">, </span><span class="default">$f </span><span class="keyword">= </span><span class="default">null</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">extension_loaded</span><span class="keyword">(</span><span class="default">$n</span><span class="keyword">) or </span><span class="default">dl</span><span class="keyword">(((</span><span class="default">PHP_SHLIB_SUFFIX </span><span class="keyword">=== </span><span class="string">'dll'</span><span class="keyword">) ? </span><span class="string">'php_' </span><span class="keyword">: </span><span class="string">''</span><span class="keyword">) . (</span><span class="default">$f </span><span class="keyword">? </span><span class="default">$f </span><span class="keyword">: </span><span class="default">$n</span><span class="keyword">) . </span><span class="string">'.' </span><span class="keyword">. </span><span class="default">PHP_SHLIB_SUFFIX</span><span class="keyword">);<br />
+}<br />
+<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+Examples:<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+</span><span class="comment">// ensure we have SSL and MySQL support<br />
+</span><span class="default">load_lib</span><span class="keyword">(</span><span class="string">'openssl'</span><span class="keyword">);<br />
+</span><span class="default">load_lib</span><span class="keyword">(</span><span class="string">'mysql'</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">// a rare few extensions have a different filename to their extension name, such as the image (gd) library, so we specify them like this:<br />
+</span><span class="default">load_lib</span><span class="keyword">(</span><span class="string">'gd'</span><span class="keyword">, </span><span class="string">'gd2'</span><span class="keyword">);<br />
+<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="72031""></a>
+  <div class="note">
+   <strong class="user">buildsmart at daleenterprise dot com</strong>
+   <a href="#72031" class="date">29-Dec-2006 01:33</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I recently came across this under PHP 4.4.4, it seems that the dl(); function generates an error/warning about registering the function if a test is done on an extension that is pre-loaded in the php.ini file (extension=gd.so).<br />
+<span class="default">&lt;?php<br />
+$gd_is_shared&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span class="keyword">= </span><span class="string">"shared-library"</span><span class="keyword">;<br />
+<br />
+if (</span><span class="default">function_exists</span><span class="keyword">(</span><span class="string">'ImageCreateFromPNG'</span><span class="keyword">) &amp;&amp; !@</span><span class="default">dl</span><span class="keyword">(</span><span class="string">'gd.so'</span><span class="keyword">)) {<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$gd_is_shared </span><span class="keyword">= </span><span class="string">"embedded"</span><span class="keyword">;<br />
+}<br />
+<br />
+print </span><span class="default">$gd_is_shared</span><span class="keyword">;<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+The only purpose of this test is to determine if it is an embedded extension or a loaded extension.<br />
+<br />
+I don't see this error occur under PHP 5.1.6 or PHP 5.2.0.<br />
+<br />
+The test platform is Mac OS X 10.3.9 and Mac OS X 10.4.8</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="60246""></a>
+  <div class="note">
+   <strong class="user">docey</strong>
+   <a href="#60246" class="date">30-Dec-2005 09:37</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+just some note to loading modules, they do not have to <br />
+be executable. <br />
+<br />
+some examples below check for this but if an module is <br />
+not executable is does not mean you cant use it. it just<br />
+needs to be readable NOT executable. <br />
+<br />
+although some modules might need this perhaps for some<br />
+reason i cannot think of, so here an example,<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="comment">// fails to load mysql although it could be loaded.<br />
+</span><span class="keyword">if(</span><span class="default">is_executable</span><span class="keyword">(</span><span class="string">"mysql.so"</span><span class="keyword">)){<br />
+&nbsp;</span><span class="default">dl</span><span class="keyword">(</span><span class="string">"mysql.so"</span><span class="keyword">);<br />
+}<br />
+<br />
+</span><span class="comment">// loads mysql<br />
+</span><span class="keyword">if(</span><span class="default">is_readable</span><span class="keyword">(</span><span class="string">"mysql.so"</span><span class="keyword">)){<br />
+&nbsp;</span><span class="default">dl</span><span class="keyword">(</span><span class="string">"mysql.so"</span><span class="keyword">);<br />
+}<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+watch out with this, as you can see mysql.so would not be<br />
+loaded and the script would fail. because its checked for <br />
+executable permissions although these are not needed.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="59424""></a>
+  <div class="note">
+   <strong class="user">mag_2000 at front dot ru</strong>
+   <a href="#59424" class="date">06-Dec-2005 11:13</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+<span class="default">&lt;?php<br />
+<br />
+</span><span class="keyword">function </span><span class="default">dl_local</span><span class="keyword">( </span><span class="default">$extensionFile </span><span class="keyword">) {<br />
+&nbsp;&nbsp; </span><span class="comment">//make sure that we are ABLE to load libraries<br />
+&nbsp;&nbsp; </span><span class="keyword">if( !(bool)</span><span class="default">ini_get</span><span class="keyword">( </span><span class="string">"enable_dl" </span><span class="keyword">) || (bool)</span><span class="default">ini_get</span><span class="keyword">( </span><span class="string">"safe_mode" </span><span class="keyword">) ) {<br />
+&nbsp;&nbsp; &nbsp; die( </span><span class="string">"dh_local(): Loading extensions is not permitted.\n" </span><span class="keyword">);<br />
+&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp; &nbsp; </span><span class="comment">//check to make sure the file exists<br />
+&nbsp;&nbsp; </span><span class="keyword">if( !</span><span class="default">file_exists</span><span class="keyword">( </span><span class="default">$extensionFile </span><span class="keyword">) ) {<br />
+&nbsp;&nbsp; &nbsp; die( </span><span class="string">"dl_local(): File '</span><span class="default">$extensionFile</span><span class="string">' does not exist.\n" </span><span class="keyword">);<br />
+&nbsp;&nbsp; }<br />
+&nbsp;&nbsp; <br />
+&nbsp;&nbsp; </span><span class="comment">//check the file permissions<br />
+&nbsp;&nbsp; </span><span class="keyword">if( !</span><span class="default">is_executable</span><span class="keyword">( </span><span class="default">$extensionFile </span><span class="keyword">) ) {<br />
+&nbsp;&nbsp; &nbsp; die( </span><span class="string">"dl_local(): File '</span><span class="default">$extensionFile</span><span class="string">' is not executable.\n" </span><span class="keyword">);<br />
+&nbsp;&nbsp; }<br />
+<br />
+&nbsp;</span><span class="comment">//we figure out the path<br />
+&nbsp;</span><span class="default">$currentDir </span><span class="keyword">= </span><span class="default">getcwd</span><span class="keyword">() . </span><span class="string">"/"</span><span class="keyword">;<br />
+&nbsp;</span><span class="default">$currentExtPath </span><span class="keyword">= </span><span class="default">ini_get</span><span class="keyword">( </span><span class="string">"extension_dir" </span><span class="keyword">);<br />
+&nbsp;</span><span class="default">$subDirs </span><span class="keyword">= </span><span class="default">preg_match_all</span><span class="keyword">( </span><span class="string">"/\//" </span><span class="keyword">, </span><span class="default">$currentExtPath </span><span class="keyword">, </span><span class="default">$matches </span><span class="keyword">);<br />
+&nbsp;unset( </span><span class="default">$matches </span><span class="keyword">);<br />
+&nbsp;<br />
+&nbsp;&nbsp; &nbsp; </span><span class="comment">//lets make sure we extracted a valid extension path<br />
+&nbsp;&nbsp; </span><span class="keyword">if( !(bool)</span><span class="default">$subDirs </span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; die( </span><span class="string">"dl_local(): Could not determine a valid extension path [extension_dir].\n" </span><span class="keyword">);<br />
+&nbsp;&nbsp; }<br />
+&nbsp;<br />
+&nbsp;</span><span class="default">$extPathLastChar </span><span class="keyword">= </span><span class="default">strlen</span><span class="keyword">( </span><span class="default">$currentExtPath </span><span class="keyword">) - </span><span class="default">1</span><span class="keyword">;<br />
+&nbsp;<br />
+&nbsp;&nbsp; if( </span><span class="default">$extPathLastChar </span><span class="keyword">== </span><span class="default">strrpos</span><span class="keyword">( </span><span class="default">$currentExtPath </span><span class="keyword">, </span><span class="string">"/" </span><span class="keyword">) ) {<br />
+&nbsp;&nbsp; &nbsp; </span><span class="default">$subDirs</span><span class="keyword">--;<br />
+&nbsp;&nbsp; }<br />
+<br />
+&nbsp;</span><span class="default">$backDirStr </span><span class="keyword">= </span><span class="string">""</span><span class="keyword">; <br />
+&nbsp;&nbsp; &nbsp; for( </span><span class="default">$i </span><span class="keyword">= </span><span class="default">1</span><span class="keyword">; </span><span class="default">$i </span><span class="keyword">&lt;= </span><span class="default">$subDirs</span><span class="keyword">; </span><span class="default">$i</span><span class="keyword">++ ) {<br />
+&nbsp;&nbsp; &nbsp; </span><span class="default">$backDirStr </span><span class="keyword">.= </span><span class="string">".."</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; if( </span><span class="default">$i </span><span class="keyword">!= </span><span class="default">$subDirs </span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; </span><span class="default">$backDirStr </span><span class="keyword">.= </span><span class="string">"/"</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; }<br />
+&nbsp;&nbsp; }<br />
+<br />
+&nbsp;</span><span class="comment">//construct the final path to load<br />
+&nbsp;</span><span class="default">$finalExtPath </span><span class="keyword">= </span><span class="default">$backDirStr </span><span class="keyword">. </span><span class="default">$currentDir </span><span class="keyword">. </span><span class="default">$extensionFile</span><span class="keyword">;<br />
+&nbsp;<br />
+&nbsp;&nbsp; </span><span class="comment">//now we execute dl() to actually load the module<br />
+&nbsp;&nbsp; &nbsp; </span><span class="keyword">if( !</span><span class="default">dl</span><span class="keyword">( </span><span class="default">$finalExtPath </span><span class="keyword">) ) {<br />
+&nbsp;&nbsp; &nbsp; die();<br />
+&nbsp;&nbsp; }<br />
+<br />
+&nbsp;</span><span class="comment">//if the module was loaded correctly, we must bow grab the module name<br />
+&nbsp;</span><span class="default">$loadedExtensions </span><span class="keyword">= </span><span class="default">get_loaded_extensions</span><span class="keyword">();<br />
+&nbsp;</span><span class="default">$thisExtName </span><span class="keyword">= </span><span class="default">$loadedExtensions</span><span class="keyword">[ </span><span class="default">sizeof</span><span class="keyword">( </span><span class="default">$loadedExtensions </span><span class="keyword">) - </span><span class="default">1 </span><span class="keyword">];<br />
+&nbsp; <br />
+&nbsp;</span><span class="comment">//lastly, we return the extension name<br />
+&nbsp; </span><span class="keyword">return </span><span class="default">$thisExtName</span><span class="keyword">;<br />
+<br />
+}</span><span class="comment">//end dl_local()<br />
+<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="54887""></a>
+  <div class="note">
+   <strong class="user">james at gogo dot co dot nz</strong>
+   <a href="#54887" class="date">18-Jul-2005 04:30</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+WARNING: enable_dl/dl()<br />
+*********************<br />
+<br />
+There is an exploit circulating currently which takes advantage of dl() to inject code into Apache which causes all requests to all virtual hosts to be redirected to a page of the attackers choice.<br />
+<br />
+All operators of shared web hosting servers with Apache and PHP should disable dl() by setting enable_dl to off otherwise your servers are vulnerable to this exploit.<br />
+<br />
+This exploit is generally known as flame.so (the object that is loaded into Apache) and flame.php (the php script that loads it).<br />
+<br />
+Google gives more information:<br />
+<a href="http://www.google.co.nz/search?q=flame.so+flame.php" rel="nofollow" target="_blank">http://www.google.co.nz/search?q=flame.so+flame.php</a></span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="36679""></a>
+  <div class="note">
+   <strong class="user">endofyourself at yahoo dot com</strong>
+   <a href="#36679" class="date">18-Oct-2003 04:12</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+If you need to load an extension from the CURRENT local directory because you do not have privelages to place the extension in your servers PHP extensions directory, this function i wrote may be of use to you<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="comment">/*<br />
+&nbsp;&nbsp;&nbsp; Function: dl_local()<br />
+&nbsp;&nbsp;&nbsp; Reference: <a href="http://us2.php.net/manual/en/function.dl.php" rel="nofollow" target="_blank">http://us2.php.net/manual/en/function.dl.php</a><br />
+&nbsp;&nbsp;&nbsp; Author: Brendon Crawford &lt;endofyourself |AT| yahoo&gt;<br />
+&nbsp;&nbsp;&nbsp; Usage: dl_local( "mylib.so" );<br />
+&nbsp;&nbsp;&nbsp; Returns: Extension Name (NOT the extension filename however)<br />
+&nbsp;&nbsp;&nbsp; NOTE:<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; This function can be used when you need to load a PHP extension (module,shared object,etc..),<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; but you do not have sufficient privelages to place the extension in the proper directory where it can be loaded. This function<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; will load the extension from the CURRENT WORKING DIRECTORY only.<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; If you need to see which functions are available within a certain extension,<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; use "get_extension_funcs()". Documentation for this can be found at<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; "<a href="http://us2.php.net/manual/en/function.get-extension-funcs.php" rel="nofollow" target="_blank">http://us2.php.net/manual/en/function.get-extension-funcs.php</a>".<br />
+*/<br />
+<br />
+</span><span class="keyword">function </span><span class="default">dl_local</span><span class="keyword">( </span><span class="default">$extensionFile </span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">//make sure that we are ABLE to load libraries<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">if( !(bool)</span><span class="default">ini_get</span><span class="keyword">( </span><span class="string">"enable_dl" </span><span class="keyword">) || (bool)</span><span class="default">ini_get</span><span class="keyword">( </span><span class="string">"safe_mode" </span><span class="keyword">) ) {<br />
+&nbsp;&nbsp; &nbsp; die( </span><span class="string">"dh_local(): Loading extensions is not permitted.\n" </span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp; &nbsp; </span><span class="comment">//check to make sure the file exists<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">if( !</span><span class="default">file_exists</span><span class="keyword">( </span><span class="default">$extensionFile </span><span class="keyword">) ) {<br />
+&nbsp;&nbsp; &nbsp; die( </span><span class="string">"dl_local(): File '</span><span class="default">$extensionFile</span><span class="string">' does not exist.\n" </span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">//check the file permissions<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">if( !</span><span class="default">is_executable</span><span class="keyword">( </span><span class="default">$extensionFile </span><span class="keyword">) ) {<br />
+&nbsp;&nbsp; &nbsp; die( </span><span class="string">"dl_local(): File '</span><span class="default">$extensionFile</span><span class="string">' is not executable.\n" </span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;</span><span class="comment">//we figure out the path<br />
+&nbsp;</span><span class="default">$currentDir </span><span class="keyword">= </span><span class="default">getcwd</span><span class="keyword">() . </span><span class="string">"/"</span><span class="keyword">;<br />
+&nbsp;</span><span class="default">$currentExtPath </span><span class="keyword">= </span><span class="default">ini_get</span><span class="keyword">( </span><span class="string">"extension_dir" </span><span class="keyword">);<br />
+&nbsp;</span><span class="default">$subDirs </span><span class="keyword">= </span><span class="default">preg_match_all</span><span class="keyword">( </span><span class="string">"/\//" </span><span class="keyword">, </span><span class="default">$currentExtPath </span><span class="keyword">, </span><span class="default">$matches </span><span class="keyword">);<br />
+&nbsp;unset( </span><span class="default">$matches </span><span class="keyword">);<br />
+&nbsp;<br />
+&nbsp;&nbsp; &nbsp; </span><span class="comment">//lets make sure we extracted a valid extension path<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">if( !(bool)</span><span class="default">$subDirs </span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; die( </span><span class="string">"dl_local(): Could not determine a valid extension path [extension_dir].\n" </span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;<br />
+&nbsp;</span><span class="default">$extPathLastChar </span><span class="keyword">= </span><span class="default">strlen</span><span class="keyword">( </span><span class="default">$currentExtPath </span><span class="keyword">) - </span><span class="default">1</span><span class="keyword">;<br />
+&nbsp;<br />
+&nbsp;&nbsp;&nbsp; if( </span><span class="default">$extPathLastChar </span><span class="keyword">== </span><span class="default">strrpos</span><span class="keyword">( </span><span class="default">$currentExtPath </span><span class="keyword">, </span><span class="string">"/" </span><span class="keyword">) ) {<br />
+&nbsp;&nbsp; &nbsp; </span><span class="default">$subDirs</span><span class="keyword">--;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;</span><span class="default">$backDirStr </span><span class="keyword">= </span><span class="string">""</span><span class="keyword">; <br />
+&nbsp;&nbsp; &nbsp; for( </span><span class="default">$i </span><span class="keyword">= </span><span class="default">1</span><span class="keyword">; </span><span class="default">$i </span><span class="keyword">&lt;= </span><span class="default">$subDirs</span><span class="keyword">; </span><span class="default">$i</span><span class="keyword">++ ) {<br />
+&nbsp;&nbsp; &nbsp; </span><span class="default">$backDirStr </span><span class="keyword">.= </span><span class="string">".."</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if( </span><span class="default">$i </span><span class="keyword">!= </span><span class="default">$subDirs </span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; </span><span class="default">$backDirStr </span><span class="keyword">.= </span><span class="string">"/"</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;</span><span class="comment">//construct the final path to load<br />
+&nbsp;</span><span class="default">$finalExtPath </span><span class="keyword">= </span><span class="default">$backDirStr </span><span class="keyword">. </span><span class="default">$currentDir </span><span class="keyword">. </span><span class="default">$extensionFile</span><span class="keyword">;<br />
+&nbsp;<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">//now we execute dl() to actually load the module<br />
+&nbsp;&nbsp; &nbsp; </span><span class="keyword">if( !</span><span class="default">dl</span><span class="keyword">( </span><span class="default">$finalExtPath </span><span class="keyword">) ) {<br />
+&nbsp;&nbsp; &nbsp; die();<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;</span><span class="comment">//if the module was loaded correctly, we must bow grab the module name<br />
+&nbsp;</span><span class="default">$loadedExtensions </span><span class="keyword">= </span><span class="default">get_loaded_extensions</span><span class="keyword">();<br />
+&nbsp;</span><span class="default">$thisExtName </span><span class="keyword">= </span><span class="default">$loadedExtensions</span><span class="keyword">[ </span><span class="default">sizeof</span><span class="keyword">( </span><span class="default">$loadedExtensions </span><span class="keyword">) - </span><span class="default">1 </span><span class="keyword">];<br />
+&nbsp; <br />
+&nbsp;</span><span class="comment">//lastly, we return the extension name<br />
+&nbsp; </span><span class="keyword">return </span><span class="default">$thisExtName</span><span class="keyword">;<br />
+<br />
+}</span><span class="comment">//end dl_local()<br />
+<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="33739""></a>
+  <div class="note">
+   <strong class="user">tychay at php dot net</strong>
+   <a href="#33739" class="date">05-Jul-2003 08:15</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+MacOS makes a distinction between dynamically loadable shared libraries and loadable modules of code (bundles). The former has an extension .dylib and the latter has an extension .so. The former is in Mac-O and the latter is in ELF.<br />
+<br />
+Thus PHP's extensions are built as .so whereas the symbol PHP_SHLIB_SUFFIX is bound (currently) to .dylib. I don't think this is the correct behavior, but nonetheless, it is the behavior as of PHP-5.0.0b2-dev. Right now, the config binds to SHLIB_SUFFIX_NAME (which is correctly bound to .dylib on Mac OS X). I imagine this is related to why there is so much trouble getting dl() to work on Mac OS X. (For instance, I have no trouble phpizing in a new shared library, but when compiling in stuff as shared... much evilness!)<br />
+<br />
+BTW, to get dl() to work in Mac OS X you need to install the dlcompat library (via Fink, DarwinPorts, or Gentoo ports). Remember in the case of Fink, you better make sure your environment variables are adjusted to point to where dlcompat (and your other fink libraries) are.<br />
+<br />
+terry</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="function.assert.html">assert</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.extension-loaded.html">extension_loaded</a></div>
  <div class="up"><a href="ref.info.html">PHP Options/Info Functions</a></div>

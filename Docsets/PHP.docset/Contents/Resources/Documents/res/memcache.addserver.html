@@ -251,7 +251,186 @@
  </div>
 
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="105728""></a>
+  <div class="note">
+   <strong class="user">enno dot rehling at gmail dot com</strong>
+   <a href="#105728" class="date">09-Sep-2011 04:11</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+The $timeoutms argument can be used to specify the timeout in milliseconds, but isn't available in all versions. For example, it exists in php_memcache 2.2.6, but not in 3.0.4. In 2.2.6, if you specify it, then it overrides $timeout.<br />
+<br />
+Caveat emptor: If $timeoutms is not specified, it defaults to the value of memcache.default_timeout_ms in php.ini, which defaults to 1000 if not set. This also overrides $timeout, which has the curious effect that $timeout is always ignored in php_memcache 2.2.6 (either in favor of $timeoutms, memcache.default_timeout_ms or the value 1000, in that order of priority).</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="105718""></a>
+  <div class="note">
+   <strong class="user">jwatte at imvu dot com</strong>
+   <a href="#105718" class="date">08-Sep-2011 12:02</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+There are three additional undocumented arguments to the failure callback function. The total list of failure callback arguments is:<br />
+- host<br />
+- tcp port<br />
+- udp port<br />
+- error number<br />
+- error message<br />
+<br />
+We tried to file this as a bug against the documentation, but the bug report was closed because no patch was included. Please consider this note the "patch" against documentation, because we already wasted too much time on this, and it's better that people know than that people don't know.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="105094""></a>
+  <div class="note">
+   <strong class="user">fredrik at neam dot se</strong>
+   <a href="#105094" class="date">27-Jul-2011 07:14</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+If you are stuck with version 1.0.x (as shipped in Ubuntu 10.04 LTS for instance), this is a simple way of providing failover support from a single main server to a single failover server:<br />
+<br />
+<span class="default">&lt;?php<br />
+$m </span><span class="keyword">= new </span><span class="default">Memcached</span><span class="keyword">();<br />
+</span><span class="default">$m</span><span class="keyword">-&gt;</span><span class="default">addServer</span><span class="keyword">(</span><span class="default">MEMBASE_HOST</span><span class="keyword">, </span><span class="default">MEMBASE_PORT</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">// Immediately check server connection<br />
+</span><span class="default">$m</span><span class="keyword">-&gt;</span><span class="default">get</span><span class="keyword">(</span><span class="string">'onlinecheck_' </span><span class="keyword">. </span><span class="default">uniqid</span><span class="keyword">());<br />
+<br />
+if (</span><span class="default">in_array</span><span class="keyword">(</span><span class="default">$m</span><span class="keyword">-&gt;</span><span class="default">getResultCode</span><span class="keyword">(), array(</span><span class="default">Memcached</span><span class="keyword">::</span><span class="default">RES_ERRNO</span><span class="keyword">, </span><span class="default">Memcached</span><span class="keyword">::</span><span class="default">RES_UNKNOWN_READ_FAILURE</span><span class="keyword">)))<br />
+{<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// Main server not available - Failing over<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$m </span><span class="keyword">= new </span><span class="default">Memcached</span><span class="keyword">();<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$m</span><span class="keyword">-&gt;</span><span class="default">addServer</span><span class="keyword">(</span><span class="default">MEMBASE_FAILOVER_HOST</span><span class="keyword">, </span><span class="default">MEMBASE_FAILOVER_PORT</span><span class="keyword">);<br />
+}</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="104484""></a>
+  <div class="note">
+   <strong class="user">rstaveley at seseit dot com</strong>
+   <a href="#104484" class="date">17-Jun-2011 04:06</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+The Memcache client library is responsible for picking the right server to set/get data. That's why addServer is what you want to use rather than connect, when you have more than one Memcache server. A subsequent set/get will then connect on demand to the appropriate instance as needs be. Disconnection to whatever servers were connected to happening when you close or your script terminates.<br />
+<br />
+Memcache instances added to your Memcache object via addServer should be added in the same order in your application to ensure that the same server is picked for use with the same key. <br />
+<br />
+A client library may be implemented to run a CRC on the key and do a modulus over the number of instances in the list to select an instance from the list for the set/get. This ensures that data is spread nicely across the nodes. <br />
+<br />
+That all works nicely behind the scenes for you in your PHP code, as long as you add your list of Memcache instances in a consistent manner with addServer.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="103801""></a>
+  <div class="note">
+   <strong class="user">eu at serbannistor dot ro</strong>
+   <a href="#103801" class="date">04-May-2011 06:30</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Actually if you have two memcached servers from which one of them is on localhost, and the other is on a remote machine you can communicate with both even if you specify the loopback address for the local one.<br />
+<br />
+<span class="default">&lt;?php<br />
+$memcache_obj </span><span class="keyword">= </span><span class="default">memcache_connect</span><span class="keyword">(</span><span class="string">"127.0.0.1"</span><span class="keyword">, </span><span class="default">11211</span><span class="keyword">);<br />
+</span><span class="default">memcache_add_server</span><span class="keyword">(</span><span class="default">$memcache_obj</span><span class="keyword">, </span><span class="string">"memcache_remote_host"</span><span class="keyword">);<br />
+</span><span class="default">$memcache_obj</span><span class="keyword">-&gt;</span><span class="default">set</span><span class="keyword">(</span><span class="string">'var_key'</span><span class="keyword">, </span><span class="default">time</span><span class="keyword">());<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+This WILL communicate with both hosts but however there are two aspects that must be taken into account:<br />
+1. the communication will be done through different network interfaces with the two hosts. It will use the loopback interface for the "127.0.0.1" host (lo in my case on Linux) and the external interface for the "memcache_remote_host" (eth0 in my case). Only if you want to use the same network interface to communicate with both hosts you must use the external IPs of both machines (and all communication will go out through the eth0 interface).<br />
+2. the connection with the two hosts will be established differently because of how memcache_connect() and memcache_add_server() work. Therefore the memcache_connect() will initiate the connection to localhost through the loopback interface when it is called, while memcache_add_server() will just add the second server to the pool, but it will not send any package through the network until it's absolutely needed (for example when a memcache_set() command is issued).</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="101194""></a>
+  <div class="note">
+   <strong class="user">anthony at iclasspro dot com</strong>
+   <a href="#101194" class="date">01-Dec-2010 03:40</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+An important thing to note about this is that if you have 2 memcache servers and one of those servers is your localhost that you will want to specify the external IP addresses of both of those.<br />
+<br />
+<span class="default">&lt;?php<br />
+$m </span><span class="keyword">= </span><span class="default">memcache_connect</span><span class="keyword">(</span><span class="string">'127.0.0.1'</span><span class="keyword">, </span><span class="default">11211</span><span class="keyword">);<br />
+</span><span class="default">memcache_add_server</span><span class="keyword">(</span><span class="default">$m</span><span class="keyword">, </span><span class="string">'10.5.50.20'</span><span class="keyword">);<br />
+</span><span class="default">?&gt;<br />
+</span>This will NEVER talk to 10.5.50.20.<br />
+<br />
+So what you need to do is to specify the external IP address of all your servers:<br />
+<span class="default">&lt;?php<br />
+$m </span><span class="keyword">= </span><span class="default">memcache_connect</span><span class="keyword">(</span><span class="string">'10.5.50.10'</span><span class="keyword">, </span><span class="default">11211</span><span class="keyword">);<br />
+</span><span class="default">memcache_add_server</span><span class="keyword">(</span><span class="default">$m</span><span class="keyword">, </span><span class="string">'10.5.50.20'</span><span class="keyword">);<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+For some reason when the PHP memcache module does a connection to localhost it assumes that this is the ONLY memcache server and does not attempt to use others.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="96084""></a>
+  <div class="note">
+   <strong class="user">iwind dot liu at gmail dot com</strong>
+   <a href="#96084" class="date">08-Feb-2010 12:14</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+The weight of the server must be greater than 0.<br />
+<br />
+If there is no memcached server to use, and you try to set/add variables, the apache will be crashed, with the error message "[notice] child pid 18725 exit signal Segmentation fault (11)" in error_log file.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="85272""></a>
+  <div class="note">
+   <strong class="user">rich at drivecurrent dot com</strong>
+   <a href="#85272" class="date">22-Aug-2008 03:12</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+The "version" mentioned for this function is the PECL module. To see the PECL version do phpinfo() and look at Memcache section. To see memcached (server) version: Memcache::getVersion(). You can also telnet into memcached server (eg: localhost:11211) and type 'stats' and hit enter.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="82984""></a>
+  <div class="note">
+   <strong class="user">Jean-Baptiste Quenot</strong>
+   <a href="#82984" class="date">05-May-2008 01:08</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+The default value for the "weight" argument is 1</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="memcache.add.html">Memcache::add</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="memcache.close.html">Memcache::close</a></div>
  <div class="up"><a href="class.memcache.html">Memcache</a></div>

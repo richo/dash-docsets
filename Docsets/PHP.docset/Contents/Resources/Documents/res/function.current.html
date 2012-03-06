@@ -112,7 +112,347 @@ function.</p></div>
   </p>
  </div>
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="107147""></a>
+  <div class="note">
+   <strong class="user">michael at squiloople dot com</strong>
+   <a href="#107147" class="date">10-Jan-2012 07:44</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+current() also works on objects:<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+&nbsp; </span><span class="keyword">echo </span><span class="default">current</span><span class="keyword">((object) array(</span><span class="string">'one'</span><span class="keyword">, </span><span class="string">'two'</span><span class="keyword">)); </span><span class="comment">// Outputs: one<br />
+<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="97985""></a>
+  <div class="note">
+   <strong class="user">marc dot hanisch at nospam dot ateam dot de</strong>
+   <a href="#97985" class="date">19-May-2010 06:37</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+current() works with functions returning an array, too.<br />
+This is helpfull to get the first element of the returned array.<br />
+<br />
+Note that current() with functions always returns the first element, because there is no variable the array was assigned to (and therefore no pointer).<br />
+<br />
+Example:<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="comment">//get the first element of the returned array<br />
+</span><span class="default">$element </span><span class="keyword">= </span><span class="default">current</span><span class="keyword">(</span><span class="default">get_my_arrays</span><span class="keyword">());<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+In addition, current() with functions will not behave as assumed if your function returns an array reference and modifies the arrays pointer, of course!</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="83212""></a>
+  <div class="note">
+   <strong class="user">aefxx</strong>
+   <a href="#83212" class="date">15-May-2008 08:39</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+A simple copy function that not only copies the given array but ensures the copy's pointer is set to the exact same position:<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">function </span><span class="default">array_copy</span><span class="keyword">(&amp;array)<br />
+{<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$key </span><span class="keyword">= </span><span class="default">key</span><span class="keyword">(</span><span class="default">$array</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$copy </span><span class="keyword">= </span><span class="default">$array</span><span class="keyword">;<br />
+<br />
+&nbsp;&nbsp;&nbsp; while ((</span><span class="default">$copy_key </span><span class="keyword">= </span><span class="default">key</span><span class="keyword">(</span><span class="default">$copy</span><span class="keyword">)) !== </span><span class="default">NULL</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if (</span><span class="default">$copy_key </span><span class="keyword">== </span><span class="default">$key</span><span class="keyword">) break;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">next</span><span class="keyword">(</span><span class="default">$copy</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">$copy</span><span class="keyword">;<br />
+}<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+That's all ... bye.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="81431""></a>
+  <div class="note">
+   <strong class="user">gregory at gregory dot net</strong>
+   <a href="#81431" class="date">27-Feb-2008 09:07</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+It took me a while to figure this out, but there is a more consistent way to figure out whether you really went past the end of the array, than using each().<br />
+<br />
+You see, each() gets the value BEFORE advancing the pointer, and next() gets the value AFTER advancing the pointer. When you are implementing the Iterator interface, therefore, it's a real pain in the behind to use each().<br />
+<br />
+And thus, I give you the solution:<br />
+To see if you've blown past the end of the array, use key($array) and see if it returns NULL. If it does, you're past the end of the array -- keys can't be null in arrays.<br />
+<br />
+Nifty, huh? Here's how I implemented the Iterator interface in one of my classes:<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+</span><span class="comment">/**<br />
+&nbsp;* DbRow file<br />
+&nbsp;* @package PalDb<br />
+&nbsp;*/<br />
+<br />
+/**<br />
+&nbsp;* This class lets you use Db rows and object-relational mapping functionality.<br />
+&nbsp;*/<br />
+&nbsp;<br />
+</span><span class="keyword">class </span><span class="default">DbRow </span><span class="keyword">implements </span><span class="default">Iterator<br />
+</span><span class="keyword">{<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">/**<br />
+&nbsp;&nbsp; &nbsp; * The DbResult object that gave us this row through fetchDbRows<br />
+&nbsp;&nbsp; &nbsp; * @var DbResult<br />
+&nbsp;&nbsp; &nbsp; */<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">protected </span><span class="default">$result</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">/**<br />
+&nbsp;&nbsp; &nbsp; * The fields of the row<br />
+&nbsp;&nbsp; &nbsp; * @var $fields<br />
+&nbsp;&nbsp; &nbsp; */<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">protected </span><span class="default">$fields</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">/**<br />
+&nbsp;&nbsp; &nbsp; * Constructor<br />
+&nbsp;&nbsp; &nbsp; *<br />
+&nbsp;&nbsp; &nbsp; * @param PDOStatement $stmt<br />
+&nbsp;&nbsp; &nbsp; *&nbsp; The PDO statement object that this result uses<br />
+&nbsp;&nbsp; &nbsp; * @param DbResult $result<br />
+&nbsp;&nbsp; &nbsp; *&nbsp; The result that produced this row through fetchDbRows <br />
+&nbsp;&nbsp; &nbsp; */<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">function </span><span class="default">__construct</span><span class="keyword">(</span><span class="default">$result</span><span class="keyword">)<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">result </span><span class="keyword">= </span><span class="default">$result</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">/**<br />
+&nbsp;&nbsp; &nbsp; * Get the DbResult object that gave us this row through fetchDbRows<br />
+&nbsp;&nbsp; &nbsp; * @return DbResult<br />
+&nbsp;&nbsp; &nbsp; *<br />
+&nbsp;&nbsp; &nbsp; * @return unknown<br />
+&nbsp;&nbsp; &nbsp; */<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">function </span><span class="default">getResult</span><span class="keyword">()<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">result</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; function </span><span class="default">__set</span><span class="keyword">(<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$name</span><span class="keyword">, <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$value</span><span class="keyword">)<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">fields</span><span class="keyword">[</span><span class="default">$name</span><span class="keyword">] = </span><span class="default">$value</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; function </span><span class="default">__get</span><span class="keyword">(<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$name</span><span class="keyword">)<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if (isset(</span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">fields</span><span class="keyword">[</span><span class="default">$name</span><span class="keyword">])) <br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">fields</span><span class="keyword">[</span><span class="default">$name</span><span class="keyword">];<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; else<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">null</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">/**<br />
+&nbsp;&nbsp; &nbsp; * Iterator implementation - rewind<br />
+&nbsp;&nbsp; &nbsp; */<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">function </span><span class="default">rewind</span><span class="keyword">()<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">beyondLastField </span><span class="keyword">= </span><span class="default">false</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">reset</span><span class="keyword">(</span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">fields</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; function </span><span class="default">valid</span><span class="keyword">()<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return !</span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">beyondLastField</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; function </span><span class="default">current</span><span class="keyword">()<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">current</span><span class="keyword">(</span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">fields</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; function </span><span class="default">key</span><span class="keyword">()<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">key</span><span class="keyword">(</span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">fields</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; function </span><span class="default">next</span><span class="keyword">()<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$next </span><span class="keyword">= </span><span class="default">next</span><span class="keyword">(</span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">fields</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$key </span><span class="keyword">= </span><span class="default">key</span><span class="keyword">(</span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">fields</span><span class="keyword">);&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if (isset(</span><span class="default">$key</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">$next</span><span class="keyword">[</span><span class="default">1</span><span class="keyword">];<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; } else {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">beyondLastField </span><span class="keyword">= </span><span class="default">true</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">false</span><span class="keyword">; </span><span class="comment">// doesn't matter what we return here, see valid()<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">}<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; private </span><span class="default">$beyondLastField </span><span class="keyword">= </span><span class="default">false</span><span class="keyword">;<br />
+};<br />
+<br />
+</span><span class="default">Hope this helps someone</span><span class="keyword">.</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="77064""></a>
+  <div class="note">
+   <strong class="user">vaclav dot sir at gmail dot com</strong>
+   <a href="#77064" class="date">13-Aug-2007 09:23</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+To that "note": You won't be able to distinguish the end of an array from a boolean FALSE element, BUT you can distinguish the end from a NULL value of the key() function.<br />
+<br />
+Example:<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">if (</span><span class="default">key</span><span class="keyword">(</span><span class="default">$array</span><span class="keyword">) === </span><span class="default">null</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; echo </span><span class="string">"You are in the end of the array."</span><span class="keyword">;<br />
+} else {<br />
+&nbsp;&nbsp;&nbsp; echo </span><span class="string">"Current element: " </span><span class="keyword">. </span><span class="default">current</span><span class="keyword">(</span><span class="default">$array</span><span class="keyword">);<br />
+}<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="68982""></a>
+  <div class="note">
+   <strong class="user">marnaq</strong>
+   <a href="#68982" class="date">17-Aug-2006 05:20</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+To make this function return a reference to the element instead, use:<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">function &amp;</span><span class="default">current_by_ref</span><span class="keyword">(&amp;</span><span class="default">$arr</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">$arr</span><span class="keyword">[</span><span class="default">key</span><span class="keyword">(</span><span class="default">$arr</span><span class="keyword">)];<br />
+}<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="41864""></a>
+  <div class="note">
+   <strong class="user">mdeng at kabenresearch dot com</strong>
+   <a href="#41864" class="date">23-Apr-2004 11:04</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+For large array(my sample was 80000+ elements), if you want to traverse the array in sequence, using array index $a[$i] could be very inefficient(very slow). I had to switch to use current($a).</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="37917""></a>
+  <div class="note">
+   <strong class="user">vitalib at 012 dot net dot il</strong>
+   <a href="#37917" class="date">02-Dec-2003 02:10</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Note that by copying an array its internal pointer is lost:<br />
+<br />
+<span class="default">&lt;?php<br />
+$myarray </span><span class="keyword">= array(</span><span class="default">0</span><span class="keyword">=&gt;</span><span class="string">'a'</span><span class="keyword">, </span><span class="default">1</span><span class="keyword">=&gt;</span><span class="string">'b'</span><span class="keyword">, </span><span class="default">2</span><span class="keyword">=&gt;</span><span class="string">'c'</span><span class="keyword">);<br />
+</span><span class="default">next</span><span class="keyword">(</span><span class="default">$myarray</span><span class="keyword">);<br />
+</span><span class="default">print_r</span><span class="keyword">(</span><span class="default">current</span><span class="keyword">(</span><span class="default">$myarray</span><span class="keyword">));<br />
+echo </span><span class="string">'&lt;br&gt;'</span><span class="keyword">;<br />
+</span><span class="default">$a </span><span class="keyword">= </span><span class="default">$myarray</span><span class="keyword">;<br />
+</span><span class="default">print_r</span><span class="keyword">(</span><span class="default">current</span><span class="keyword">(</span><span class="default">$a</span><span class="keyword">));<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+Would output 'b' and then 'a' since the internal pointer wasn't copied. You can cope with that problem using references instead, like that:<br />
+<br />
+<span class="default">&lt;?php<br />
+$a </span><span class="keyword">=&amp; </span><span class="default">$myarray</span><span class="keyword">;<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="31894""></a>
+  <div class="note">
+   <strong class="user">tipman</strong>
+   <a href="#31894" class="date">08-May-2003 04:07</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+if you got a array with number as index you get the last index with this:<br />
+<br />
+eg:<br />
+$array[0] = "foo";<br />
+$array[1] = "foo2";<br />
+<br />
+$lastKey = sizeof($array) - 1;<br />
+<br />
+only a little help :)</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="29950""></a>
+  <div class="note">
+   <strong class="user">retestro_REMOVE at SPAM_esperanto dot org dot il</strong>
+   <a href="#29950" class="date">01-Mar-2003 06:31</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+The docs do not specify this, but adding to the array using the brackets syntax:<br />
+&nbsp;&nbsp; &nbsp; <span class="default">&lt;?php $my_array</span><span class="keyword">[] = </span><span class="default">$new_value</span><span class="keyword">; </span><span class="default">?&gt;<br />
+</span>will not advance the internal pointer of the array. therefore, you cannot use current() to get the last value added or key() to get the key of the most recently added element.<br />
+<br />
+You should do an end($my_array) to advance the internal pointer to the end ( as stated in one of the notes on end() ), then<br />
+<br />
+&nbsp;&nbsp;&nbsp; <span class="default">&lt;?php<br />
+&nbsp;&nbsp; &nbsp; $last_key </span><span class="keyword">= </span><span class="default">key</span><span class="keyword">(</span><span class="default">$my_array</span><span class="keyword">);&nbsp; </span><span class="comment">// will return the key<br />
+&nbsp;&nbsp; &nbsp; </span><span class="default">$last_value </span><span class="keyword">= </span><span class="default">current</span><span class="keyword">(</span><span class="default">$my_array</span><span class="keyword">);&nbsp; </span><span class="comment">// will return the value<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">?&gt;<br />
+</span><br />
+If you have no need in the key, $last_value = end($my_array) will also do the job.<br />
+<br />
+- Sergey.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="function.count.html">count</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.each.html">each</a></div>
  <div class="up"><a href="ref.array.html">Array Functions</a></div>

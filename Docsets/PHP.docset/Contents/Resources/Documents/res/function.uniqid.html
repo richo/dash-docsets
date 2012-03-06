@@ -150,7 +150,1438 @@
  </div>
 
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="104492""></a>
+  <div class="note">
+   <strong class="user">tom</strong>
+   <a href="#104492" class="date">17-Jun-2011 12:40</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+mt_rand() features in a lot of comments here. It is a good PRNG for Monte Carlo simulations, not for anything related to security. Wikipedia's page on cryptographically-secure PRNGs explains. If you want it to be hard for an attacker to guess or predict a "random" UUID, try using /dev/random instead.<br />
+<br />
+<span class="default">&lt;?php<br />
+$r </span><span class="keyword">= </span><span class="default">unpack</span><span class="keyword">(</span><span class="string">'v*'</span><span class="keyword">, </span><span class="default">fread</span><span class="keyword">(</span><span class="default">fopen</span><span class="keyword">(</span><span class="string">'/dev/random'</span><span class="keyword">, </span><span class="string">'r'</span><span class="keyword">),</span><span class="default">16</span><span class="keyword">));<br />
+</span><span class="default">$uuid </span><span class="keyword">= </span><span class="default">sprintf</span><span class="keyword">(</span><span class="string">'%04x%04x-%04x-%04x-%04x-%04x%04x%04x'</span><span class="keyword">,<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$r</span><span class="keyword">[</span><span class="default">1</span><span class="keyword">], </span><span class="default">$r</span><span class="keyword">[</span><span class="default">2</span><span class="keyword">], </span><span class="default">$r</span><span class="keyword">[</span><span class="default">3</span><span class="keyword">], </span><span class="default">$r</span><span class="keyword">[</span><span class="default">4</span><span class="keyword">] &amp; </span><span class="default">0x0fff </span><span class="keyword">| </span><span class="default">0x4000</span><span class="keyword">, <br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$r</span><span class="keyword">[</span><span class="default">5</span><span class="keyword">] &amp; </span><span class="default">0x3fff </span><span class="keyword">| </span><span class="default">0x8000</span><span class="keyword">, </span><span class="default">$r</span><span class="keyword">[</span><span class="default">6</span><span class="keyword">], </span><span class="default">$r</span><span class="keyword">[</span><span class="default">7</span><span class="keyword">], </span><span class="default">$r</span><span class="keyword">[</span><span class="default">8</span><span class="keyword">]);<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+That's obviously not production code. It's just for illustration.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="104478""></a>
+  <div class="note">
+   <strong class="user">Anonymous</strong>
+   <a href="#104478" class="date">16-Jun-2011 04:08</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Prefix can be useful, for instance, if you generate identifiers simultaneously on several hosts that might happen to generate the identifier at the same microsecond.<br />
+So we can include the hostname / servername in the id.<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">echo </span><span class="default">uniqid</span><span class="keyword">(</span><span class="default">php_uname</span><span class="keyword">(</span><span class="string">'n'</span><span class="keyword">), </span><span class="default">true</span><span class="keyword">);<br />
+</span><span class="comment">// Output: darkstar4dfa8c27aea106.40781203<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="104166""></a>
+  <div class="note">
+   <strong class="user">rommel at rommelsantor dot com</strong>
+   <a href="#104166" class="date">28-May-2011 03:29</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+The php5-uuid functions could definitely use some documentation to clarify how they should be used, but here's what I've gleaned by examining the OSSP source code (found here: <a href="http://ossp-uuid.sourcearchive.com/documentation/1.5.1-1ubuntu1/php_2uuid_8c-source.html" rel="nofollow" target="_blank">http://ossp-uuid.sourcearchive.com/documentation/1.5.1-1ubuntu1/php_2uuid_8c-source.html</a>).<br />
+<br />
+The uuid_make() function takes two arguments when generating v1 or v4, but four arguments are required when generating v3 or v5. The first two arguments have been demonstrated below and are straightforward, so I'll skip to the as-yet non-described arguments.<br />
+<br />
+The third argument to uuid_make() is: $namespace<br />
+&nbsp; - this is a secondary resource created with uuid_create(); it is apparently used to generate an internal UUID, which is used as the namespace of the output UUID<br />
+<br />
+The fourth argument to uuid_make() is: $url<br />
+&nbsp; - this is the value that is to be hashed (MD5 for v3, SHA-1 for v5); it may be any string or even null<br />
+<br />
+Here's a simple class illustrating the proper usage (note that if php5-uuid is not installed on your system, each function call will just return false):<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">class </span><span class="default">UUID </span><span class="keyword">{<br />
+&nbsp; </span><span class="comment">/**<br />
+&nbsp;&nbsp; * Generates version 1: MAC address<br />
+&nbsp;&nbsp; */<br />
+&nbsp; </span><span class="keyword">public static function </span><span class="default">v1</span><span class="keyword">() {<br />
+&nbsp;&nbsp;&nbsp; if (!</span><span class="default">function_exists</span><span class="keyword">(</span><span class="string">'uuid_create'</span><span class="keyword">))<br />
+&nbsp;&nbsp; &nbsp;&nbsp; return </span><span class="default">false</span><span class="keyword">;<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">uuid_create</span><span class="keyword">(&amp;</span><span class="default">$context</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">uuid_make</span><span class="keyword">(</span><span class="default">$context</span><span class="keyword">, </span><span class="default">UUID_MAKE_V1</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">uuid_export</span><span class="keyword">(</span><span class="default">$context</span><span class="keyword">, </span><span class="default">UUID_FMT_STR</span><span class="keyword">, &amp;</span><span class="default">$uuid</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">trim</span><span class="keyword">(</span><span class="default">$uuid</span><span class="keyword">);<br />
+&nbsp; }<br />
+<br />
+&nbsp; </span><span class="comment">/**<br />
+&nbsp;&nbsp; * Generates version 3 UUID: MD5 hash of URL<br />
+&nbsp;&nbsp; */<br />
+&nbsp; </span><span class="keyword">public static function </span><span class="default">v3</span><span class="keyword">(</span><span class="default">$i_url</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; if (!</span><span class="default">function_exists</span><span class="keyword">(</span><span class="string">'uuid_create'</span><span class="keyword">))<br />
+&nbsp;&nbsp; &nbsp;&nbsp; return </span><span class="default">false</span><span class="keyword">;<br />
+<br />
+&nbsp;&nbsp;&nbsp; if (!</span><span class="default">strlen</span><span class="keyword">(</span><span class="default">$i_url</span><span class="keyword">))<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">$i_url </span><span class="keyword">= </span><span class="default">self</span><span class="keyword">::</span><span class="default">v1</span><span class="keyword">();<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">uuid_create</span><span class="keyword">(&amp;</span><span class="default">$context</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">uuid_create</span><span class="keyword">(&amp;</span><span class="default">$namespace</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">uuid_make</span><span class="keyword">(</span><span class="default">$context</span><span class="keyword">, </span><span class="default">UUID_MAKE_V3</span><span class="keyword">, </span><span class="default">$namespace</span><span class="keyword">, </span><span class="default">$i_url</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">uuid_export</span><span class="keyword">(</span><span class="default">$context</span><span class="keyword">, </span><span class="default">UUID_FMT_STR</span><span class="keyword">, &amp;</span><span class="default">$uuid</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">trim</span><span class="keyword">(</span><span class="default">$uuid</span><span class="keyword">);<br />
+&nbsp; }<br />
+<br />
+&nbsp; </span><span class="comment">/**<br />
+&nbsp;&nbsp; * Generates version 4 UUID: random<br />
+&nbsp;&nbsp; */<br />
+&nbsp; </span><span class="keyword">public static function </span><span class="default">v4</span><span class="keyword">() {<br />
+&nbsp;&nbsp;&nbsp; if (!</span><span class="default">function_exists</span><span class="keyword">(</span><span class="string">'uuid_create'</span><span class="keyword">))<br />
+&nbsp;&nbsp; &nbsp;&nbsp; return </span><span class="default">false</span><span class="keyword">;<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">uuid_create</span><span class="keyword">(&amp;</span><span class="default">$context</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">uuid_make</span><span class="keyword">(</span><span class="default">$context</span><span class="keyword">, </span><span class="default">UUID_MAKE_V4</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">uuid_export</span><span class="keyword">(</span><span class="default">$context</span><span class="keyword">, </span><span class="default">UUID_FMT_STR</span><span class="keyword">, &amp;</span><span class="default">$uuid</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">trim</span><span class="keyword">(</span><span class="default">$uuid</span><span class="keyword">);<br />
+&nbsp; }<br />
+<br />
+&nbsp; </span><span class="comment">/**<br />
+&nbsp;&nbsp; * Generates version 5 UUID: SHA-1 hash of URL<br />
+&nbsp;&nbsp; */<br />
+&nbsp; </span><span class="keyword">public static function </span><span class="default">v5</span><span class="keyword">(</span><span class="default">$i_url</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; if (!</span><span class="default">function_exists</span><span class="keyword">(</span><span class="string">'uuid_create'</span><span class="keyword">))<br />
+&nbsp;&nbsp; &nbsp;&nbsp; return </span><span class="default">false</span><span class="keyword">;<br />
+<br />
+&nbsp;&nbsp;&nbsp; if (!</span><span class="default">strlen</span><span class="keyword">(</span><span class="default">$i_url</span><span class="keyword">))<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">$i_url </span><span class="keyword">= </span><span class="default">self</span><span class="keyword">::</span><span class="default">v1</span><span class="keyword">();<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">uuid_create</span><span class="keyword">(&amp;</span><span class="default">$context</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">uuid_create</span><span class="keyword">(&amp;</span><span class="default">$namespace</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">uuid_make</span><span class="keyword">(</span><span class="default">$context</span><span class="keyword">, </span><span class="default">UUID_MAKE_V5</span><span class="keyword">, </span><span class="default">$namespace</span><span class="keyword">, </span><span class="default">$i_url</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">uuid_export</span><span class="keyword">(</span><span class="default">$context</span><span class="keyword">, </span><span class="default">UUID_FMT_STR</span><span class="keyword">, &amp;</span><span class="default">$uuid</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">trim</span><span class="keyword">(</span><span class="default">$uuid</span><span class="keyword">);<br />
+&nbsp; }<br />
+}<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+And here's a demonstration:<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">for (</span><span class="default">$i </span><span class="keyword">= </span><span class="default">1</span><span class="keyword">; </span><span class="default">$i </span><span class="keyword">&lt;= </span><span class="default">3</span><span class="keyword">; ++</span><span class="default">$i</span><span class="keyword">) {<br />
+&nbsp; echo </span><span class="string">'microtime = ' </span><span class="keyword">. </span><span class="default">microtime</span><span class="keyword">(</span><span class="default">true</span><span class="keyword">) . </span><span class="string">'&lt;br/&gt;'</span><span class="keyword">;<br />
+&nbsp; echo </span><span class="string">"V1 UUID: " </span><span class="keyword">. </span><span class="default">UUID</span><span class="keyword">::</span><span class="default">v1</span><span class="keyword">() . </span><span class="string">'&lt;br/&gt;'</span><span class="keyword">;<br />
+&nbsp; echo </span><span class="string">"V3 UUID of URL='abc': " </span><span class="keyword">. </span><span class="default">UUID</span><span class="keyword">::</span><span class="default">v3</span><span class="keyword">(</span><span class="string">'abc'</span><span class="keyword">) . </span><span class="string">'&lt;br/&gt;'</span><span class="keyword">;<br />
+&nbsp; echo </span><span class="string">"V4 UUID: " </span><span class="keyword">. </span><span class="default">UUID</span><span class="keyword">::</span><span class="default">v4</span><span class="keyword">() . </span><span class="string">'&lt;br/&gt;'</span><span class="keyword">;<br />
+&nbsp; echo </span><span class="string">"V5 UUID of URL=null: " </span><span class="keyword">. </span><span class="default">UUID</span><span class="keyword">::</span><span class="default">v5</span><span class="keyword">(</span><span class="default">null</span><span class="keyword">) . </span><span class="string">'&lt;br/&gt;'</span><span class="keyword">;<br />
+&nbsp; echo </span><span class="string">'&lt;hr/&gt;'</span><span class="keyword">;<br />
+}<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+And the output:<br />
+<br />
+microtime = 1306620716.0457<br />
+V1 UUID: 7fddae8e-8977-11e0-bc11-003048c3b1f2<br />
+V3 UUID of URL='abc': 522ec739-ca63-3ec5-b082-08ce08ad65e2<br />
+V4 UUID: b3851ec7-4871-4527-92b5-ef5616bae1e6<br />
+V5 UUID of URL=null: e129f27c-5103-5c5c-844b-cdf0a15e160d<br />
+-------------------<br />
+microtime = 1306620716.0465<br />
+V1 UUID: 7fddb83e-8977-11e0-9e6e-003048c3b1f2<br />
+V3 UUID of URL='abc': 522ec739-ca63-3ec5-b082-08ce08ad65e2<br />
+V4 UUID: 7e78fe0d-59b8-4637-af7f-e88d221a7d1e<br />
+V5 UUID of URL=null: e129f27c-5103-5c5c-844b-cdf0a15e160d<br />
+-------------------<br />
+microtime = 1306620716.0467<br />
+V1 UUID: 7fddbfb4-8977-11e0-a2bc-003048c3b1f2<br />
+V3 UUID of URL='abc': 522ec739-ca63-3ec5-b082-08ce08ad65e2<br />
+V4 UUID: 12a940c7-0f3f-46a1-bb5f-bdd602e10654<br />
+V5 UUID of URL=null: e129f27c-5103-5c5c-844b-cdf0a15e160d<br />
+<br />
+As you can see, the calls to v3() always return the same UUID because the same URL parameter, "abc", is always supplied. The same goes for the v5() function which is always supplied a null URL.<br />
+<br />
+The v4() UUIDs are always entirely different because they are (pseudo)random. And the v1() calls are very similar but just slightly different because it's based on the computer's MAC address and the current time.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="98662""></a>
+  <div class="note">
+   <strong class="user">php at ryanmckeel dot com</strong>
+   <a href="#98662" class="date">29-Jun-2010 10:15</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Calls to uuid_make that use the constants UUID_MAKE_V5 or UUID_MAKE_V3 (using Debian package php5-uuid available June 2010) will not work with only two variables.<br />
+<br />
+I could not find good documentation, so I read some source code and figured out that this would work:<br />
+<br />
+uuid_create(&amp;$v5);<br />
+//uuid_make($v5, UUID_MAKE_V5);<br />
+uuid_make($v5, UUID_MAKE_V5,$v5,$uniqid());<br />
+uuid_export($v5, UUID_FMT_STR, &amp;$v5String);<br />
+<br />
+Please use at your own risk.&nbsp; This may not be the best way to give this param variables, but it at least makes it work what appears to be properly (generating unique ID's).<br />
+<br />
+I imagine that UUID_MAKE_V3 is similar in what it needs.<br />
+<br />
+&nbsp; Ryan</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="96898""></a>
+  <div class="note">
+   <strong class="user">Enrico Pallazzo</strong>
+   <a href="#96898" class="date">21-Mar-2010 02:45</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Running:<br />
+<br />
+rand_uniqid(9007199254740989);<br />
+<br />
+will return 'PpQXn7COf' and:<br />
+<br />
+rand_uniqid('PpQXn7COf', true);<br />
+<br />
+will return '9007199254740989'<br />
+<br />
+---<br />
+<br />
+If you want the rand_uniqid to be at least 6 letter long, use the $pad_up = 6 argument<br />
+<br />
+---<br />
+<br />
+You can support even more characters (making the resulting rand_uniqid even smaller) by adding characters to the $index var at the top of the function body.<br />
+<br />
+---<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">function </span><span class="default">rand_uniqid</span><span class="keyword">(</span><span class="default">$in</span><span class="keyword">, </span><span class="default">$to_num </span><span class="keyword">= </span><span class="default">false</span><span class="keyword">, </span><span class="default">$pad_up </span><span class="keyword">= </span><span class="default">false</span><span class="keyword">, </span><span class="default">$passKey </span><span class="keyword">= </span><span class="default">null</span><span class="keyword">)<br />
+{<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$index </span><span class="keyword">= </span><span class="string">"abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; if (</span><span class="default">$passKey </span><span class="keyword">!== </span><span class="default">null</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// Although this function's purpose is to just make the<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; // ID short - and not so much secure,<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; // you can optionally supply a password to make it harder<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; // to calculate the corresponding numeric ID<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">for (</span><span class="default">$n </span><span class="keyword">= </span><span class="default">0</span><span class="keyword">; </span><span class="default">$n</span><span class="keyword">&lt;</span><span class="default">strlen</span><span class="keyword">(</span><span class="default">$index</span><span class="keyword">); </span><span class="default">$n</span><span class="keyword">++) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$i</span><span class="keyword">[] = </span><span class="default">substr</span><span class="keyword">( </span><span class="default">$index</span><span class="keyword">,</span><span class="default">$n </span><span class="keyword">,</span><span class="default">1</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$passhash </span><span class="keyword">= </span><span class="default">hash</span><span class="keyword">(</span><span class="string">'sha256'</span><span class="keyword">,</span><span class="default">$passKey</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$passhash </span><span class="keyword">= (</span><span class="default">strlen</span><span class="keyword">(</span><span class="default">$passhash</span><span class="keyword">) &lt; </span><span class="default">strlen</span><span class="keyword">(</span><span class="default">$index</span><span class="keyword">))<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; ? </span><span class="default">hash</span><span class="keyword">(</span><span class="string">'sha512'</span><span class="keyword">,</span><span class="default">$passKey</span><span class="keyword">)<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; : </span><span class="default">$passhash</span><span class="keyword">;<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; for (</span><span class="default">$n</span><span class="keyword">=</span><span class="default">0</span><span class="keyword">; </span><span class="default">$n </span><span class="keyword">&lt; </span><span class="default">strlen</span><span class="keyword">(</span><span class="default">$index</span><span class="keyword">); </span><span class="default">$n</span><span class="keyword">++) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$p</span><span class="keyword">[] =&nbsp; </span><span class="default">substr</span><span class="keyword">(</span><span class="default">$passhash</span><span class="keyword">, </span><span class="default">$n </span><span class="keyword">,</span><span class="default">1</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">array_multisort</span><span class="keyword">(</span><span class="default">$p</span><span class="keyword">,&nbsp; </span><span class="default">SORT_DESC</span><span class="keyword">, </span><span class="default">$i</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$index </span><span class="keyword">= </span><span class="default">implode</span><span class="keyword">(</span><span class="default">$i</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$base&nbsp; </span><span class="keyword">= </span><span class="default">strlen</span><span class="keyword">(</span><span class="default">$index</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp;&nbsp; if (</span><span class="default">$to_num</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// Digital number&nbsp; &lt;&lt;--&nbsp; alphabet letter code<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$in&nbsp; </span><span class="keyword">= </span><span class="default">strrev</span><span class="keyword">(</span><span class="default">$in</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$out </span><span class="keyword">= </span><span class="default">0</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$len </span><span class="keyword">= </span><span class="default">strlen</span><span class="keyword">(</span><span class="default">$in</span><span class="keyword">) - </span><span class="default">1</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; for (</span><span class="default">$t </span><span class="keyword">= </span><span class="default">0</span><span class="keyword">; </span><span class="default">$t </span><span class="keyword">&lt;= </span><span class="default">$len</span><span class="keyword">; </span><span class="default">$t</span><span class="keyword">++) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$bcpow </span><span class="keyword">= </span><span class="default">bcpow</span><span class="keyword">(</span><span class="default">$base</span><span class="keyword">, </span><span class="default">$len </span><span class="keyword">- </span><span class="default">$t</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$out&nbsp;&nbsp; </span><span class="keyword">= </span><span class="default">$out </span><span class="keyword">+ </span><span class="default">strpos</span><span class="keyword">(</span><span class="default">$index</span><span class="keyword">, </span><span class="default">substr</span><span class="keyword">(</span><span class="default">$in</span><span class="keyword">, </span><span class="default">$t</span><span class="keyword">, </span><span class="default">1</span><span class="keyword">)) * </span><span class="default">$bcpow</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if (</span><span class="default">is_numeric</span><span class="keyword">(</span><span class="default">$pad_up</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$pad_up</span><span class="keyword">--;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if (</span><span class="default">$pad_up </span><span class="keyword">&gt; </span><span class="default">0</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$out </span><span class="keyword">-= </span><span class="default">pow</span><span class="keyword">(</span><span class="default">$base</span><span class="keyword">, </span><span class="default">$pad_up</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$out </span><span class="keyword">= </span><span class="default">sprintf</span><span class="keyword">(</span><span class="string">'%F'</span><span class="keyword">, </span><span class="default">$out</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$out </span><span class="keyword">= </span><span class="default">substr</span><span class="keyword">(</span><span class="default">$out</span><span class="keyword">, </span><span class="default">0</span><span class="keyword">, </span><span class="default">strpos</span><span class="keyword">(</span><span class="default">$out</span><span class="keyword">, </span><span class="string">'.'</span><span class="keyword">));<br />
+&nbsp;&nbsp;&nbsp; } else {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// Digital number&nbsp; --&gt;&gt;&nbsp; alphabet letter code<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">if (</span><span class="default">is_numeric</span><span class="keyword">(</span><span class="default">$pad_up</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$pad_up</span><span class="keyword">--;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if (</span><span class="default">$pad_up </span><span class="keyword">&gt; </span><span class="default">0</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$in </span><span class="keyword">+= </span><span class="default">pow</span><span class="keyword">(</span><span class="default">$base</span><span class="keyword">, </span><span class="default">$pad_up</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$out </span><span class="keyword">= </span><span class="string">""</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; for (</span><span class="default">$t </span><span class="keyword">= </span><span class="default">floor</span><span class="keyword">(</span><span class="default">log</span><span class="keyword">(</span><span class="default">$in</span><span class="keyword">, </span><span class="default">$base</span><span class="keyword">)); </span><span class="default">$t </span><span class="keyword">&gt;= </span><span class="default">0</span><span class="keyword">; </span><span class="default">$t</span><span class="keyword">--) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$bcp </span><span class="keyword">= </span><span class="default">bcpow</span><span class="keyword">(</span><span class="default">$base</span><span class="keyword">, </span><span class="default">$t</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$a&nbsp;&nbsp; </span><span class="keyword">= </span><span class="default">floor</span><span class="keyword">(</span><span class="default">$in </span><span class="keyword">/ </span><span class="default">$bcp</span><span class="keyword">) % </span><span class="default">$base</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$out </span><span class="keyword">= </span><span class="default">$out </span><span class="keyword">. </span><span class="default">substr</span><span class="keyword">(</span><span class="default">$index</span><span class="keyword">, </span><span class="default">$a</span><span class="keyword">, </span><span class="default">1</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$in&nbsp; </span><span class="keyword">= </span><span class="default">$in </span><span class="keyword">- (</span><span class="default">$a </span><span class="keyword">* </span><span class="default">$bcp</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$out </span><span class="keyword">= </span><span class="default">strrev</span><span class="keyword">(</span><span class="default">$out</span><span class="keyword">); </span><span class="comment">// reverse<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">}<br />
+<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">$out</span><span class="keyword">;<br />
+}<br />
+<br />
+echo </span><span class="default">rand_uniqid</span><span class="keyword">(</span><span class="default">1</span><span class="keyword">);<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="96549""></a>
+  <div class="note">
+   <strong class="user">Robin</strong>
+   <a href="#96549" class="date">04-Mar-2010 07:20</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+As others below note, without prefix and without "added entropy", this function simply returns the UNIX timestamp with added microsecond counter as a hex number; it's more or less just microtime(), in hexit form.<br />
+<br />
+A longer and more diverse unique id in the same hexit scheme can be achieved by instead digesting uniqid() (or a series of mt_rand(), f.e.) through md5() or sha1():<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+$unique </span><span class="keyword">= </span><span class="default">md5</span><span class="keyword">( </span><span class="default">uniqid</span><span class="keyword">() );&nbsp; </span><span class="comment">// 32 characters long<br />
+<br />
+</span><span class="default">$unique </span><span class="keyword">= </span><span class="default">sha1</span><span class="keyword">( </span><span class="default">uniqid</span><span class="keyword">() );&nbsp; </span><span class="comment">// 40 characters long<br />
+<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+Also worth to note is that since microtime() only works on systems that have gettimeofday() present, which Windows natively DOES NOT, uniqid() might yield just the single-second-resolution UNIX timestamp in a Windows environment.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="95001""></a>
+  <div class="note">
+   <strong class="user">keith at keithtyler dot com</strong>
+   <a href="#95001" class="date">07-Dec-2009 06:18</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+For the record, the underlying function to uniqid() appears to be roughly as follows:<br />
+<br />
+$m=microtime(true);<br />
+sprintf("%8x%05x\n",floor($m),($m-floor($m))*1000000);<br />
+<br />
+In other words, first 8 hex chars = Unixtime, last 5 hex chars = microseconds. This is why it has microsecond precision. Also, it provides a means by which to reverse-engineer the time when a uniqid was generated: <br />
+<br />
+date("r",hexdec(substr(uniqid(),0,8)));<br />
+<br />
+Increasingly as you go further down the string, the number becomes "more unique" over time, with the exception of digit 9, where numeral prevalence is 0..3&gt;4&gt;5..f, because of the difference between 10^6 and 16^5 (this is presumably true for the remaining digits as well but much less noticeable).</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="94959""></a>
+  <div class="note">
+   <strong class="user">Andrew Moore</strong>
+   <a href="#94959" class="date">04-Dec-2009 08:45</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+The following class generates VALID RFC 4211 COMPLIANT Universally Unique IDentifiers (UUID) version 3, 4 and 5.<br />
+<br />
+Version 3 and 5 UUIDs are named based. They require a namespace (another valid UUID) and a value (the name). Given the same namespace and name, the output is always the same.<br />
+<br />
+Version 4 UUIDs are pseudo-random.<br />
+<br />
+UUIDs generated below validates using OSSP UUID Tool, and output for named-based UUIDs are exactly the same. This is a pure PHP implementation.<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">class </span><span class="default">UUID </span><span class="keyword">{<br />
+&nbsp; public static function </span><span class="default">v3</span><span class="keyword">(</span><span class="default">$namespace</span><span class="keyword">, </span><span class="default">$name</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; if(!</span><span class="default">self</span><span class="keyword">::</span><span class="default">is_valid</span><span class="keyword">(</span><span class="default">$namespace</span><span class="keyword">)) return </span><span class="default">false</span><span class="keyword">;<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// Get hexadecimal components of namespace<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$nhex </span><span class="keyword">= </span><span class="default">str_replace</span><span class="keyword">(array(</span><span class="string">'-'</span><span class="keyword">,</span><span class="string">'{'</span><span class="keyword">,</span><span class="string">'}'</span><span class="keyword">), </span><span class="string">''</span><span class="keyword">, </span><span class="default">$namespace</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// Binary Value<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$nstr </span><span class="keyword">= </span><span class="string">''</span><span class="keyword">;<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// Convert Namespace UUID to bits<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">for(</span><span class="default">$i </span><span class="keyword">= </span><span class="default">0</span><span class="keyword">; </span><span class="default">$i </span><span class="keyword">&lt; </span><span class="default">strlen</span><span class="keyword">(</span><span class="default">$nhex</span><span class="keyword">); </span><span class="default">$i</span><span class="keyword">+=</span><span class="default">2</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">$nstr </span><span class="keyword">.= </span><span class="default">chr</span><span class="keyword">(</span><span class="default">hexdec</span><span class="keyword">(</span><span class="default">$nhex</span><span class="keyword">[</span><span class="default">$i</span><span class="keyword">].</span><span class="default">$nhex</span><span class="keyword">[</span><span class="default">$i</span><span class="keyword">+</span><span class="default">1</span><span class="keyword">]));<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// Calculate hash value<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$hash </span><span class="keyword">= </span><span class="default">md5</span><span class="keyword">(</span><span class="default">$nstr </span><span class="keyword">. </span><span class="default">$name</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">sprintf</span><span class="keyword">(</span><span class="string">'%08s-%04s-%04x-%04x-%12s'</span><span class="keyword">,<br />
+<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="comment">// 32 bits for "time_low"<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">substr</span><span class="keyword">(</span><span class="default">$hash</span><span class="keyword">, </span><span class="default">0</span><span class="keyword">, </span><span class="default">8</span><span class="keyword">),<br />
+<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="comment">// 16 bits for "time_mid"<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">substr</span><span class="keyword">(</span><span class="default">$hash</span><span class="keyword">, </span><span class="default">8</span><span class="keyword">, </span><span class="default">4</span><span class="keyword">),<br />
+<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="comment">// 16 bits for "time_hi_and_version",<br />
+&nbsp;&nbsp; &nbsp;&nbsp; // four most significant bits holds version number 3<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="keyword">(</span><span class="default">hexdec</span><span class="keyword">(</span><span class="default">substr</span><span class="keyword">(</span><span class="default">$hash</span><span class="keyword">, </span><span class="default">12</span><span class="keyword">, </span><span class="default">4</span><span class="keyword">)) &amp; </span><span class="default">0x0fff</span><span class="keyword">) | </span><span class="default">0x3000</span><span class="keyword">,<br />
+<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="comment">// 16 bits, 8 bits for "clk_seq_hi_res",<br />
+&nbsp;&nbsp; &nbsp;&nbsp; // 8 bits for "clk_seq_low",<br />
+&nbsp;&nbsp; &nbsp;&nbsp; // two most significant bits holds zero and one for variant DCE1.1<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="keyword">(</span><span class="default">hexdec</span><span class="keyword">(</span><span class="default">substr</span><span class="keyword">(</span><span class="default">$hash</span><span class="keyword">, </span><span class="default">16</span><span class="keyword">, </span><span class="default">4</span><span class="keyword">)) &amp; </span><span class="default">0x3fff</span><span class="keyword">) | </span><span class="default">0x8000</span><span class="keyword">,<br />
+<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="comment">// 48 bits for "node"<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">substr</span><span class="keyword">(</span><span class="default">$hash</span><span class="keyword">, </span><span class="default">20</span><span class="keyword">, </span><span class="default">12</span><span class="keyword">)<br />
+&nbsp;&nbsp;&nbsp; );<br />
+&nbsp; }<br />
+<br />
+&nbsp; public static function </span><span class="default">v4</span><span class="keyword">() {<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">sprintf</span><span class="keyword">(</span><span class="string">'%04x%04x-%04x-%04x-%04x-%04x%04x%04x'</span><span class="keyword">,<br />
+<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="comment">// 32 bits for "time_low"<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">mt_rand</span><span class="keyword">(</span><span class="default">0</span><span class="keyword">, </span><span class="default">0xffff</span><span class="keyword">), </span><span class="default">mt_rand</span><span class="keyword">(</span><span class="default">0</span><span class="keyword">, </span><span class="default">0xffff</span><span class="keyword">),<br />
+<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="comment">// 16 bits for "time_mid"<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">mt_rand</span><span class="keyword">(</span><span class="default">0</span><span class="keyword">, </span><span class="default">0xffff</span><span class="keyword">),<br />
+<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="comment">// 16 bits for "time_hi_and_version",<br />
+&nbsp;&nbsp; &nbsp;&nbsp; // four most significant bits holds version number 4<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">mt_rand</span><span class="keyword">(</span><span class="default">0</span><span class="keyword">, </span><span class="default">0x0fff</span><span class="keyword">) | </span><span class="default">0x4000</span><span class="keyword">,<br />
+<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="comment">// 16 bits, 8 bits for "clk_seq_hi_res",<br />
+&nbsp;&nbsp; &nbsp;&nbsp; // 8 bits for "clk_seq_low",<br />
+&nbsp;&nbsp; &nbsp;&nbsp; // two most significant bits holds zero and one for variant DCE1.1<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">mt_rand</span><span class="keyword">(</span><span class="default">0</span><span class="keyword">, </span><span class="default">0x3fff</span><span class="keyword">) | </span><span class="default">0x8000</span><span class="keyword">,<br />
+<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="comment">// 48 bits for "node"<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">mt_rand</span><span class="keyword">(</span><span class="default">0</span><span class="keyword">, </span><span class="default">0xffff</span><span class="keyword">), </span><span class="default">mt_rand</span><span class="keyword">(</span><span class="default">0</span><span class="keyword">, </span><span class="default">0xffff</span><span class="keyword">), </span><span class="default">mt_rand</span><span class="keyword">(</span><span class="default">0</span><span class="keyword">, </span><span class="default">0xffff</span><span class="keyword">)<br />
+&nbsp;&nbsp;&nbsp; );<br />
+&nbsp; }<br />
+<br />
+&nbsp; public static function </span><span class="default">v5</span><span class="keyword">(</span><span class="default">$namespace</span><span class="keyword">, </span><span class="default">$name</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; if(!</span><span class="default">self</span><span class="keyword">::</span><span class="default">is_valid</span><span class="keyword">(</span><span class="default">$namespace</span><span class="keyword">)) return </span><span class="default">false</span><span class="keyword">;<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// Get hexadecimal components of namespace<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$nhex </span><span class="keyword">= </span><span class="default">str_replace</span><span class="keyword">(array(</span><span class="string">'-'</span><span class="keyword">,</span><span class="string">'{'</span><span class="keyword">,</span><span class="string">'}'</span><span class="keyword">), </span><span class="string">''</span><span class="keyword">, </span><span class="default">$namespace</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// Binary Value<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$nstr </span><span class="keyword">= </span><span class="string">''</span><span class="keyword">;<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// Convert Namespace UUID to bits<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">for(</span><span class="default">$i </span><span class="keyword">= </span><span class="default">0</span><span class="keyword">; </span><span class="default">$i </span><span class="keyword">&lt; </span><span class="default">strlen</span><span class="keyword">(</span><span class="default">$nhex</span><span class="keyword">); </span><span class="default">$i</span><span class="keyword">+=</span><span class="default">2</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">$nstr </span><span class="keyword">.= </span><span class="default">chr</span><span class="keyword">(</span><span class="default">hexdec</span><span class="keyword">(</span><span class="default">$nhex</span><span class="keyword">[</span><span class="default">$i</span><span class="keyword">].</span><span class="default">$nhex</span><span class="keyword">[</span><span class="default">$i</span><span class="keyword">+</span><span class="default">1</span><span class="keyword">]));<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// Calculate hash value<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$hash </span><span class="keyword">= </span><span class="default">sha1</span><span class="keyword">(</span><span class="default">$nstr </span><span class="keyword">. </span><span class="default">$name</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">sprintf</span><span class="keyword">(</span><span class="string">'%08s-%04s-%04x-%04x-%12s'</span><span class="keyword">,<br />
+<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="comment">// 32 bits for "time_low"<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">substr</span><span class="keyword">(</span><span class="default">$hash</span><span class="keyword">, </span><span class="default">0</span><span class="keyword">, </span><span class="default">8</span><span class="keyword">),<br />
+<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="comment">// 16 bits for "time_mid"<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">substr</span><span class="keyword">(</span><span class="default">$hash</span><span class="keyword">, </span><span class="default">8</span><span class="keyword">, </span><span class="default">4</span><span class="keyword">),<br />
+<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="comment">// 16 bits for "time_hi_and_version",<br />
+&nbsp;&nbsp; &nbsp;&nbsp; // four most significant bits holds version number 5<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="keyword">(</span><span class="default">hexdec</span><span class="keyword">(</span><span class="default">substr</span><span class="keyword">(</span><span class="default">$hash</span><span class="keyword">, </span><span class="default">12</span><span class="keyword">, </span><span class="default">4</span><span class="keyword">)) &amp; </span><span class="default">0x0fff</span><span class="keyword">) | </span><span class="default">0x5000</span><span class="keyword">,<br />
+<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="comment">// 16 bits, 8 bits for "clk_seq_hi_res",<br />
+&nbsp;&nbsp; &nbsp;&nbsp; // 8 bits for "clk_seq_low",<br />
+&nbsp;&nbsp; &nbsp;&nbsp; // two most significant bits holds zero and one for variant DCE1.1<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="keyword">(</span><span class="default">hexdec</span><span class="keyword">(</span><span class="default">substr</span><span class="keyword">(</span><span class="default">$hash</span><span class="keyword">, </span><span class="default">16</span><span class="keyword">, </span><span class="default">4</span><span class="keyword">)) &amp; </span><span class="default">0x3fff</span><span class="keyword">) | </span><span class="default">0x8000</span><span class="keyword">,<br />
+<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="comment">// 48 bits for "node"<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">substr</span><span class="keyword">(</span><span class="default">$hash</span><span class="keyword">, </span><span class="default">20</span><span class="keyword">, </span><span class="default">12</span><span class="keyword">)<br />
+&nbsp;&nbsp;&nbsp; );<br />
+&nbsp; }<br />
+<br />
+&nbsp; public static function </span><span class="default">is_valid</span><span class="keyword">(</span><span class="default">$uuid</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">preg_match</span><span class="keyword">(</span><span class="string">'/^\{?[0-9a-f]{8}\-?[0-9a-f]{4}\-?[0-9a-f]{4}\-?'</span><span class="keyword">.<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="string">'[0-9a-f]{4}\-?[0-9a-f]{12}\}?$/i'</span><span class="keyword">, </span><span class="default">$uuid</span><span class="keyword">) === </span><span class="default">1</span><span class="keyword">;<br />
+&nbsp; }<br />
+}<br />
+<br />
+</span><span class="comment">// Usage<br />
+// Named-based UUID.<br />
+<br />
+</span><span class="default">$v3uuid </span><span class="keyword">= </span><span class="default">UUID</span><span class="keyword">::</span><span class="default">v3</span><span class="keyword">(</span><span class="string">'1546058f-5a25-4334-85ae-e68f2a44bbaf'</span><span class="keyword">, </span><span class="string">'SomeRandomString'</span><span class="keyword">);<br />
+</span><span class="default">$v5uuid </span><span class="keyword">= </span><span class="default">UUID</span><span class="keyword">::</span><span class="default">v5</span><span class="keyword">(</span><span class="string">'1546058f-5a25-4334-85ae-e68f2a44bbaf'</span><span class="keyword">, </span><span class="string">'SomeRandomString'</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">// Pseudo-random UUID<br />
+<br />
+</span><span class="default">$v4uuid </span><span class="keyword">= </span><span class="default">UUID</span><span class="keyword">::</span><span class="default">v4</span><span class="keyword">();<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="91126""></a>
+  <div class="note">
+   <strong class="user">John Haugeland from FullOf.BS</strong>
+   <a href="#91126" class="date">26-May-2009 10:11</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Generating an MD5 from a unique ID is naive and reduces much of the value of unique IDs, as well as providing significant (attackable) stricture on the MD5 domain.&nbsp; That's a deeply broken thing to do.&nbsp; The correct approach is to use the unique ID on its own; it's already geared for non-collision.<br />
+<br />
+IDs should never be obfuscated for security, so if you're worried about someone guessing your ID, fix the system, don't just make it harder to guess (because it's nowhere near as difficult to guess as you imagine: you can just brute force the 60,000 MD5s that are generatable from millisecond IDs over the course of a given minute, which the typical computer can do in less than 0.1s).<br />
+<br />
+If you absolutely need to involve a hash somehow - maybe to placate a boss who thinks they understand security much better than they actually do - append it instead.<br />
+<br />
+function BadIdeaID() { return uniqid() . '_' . md5(mt_rand()); }</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="88434""></a>
+  <div class="note">
+   <strong class="user">Marius Karthaus</strong>
+   <a href="#88434" class="date">23-Jan-2009 11:10</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Better yet, just use the php5-uuid extension and this class to create 'official' UUIDs at high speed (On my system 1000 UUIDs are created in 0.0064 seconds)<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+Usage</span><span class="keyword">:<br />
+</span><span class="default">$uuid</span><span class="keyword">=new </span><span class="default">uuid</span><span class="keyword">();<br />
+echo </span><span class="default">$uuid</span><span class="keyword">-&gt;</span><span class="default">v1</span><span class="keyword">();<br />
+<br />
+class </span><span class="default">uuid </span><span class="keyword">{<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">/**<br />
+&nbsp;&nbsp; &nbsp; * This class enables you to get real uuids using the OSSP library.<br />
+&nbsp;&nbsp; &nbsp; * Note you need php-uuid installed.<br />
+&nbsp;&nbsp; &nbsp; * On my system 1000 UUIDs are created in 0.0064 seconds.<br />
+&nbsp;&nbsp; &nbsp; * <br />
+&nbsp;&nbsp; &nbsp; * @author Marius Karthaus<br />
+&nbsp;&nbsp; &nbsp; * <br />
+&nbsp;&nbsp; &nbsp; */<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">protected </span><span class="default">$uuidobject</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">/**<br />
+&nbsp;&nbsp; &nbsp; * On long running deamons i've seen a lost resource. This checks the resource and creates it if needed.<br />
+&nbsp;&nbsp; &nbsp; *<br />
+&nbsp;&nbsp; &nbsp; */<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">protected function </span><span class="default">create</span><span class="keyword">() {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if (! </span><span class="default">is_resource </span><span class="keyword">( </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">uuidobject </span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">uuid_create </span><span class="keyword">( &amp;</span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">uuidobject </span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">/**<br />
+&nbsp;&nbsp; &nbsp; * Return a type 1 (MAC address and time based) uuid<br />
+&nbsp;&nbsp; &nbsp; *<br />
+&nbsp;&nbsp; &nbsp; * @return String<br />
+&nbsp;&nbsp; &nbsp; */<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">public function </span><span class="default">v1</span><span class="keyword">() {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">create </span><span class="keyword">();<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">uuid_make </span><span class="keyword">( </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">uuidobject</span><span class="keyword">, </span><span class="default">UUID_MAKE_V1 </span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">uuid_export </span><span class="keyword">( </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">uuidobject</span><span class="keyword">, </span><span class="default">UUID_FMT_STR</span><span class="keyword">, &amp;</span><span class="default">$uuidstring </span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">trim </span><span class="keyword">( </span><span class="default">$uuidstring </span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">/**<br />
+&nbsp;&nbsp; &nbsp; * Return a type 4 (random) uuid<br />
+&nbsp;&nbsp; &nbsp; *<br />
+&nbsp;&nbsp; &nbsp; * @return String<br />
+&nbsp;&nbsp; &nbsp; */<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">public function </span><span class="default">v4</span><span class="keyword">() {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">create </span><span class="keyword">();<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">uuid_make </span><span class="keyword">( </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">uuidobject</span><span class="keyword">, </span><span class="default">UUID_MAKE_V4 </span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">uuid_export </span><span class="keyword">( </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">uuidobject</span><span class="keyword">, </span><span class="default">UUID_FMT_STR</span><span class="keyword">, &amp;</span><span class="default">$uuidstring </span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">trim </span><span class="keyword">( </span><span class="default">$uuidstring </span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">/**<br />
+&nbsp;&nbsp; &nbsp; * Return a type 5 (SHA-1 hash) uuid<br />
+&nbsp;&nbsp; &nbsp; *<br />
+&nbsp;&nbsp; &nbsp; * @return String<br />
+&nbsp;&nbsp; &nbsp; */<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">public function </span><span class="default">v5</span><span class="keyword">() {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">create </span><span class="keyword">();<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">uuid_make </span><span class="keyword">( </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">uuidobject</span><span class="keyword">, </span><span class="default">UUID_MAKE_V5 </span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">uuid_export </span><span class="keyword">( </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">uuidobject</span><span class="keyword">, </span><span class="default">UUID_FMT_STR</span><span class="keyword">, &amp;</span><span class="default">$uuidstring </span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">trim </span><span class="keyword">( </span><span class="default">$uuidstring </span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+}<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="88400""></a>
+  <div class="note">
+   <strong class="user">Marius Karthaus</strong>
+   <a href="#88400" class="date">22-Jan-2009 05:39</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I've created a class from the function below. With it, creating a lot of uuids beomes about 100 times faster because you do not need to fopen() for each uuid. <br />
+uuid::get() still works as a static function if you just need a single uuid.<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">class </span><span class="default">uuid </span><span class="keyword">{<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; protected </span><span class="default">$urand</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; public function </span><span class="default">__construct</span><span class="keyword">() {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">urand </span><span class="keyword">= @</span><span class="default">fopen </span><span class="keyword">( </span><span class="string">'/dev/urandom'</span><span class="keyword">, </span><span class="string">'rb' </span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">/**<br />
+&nbsp;&nbsp; &nbsp; * @brief Generates a Universally Unique IDentifier, version 4.<br />
+&nbsp;&nbsp; &nbsp; *<br />
+&nbsp;&nbsp; &nbsp; * This function generates a truly random UUID. The built in CakePHP String::uuid() function<br />
+&nbsp;&nbsp; &nbsp; * is not cryptographically secure. You should uses this function instead.<br />
+&nbsp;&nbsp; &nbsp; *<br />
+&nbsp;&nbsp; &nbsp; * @see <a href="http://tools.ietf.org/html/rfc4122#section-4.4" rel="nofollow" target="_blank">http://tools.ietf.org/html/rfc4122#section-4.4</a><br />
+&nbsp;&nbsp; &nbsp; * @see <a href="http://en.wikipedia.org/wiki/UUID" rel="nofollow" target="_blank">http://en.wikipedia.org/wiki/UUID</a><br />
+&nbsp;&nbsp; &nbsp; * @return string A UUID, made up of 32 hex digits and 4 hyphens.<br />
+&nbsp;&nbsp; &nbsp; */<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">function </span><span class="default">get</span><span class="keyword">() {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$pr_bits </span><span class="keyword">= </span><span class="default">false</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if (</span><span class="default">is_a </span><span class="keyword">( </span><span class="default">$this</span><span class="keyword">, </span><span class="string">'uuid' </span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if (</span><span class="default">is_resource </span><span class="keyword">( </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">urand </span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$pr_bits </span><span class="keyword">.= @</span><span class="default">fread </span><span class="keyword">( </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">urand</span><span class="keyword">, </span><span class="default">16 </span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if (! </span><span class="default">$pr_bits</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$fp </span><span class="keyword">= @</span><span class="default">fopen </span><span class="keyword">( </span><span class="string">'/dev/urandom'</span><span class="keyword">, </span><span class="string">'rb' </span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if (</span><span class="default">$fp </span><span class="keyword">!== </span><span class="default">false</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$pr_bits </span><span class="keyword">.= @</span><span class="default">fread </span><span class="keyword">( </span><span class="default">$fp</span><span class="keyword">, </span><span class="default">16 </span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; @</span><span class="default">fclose </span><span class="keyword">( </span><span class="default">$fp </span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; } else {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// If /dev/urandom isn't available (eg: in non-unix systems), use mt_rand().<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$pr_bits </span><span class="keyword">= </span><span class="string">""</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; for(</span><span class="default">$cnt </span><span class="keyword">= </span><span class="default">0</span><span class="keyword">; </span><span class="default">$cnt </span><span class="keyword">&lt; </span><span class="default">16</span><span class="keyword">; </span><span class="default">$cnt </span><span class="keyword">++) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$pr_bits </span><span class="keyword">.= </span><span class="default">chr </span><span class="keyword">( </span><span class="default">mt_rand </span><span class="keyword">( </span><span class="default">0</span><span class="keyword">, </span><span class="default">255 </span><span class="keyword">) );<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$time_low </span><span class="keyword">= </span><span class="default">bin2hex </span><span class="keyword">( </span><span class="default">substr </span><span class="keyword">( </span><span class="default">$pr_bits</span><span class="keyword">, </span><span class="default">0</span><span class="keyword">, </span><span class="default">4 </span><span class="keyword">) );<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$time_mid </span><span class="keyword">= </span><span class="default">bin2hex </span><span class="keyword">( </span><span class="default">substr </span><span class="keyword">( </span><span class="default">$pr_bits</span><span class="keyword">, </span><span class="default">4</span><span class="keyword">, </span><span class="default">2 </span><span class="keyword">) );<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$time_hi_and_version </span><span class="keyword">= </span><span class="default">bin2hex </span><span class="keyword">( </span><span class="default">substr </span><span class="keyword">( </span><span class="default">$pr_bits</span><span class="keyword">, </span><span class="default">6</span><span class="keyword">, </span><span class="default">2 </span><span class="keyword">) );<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$clock_seq_hi_and_reserved </span><span class="keyword">= </span><span class="default">bin2hex </span><span class="keyword">( </span><span class="default">substr </span><span class="keyword">( </span><span class="default">$pr_bits</span><span class="keyword">, </span><span class="default">8</span><span class="keyword">, </span><span class="default">2 </span><span class="keyword">) );<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$node </span><span class="keyword">= </span><span class="default">bin2hex </span><span class="keyword">( </span><span class="default">substr </span><span class="keyword">( </span><span class="default">$pr_bits</span><span class="keyword">, </span><span class="default">10</span><span class="keyword">, </span><span class="default">6 </span><span class="keyword">) );<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">/**<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; * Set the four most significant bits (bits 12 through 15) of the<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; * time_hi_and_version field to the 4-bit version number from<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; * Section 4.1.3.<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; * @see <a href="http://tools.ietf.org/html/rfc4122#section-4.1.3" rel="nofollow" target="_blank">http://tools.ietf.org/html/rfc4122#section-4.1.3</a><br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; */<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$time_hi_and_version </span><span class="keyword">= </span><span class="default">hexdec </span><span class="keyword">( </span><span class="default">$time_hi_and_version </span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$time_hi_and_version </span><span class="keyword">= </span><span class="default">$time_hi_and_version </span><span class="keyword">&gt;&gt; </span><span class="default">4</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$time_hi_and_version </span><span class="keyword">= </span><span class="default">$time_hi_and_version </span><span class="keyword">| </span><span class="default">0x4000</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">/**<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; * Set the two most significant bits (bits 6 and 7) of the<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; * clock_seq_hi_and_reserved to zero and one, respectively.<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; */<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$clock_seq_hi_and_reserved </span><span class="keyword">= </span><span class="default">hexdec </span><span class="keyword">( </span><span class="default">$clock_seq_hi_and_reserved </span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$clock_seq_hi_and_reserved </span><span class="keyword">= </span><span class="default">$clock_seq_hi_and_reserved </span><span class="keyword">&gt;&gt; </span><span class="default">2</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$clock_seq_hi_and_reserved </span><span class="keyword">= </span><span class="default">$clock_seq_hi_and_reserved </span><span class="keyword">| </span><span class="default">0x8000</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">sprintf </span><span class="keyword">( </span><span class="string">'%08s-%04s-%04x-%04x-%012s'</span><span class="keyword">, </span><span class="default">$time_low</span><span class="keyword">, </span><span class="default">$time_mid</span><span class="keyword">, </span><span class="default">$time_hi_and_version</span><span class="keyword">, </span><span class="default">$clock_seq_hi_and_reserved</span><span class="keyword">, </span><span class="default">$node </span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+}</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="88023""></a>
+  <div class="note">
+   <strong class="user">sean at seancolombo dot com</strong>
+   <a href="#88023" class="date">06-Jan-2009 07:56</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+This builds slightly on david's post below.&nbsp; The differences are that it doesn't require Cake anymore and there is a graceful fallback for /dev/urandom in case that isn't available (/dev/urandom is not available on windows systems for example).<br />
+<br />
+Since it uses mt_rand(), it is still cryptographically secure.<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="comment">/**<br />
+&nbsp;&nbsp; &nbsp; * @brief Generates a Universally Unique IDentifier, version 4.<br />
+&nbsp;&nbsp; &nbsp; *<br />
+&nbsp;&nbsp; &nbsp; * This function generates a truly random UUID. The built in CakePHP String::uuid() function<br />
+&nbsp;&nbsp; &nbsp; * is not cryptographically secure. You should uses this function instead.<br />
+&nbsp;&nbsp; &nbsp; *<br />
+&nbsp;&nbsp; &nbsp; * @see <a href="http://tools.ietf.org/html/rfc4122#section-4.4" rel="nofollow" target="_blank">http://tools.ietf.org/html/rfc4122#section-4.4</a><br />
+&nbsp;&nbsp; &nbsp; * @see <a href="http://en.wikipedia.org/wiki/UUID" rel="nofollow" target="_blank">http://en.wikipedia.org/wiki/UUID</a><br />
+&nbsp;&nbsp; &nbsp; * @return string A UUID, made up of 32 hex digits and 4 hyphens.<br />
+&nbsp;&nbsp; &nbsp; */<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="keyword">function </span><span class="default">uuidSecure</span><span class="keyword">() {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$pr_bits </span><span class="keyword">= </span><span class="default">null</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$fp </span><span class="keyword">= @</span><span class="default">fopen</span><span class="keyword">(</span><span class="string">'/dev/urandom'</span><span class="keyword">,</span><span class="string">'rb'</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if (</span><span class="default">$fp </span><span class="keyword">!== </span><span class="default">false</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$pr_bits </span><span class="keyword">.= @</span><span class="default">fread</span><span class="keyword">(</span><span class="default">$fp</span><span class="keyword">, </span><span class="default">16</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; @</span><span class="default">fclose</span><span class="keyword">(</span><span class="default">$fp</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; } else {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// If /dev/urandom isn't available (eg: in non-unix systems), use mt_rand().<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$pr_bits </span><span class="keyword">= </span><span class="string">""</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; for(</span><span class="default">$cnt</span><span class="keyword">=</span><span class="default">0</span><span class="keyword">; </span><span class="default">$cnt </span><span class="keyword">&lt; </span><span class="default">16</span><span class="keyword">; </span><span class="default">$cnt</span><span class="keyword">++){<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$pr_bits </span><span class="keyword">.= </span><span class="default">chr</span><span class="keyword">(</span><span class="default">mt_rand</span><span class="keyword">(</span><span class="default">0</span><span class="keyword">, </span><span class="default">255</span><span class="keyword">));<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$time_low </span><span class="keyword">= </span><span class="default">bin2hex</span><span class="keyword">(</span><span class="default">substr</span><span class="keyword">(</span><span class="default">$pr_bits</span><span class="keyword">,</span><span class="default">0</span><span class="keyword">, </span><span class="default">4</span><span class="keyword">));<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$time_mid </span><span class="keyword">= </span><span class="default">bin2hex</span><span class="keyword">(</span><span class="default">substr</span><span class="keyword">(</span><span class="default">$pr_bits</span><span class="keyword">,</span><span class="default">4</span><span class="keyword">, </span><span class="default">2</span><span class="keyword">));<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$time_hi_and_version </span><span class="keyword">= </span><span class="default">bin2hex</span><span class="keyword">(</span><span class="default">substr</span><span class="keyword">(</span><span class="default">$pr_bits</span><span class="keyword">,</span><span class="default">6</span><span class="keyword">, </span><span class="default">2</span><span class="keyword">));<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$clock_seq_hi_and_reserved </span><span class="keyword">= </span><span class="default">bin2hex</span><span class="keyword">(</span><span class="default">substr</span><span class="keyword">(</span><span class="default">$pr_bits</span><span class="keyword">,</span><span class="default">8</span><span class="keyword">, </span><span class="default">2</span><span class="keyword">));<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$node </span><span class="keyword">= </span><span class="default">bin2hex</span><span class="keyword">(</span><span class="default">substr</span><span class="keyword">(</span><span class="default">$pr_bits</span><span class="keyword">,</span><span class="default">10</span><span class="keyword">, </span><span class="default">6</span><span class="keyword">));<br />
+&nbsp;&nbsp; &nbsp; &nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">/**<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; * Set the four most significant bits (bits 12 through 15) of the<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; * time_hi_and_version field to the 4-bit version number from<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; * Section 4.1.3.<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; * @see <a href="http://tools.ietf.org/html/rfc4122#section-4.1.3" rel="nofollow" target="_blank">http://tools.ietf.org/html/rfc4122#section-4.1.3</a><br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; */<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$time_hi_and_version </span><span class="keyword">= </span><span class="default">hexdec</span><span class="keyword">(</span><span class="default">$time_hi_and_version</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$time_hi_and_version </span><span class="keyword">= </span><span class="default">$time_hi_and_version </span><span class="keyword">&gt;&gt; </span><span class="default">4</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$time_hi_and_version </span><span class="keyword">= </span><span class="default">$time_hi_and_version </span><span class="keyword">| </span><span class="default">0x4000</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">/**<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; * Set the two most significant bits (bits 6 and 7) of the<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; * clock_seq_hi_and_reserved to zero and one, respectively.<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; */<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$clock_seq_hi_and_reserved </span><span class="keyword">= </span><span class="default">hexdec</span><span class="keyword">(</span><span class="default">$clock_seq_hi_and_reserved</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$clock_seq_hi_and_reserved </span><span class="keyword">= </span><span class="default">$clock_seq_hi_and_reserved </span><span class="keyword">&gt;&gt; </span><span class="default">2</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$clock_seq_hi_and_reserved </span><span class="keyword">= </span><span class="default">$clock_seq_hi_and_reserved </span><span class="keyword">| </span><span class="default">0x8000</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">sprintf</span><span class="keyword">(</span><span class="string">'%08s-%04s-%04x-%04x-%012s'</span><span class="keyword">,<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$time_low</span><span class="keyword">, </span><span class="default">$time_mid</span><span class="keyword">, </span><span class="default">$time_hi_and_version</span><span class="keyword">, </span><span class="default">$clock_seq_hi_and_reserved</span><span class="keyword">, </span><span class="default">$node</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="87992""></a>
+  <div class="note">
+   <strong class="user">david at ramaboo dot com</strong>
+   <a href="#87992" class="date">05-Jan-2009 12:51</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Another UUID function. This time using /dev/random<br />
+<span class="default">&lt;?php<br />
+</span><span class="comment">/**<br />
+&nbsp;&nbsp; &nbsp; * @brief Generates a Universally Unique IDentifier, version 4.<br />
+&nbsp;&nbsp; &nbsp; * <br />
+&nbsp;&nbsp; &nbsp; * This function generates a truly random UUID. The built in CakePHP String::uuid() function<br />
+&nbsp;&nbsp; &nbsp; * is not cryptographically secure. You should uses this function instead.<br />
+&nbsp;&nbsp; &nbsp; * <br />
+&nbsp;&nbsp; &nbsp; * @see <a href="http://tools.ietf.org/html/rfc4122#section-4.4" rel="nofollow" target="_blank">http://tools.ietf.org/html/rfc4122#section-4.4</a><br />
+&nbsp;&nbsp; &nbsp; * @see <a href="http://en.wikipedia.org/wiki/UUID" rel="nofollow" target="_blank">http://en.wikipedia.org/wiki/UUID</a><br />
+&nbsp;&nbsp; &nbsp; * @return string A UUID, made up of 32 hex digits and 4 hyphens.<br />
+&nbsp;&nbsp; &nbsp; */<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">public function </span><span class="default">uuidSecure</span><span class="keyword">() {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$pr_bits </span><span class="keyword">= </span><span class="default">null</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$fp </span><span class="keyword">= @</span><span class="default">fopen</span><span class="keyword">(</span><span class="string">'/dev/urandom'</span><span class="keyword">,</span><span class="string">'rb'</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if (</span><span class="default">$fp </span><span class="keyword">!== </span><span class="default">false</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$pr_bits </span><span class="keyword">.= @</span><span class="default">fread</span><span class="keyword">(</span><span class="default">$fp</span><span class="keyword">, </span><span class="default">16</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; @</span><span class="default">fclose</span><span class="keyword">(</span><span class="default">$fp</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; } else {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">cakeError</span><span class="keyword">(</span><span class="string">'randomNumber'</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$time_low </span><span class="keyword">= </span><span class="default">bin2hex</span><span class="keyword">(</span><span class="default">substr</span><span class="keyword">(</span><span class="default">$pr_bits</span><span class="keyword">,</span><span class="default">0</span><span class="keyword">, </span><span class="default">4</span><span class="keyword">));<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$time_mid </span><span class="keyword">= </span><span class="default">bin2hex</span><span class="keyword">(</span><span class="default">substr</span><span class="keyword">(</span><span class="default">$pr_bits</span><span class="keyword">,</span><span class="default">4</span><span class="keyword">, </span><span class="default">2</span><span class="keyword">));<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$time_hi_and_version </span><span class="keyword">= </span><span class="default">bin2hex</span><span class="keyword">(</span><span class="default">substr</span><span class="keyword">(</span><span class="default">$pr_bits</span><span class="keyword">,</span><span class="default">6</span><span class="keyword">, </span><span class="default">2</span><span class="keyword">));<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$clock_seq_hi_and_reserved </span><span class="keyword">= </span><span class="default">bin2hex</span><span class="keyword">(</span><span class="default">substr</span><span class="keyword">(</span><span class="default">$pr_bits</span><span class="keyword">,</span><span class="default">8</span><span class="keyword">, </span><span class="default">2</span><span class="keyword">));<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$node </span><span class="keyword">= </span><span class="default">bin2hex</span><span class="keyword">(</span><span class="default">substr</span><span class="keyword">(</span><span class="default">$pr_bits</span><span class="keyword">,</span><span class="default">10</span><span class="keyword">, </span><span class="default">6</span><span class="keyword">));<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">/**<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; * Set the four most significant bits (bits 12 through 15) of the<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; * time_hi_and_version field to the 4-bit version number from<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; * Section 4.1.3.<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; * @see <a href="http://tools.ietf.org/html/rfc4122#section-4.1.3" rel="nofollow" target="_blank">http://tools.ietf.org/html/rfc4122#section-4.1.3</a><br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; */<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$time_hi_and_version </span><span class="keyword">= </span><span class="default">hexdec</span><span class="keyword">(</span><span class="default">$time_hi_and_version</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$time_hi_and_version </span><span class="keyword">= </span><span class="default">$time_hi_and_version </span><span class="keyword">&gt;&gt; </span><span class="default">4</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$time_hi_and_version </span><span class="keyword">= </span><span class="default">$time_hi_and_version </span><span class="keyword">| </span><span class="default">0x4000</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">/**<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; * Set the two most significant bits (bits 6 and 7) of the<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; * clock_seq_hi_and_reserved to zero and one, respectively.<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; */<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$clock_seq_hi_and_reserved </span><span class="keyword">= </span><span class="default">hexdec</span><span class="keyword">(</span><span class="default">$clock_seq_hi_and_reserved</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$clock_seq_hi_and_reserved </span><span class="keyword">= </span><span class="default">$clock_seq_hi_and_reserved </span><span class="keyword">&gt;&gt; </span><span class="default">2</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$clock_seq_hi_and_reserved </span><span class="keyword">= </span><span class="default">$clock_seq_hi_and_reserved </span><span class="keyword">| </span><span class="default">0x8000</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">sprintf</span><span class="keyword">(</span><span class="string">'%08s-%04s-%04x-%04x-%012s'</span><span class="keyword">,<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$time_low</span><span class="keyword">, </span><span class="default">$time_mid</span><span class="keyword">, </span><span class="default">$time_hi_and_version</span><span class="keyword">, </span><span class="default">$clock_seq_hi_and_reserved</span><span class="keyword">, </span><span class="default">$node</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="85061""></a>
+  <div class="note">
+   <strong class="user">valerylourie at gmail dot com</strong>
+   <a href="#85061" class="date">13-Aug-2008 01:38</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+To dholmes at cfdsoftware dot net:<br />
+sprintf parameter should be changed to '%04x%04x-%04x-4%03x-%04x-%04x%04x%04x' - 4 in GUID V4 should be first, but not last digit in the third group</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="84394""></a>
+  <div class="note">
+   <strong class="user">lucas at paivlek dot net</strong>
+   <a href="#84394" class="date">11-Jul-2008 09:07</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Hi all,<br />
+<br />
+I'm not sure what performance problems you guys are talking about, but I benchmarked 10000 of each of the functions outlined in this comments section alongside the uniqid method. Where function names are duplicated (because everyone likes to call their method uuid), i've added part of that contributer's name to the function name.<br />
+<br />
+So if you want something unique and you think that uniqid() is slowing your scripts down, maybe rand() is your only answer :)<br />
+<br />
+See the output (quickest to slowest):<br />
+Array<br />
+(<br />
+&nbsp;&nbsp;&nbsp; [0] =&gt; Array<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; (<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [strMethod] =&gt; rand<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [intRepetitions] =&gt; 10000<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [flTotalTime] =&gt; 0.104878902435<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [flAverageTime] =&gt; 1.04878902435E-5<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [flShortestTime] =&gt; 3.81469726562E-6<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [flLongestTime] =&gt; 0.000297069549561<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [exampleOutput] =&gt; 19689<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; )<br />
+<br />
+&nbsp;&nbsp;&nbsp; [1] =&gt; Array<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; (<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [strMethod] =&gt; uniqid<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [intRepetitions] =&gt; 10000<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [flTotalTime] =&gt; 0.123727083206<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [flAverageTime] =&gt; 1.23727083206E-5<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [flShortestTime] =&gt; 3.81469726562E-6<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [flLongestTime] =&gt; 9.3936920166E-5<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [exampleOutput] =&gt; 48782b3c3e997<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; )<br />
+<br />
+&nbsp;&nbsp;&nbsp; [2] =&gt; Array<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; (<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [strMethod] =&gt; uniqid2<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [intRepetitions] =&gt; 10000<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [flTotalTime] =&gt; 0.132393836975<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [flAverageTime] =&gt; 1.32393836975E-5<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [flShortestTime] =&gt; 3.81469726562E-6<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [flLongestTime] =&gt; 0.000135898590088<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [exampleOutput] =&gt; 48782b3d282c<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; )<br />
+<br />
+&nbsp;&nbsp;&nbsp; [3] =&gt; Array<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; (<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [strMethod] =&gt; uuid_mimec<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [intRepetitions] =&gt; 10000<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [flTotalTime] =&gt; 0.192065000534<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [flAverageTime] =&gt; 1.92065000534E-5<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [flShortestTime] =&gt; 3.81469726562E-6<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [flLongestTime] =&gt; 0.000221014022827<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [exampleOutput] =&gt; fc1b24b7-59e0-4935-88f2-06a6fde922d8<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; )<br />
+<br />
+&nbsp;&nbsp;&nbsp; [4] =&gt; Array<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; (<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [strMethod] =&gt; uuid_maciej<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [intRepetitions] =&gt; 10000<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [flTotalTime] =&gt; 0.219671964645<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [flAverageTime] =&gt; 2.19671964645E-5<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [flShortestTime] =&gt; 3.81469726562E-6<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [flLongestTime] =&gt; 0.000162839889526<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [exampleOutput] =&gt; 4c55bc99-b5bc-0f88-0387-00001a51bd33<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; )<br />
+<br />
+&nbsp;&nbsp;&nbsp; [5] =&gt; Array<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; (<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [strMethod] =&gt; uuid_dholmes<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [intRepetitions] =&gt; 10000<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [flTotalTime] =&gt; 0.221670866013<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [flAverageTime] =&gt; 2.21670866013E-5<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [flShortestTime] =&gt; 3.81469726562E-6<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [flLongestTime] =&gt; 0.000198125839233<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [exampleOutput] =&gt; cd79ac78-af08-a804-6567-3c4940e3252b<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; )<br />
+<br />
+&nbsp;&nbsp;&nbsp; [6] =&gt; Array<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; (<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [strMethod] =&gt; newid<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [intRepetitions] =&gt; 10000<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [flTotalTime] =&gt; 0.221807956696<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [flAverageTime] =&gt; 2.21807956696E-5<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [flShortestTime] =&gt; 3.81469726562E-6<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [flLongestTime] =&gt; 0.000211954116821<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [exampleOutput] =&gt; user_9e2e305b4c4340397617baf285f11eb348782b3d0354b3.<br />
+095706961215834941127.0.0.1<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; )<br />
+<br />
+&nbsp;&nbsp;&nbsp; [7] =&gt; Array<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; (<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [strMethod] =&gt; uuid_nodkz<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [intRepetitions] =&gt; 10000<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [flTotalTime] =&gt; 0.477306842804<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [flAverageTime] =&gt; 4.77306842804E-5<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [flShortestTime] =&gt; 3.81469726562E-6<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [flLongestTime] =&gt; 0.000205039978027<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [exampleOutput] =&gt; 0001-7f000001-48782b3e-0952-ef8e7ec8<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; )<br />
+<br />
+&nbsp;&nbsp;&nbsp; [8] =&gt; Array<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; (<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [strMethod] =&gt; uuid_lance<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [intRepetitions] =&gt; 10000<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [flTotalTime] =&gt; 0.668512821198<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [flAverageTime] =&gt; 6.68512821198E-5<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [flShortestTime] =&gt; 3.81469726562E-6<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [flLongestTime] =&gt; 0.00036096572876<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [exampleOutput] =&gt; fa465717-26bf-4af9-987f-33bb54905678<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; )<br />
+<br />
+)</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="81385""></a>
+  <div class="note">
+   <strong class="user">mark at whytewaters dot com</strong>
+   <a href="#81385" class="date">25-Feb-2008 06:39</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+If you want many ids and performance of this function is an issue why not pull uniquid() out of the loop, eg:<br />
+<br />
+$base = uniqueid();<br />
+$ids[] = array();<br />
+<br />
+for ($index = 0; $index &lt; 100000; $index++)&nbsp; <br />
+&nbsp;&nbsp;&nbsp; $ids[] = $base . '.' . $index;</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="80419""></a>
+  <div class="note">
+   <strong class="user">nodkz at mail dot ru</strong>
+   <a href="#80419" class="date">15-Jan-2008 02:00</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I use such UUID (it not RFC!!!)<br />
+(server_id)-(clientIP)-(unixtime)-(milliseconds)-(random)<br />
+<br />
+&nbsp;I can easyly determine which server at which time and who initiate creating of object.<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+$u</span><span class="keyword">=</span><span class="default">uuid</span><span class="keyword">();&nbsp;&nbsp; </span><span class="comment">// 0001-7f000001-478c8000-4801-47242987<br />
+</span><span class="keyword">echo </span><span class="default">$u</span><span class="keyword">;<br />
+echo </span><span class="string">"&lt;br&gt;"</span><span class="keyword">;<br />
+</span><span class="default">print_r</span><span class="keyword">(</span><span class="default">uuidDecode</span><span class="keyword">(</span><span class="default">$u</span><span class="keyword">)); </span><span class="comment">// Array ( [serverID] =&gt; 0001 [ip] =&gt; 127.0.0.1 [unixtime] =&gt; 1200390144 [micro] =&gt; 0.28126525878906 ) <br />
+<br />
+</span><span class="keyword">function </span><span class="default">uuid</span><span class="keyword">(</span><span class="default">$serverID</span><span class="keyword">=</span><span class="default">1</span><span class="keyword">)<br />
+{<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$t</span><span class="keyword">=</span><span class="default">explode</span><span class="keyword">(</span><span class="string">" "</span><span class="keyword">,</span><span class="default">microtime</span><span class="keyword">());<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">sprintf</span><span class="keyword">( </span><span class="string">'%04x-%08s-%08s-%04s-%04x%04x'</span><span class="keyword">,<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$serverID</span><span class="keyword">,<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">clientIPToHex</span><span class="keyword">(),<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">substr</span><span class="keyword">(</span><span class="string">"00000000"</span><span class="keyword">.</span><span class="default">dechex</span><span class="keyword">(</span><span class="default">$t</span><span class="keyword">[</span><span class="default">1</span><span class="keyword">]),-</span><span class="default">8</span><span class="keyword">),&nbsp;&nbsp; </span><span class="comment">// get 8HEX of unixtime<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">substr</span><span class="keyword">(</span><span class="string">"0000"</span><span class="keyword">.</span><span class="default">dechex</span><span class="keyword">(</span><span class="default">round</span><span class="keyword">(</span><span class="default">$t</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">]*</span><span class="default">65536</span><span class="keyword">)),-</span><span class="default">4</span><span class="keyword">), </span><span class="comment">// get 4HEX of microtime<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">mt_rand</span><span class="keyword">(</span><span class="default">0</span><span class="keyword">,</span><span class="default">0xffff</span><span class="keyword">), </span><span class="default">mt_rand</span><span class="keyword">(</span><span class="default">0</span><span class="keyword">,</span><span class="default">0xffff</span><span class="keyword">));<br />
+}<br />
+<br />
+function </span><span class="default">uuidDecode</span><span class="keyword">(</span><span class="default">$uuid</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$rez</span><span class="keyword">=Array();<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$u</span><span class="keyword">=</span><span class="default">explode</span><span class="keyword">(</span><span class="string">"-"</span><span class="keyword">,</span><span class="default">$uuid</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; if(</span><span class="default">is_array</span><span class="keyword">(</span><span class="default">$u</span><span class="keyword">)&amp;&amp;</span><span class="default">count</span><span class="keyword">(</span><span class="default">$u</span><span class="keyword">)==</span><span class="default">5</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$rez</span><span class="keyword">=Array(<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="string">'serverID'</span><span class="keyword">=&gt;</span><span class="default">$u</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">],<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="string">'ip'</span><span class="keyword">=&gt;</span><span class="default">clientIPFromHex</span><span class="keyword">(</span><span class="default">$u</span><span class="keyword">[</span><span class="default">1</span><span class="keyword">]),<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="string">'unixtime'</span><span class="keyword">=&gt;</span><span class="default">hexdec</span><span class="keyword">(</span><span class="default">$u</span><span class="keyword">[</span><span class="default">2</span><span class="keyword">]),<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="string">'micro'</span><span class="keyword">=&gt;(</span><span class="default">hexdec</span><span class="keyword">(</span><span class="default">$u</span><span class="keyword">[</span><span class="default">3</span><span class="keyword">])/</span><span class="default">65536</span><span class="keyword">)<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; );<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">$rez</span><span class="keyword">;<br />
+}<br />
+<br />
+function </span><span class="default">clientIPToHex</span><span class="keyword">(</span><span class="default">$ip</span><span class="keyword">=</span><span class="string">""</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$hex</span><span class="keyword">=</span><span class="string">""</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; if(</span><span class="default">$ip</span><span class="keyword">==</span><span class="string">""</span><span class="keyword">) </span><span class="default">$ip</span><span class="keyword">=</span><span class="default">getEnv</span><span class="keyword">(</span><span class="string">"REMOTE_ADDR"</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$part</span><span class="keyword">=</span><span class="default">explode</span><span class="keyword">(</span><span class="string">'.'</span><span class="keyword">, </span><span class="default">$ip</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; for (</span><span class="default">$i</span><span class="keyword">=</span><span class="default">0</span><span class="keyword">; </span><span class="default">$i</span><span class="keyword">&lt;=</span><span class="default">count</span><span class="keyword">(</span><span class="default">$part</span><span class="keyword">)-</span><span class="default">1</span><span class="keyword">; </span><span class="default">$i</span><span class="keyword">++) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$hex</span><span class="keyword">.=</span><span class="default">substr</span><span class="keyword">(</span><span class="string">"0"</span><span class="keyword">.</span><span class="default">dechex</span><span class="keyword">(</span><span class="default">$part</span><span class="keyword">[</span><span class="default">$i</span><span class="keyword">]),-</span><span class="default">2</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">$hex</span><span class="keyword">;<br />
+}<br />
+<br />
+function </span><span class="default">clientIPFromHex</span><span class="keyword">(</span><span class="default">$hex</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$ip</span><span class="keyword">=</span><span class="string">""</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; if(</span><span class="default">strlen</span><span class="keyword">(</span><span class="default">$hex</span><span class="keyword">)==</span><span class="default">8</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$ip</span><span class="keyword">.=</span><span class="default">hexdec</span><span class="keyword">(</span><span class="default">substr</span><span class="keyword">(</span><span class="default">$hex</span><span class="keyword">,</span><span class="default">0</span><span class="keyword">,</span><span class="default">2</span><span class="keyword">)).</span><span class="string">"."</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$ip</span><span class="keyword">.=</span><span class="default">hexdec</span><span class="keyword">(</span><span class="default">substr</span><span class="keyword">(</span><span class="default">$hex</span><span class="keyword">,</span><span class="default">2</span><span class="keyword">,</span><span class="default">2</span><span class="keyword">)).</span><span class="string">"."</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$ip</span><span class="keyword">.=</span><span class="default">hexdec</span><span class="keyword">(</span><span class="default">substr</span><span class="keyword">(</span><span class="default">$hex</span><span class="keyword">,</span><span class="default">4</span><span class="keyword">,</span><span class="default">2</span><span class="keyword">)).</span><span class="string">"."</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$ip</span><span class="keyword">.=</span><span class="default">hexdec</span><span class="keyword">(</span><span class="default">substr</span><span class="keyword">(</span><span class="default">$hex</span><span class="keyword">,</span><span class="default">6</span><span class="keyword">,</span><span class="default">2</span><span class="keyword">));<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">$ip</span><span class="keyword">;<br />
+}<br />
+<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="77633""></a>
+  <div class="note">
+   <strong class="user">smp_info at yahoo dot com</strong>
+   <a href="#77633" class="date">06-Sep-2007 05:38</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+This function is painfully slow if you're using it to give images random names inside of a loop.&nbsp; The following function will give you a random name *every* time and is much faster.<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+</span><span class="keyword">function </span><span class="default">nameImage</span><span class="keyword">(</span><span class="default">$imgExtension</span><span class="keyword">)<br />
+{<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">time</span><span class="keyword">() . </span><span class="default">substr</span><span class="keyword">(</span><span class="default">md5</span><span class="keyword">(</span><span class="default">microtime</span><span class="keyword">()), </span><span class="default">0</span><span class="keyword">, </span><span class="default">rand</span><span class="keyword">(</span><span class="default">5</span><span class="keyword">, </span><span class="default">12</span><span class="keyword">)) . </span><span class="default">$imgExtension</span><span class="keyword">;<br />
+}<br />
+<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="75740""></a>
+  <div class="note">
+   <strong class="user">dot  dot  dot  dot  dot alexander at gmail dot com</strong>
+   <a href="#75740" class="date">13-Jun-2007 02:28</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I use this mangle currently: <br />
+( inserts the IP, uses time() and a prefix, aside the uniqid)<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">if(!</span><span class="default">function_exists</span><span class="keyword">(</span><span class="string">"newid"</span><span class="keyword">)){<br />
+<br />
+&nbsp;&nbsp;&nbsp; function </span><span class="default">newid</span><span class="keyword">(</span><span class="default">$prefix </span><span class="keyword">= </span><span class="string">"user_"</span><span class="keyword">){<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return (</span><span class="default">$prefix </span><span class="keyword">. </span><span class="default">uniqid</span><span class="keyword">( </span><span class="default">hash</span><span class="keyword">(</span><span class="string">"md5"</span><span class="keyword">, </span><span class="default">time</span><span class="keyword">()), </span><span class="default">TRUE </span><span class="keyword">) . </span><span class="default">time</span><span class="keyword">() . @</span><span class="default">$_SERVER</span><span class="keyword">[</span><span class="string">'REMOTE_ADDR'</span><span class="keyword">]);<br />
+&nbsp;&nbsp;&nbsp; }</span><span class="comment">/* endfunction */<br />
+<br />
+</span><span class="keyword">}</span><span class="comment">/* endif&nbsp; */<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="75201""></a>
+  <div class="note">
+   <strong class="user">ken at smallboxsoftware</strong>
+   <a href="#75201" class="date">17-May-2007 09:34</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Just to note this function is fairly slow, and can bring your script to a crawl if it is in a loop. Strangely if you run it as uniqid('', true) it runs much more quickly</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="75195""></a>
+  <div class="note">
+   <strong class="user">rjchallen at gmail dot com</strong>
+   <a href="#75195" class="date">17-May-2007 08:08</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+If you can guarantee a connection to mysql when you need your UUID then you can wrap up MySQL's (v5+) function.<br />
+<br />
+function uuid() {<br />
+&nbsp;&nbsp;&nbsp; return mysql_result(mysql_query('Select UUID()'),0);<br />
+}</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="75119""></a>
+  <div class="note">
+   <strong class="user">kristoffer dot paro at gmail dot com</strong>
+   <a href="#75119" class="date">13-May-2007 08:05</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+In response to the notes about UUID generation added by mimec and lance_rushing at hotmail dot com.<br />
+<br />
+Calling mt_rand the fewest possible times is not necessarily the fastest, if it heavily utilizes string handling routines. I did a quick benchmark between the two functions and discovered that lance's function (using only 5 mt_rands) was about 6.5 times _slower_ than mimec's on my system.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="74151""></a>
+  <div class="note">
+   <strong class="user">Jason</strong>
+   <a href="#74151" class="date">27-Mar-2007 12:10</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Neither the pseudo-random number rand() nor the Mersenne Twister algorithms are cryptographically strong, and this is well known.&nbsp; Simply combining non-cryptographically strong algorithms doesn't not make a cryptographically strong algorithm either.&nbsp; Mersenne Twister is a fast algorithm with good k-distribution which will give you numbers for a long time before it repeats itself.&nbsp; MT, rand(), and MD5 should NOT be used for encryption, or for cookies that that store a session ID that gives personal information.&nbsp; A simple application where non-collision of session IDs is highly preferred but not critical, such as storing a user's shopping cart items for when they return to your site (but not their personal information), IS a good use for the MT, rand() MD5, uniqid() and combinations thereof.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="73356""></a>
+  <div class="note">
+   <strong class="user">mailrinke at _cutthis_yahoo dot com</strong>
+   <a href="#73356" class="date">19-Feb-2007 05:06</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I have been using mimecs version lately and do not think it's safe to think the results are always unqiue.<br />
+<br />
+Although it could be just my bad programming, I found exactly 1 collission while debugging my code. It seems to me that if my code was incorrect it would have happened more than once.<br />
+<br />
+I recommend anyone to include time as a factor of such an ID as to be a little more certain it is in fact unique.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="72738""></a>
+  <div class="note">
+   <strong class="user">Emery</strong>
+   <a href="#72738" class="date">31-Jan-2007 12:13</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+The example given in this document for a "better token" should be:<br />
+<br />
+<span class="default">&lt;?php<br />
+$better_token </span><span class="keyword">= </span><span class="default">uniqid</span><span class="keyword">(</span><span class="default">md5</span><span class="keyword">(</span><span class="default">rand</span><span class="keyword">()), </span><span class="default">true</span><span class="keyword">);<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+As it is now, the result isn't guaranteed to be unique, because MD5 has collisions.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="72538""></a>
+  <div class="note">
+   <strong class="user">lance_rushing at hotmail dot com</strong>
+   <a href="#72538" class="date">23-Jan-2007 12:43</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+wooshoofoo, the reason mimec is calling mt_rand multiple times is because the largest number mt_rand can produce is 2^31 (2147483647, as reported by mt_getrandmax() on my server).&nbsp; RFC 4122 requires a 128 bit value.<br />
+<br />
+Also they are not "4 digit sequeces", but 4 digit hexadecimal numbers.&nbsp; 16^4 == 2^16.<br />
+<br />
+mimec's limiting each random result to 2^16 avoids problem of PHP's 2^32 integer max (<a href="http://php.net/manual/en/language.types.integer.php" rel="nofollow" target="_blank">http://php.net/manual/en/language.types.integer.php</a>).<br />
+<br />
+If you want to call mt_rand fewer times:&nbsp; mimec's version calls mt_rand 8 times ( 16 bits * 8 = 128 bits ).&nbsp; You *could* call mt_rand 5 times ( 31 bits + 31 bits + 31 bits + 31 bits + 4 bits = 128 bits ).&nbsp; But then you would have keep all your values as strings.<br />
+<br />
+Something like: <br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="comment">/**<br />
+&nbsp;* Another (ugly) "random or pseudo-random" version of RFC 4122<br />
+&nbsp;*<br />
+&nbsp;* This version calls mt_rand() the fewest possible times.<br />
+&nbsp;* if mt_getrandmax() == 2^31 then this will call mt_rand() 5 times YMMV<br />
+&nbsp;*<br />
+&nbsp;* Personally, I would use mimec's version<br />
+&nbsp;* To handle the large values, we'll keep everything as strings.<br />
+&nbsp;*<br />
+&nbsp;* @return string<br />
+&nbsp;*/<br />
+</span><span class="keyword">function </span><span class="default">uuid</span><span class="keyword">() {&nbsp; &nbsp; <br />
+<br />
+&nbsp;&nbsp; &nbsp; </span><span class="comment">// Generate 128 bit random sequence <br />
+&nbsp;&nbsp; &nbsp; </span><span class="default">$randmax_bits </span><span class="keyword">= </span><span class="default">strlen</span><span class="keyword">(</span><span class="default">base_convert</span><span class="keyword">(</span><span class="default">mt_getrandmax</span><span class="keyword">(), </span><span class="default">10</span><span class="keyword">, </span><span class="default">2</span><span class="keyword">));&nbsp; </span><span class="comment">// how many bits is mt_getrandmax()<br />
+&nbsp;&nbsp; &nbsp; </span><span class="default">$x </span><span class="keyword">= </span><span class="string">''</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; while (</span><span class="default">strlen</span><span class="keyword">(</span><span class="default">$x</span><span class="keyword">) &lt; </span><span class="default">128</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; </span><span class="default">$maxbits </span><span class="keyword">= (</span><span class="default">128 </span><span class="keyword">- </span><span class="default">strlen</span><span class="keyword">(</span><span class="default">$x</span><span class="keyword">) &lt; </span><span class="default">$randmax_bits</span><span class="keyword">) ? </span><span class="default">128 </span><span class="keyword">- </span><span class="default">strlen</span><span class="keyword">(</span><span class="default">$x</span><span class="keyword">) :&nbsp; </span><span class="default">$randmax_bits</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; </span><span class="default">$x </span><span class="keyword">.= </span><span class="default">str_pad</span><span class="keyword">(</span><span class="default">base_convert</span><span class="keyword">(</span><span class="default">mt_rand</span><span class="keyword">(</span><span class="default">0</span><span class="keyword">, </span><span class="default">pow</span><span class="keyword">(</span><span class="default">2</span><span class="keyword">,</span><span class="default">$maxbits</span><span class="keyword">)), </span><span class="default">10</span><span class="keyword">, </span><span class="default">2</span><span class="keyword">), </span><span class="default">$maxbits</span><span class="keyword">, </span><span class="string">"0"</span><span class="keyword">, </span><span class="default">STR_PAD_LEFT</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; }<br />
+<br />
+&nbsp;&nbsp; &nbsp; </span><span class="comment">// break into fields<br />
+&nbsp;&nbsp; &nbsp; </span><span class="default">$a </span><span class="keyword">= array();<br />
+&nbsp;&nbsp; &nbsp; </span><span class="default">$a</span><span class="keyword">[</span><span class="string">'time_low_part'</span><span class="keyword">] = </span><span class="default">substr</span><span class="keyword">(</span><span class="default">$x</span><span class="keyword">, </span><span class="default">0</span><span class="keyword">, </span><span class="default">32</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; </span><span class="default">$a</span><span class="keyword">[</span><span class="string">'time_mid'</span><span class="keyword">] = </span><span class="default">substr</span><span class="keyword">(</span><span class="default">$x</span><span class="keyword">, </span><span class="default">32</span><span class="keyword">, </span><span class="default">16</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; </span><span class="default">$a</span><span class="keyword">[</span><span class="string">'time_hi_and_version'</span><span class="keyword">] = </span><span class="default">substr</span><span class="keyword">(</span><span class="default">$x</span><span class="keyword">, </span><span class="default">48</span><span class="keyword">, </span><span class="default">16</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; </span><span class="default">$a</span><span class="keyword">[</span><span class="string">'clock_seq'</span><span class="keyword">] = </span><span class="default">substr</span><span class="keyword">(</span><span class="default">$x</span><span class="keyword">, </span><span class="default">64</span><span class="keyword">, </span><span class="default">16</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; </span><span class="default">$a</span><span class="keyword">[</span><span class="string">'node_part'</span><span class="keyword">] =&nbsp; </span><span class="default">substr</span><span class="keyword">(</span><span class="default">$x</span><span class="keyword">, </span><span class="default">80</span><span class="keyword">, </span><span class="default">48</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; <br />
+&nbsp;&nbsp; &nbsp; </span><span class="comment">// Apply bit masks for "random or pseudo-random" version per RFC<br />
+&nbsp;&nbsp; &nbsp; </span><span class="default">$a</span><span class="keyword">[</span><span class="string">'time_hi_and_version'</span><span class="keyword">] = </span><span class="default">substr_replace</span><span class="keyword">(</span><span class="default">$a</span><span class="keyword">[</span><span class="string">'time_hi_and_version'</span><span class="keyword">], </span><span class="string">'0100'</span><span class="keyword">, </span><span class="default">0</span><span class="keyword">, </span><span class="default">4</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; </span><span class="default">$a</span><span class="keyword">[</span><span class="string">'clock_seq'</span><span class="keyword">] = </span><span class="default">substr_replace</span><span class="keyword">(</span><span class="default">$a</span><span class="keyword">[</span><span class="string">'clock_seq'</span><span class="keyword">], </span><span class="string">'10'</span><span class="keyword">, </span><span class="default">0</span><span class="keyword">, </span><span class="default">2</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// Format output<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">return </span><span class="default">sprintf</span><span class="keyword">(</span><span class="string">'%s-%s-%s-%s-%s'</span><span class="keyword">,<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">str_pad</span><span class="keyword">(</span><span class="default">base_convert</span><span class="keyword">(</span><span class="default">$a</span><span class="keyword">[</span><span class="string">'time_low_part'</span><span class="keyword">], </span><span class="default">2</span><span class="keyword">, </span><span class="default">16</span><span class="keyword">), </span><span class="default">8</span><span class="keyword">, </span><span class="string">"0"</span><span class="keyword">, </span><span class="default">STR_PAD_LEFT</span><span class="keyword">),<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">str_pad</span><span class="keyword">(</span><span class="default">base_convert</span><span class="keyword">(</span><span class="default">$a</span><span class="keyword">[</span><span class="string">'time_mid'</span><span class="keyword">], </span><span class="default">2</span><span class="keyword">, </span><span class="default">16</span><span class="keyword">), </span><span class="default">4</span><span class="keyword">, </span><span class="string">"0"</span><span class="keyword">, </span><span class="default">STR_PAD_LEFT</span><span class="keyword">),<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">str_pad</span><span class="keyword">(</span><span class="default">base_convert</span><span class="keyword">(</span><span class="default">$a</span><span class="keyword">[</span><span class="string">'time_hi_and_version'</span><span class="keyword">], </span><span class="default">2</span><span class="keyword">, </span><span class="default">16</span><span class="keyword">), </span><span class="default">4</span><span class="keyword">, </span><span class="string">"0"</span><span class="keyword">, </span><span class="default">STR_PAD_LEFT</span><span class="keyword">),<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">str_pad</span><span class="keyword">(</span><span class="default">base_convert</span><span class="keyword">(</span><span class="default">$a</span><span class="keyword">[</span><span class="string">'clock_seq'</span><span class="keyword">], </span><span class="default">2</span><span class="keyword">, </span><span class="default">16</span><span class="keyword">), </span><span class="default">4</span><span class="keyword">, </span><span class="string">"0"</span><span class="keyword">, </span><span class="default">STR_PAD_LEFT</span><span class="keyword">),<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">str_pad</span><span class="keyword">(</span><span class="default">base_convert</span><span class="keyword">(</span><span class="default">$a</span><span class="keyword">[</span><span class="string">'node_part'</span><span class="keyword">], </span><span class="default">2</span><span class="keyword">, </span><span class="default">16</span><span class="keyword">), </span><span class="default">12</span><span class="keyword">, </span><span class="string">"0"</span><span class="keyword">, </span><span class="default">STR_PAD_LEFT</span><span class="keyword">));<br />
+}<br />
+<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+However, I think mimec's version is much more elegant.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="71933""></a>
+  <div class="note">
+   <strong class="user">mailbox1 at highhost dot net</strong>
+   <a href="#71933" class="date">23-Dec-2006 04:22</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Also you may use this if you like it.<br />
+<br />
+function uniqid2() {<br />
+return dechex(time()).dechex(mt_rand(1,65535));<br />
+}</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="71590""></a>
+  <div class="note">
+   <strong class="user">wooshoofoo</strong>
+   <a href="#71590" class="date">06-Dec-2006 06:00</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I'm not sure the previous function by mimec is really all that random.&nbsp; For one thing, generating 8 small random 4 digit sequeces != generating one 32 digit sequence.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="69164""></a>
+  <div class="note">
+   <strong class="user">mimec</strong>
+   <a href="#69164" class="date">25-Aug-2006 01:36</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Here is the correct version of a function generating a pseudo-random UUID according to RFC 4122:<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+</span><span class="keyword">function </span><span class="default">uuid</span><span class="keyword">()<br />
+{<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">sprintf</span><span class="keyword">( </span><span class="string">'%04x%04x-%04x-%04x-%04x-%04x%04x%04x'</span><span class="keyword">,<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">mt_rand</span><span class="keyword">( </span><span class="default">0</span><span class="keyword">, </span><span class="default">0xffff </span><span class="keyword">), </span><span class="default">mt_rand</span><span class="keyword">( </span><span class="default">0</span><span class="keyword">, </span><span class="default">0xffff </span><span class="keyword">), </span><span class="default">mt_rand</span><span class="keyword">( </span><span class="default">0</span><span class="keyword">, </span><span class="default">0xffff </span><span class="keyword">),<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">mt_rand</span><span class="keyword">( </span><span class="default">0</span><span class="keyword">, </span><span class="default">0x0fff </span><span class="keyword">) | </span><span class="default">0x4000</span><span class="keyword">,<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">mt_rand</span><span class="keyword">( </span><span class="default">0</span><span class="keyword">, </span><span class="default">0x3fff </span><span class="keyword">) | </span><span class="default">0x8000</span><span class="keyword">,<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">mt_rand</span><span class="keyword">( </span><span class="default">0</span><span class="keyword">, </span><span class="default">0xffff </span><span class="keyword">), </span><span class="default">mt_rand</span><span class="keyword">( </span><span class="default">0</span><span class="keyword">, </span><span class="default">0xffff </span><span class="keyword">), </span><span class="default">mt_rand</span><span class="keyword">( </span><span class="default">0</span><span class="keyword">, </span><span class="default">0xffff </span><span class="keyword">) );<br />
+}<br />
+<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+The version and variant is located at the MSB (most significant bits) of the time_hi_and_version and clock_seq_hi_and_reserved fields, not the LSB as in dholmes version.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="67993""></a>
+  <div class="note">
+   <strong class="user">admin at code-dynasty dot net</strong>
+   <a href="#67993" class="date">08-Jul-2006 08:46</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I'm not too fond of the recommendation to use an MD5 of the unique ID for session IDs. It would be a better idea just to use uniqueid(rand(), true) without the MD5, because even though it's a rare circumstance, MD5 is a hash, not an encryption, which means it has collisions. Therefore you theoretically could have multiple users given the same session ID which could result in one user's ability to access another user's data.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="65879""></a>
+  <div class="note">
+   <strong class="user">dholmes at cfdsoftware dot net</strong>
+   <a href="#65879" class="date">09-May-2006 08:26</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+WARNING : I believe there are a couple of mistakes in the function provided just below by maciej dot strzelecki at gmail dot com. Namely, that in the two substr_replace() calls, the third parameters should respectively be 12 (instead of 11) and 6 (instead of 5).<br />
+<br />
+Considering the importance of this function, I went to read RFC 4122 myself, and found the discrepancy. I therefore chose to write my own function, inspired by the previous one, but with a few enhancements detailed in the comments. On the downside, it might be slightly less easy to understand at first glance.<br />
+<br />
+Please feel free to use it yourself. Thank you also in advance for any feedback at dholmes at cfdsoftware.net .<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+</span><span class="comment">/**<br />
+&nbsp;* Generates a Universally Unique IDentifier, version 4.<br />
+&nbsp;* <br />
+&nbsp;* RFC 4122 (<a href="http://www.ietf.org/rfc/rfc4122.txt" rel="nofollow" target="_blank">http://www.ietf.org/rfc/rfc4122.txt</a>) defines a special type of Globally<br />
+&nbsp;* Unique IDentifiers (GUID), as well as several methods for producing them. One<br />
+&nbsp;* such method, described in section 4.4, is based on truly random or pseudo-random<br />
+&nbsp;* number generators, and is therefore implementable in a language like PHP.<br />
+&nbsp;* <br />
+&nbsp;* We choose to produce pseudo-random numbers with the Mersenne Twister, and to always<br />
+&nbsp;* limit single generated numbers to 16 bits (ie. the decimal value 65535). That is<br />
+&nbsp;* because, even on 32-bit systems, PHP's RAND_MAX will often be the maximum *signed*<br />
+&nbsp;* value, with only the equivalent of 31 significant bits. Producing two 16-bit random<br />
+&nbsp;* numbers to make up a 32-bit one is less efficient, but guarantees that all 32 bits<br />
+&nbsp;* are random.<br />
+&nbsp;* <br />
+&nbsp;* The algorithm for version 4 UUIDs (ie. those based on random number generators)<br />
+&nbsp;* states that all 128 bits separated into the various fields (32 bits, 16 bits, 16 bits,<br />
+&nbsp;* 8 bits and 8 bits, 48 bits) should be random, except : (a) the version number should<br />
+&nbsp;* be the last 4 bits in the 3rd field, and (b) bits 6 and 7 of the 4th field should<br />
+&nbsp;* be 01. We try to conform to that definition as efficiently as possible, generating<br />
+&nbsp;* smaller values where possible, and minimizing the number of base conversions.<br />
+&nbsp;* <br />
+&nbsp;* @copyright&nbsp;&nbsp; Copyright (c) CFD Labs, 2006. This function may be used freely for<br />
+&nbsp;*&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; any purpose ; it is distributed without any form of warranty whatsoever.<br />
+&nbsp;* @author&nbsp; &nbsp; &nbsp; David Holmes &lt;dholmes@cfdsoftware.net&gt;<br />
+&nbsp;* <br />
+&nbsp;* @return&nbsp; string&nbsp; A UUID, made up of 32 hex digits and 4 hyphens.<br />
+&nbsp;*/<br />
+<br />
+</span><span class="keyword">function </span><span class="default">uuid</span><span class="keyword">() {<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// The field names refer to RFC 4122 section 4.1.2<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">return </span><span class="default">sprintf</span><span class="keyword">(</span><span class="string">'%04x%04x-%04x-%03x4-%04x-%04x%04x%04x'</span><span class="keyword">,<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">mt_rand</span><span class="keyword">(</span><span class="default">0</span><span class="keyword">, </span><span class="default">65535</span><span class="keyword">), </span><span class="default">mt_rand</span><span class="keyword">(</span><span class="default">0</span><span class="keyword">, </span><span class="default">65535</span><span class="keyword">), </span><span class="comment">// 32 bits for "time_low"<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">mt_rand</span><span class="keyword">(</span><span class="default">0</span><span class="keyword">, </span><span class="default">65535</span><span class="keyword">), </span><span class="comment">// 16 bits for "time_mid"<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">mt_rand</span><span class="keyword">(</span><span class="default">0</span><span class="keyword">, </span><span class="default">4095</span><span class="keyword">),&nbsp; </span><span class="comment">// 12 bits before the 0100 of (version) 4 for "time_hi_and_version"<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">bindec</span><span class="keyword">(</span><span class="default">substr_replace</span><span class="keyword">(</span><span class="default">sprintf</span><span class="keyword">(</span><span class="string">'%016b'</span><span class="keyword">, </span><span class="default">mt_rand</span><span class="keyword">(</span><span class="default">0</span><span class="keyword">, </span><span class="default">65535</span><span class="keyword">)), </span><span class="string">'01'</span><span class="keyword">, </span><span class="default">6</span><span class="keyword">, </span><span class="default">2</span><span class="keyword">)),<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// 8 bits, the last two of which (positions 6 and 7) are 01, for "clk_seq_hi_res"<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; // (hence, the 2nd hex digit after the 3rd hyphen can only be 1, 5, 9 or d)<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; // 8 bits for "clk_seq_low"<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">mt_rand</span><span class="keyword">(</span><span class="default">0</span><span class="keyword">, </span><span class="default">65535</span><span class="keyword">), </span><span class="default">mt_rand</span><span class="keyword">(</span><span class="default">0</span><span class="keyword">, </span><span class="default">65535</span><span class="keyword">), </span><span class="default">mt_rand</span><span class="keyword">(</span><span class="default">0</span><span class="keyword">, </span><span class="default">65535</span><span class="keyword">) </span><span class="comment">// 48 bits for "node"&nbsp; <br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">);&nbsp; <br />
+}<br />
+<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="64495""></a>
+  <div class="note">
+   <strong class="user">maciej dot strzelecki at gmail dot com</strong>
+   <a href="#64495" class="date">16-Apr-2006 11:09</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+This is an implementation of version 4 UUID, which is generating UUIDs from truly-random numbers.<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="comment">/* Copyright 2006 Maciej Strzelecki<br />
+<br />
+&nbsp;&nbsp; This program is free software; you can redistribute it and/or modify<br />
+&nbsp;&nbsp; it under the terms of the GNU General Public License as published by<br />
+&nbsp;&nbsp; the Free Software Foundation; either version 2 of the License, or<br />
+&nbsp;&nbsp; (at your option) any later version.<br />
+<br />
+&nbsp;&nbsp; This program is distributed in the hope that it will be useful,<br />
+&nbsp;&nbsp; but WITHOUT ANY WARRANTY; without even the implied warranty of<br />
+&nbsp;&nbsp; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.&nbsp; See the<br />
+&nbsp;&nbsp; GNU General Public License for more details.<br />
+<br />
+&nbsp;&nbsp; You should have received a copy of the GNU General Public License<br />
+&nbsp;&nbsp; along with this program; if not, write to the Free Software<br />
+&nbsp;&nbsp; Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA&nbsp; 02110-1301&nbsp; USA */<br />
+<br />
+</span><span class="keyword">function </span><span class="default">uuid</span><span class="keyword">()<br />
+{<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// version 4 UUID<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">return </span><span class="default">sprintf</span><span class="keyword">(<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="string">'%08x-%04x-%04x-%02x%02x-%012x'</span><span class="keyword">,<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">mt_rand</span><span class="keyword">(),<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">mt_rand</span><span class="keyword">(</span><span class="default">0</span><span class="keyword">, </span><span class="default">65535</span><span class="keyword">),<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">bindec</span><span class="keyword">(</span><span class="default">substr_replace</span><span class="keyword">(<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">sprintf</span><span class="keyword">(</span><span class="string">'%016b'</span><span class="keyword">, </span><span class="default">mt_rand</span><span class="keyword">(</span><span class="default">0</span><span class="keyword">, </span><span class="default">65535</span><span class="keyword">)), </span><span class="string">'0100'</span><span class="keyword">, </span><span class="default">11</span><span class="keyword">, </span><span class="default">4</span><span class="keyword">)<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; ),<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">bindec</span><span class="keyword">(</span><span class="default">substr_replace</span><span class="keyword">(</span><span class="default">sprintf</span><span class="keyword">(</span><span class="string">'%08b'</span><span class="keyword">, </span><span class="default">mt_rand</span><span class="keyword">(</span><span class="default">0</span><span class="keyword">, </span><span class="default">255</span><span class="keyword">)), </span><span class="string">'01'</span><span class="keyword">, </span><span class="default">5</span><span class="keyword">, </span><span class="default">2</span><span class="keyword">)),<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">mt_rand</span><span class="keyword">(</span><span class="default">0</span><span class="keyword">, </span><span class="default">255</span><span class="keyword">),<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">mt_rand</span><span class="keyword">()<br />
+&nbsp;&nbsp;&nbsp; );<br />
+}<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="function.time-sleep-until.html">time_sleep_until</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.unpack.html">unpack</a></div>
  <div class="up"><a href="ref.misc.html">Misc. Functions</a></div>

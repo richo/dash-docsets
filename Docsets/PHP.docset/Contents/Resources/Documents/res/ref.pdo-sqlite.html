@@ -75,6 +75,159 @@
 
  <h2>Table of Contents</h2><ul class="chunklist chunklist_reference"><li><a href="ref.pdo-sqlite.connection.html">PDO_SQLITE DSN</a> â€” Connecting to SQLite databases</li><li><a href="pdo.sqlitecreateaggregate.html">PDO::sqliteCreateAggregate</a> â€” Registers an aggregating User Defined Function for use in SQL statements</li><li><a href="pdo.sqlitecreatefunction.html">PDO::sqliteCreateFunction</a> â€” Registers a User Defined Function for use in SQL statements</li></ul>
 </div>
+<div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="105922""></a>
+  <div class="note">
+   <strong class="user">Hayley Watson</strong>
+   <a href="#105922" class="date">25-Sep-2011 07:31</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+If there is anyone using PDO to interface with SQLite and wondering how to create an SQLite database to begin with; if they're thinking they'll have to detour into one of the other SQLite interfaces to get the job done - nope!<br />
+<br />
+PDO does need a SQLite database file to exist before it can connect, but that file can be a completely empty one; so a single touch() is enough to create a brand new virgin SQLite database ready to receive your CREATE TABLE statements.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="74139""></a>
+  <div class="note">
+   <strong class="user">gopal at gopalarathnam dot com</strong>
+   <a href="#74139" class="date">27-Mar-2007 02:36</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+If you get an error reporting "invalid resource" when trying to query the database table and looping through it, the version of the SQLite extension compiled in to PHP might be incompatible with the version that had created the database (like SQLite 2.x vs 3.x).<br />
+<br />
+The database open itself might be successful, failing only when querying.<br />
+<br />
+$dbh = new PDO('sqlite:/tmp/foo.db'); // success<br />
+foreach ($dbh-&gt;query('SELECT * FROM bar') as $row) // prints invalid resource<br />
+&nbsp;&nbsp;&nbsp; // ...</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="68780""></a>
+  <div class="note">
+   <strong class="user">gmac63 at charter dot net</strong>
+   <a href="#68780" class="date">10-Aug-2006 07:38</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Issue:<br />
+Error: SQLSTATE[HY000]: General error: 1 unsupported file format <br />
+<br />
+Resolution:<br />
+To solve this (and/or many issues) involving this type of error, I assumed the error to be generated from php. Well, it was to an extent. The sqlite pdo code offered the solution:<br />
+<br />
+I researched the error by grep'ing the php source code and found the error string to come from php-5.1.4/ext/pdo_sqlite/sqlite/src/prepare.c, lines 265:278 :<br />
+<br />
+/*<br />
+&nbsp;** file_format==1&nbsp; &nbsp; Version 3.0.0.<br />
+&nbsp;** file_format==2&nbsp; &nbsp; Version 3.1.3.<br />
+&nbsp;** file_format==3&nbsp; &nbsp; Version 3.1.4.<br />
+&nbsp;**<br />
+&nbsp;** Version 3.0 can only use files with file_format==1. Version 3.1.3<br />
+&nbsp;** can read and write files with file_format==1 or file_format==2.<br />
+&nbsp;** Version 3.1.4 can read and write file formats 1, 2 and 3.<br />
+&nbsp;*/<br />
+&nbsp;if( meta[1]&gt;3 ){<br />
+&nbsp;&nbsp; sqlite3BtreeCloseCursor(curMain);<br />
+&nbsp;&nbsp; sqlite3SetString(pzErrMsg, "unsupported file format", (char*)0);<br />
+&nbsp;&nbsp; return SQLITE_ERROR;<br />
+&nbsp;}<br />
+<br />
+This is interesting as I am running SQLite version 3.3.5 which the databases were created in. I see that the SQLite PDO source in the php source is :<br />
+&nbsp;&nbsp; &nbsp;&nbsp; # cat ext/pdo_sqlite/sqlite/VERSION<br />
+&nbsp;&nbsp; &nbsp; &nbsp; 3.2.8<br />
+<br />
+My solution was then to find a version of sqlite that was =&lt; 3.1.4. I found source for 3.1.3, compiled, recreated my database using that version (NOTE: the databases are unsupported between 3.1.x and 3.2.x versions of SQLite). Once I did this it worked.<br />
+<br />
+Also as a side note, to get SQLite compiled as a PDO, I had to:<br />
+<br />
+1) configure with<br />
+...<br />
+--enable-pdo=shared \<br />
+--with-sqlite=shared \<br />
+--with-pdo-sqlite=shared<br />
+--with-zlib<br />
+... \<br />
+'make &amp;&amp; make install' if configure is successful.<br />
+<br />
+2) Make sure the pdo libs were copied/installed to the correct directory. On my installation it was /usr/local/include/php/ext/pdo/<br />
+<br />
+3) Make these changes in my php.ini:<br />
+&nbsp; - change ' extension_dir = "./" ' to ' extension_dir="/usr/local/include/php/ext/pdo/" '<br />
+&nbsp; - add/edit in this order:<br />
+&nbsp;&nbsp; &nbsp;&nbsp; extension=pdo.so<br />
+&nbsp;&nbsp; &nbsp;&nbsp; extension=pdo_sqlite.so<br />
+&nbsp;&nbsp; &nbsp;&nbsp; extension=sqlite.so<br />
+<br />
+4) test php with : 'php -m' at the command line and solve any issues from there. Mostly php.ini config issues. Also restart the http service!</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="68648""></a>
+  <div class="note">
+   <strong class="user">maximkh [at] yahoo [dot] com</strong>
+   <a href="#68648" class="date">04-Aug-2006 01:11</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+In reply to Duffalo:<br />
+<br />
+The current PHP version will happily work with SQLite 3.3.6, but you need to re-compile PHP using the latest SQLite library.<br />
+<br />
+On a different note, it seems that the developers got a little lazy and decided not to add any support for integer, real, or blob data types. When using PDO's bindParam or bindValue methods, the driver only uses either sqlite3_bind_null, or sqlite3_bind_text. That means that if you think you're storing ints, even with PDO::PARAM_INT specified, it is still stored as string, taking up a lot more space than it needs to and effectively eliminating all data-type support for SQLite (you are only left with nulls or text).<br />
+<br />
+In my opinion, this is a rather lousy implementation. I've submitted a feature/change request to the bug tracking system, so I guess we can wait and see if full data type support is added in the future. What I don't understand is why this was done in the first place. SQLite's API could not be any easier to use, simply check the type of the variable passed, and if it's an int use sqlite3_bind_int, if it's a float use sqlite3_bind_double. Why the forced conversion into strings?</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="67937""></a>
+  <div class="note">
+   <strong class="user">Duffalo</strong>
+   <a href="#67937" class="date">06-Jul-2006 04:41</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Note that as of the date of this post, PDO_SQLITE will not interact with database files created with the current version of the SQLite console application, sqlite-3.3.6.<br />
+<br />
+It is currently necessary to obtain version 3.2.8, available from <a href="http://www.sqlite.org/ but only by entering the URI manually, as there is no link. Go to http://www.sqlite.org/download.html and find the URI of the version you" rel="nofollow" target="_blank">http://www.sqlite.org/ but only by entering the URI manually, as there is no link. Go to http://www.sqlite.org/download.html and find the URI of the version you</a>'re looking for, then make the appropriate version number substitution.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="57356""></a>
+  <div class="note">
+   <strong class="user">aidan at php dot net</strong>
+   <a href="#57356" class="date">01-Oct-2005 02:36</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+If you receive an error while trying to write to a sqlite database (update, delete, drop):<br />
+<br />
+Warning: PDO::query() [function.query]: SQLSTATE[HY000]: General error: 1 unable to open database<br />
+<br />
+The folder that houses the database file must be writeable.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
 <hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="pdo.pgsqllobunlink.html">PDO::pgsqlLOBUnlink</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="ref.pdo-sqlite.connection.html">PDO_SQLITE DSN</a></div>

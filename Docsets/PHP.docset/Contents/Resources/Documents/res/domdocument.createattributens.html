@@ -129,7 +129,117 @@ it is inserted with (e.g.) <span class="function"><a href="domnode.appendchild.h
   </p>
  </div>
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="98210""></a>
+  <div class="note">
+   <strong class="user">_ michael</strong>
+   <a href="#98210" class="date">01-Jun-2010 07:35</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+If a new namespace is introduced while creating and inserting an attribute, createAttributeNS() does not behave in the same way as createElementNS().<br />
+<br />
+(1) Location: With createAttributeNS(), the new namespace is declared at the level of the document element. By contrast, createElementNS() declares the new namespace at the level of the affected element itself.<br />
+<br />
+(2) Timing: With createAttributeNS(), the new namespace is declared in the document as soon as the attribute is created - the attribute does not actually have to be inserted. createElementNS() doesn't affect the document as long as the element is not inserted.<br />
+<br />
+An example:<br />
+<br />
+<span class="default">&lt;?php<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; $source </span><span class="keyword">= &lt;&lt;&lt;XML<br />
+</span><span class="string">&lt;?xml version="1.0" encoding="UTF-8"?&gt;<br />
+&lt;root&gt;&lt;tag&gt;&lt;/tag&gt;&lt;/root&gt;<br />
+</span><span class="keyword">XML;<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">/*<br />
+&nbsp;&nbsp; &nbsp; <br />
+&nbsp;&nbsp; &nbsp; I. createAttributeNS:<br />
+&nbsp;&nbsp; &nbsp; * a new namespace shows up immediately, even without insertion of the attribute<br />
+&nbsp;&nbsp; &nbsp; * the new namespace is declared at the level of the document element<br />
+&nbsp;&nbsp; &nbsp; <br />
+&nbsp;&nbsp;&nbsp; */<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$doc </span><span class="keyword">= new </span><span class="default">DOMDocument</span><span class="keyword">( </span><span class="string">'1.0' </span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$doc</span><span class="keyword">-&gt;</span><span class="default">loadXML</span><span class="keyword">( </span><span class="default">$source </span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// (1) We just create a "namespace'd" attribute without appending it to any element.<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$attr_ns </span><span class="keyword">= </span><span class="default">$doc</span><span class="keyword">-&gt;</span><span class="default">createAttributeNS</span><span class="keyword">( </span><span class="string">'{namespace_uri_here}'</span><span class="keyword">, </span><span class="string">'example:attr' </span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; print </span><span class="default">$doc</span><span class="keyword">-&gt;</span><span class="default">saveXML</span><span class="keyword">() . </span><span class="string">"\n"</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">/*<br />
+&nbsp;&nbsp; &nbsp;&nbsp; Result: The namespace declaration appears, having been added to the document element. Output:<br />
+&nbsp;&nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp;&nbsp; &lt;?xml version="1.0" encoding="UTF-8"?&gt;<br />
+&nbsp;&nbsp; &nbsp;&nbsp; &lt;root xmlns:example="{namespace_uri_here}"&gt;&lt;tag/&gt;&lt;/root&gt;<br />
+&nbsp;&nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; */<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; // (2) Next, we give the attribute a value and insert it.<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$attr_ns</span><span class="keyword">-&gt;</span><span class="default">value </span><span class="keyword">= </span><span class="string">'value'</span><span class="keyword">; <br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$doc</span><span class="keyword">-&gt;</span><span class="default">getElementsByTagName</span><span class="keyword">( </span><span class="string">'tag' </span><span class="keyword">)-&gt;</span><span class="default">item</span><span class="keyword">(</span><span class="default">0</span><span class="keyword">)-&gt;</span><span class="default">appendChild</span><span class="keyword">( </span><span class="default">$attr_ns </span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; print </span><span class="default">$doc</span><span class="keyword">-&gt;</span><span class="default">saveXML</span><span class="keyword">() . </span><span class="string">"\n"</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">/*<br />
+&nbsp;&nbsp; &nbsp;&nbsp; Result: The "namespace'd" attribute shows up as well. Output:<br />
+&nbsp;&nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp;&nbsp; &lt;?xml version="1.0" encoding="UTF-8"?&gt;<br />
+&nbsp;&nbsp; &nbsp;&nbsp; &lt;root xmlns:example="{namespace_uri_here}"&gt;&lt;tag example:attr="value"/&gt;&lt;/root&gt;<br />
+&nbsp;&nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; */<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; /*<br />
+&nbsp;&nbsp; &nbsp; <br />
+&nbsp;&nbsp; &nbsp; II. createElementNS:<br />
+&nbsp;&nbsp; &nbsp; * a new namespace shows up only when the element is inserted<br />
+&nbsp;&nbsp; &nbsp; * the new namespace is declared at the level of the inserted element<br />
+&nbsp;&nbsp; &nbsp; <br />
+&nbsp;&nbsp;&nbsp; */<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$doc </span><span class="keyword">= new </span><span class="default">DOMDocument</span><span class="keyword">( </span><span class="string">'1.0' </span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$doc</span><span class="keyword">-&gt;</span><span class="default">loadXML</span><span class="keyword">( </span><span class="default">$source </span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// (1) We create a "namespace'd" element without inserting it into the document.<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$elem_ns </span><span class="keyword">= </span><span class="default">$doc</span><span class="keyword">-&gt;</span><span class="default">createElementNS</span><span class="keyword">( </span><span class="string">'{namespace_uri_here}'</span><span class="keyword">, </span><span class="string">'example:newtag' </span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; print </span><span class="default">$doc</span><span class="keyword">-&gt;</span><span class="default">saveXML</span><span class="keyword">() . </span><span class="string">"\n"</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">/*<br />
+&nbsp;&nbsp; &nbsp;&nbsp; Result: The document remains unchanged. Output:<br />
+&nbsp;&nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp;&nbsp; &lt;?xml version="1.0" encoding="UTF-8"?&gt;<br />
+&nbsp;&nbsp; &nbsp;&nbsp; &lt;root&gt;&lt;tag/&gt;&lt;/root&gt;<br />
+&nbsp;&nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; */<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; // (2) Next, we insert the new element.<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$doc</span><span class="keyword">-&gt;</span><span class="default">getElementsByTagName</span><span class="keyword">( </span><span class="string">'tag' </span><span class="keyword">)-&gt;</span><span class="default">item</span><span class="keyword">(</span><span class="default">0</span><span class="keyword">)-&gt;</span><span class="default">appendChild</span><span class="keyword">( </span><span class="default">$elem_ns </span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; print </span><span class="default">$doc</span><span class="keyword">-&gt;</span><span class="default">saveXML</span><span class="keyword">() . </span><span class="string">"\n"</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">/*<br />
+&nbsp;&nbsp; &nbsp;&nbsp; Result: The namespace declaration appears, and it is embedded in the element using it. Output:<br />
+&nbsp;&nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp;&nbsp; &lt;?xml version="1.0" encoding="UTF-8"?&gt;<br />
+&nbsp;&nbsp; &nbsp;&nbsp; &lt;root&gt;&lt;tag&gt;&lt;example:newtag xmlns:example="{namespace_uri_here}"/&gt;&lt;/tag&gt;&lt;/root&gt;<br />
+&nbsp;&nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; */<br />
+&nbsp;&nbsp;&nbsp; <br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="domdocument.createattribute.html">DOMDocument::createAttribute</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="domdocument.createcdatasection.html">DOMDocument::createCDATASection</a></div>
  <div class="up"><a href="class.domdocument.html">DOMDocument</a></div>

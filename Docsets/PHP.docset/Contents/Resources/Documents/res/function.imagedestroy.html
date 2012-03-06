@@ -70,7 +70,186 @@ such as <span class="function"><a href="function.imagecreatetruecolor.html" clas
   </p>
  </div>
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="106385""></a>
+  <div class="note">
+   <strong class="user">newman dot imotion at gmail dot com</strong>
+   <a href="#106385" class="date">03-Nov-2011 06:11</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Using PHP 5.3.8., when passing an image to a function for processing and then using imagedestroy() on the passed image inside the function will result in the original image being destroyed!<br />
+<br />
+Make very sure you are completely done with an image before using imagedestroy().<br />
+<br />
+Try this simple code:<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+$filename </span><span class="keyword">= </span><span class="string">"<a href="http://upload.wikimedia.org/wikipedia/commons/thumb/e/e6/Golfball.jpg/260px-Golfball.jpg" rel="nofollow" target="_blank">http://upload.wikimedia.org/wikipedia/commons/thumb/e/e6/Golfball.jpg/260px-Golfball.jpg</a>"</span><span class="keyword">;<br />
+list(</span><span class="default">$width</span><span class="keyword">, </span><span class="default">$height</span><span class="keyword">) = </span><span class="default">getimagesize</span><span class="keyword">(</span><span class="default">$filename</span><span class="keyword">);<br />
+</span><span class="default">$sourceIMAGE </span><span class="keyword">= </span><span class="default">imagecreatefromjpeg</span><span class="keyword">(</span><span class="default">$filename</span><span class="keyword">);<br />
+<br />
+</span><span class="default">imagejpeg</span><span class="keyword">(</span><span class="default">$sourceIMAGE</span><span class="keyword">, </span><span class="string">'test_destroy_1.JPG'</span><span class="keyword">, </span><span class="default">100</span><span class="keyword">); </span><span class="comment">//writes source image to file as JPEG<br />
+</span><span class="default">imagejpeg</span><span class="keyword">(</span><span class="default">iconifyIMAGE</span><span class="keyword">(</span><span class="default">$sourceIMAGE</span><span class="keyword">, </span><span class="default">$width</span><span class="keyword">, </span><span class="default">$height</span><span class="keyword">), </span><span class="string">'test_destroy_2.JPG'</span><span class="keyword">, </span><span class="default">100</span><span class="keyword">); </span><span class="comment">//writes iconified image to file as JPEG<br />
+</span><span class="default">imagejpeg</span><span class="keyword">(</span><span class="default">$sourceIMAGE</span><span class="keyword">, </span><span class="string">'test_destroy_3.JPG'</span><span class="keyword">, </span><span class="default">100</span><span class="keyword">); </span><span class="comment">//&lt;--- this will fail because imagedestroy() was called in the function iconifyIMAGE()<br />
+<br />
+</span><span class="keyword">function </span><span class="default">iconifyIMAGE</span><span class="keyword">(</span><span class="default">$srcI</span><span class="keyword">, </span><span class="default">$srcX</span><span class="keyword">, </span><span class="default">$srcY</span><span class="keyword">)<br />
+{<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$iconIMAGE </span><span class="keyword">= </span><span class="default">imagecreatetruecolor</span><span class="keyword">(</span><span class="default">20</span><span class="keyword">, </span><span class="default">20</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">imagecopyresampled</span><span class="keyword">(</span><span class="default">$iconIMAGE</span><span class="keyword">, </span><span class="default">$srcI</span><span class="keyword">, </span><span class="default">0</span><span class="keyword">, </span><span class="default">0</span><span class="keyword">, </span><span class="default">0</span><span class="keyword">, </span><span class="default">0</span><span class="keyword">, </span><span class="default">20</span><span class="keyword">, </span><span class="default">20</span><span class="keyword">, </span><span class="default">$srcX</span><span class="keyword">, </span><span class="default">$srcY</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">imagedestroy</span><span class="keyword">(</span><span class="default">$srcI</span><span class="keyword">); </span><span class="comment">//&lt;--- this also destroys $sourceIMAGE <br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">return (</span><span class="default">$iconIMAGE</span><span class="keyword">);<br />
+}<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+The code returns the following error: Warning: imagejpeg(): 6 is not a valid Image resource in C:\xampp\htdocs\bitmap_tester_destroy.php on line 9<br />
+<br />
+Line 9 is... imagejpeg($sourceIMAGE, 'test_destroy_3.JPG', 100);</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="96191""></a>
+  <div class="note">
+   <strong class="user">corpus-deus at softhome dot net</strong>
+   <a href="#96191" class="date">12-Feb-2010 06:33</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+In theory creating an image object and calling imagedestroy in your destructor should be a good way of doing it; something like:<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">final class </span><span class="default">My_Image</span><span class="keyword">() {<br />
+<br />
+&nbsp; private </span><span class="default">$img</span><span class="keyword">;<br />
+<br />
+&nbsp; public function </span><span class="default">__construct</span><span class="keyword">() {<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">img </span><span class="keyword">= </span><span class="default">imagecreatetruecolor</span><span class="keyword">();<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// ... other stuff ...<br />
+&nbsp; </span><span class="keyword">}<br />
+<br />
+&nbsp; public function </span><span class="default">__destruct</span><span class="keyword">() {<br />
+&nbsp;&nbsp;&nbsp; if(</span><span class="default">is_resource</span><span class="keyword">(</span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">img</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">imagedestroy</span><span class="keyword">(</span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">img</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp; }<br />
+<br />
+&nbsp; </span><span class="comment">// ... other methods...<br />
+<br />
+</span><span class="keyword">}<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+I check that $this-&gt;img is a resource in case imagecreatetruecolor() fails or you null the value somewhere down the line from a method call meaning that $this-&gt;img is NOT a resource, in which case imagedestroy is an unecessary function call that just fails with a warning message.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="78313""></a>
+  <div class="note">
+   <strong class="user">webmaster at codefisher dot org</strong>
+   <a href="#78313" class="date">05-Oct-2007 10:26</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+And to continue what Docey said, if php did not destroy all resources when the script stopped it would be a huge memory leak and everyone would be crying out for it to be fixed right away.<br />
+<br />
+I have been using this function during a script that was breaking an image made of many little icons into the little parts, which could mean 400+ images in the one script, which was using a lot of memory so I needed to destroy them.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="70571""></a>
+  <div class="note">
+   <strong class="user">Docey</strong>
+   <a href="#70571" class="date">20-Oct-2006 10:59</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+When the script stop PHP will automatic destory ANY<br />
+resources, this goes for aswell for images, thus in the<br />
+case the use clicks the stop button, php will automatic<br />
+clear the resource.<br />
+<br />
+thus imagedestroy is used to clear the memory BEFORE<br />
+the script ends. this is usefull to keep memory usage<br />
+DURING the script to an acceptable level.<br />
+<br />
+hope this clear somethings up.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="57136""></a>
+  <div class="note">
+   <strong class="user">roland at more-pc dot nl</strong>
+   <a href="#57136" class="date">24-Sep-2005 06:31</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+As Andrew states below, it's IMPERATIVE that you use the imagedestroy() function. But your script may abort before it reaches the call to imagedestroy() (for example the user may click the browsers 'stop' button). In this case the default PHP behaviour is to abort the script, never reaching your call to imagedestroy().<br />
+One way of doing it (the one which works very well for me) is with register_shutdown_function():<br />
+&lt;?<br />
+function shutdown_func() {<br />
+&nbsp;&nbsp;&nbsp; global $img;<br />
+&nbsp;&nbsp;&nbsp; if($img)<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; imagedestroy($img);<br />
+}<br />
+register_shutdown_function("shutdown_func");<br />
+$img = imagecreate...(...);<br />
+... // manipulate image<br />
+// normally I'd need the following line, but now it's handled by shutdown_func()<br />
+// imagedestroy($img);<br />
+?&gt;</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="54095""></a>
+  <div class="note">
+   <strong class="user">Andrew Hoffmann - ahoffmann at wisc dot edu</strong>
+   <a href="#54095" class="date">23-Jun-2005 07:25</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+When working with a lot of high-resolution images, it's IMPERATIVE that you use the imagedestroy() function.<br />
+<br />
+In my scenario, I was taking two high resolution desktop wallpapers and shrinking them down into successively smaller ones (preventing the user from having to upload a dozen files).<br />
+<br />
+At first, my script would run, then just stop.&nbsp; I realized later that I had not destroyed the source image and the newly resized image in memory after I had finished writing the file out to disk.&nbsp; Thus, I quickly reached the memory limit that my hosting provider placed in their php.ini file.<br />
+<br />
+Reusing an image variable does NOT clear the old data out of memory!&nbsp; You must use imagedestroy() to clear the data out.&nbsp; (I don't know if unset() works as well).<br />
+<br />
+Also note that the image data in memory is raw, so don't base how much memory you are using based on the original filesize of the compressed image (such as jpeg or png).</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="40478""></a>
+  <div class="note">
+   <strong class="user">dan at mlodecki dot net</strong>
+   <a href="#40478" class="date">04-Mar-2004 04:42</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I have noticed that gd drawing functions can behave oddly if there is a previous image which has not been imagedestroy()'ed.&nbsp; You should always imagedestroy when you are done with an image object.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="function.imagedashedline.html">imagedashedline</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.imageellipse.html">imageellipse</a></div>
  <div class="up"><a href="ref.image.html">GD and Image Functions</a></div>

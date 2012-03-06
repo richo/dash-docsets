@@ -111,7 +111,443 @@
   </p>
  </div>
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="101927""></a>
+  <div class="note">
+   <strong class="user">comments at htmlcompressor dot com</strong>
+   <a href="#101927" class="date">18-Jan-2011 02:16</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Not documented but worth mentioning that this function will detect a T_OPEN_TAG or T_OPEN_TAG_WITH_ECHO based on your php.ini settings.<br />
+<br />
+So in order to detect "&lt;?", "&lt;?=", "?&gt;", "&lt;%", "&lt;%" and "%&gt;" as a php open / close tags, check the folowing settings in your php.ini:<br />
+<br />
+; Allow Short tags &lt;? &lt;?= ?&gt;<br />
+short_open_tag = On<br />
+<br />
+; Allow ASP-style tags &lt;% &lt;%= %&gt;<br />
+asp_tags = On</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="92653""></a>
+  <div class="note">
+   <strong class="user">gomodo at free dot fr</strong>
+   <a href="#92653" class="date">02-Aug-2009 10:08</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Yes, some problems (On WAMP, PHP 5.3.0 ) with get_token_all() <br />
+<br />
+1 : bug line numbers<br />
+&nbsp;Since PHP 5.2.2 token_get_all()&nbsp; should return Line numbers in element 2..<br />
+.. but for instance (5.3.0 on WAMP), it work perfectly only with PHP code (not HMTL miwed), but if you have some T_INLINE_HTML detected by token_get_all() ,&nbsp; sometimes you find wrongs line numbers&nbsp; (return next line)... :(<br />
+<br />
+2: bug warning message can impact loops<br />
+Warning with php code uncompleted (ex : php code line by line) :<br />
+for example if a comment tag is not closed&nbsp; token_get_all()&nbsp; can block loops on this&nbsp; warning :<br />
+Warning: Unterminated comment starting line<br />
+<br />
+This problem seem not occur in CLI mod (php command line), but only in web mod.<br />
+<br />
+Waiting more stability, used token_get_all()&nbsp; only on PHP code (not HMTL miwed) :<br />
+First extract entirely PHP code (with open et close php tag), <br />
+Second use token_get_all()&nbsp; on the pure PHP code.<br />
+<br />
+3 : Why there not function to extract PHP code (to extract HTML, we have Tidy..)?<br />
+<br />
+Waiting, I used a function :<br />
+<br />
+The code at end this post :<br />
+<a href="http://www.developpez.net/forums/d786381/php/langage/" rel="nofollow" target="_blank">http://www.developpez.net/forums/d786381/php/langage/</a><br />
+fonctions/analyser-fichier-php-token_get_all/<br />
+<br />
+This function not support :<br />
+- Old notation :&nbsp; "&lt;?&nbsp; ?&gt;" and "&lt;% %&gt;"<br />
+- heredoc syntax <br />
+- nowdoc syntax (since PHP 5.3.0)</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="91847""></a>
+  <div class="note">
+   <strong class="user">Dennis Robinson from basnetworks dot net</strong>
+   <a href="#91847" class="date">28-Jun-2009 09:24</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I wanted to use the tokenizer functions to count source lines of code, including counting comments.&nbsp; Attempting to do this with regular expressions does not work well because of situations where /* appears in a string, or other situations.&nbsp; The token_get_all() function makes this task easy by detecting all the comments properly.&nbsp; However, it does not tokenize newline characters.&nbsp; I wrote the below set of functions to also tokenize newline characters as T_NEW_LINE.<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+define</span><span class="keyword">(</span><span class="string">'T_NEW_LINE'</span><span class="keyword">, -</span><span class="default">1</span><span class="keyword">);<br />
+<br />
+function </span><span class="default">token_get_all_nl</span><span class="keyword">(</span><span class="default">$source</span><span class="keyword">)<br />
+{<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$new_tokens </span><span class="keyword">= array();<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// Get the tokens<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$tokens </span><span class="keyword">= </span><span class="default">token_get_all</span><span class="keyword">(</span><span class="default">$source</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// Split newlines into their own tokens<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">foreach (</span><span class="default">$tokens </span><span class="keyword">as </span><span class="default">$token</span><span class="keyword">)<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$token_name </span><span class="keyword">= </span><span class="default">is_array</span><span class="keyword">(</span><span class="default">$token</span><span class="keyword">) ? </span><span class="default">$token</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">] : </span><span class="default">null</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$token_data </span><span class="keyword">= </span><span class="default">is_array</span><span class="keyword">(</span><span class="default">$token</span><span class="keyword">) ? </span><span class="default">$token</span><span class="keyword">[</span><span class="default">1</span><span class="keyword">] : </span><span class="default">$token</span><span class="keyword">;<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// Do not split encapsed strings or multiline comments<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">if (</span><span class="default">$token_name </span><span class="keyword">== </span><span class="default">T_CONSTANT_ENCAPSED_STRING </span><span class="keyword">|| </span><span class="default">substr</span><span class="keyword">(</span><span class="default">$token_data</span><span class="keyword">, </span><span class="default">0</span><span class="keyword">, </span><span class="default">2</span><span class="keyword">) == </span><span class="string">'/*'</span><span class="keyword">)<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$new_tokens</span><span class="keyword">[] = array(</span><span class="default">$token_name</span><span class="keyword">, </span><span class="default">$token_data</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; continue;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// Split the data up by newlines<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$split_data </span><span class="keyword">= </span><span class="default">preg_split</span><span class="keyword">(</span><span class="string">'#(\r\n|\n)#'</span><span class="keyword">, </span><span class="default">$token_data</span><span class="keyword">, -</span><span class="default">1</span><span class="keyword">, </span><span class="default">PREG_SPLIT_DELIM_CAPTURE </span><span class="keyword">| </span><span class="default">PREG_SPLIT_NO_EMPTY</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; foreach (</span><span class="default">$split_data </span><span class="keyword">as </span><span class="default">$data</span><span class="keyword">)<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if (</span><span class="default">$data </span><span class="keyword">== </span><span class="string">"\r\n" </span><span class="keyword">|| </span><span class="default">$data </span><span class="keyword">== </span><span class="string">"\n"</span><span class="keyword">)<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// This is a new line token<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$new_tokens</span><span class="keyword">[] = array(</span><span class="default">T_NEW_LINE</span><span class="keyword">, </span><span class="default">$data</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; else<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// Add the token under the original token name<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$new_tokens</span><span class="keyword">[] = </span><span class="default">is_array</span><span class="keyword">(</span><span class="default">$token</span><span class="keyword">) ? array(</span><span class="default">$token_name</span><span class="keyword">, </span><span class="default">$data</span><span class="keyword">) : </span><span class="default">$data</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">$new_tokens</span><span class="keyword">;<br />
+}<br />
+<br />
+function </span><span class="default">token_name_nl</span><span class="keyword">(</span><span class="default">$token</span><span class="keyword">)<br />
+{<br />
+&nbsp;&nbsp;&nbsp; if (</span><span class="default">$token </span><span class="keyword">=== </span><span class="default">T_NEW_LINE</span><span class="keyword">)<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="string">'T_NEW_LINE'</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">token_name</span><span class="keyword">(</span><span class="default">$token</span><span class="keyword">);<br />
+}<br />
+<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+Example usage:<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+$tokens </span><span class="keyword">= </span><span class="default">token_get_all_nl</span><span class="keyword">(</span><span class="default">file_get_contents</span><span class="keyword">(</span><span class="string">'somecode.php'</span><span class="keyword">));<br />
+<br />
+foreach (</span><span class="default">$tokens </span><span class="keyword">as </span><span class="default">$token</span><span class="keyword">)<br />
+{<br />
+&nbsp;&nbsp;&nbsp; if (</span><span class="default">is_array</span><span class="keyword">(</span><span class="default">$token</span><span class="keyword">))<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; echo (</span><span class="default">token_name_nl</span><span class="keyword">(</span><span class="default">$token</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">]) . </span><span class="string">': "' </span><span class="keyword">. </span><span class="default">$token</span><span class="keyword">[</span><span class="default">1</span><span class="keyword">] . </span><span class="string">'"&lt;br /&gt;'</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; else<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; echo (</span><span class="string">'"' </span><span class="keyword">. </span><span class="default">$token </span><span class="keyword">. </span><span class="string">'"&lt;br /&gt;'</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+}<br />
+<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+I'm sure you can figure out how to count the lines of code, and lines of comments with these functions.&nbsp; This was a huge improvement on my previous attempt at counting lines of code with regular expressions.&nbsp; I hope this helps someone, as many of the user contributed examples on this website have helped me in the past.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="87803""></a>
+  <div class="note">
+   <strong class="user">strrev xc.noxeh@ellij</strong>
+   <a href="#87803" class="date">22-Dec-2008 05:45</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+If you run token_get_all() on a string which starts with #!... (eg, #!/usr/local/bin/php) this will be lost.<br />
+If you rewrite the file using token_get_all() and writing back all tokens afterwards, the #!... will be gone.<br />
+This causes commandline executable scripts (interpreted by PHP) to be unexecutable.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="82810""></a>
+  <div class="note">
+   <strong class="user">kevin at metalaxe dot com</strong>
+   <a href="#82810" class="date">26-Apr-2008 02:58</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Rogier, thanks for that fix. This bug still exists in php 5.2.5. I did notice though that it is possible for a notice to pop up from your code. Changing this line:<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $temp[] = $tokens[0][2];<br />
+<br />
+To read this:<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $temp[] = isset($tokens[0][2])?$tokens[0][2]:'unknown';<br />
+<br />
+fixes this notice.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="80340""></a>
+  <div class="note">
+   <strong class="user">rogier</strong>
+   <a href="#80340" class="date">10-Jan-2008 11:01</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Complementary note to code below:<br />
+Note that only the FIRST 2 (or 3, if needed) array elements will be updated. <br />
+<br />
+Since I only encountered incorrect results on the FIRST occurence of T_OPEN_TAG, I wrote this quick fix.<br />
+Any other following T_OPEN_TAG are, on my testing system (Apache 2.0.52, PHP 5.0.3), parsed correctly.<br />
+<br />
+So, This function assumes only a possibly incorrect first T_OPEN_TAG.<br />
+Also, this function assumes the very first element (and ONLY the first element) of the token array to be the possibly incorrect token.<br />
+This effectively translates to the first character of the tokenized source to be the start of a php script opening tag '&lt;', followed by either 'php' OR '%' (ASP_style)</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="80335""></a>
+  <div class="note">
+   <strong class="user">rogier at dsone dot nl</strong>
+   <a href="#80335" class="date">10-Jan-2008 08:37</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+On several PHP versions (pre 5.1), if token_get_all is used, the result will NOT always return the correct result.<br />
+This bug will only show (as far as I know) when PHP is loaded as a module. In the CLI the bug seems non-existent.<br />
+Related here are bugs 29761 and 34782.<br />
+To work around this, here's a fixing function:<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="comment">//fixes related bugs: 29761, 34782 =&gt; token_get_all returns &lt;?php NOT as T_OPEN_TAG<br />
+</span><span class="keyword">function </span><span class="default">token_fix</span><span class="keyword">( &amp;</span><span class="default">$tokens </span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; if (!</span><span class="default">is_array</span><span class="keyword">(</span><span class="default">$tokens</span><span class="keyword">) || (</span><span class="default">count</span><span class="keyword">(</span><span class="default">$tokens</span><span class="keyword">)&lt;</span><span class="default">2</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp; </span><span class="comment">//return of no fixing needed<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">if (</span><span class="default">is_array</span><span class="keyword">(</span><span class="default">$tokens</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">]) &amp;&amp; ((</span><span class="default">$tokens</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">][</span><span class="default">0</span><span class="keyword">]==</span><span class="default">T_OPEN_TAG</span><span class="keyword">) || (</span><span class="default">$tokens</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">][</span><span class="default">0</span><span class="keyword">]==</span><span class="default">T_OPEN_TAG_WITH_ECHO</span><span class="keyword">)) ) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">//continue<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$p1 </span><span class="keyword">= (</span><span class="default">is_array</span><span class="keyword">(</span><span class="default">$tokens</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">])?</span><span class="default">$tokens</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">][</span><span class="default">1</span><span class="keyword">]:</span><span class="default">$tokens</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">]);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$p2 </span><span class="keyword">= (</span><span class="default">is_array</span><span class="keyword">(</span><span class="default">$tokens</span><span class="keyword">[</span><span class="default">1</span><span class="keyword">])?</span><span class="default">$tokens</span><span class="keyword">[</span><span class="default">1</span><span class="keyword">][</span><span class="default">1</span><span class="keyword">]:</span><span class="default">$tokens</span><span class="keyword">[</span><span class="default">1</span><span class="keyword">]);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$p3 </span><span class="keyword">= </span><span class="string">''</span><span class="keyword">;<br />
+<br />
+&nbsp;&nbsp;&nbsp; if ((</span><span class="default">$p1</span><span class="keyword">.</span><span class="default">$p2 </span><span class="keyword">== </span><span class="string">'&lt;?'</span><span class="keyword">) || (</span><span class="default">$p1</span><span class="keyword">.</span><span class="default">$p2 </span><span class="keyword">== </span><span class="string">'&lt;%'</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$type </span><span class="keyword">= (</span><span class="default">$p2</span><span class="keyword">==</span><span class="string">'?'</span><span class="keyword">)?</span><span class="default">T_OPEN_TAG</span><span class="keyword">:</span><span class="default">T_OPEN_TAG_WITH_ECHO</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$del </span><span class="keyword">= </span><span class="default">2</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">//update token type for 3rd part?<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">if (</span><span class="default">count</span><span class="keyword">(</span><span class="default">$tokens</span><span class="keyword">)&gt;</span><span class="default">2</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$p3 </span><span class="keyword">= </span><span class="default">is_array</span><span class="keyword">(</span><span class="default">$tokens</span><span class="keyword">[</span><span class="default">2</span><span class="keyword">])?</span><span class="default">$tokens</span><span class="keyword">[</span><span class="default">2</span><span class="keyword">][</span><span class="default">1</span><span class="keyword">]:</span><span class="default">$tokens</span><span class="keyword">[</span><span class="default">2</span><span class="keyword">];<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$del </span><span class="keyword">= ((</span><span class="default">$p3</span><span class="keyword">==</span><span class="string">'php'</span><span class="keyword">) || (</span><span class="default">$p3</span><span class="keyword">==</span><span class="string">'='</span><span class="keyword">))?</span><span class="default">3</span><span class="keyword">:</span><span class="default">2</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$type </span><span class="keyword">= (</span><span class="default">$p3</span><span class="keyword">==</span><span class="string">'='</span><span class="keyword">)?</span><span class="default">T_OPEN_TAG_WITH_ECHO</span><span class="keyword">:</span><span class="default">$type</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">//rebuild erroneous token<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$temp </span><span class="keyword">= array(</span><span class="default">$type</span><span class="keyword">, </span><span class="default">$p1</span><span class="keyword">.</span><span class="default">$p2</span><span class="keyword">.</span><span class="default">$p3</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if (</span><span class="default">version_compare</span><span class="keyword">(</span><span class="default">phpversion</span><span class="keyword">(), </span><span class="string">'5.2.2'</span><span class="keyword">, </span><span class="string">'&lt;' </span><span class="keyword">)===</span><span class="default">false</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$temp</span><span class="keyword">[] = </span><span class="default">$token</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">][</span><span class="default">2</span><span class="keyword">];<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">//rebuild<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$tokens</span><span class="keyword">[</span><span class="default">1</span><span class="keyword">] = </span><span class="string">''</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if (</span><span class="default">$del</span><span class="keyword">==</span><span class="default">3</span><span class="keyword">) </span><span class="default">$tokens</span><span class="keyword">[</span><span class="default">2</span><span class="keyword">]=</span><span class="string">''</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$tokens</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">] = </span><span class="default">$temp</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; return;<br />
+}<br />
+<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="79557""></a>
+  <div class="note">
+   <strong class="user">nicolas dot grekas+php at gmail dot com</strong>
+   <a href="#79557" class="date">03-Dec-2007 01:10</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Well, there is a way to parse for errors. See<br />
+<a href="http://www.php.net/manual/function.php-check-syntax.php#77318" rel="nofollow" target="_blank">http://www.php.net/manual/function.php-check-syntax.php#77318</a></span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="79502""></a>
+  <div class="note">
+   <strong class="user">smp_info at yahoo dot com</strong>
+   <a href="#79502" class="date">30-Nov-2007 06:50</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+As far as I am aware, there is no way to tell if the source code passed is free of parse errors.<br />
+<br />
+You might come across such a situation when you're using PHP to analyze PHP source code.<br />
+<br />
+In a case like this.. You'll get a warning similar to (but varying) Warning: Unexpected character in input: ''' (ASCII=39) state=1<br />
+<br />
+If it doesn't matter to you that the source is free of parse errors, use @token_get_all($source) to suppress the error.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="55370""></a>
+  <div class="note">
+   <strong class="user">phpcomments at majiclab dot com</strong>
+   <a href="#55370" class="date">01-Aug-2005 10:08</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Regarding bertrand at toggg dot com's comment:&nbsp; there is another case of the { } curly braces being used in PHP, but the token_get_all() function treats it just like a code block: string index.&nbsp; Example:<br />
+<br />
+<span class="default">&lt;?php<br />
+$text </span><span class="keyword">= </span><span class="string">"Hello"</span><span class="keyword">;<br />
+if (</span><span class="default">$text</span><span class="keyword">{ </span><span class="default">0 </span><span class="keyword">} == </span><span class="string">'H'</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; echo </span><span class="string">"This example uses { for both a PHP block and a string index."</span><span class="keyword">;<br />
+}<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+Just in case some people were wondering.&nbsp; Since PHP treats them as the same token, it makes some things a little more interesting for parsing.&nbsp; You can't just assume that { ... } is a code block, it could just be a number referring to an index of a string.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="50721""></a>
+  <div class="note">
+   <strong class="user">bertrand at toggg dot com</strong>
+   <a href="#50721" class="date">07-Mar-2005 10:41</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+If you want to retrieve the PHP blocks then you will count up the opening curly braces '{' and down the closing ones '}' (counter zero means block finished)<br />
+CAUTION: the opening curly braces token can take 3 values:<br />
+1) '{' for all PHP code blocks,<br />
+2) T_CURLY_OPEN for "protected" variables within strings as "{$var}"<br />
+3) T_DOLLAR_OPEN_CURLY_BRACES for extended format "${var}"<br />
+<br />
+On the other hand, closing token is allways '}' !<br />
+<br />
+So counting up must take place on the 3 tokens:<br />
+'{' , T_CURLY_OPEN and T_DOLLAR_OPEN_CURLY_BRACES<br />
+<br />
+Have fun with PHP tokenizer !</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="47986""></a>
+  <div class="note">
+   <strong class="user">bishop</strong>
+   <a href="#47986" class="date">07-Dec-2004 10:58</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+You may want to know the line and column number at which a token begins (or ends). Since this tokenizer interface doesn't provide that information, you have to track it manually, like below:<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">function </span><span class="default">update_line_and_column_positions</span><span class="keyword">(</span><span class="default">$c</span><span class="keyword">, &amp;</span><span class="default">$line</span><span class="keyword">, &amp;</span><span class="default">$col</span><span class="keyword">)<br />
+{<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// update line count<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$numNewLines </span><span class="keyword">= </span><span class="default">substr_count</span><span class="keyword">(</span><span class="default">$c</span><span class="keyword">, </span><span class="string">"\n"</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; if (</span><span class="default">1 </span><span class="keyword">&lt;= </span><span class="default">$numNewLines</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// have new lines, add them in<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$line </span><span class="keyword">+= </span><span class="default">$numNewLines</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$col&nbsp; </span><span class="keyword">=&nbsp; </span><span class="default">1</span><span class="keyword">;<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// skip to right past the last new line, as it won't affect the column position<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$c </span><span class="keyword">= </span><span class="default">substr</span><span class="keyword">(</span><span class="default">$c</span><span class="keyword">, </span><span class="default">strrpos</span><span class="keyword">(</span><span class="default">$c</span><span class="keyword">, </span><span class="string">"\n"</span><span class="keyword">) + </span><span class="default">1</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if (</span><span class="default">$c </span><span class="keyword">=== </span><span class="default">false</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$c </span><span class="keyword">= </span><span class="string">''</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// update column count<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$col </span><span class="keyword">+= </span><span class="default">strlen</span><span class="keyword">(</span><span class="default">$c</span><span class="keyword">);<br />
+}<br />
+<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+Now use it, something like:<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+$line </span><span class="keyword">= </span><span class="default">1</span><span class="keyword">;<br />
+</span><span class="default">$col&nbsp; </span><span class="keyword">= </span><span class="default">1</span><span class="keyword">;<br />
+foreach (</span><span class="default">$tokens </span><span class="keyword">as </span><span class="default">$token</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; if (</span><span class="default">is_array</span><span class="keyword">(</span><span class="default">$token</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; list (</span><span class="default">$token</span><span class="keyword">, </span><span class="default">$text</span><span class="keyword">) = </span><span class="default">$token</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; } else if (</span><span class="default">is_string</span><span class="keyword">(</span><span class="default">$token</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$text </span><span class="keyword">= </span><span class="default">$token</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">update_line_and_column_positions</span><span class="keyword">(</span><span class="default">$text</span><span class="keyword">, </span><span class="default">$line</span><span class="keyword">, </span><span class="default">$col</span><span class="keyword">);<br />
+}<br />
+<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+Note this assumes that your desired coordinate system is 1-based (eg (1,1) is the upper left). Zero-based is left as an exercise for the reader.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="27468""></a>
+  <div class="note">
+   <strong class="user">Leon Atkinson</strong>
+   <a href="#27468" class="date">06-Dec-2002 03:17</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+This function parses PHP code.&nbsp; Here's an example of it's use.<br />
+&lt;?<br />
+&nbsp;&nbsp;&nbsp; $code = '&lt;?$a = 3;?&gt;';<br />
+<br />
+&nbsp;&nbsp;&nbsp; foreach(token_get_all($code) as $c)<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if(is_array($c))<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; print(token_name($c[0]) . ": '" . htmlentities($c[1]) . "'\n");<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; else<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; print("$c\n");<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; }<br />
+?&gt;</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="ref.tokenizer.html">Tokenizer Functions</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.token-name.html">token_name</a></div>
  <div class="up"><a href="ref.tokenizer.html">Tokenizer Functions</a></div>

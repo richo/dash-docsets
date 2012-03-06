@@ -167,7 +167,273 @@ watermelon      pink    90
  
 
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="99227""></a>
+  <div class="note">
+   <strong class="user">ronhenry at netspeed dot com dot au</strong>
+   <a href="#99227" class="date">04-Aug-2010 08:43</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+To create an object instance via the constructor solely from the result of the PDO query you must use PDO::FETCH_CLASS|PDO::FETCH_PROPS_LATE, followed by the name of the class, then an array consisting of the names of the constructor elements. This may be specified in setFetchMode() for prepared statements, or fetch*() otherwise. This forces PDO to create your object instance by calling the constructor.<br />
+<br />
+e.g setFetchMode (PDO::FETCH_CLASS , 'classname', array('paramName1', 'paramName2', ...).<br />
+<br />
+An example using a prepared statement (without variable bindings) and fetchALL().<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">class </span><span class="default">Test<br />
+</span><span class="keyword">{<br />
+&nbsp; private </span><span class="default">$id</span><span class="keyword">;<br />
+&nbsp; private </span><span class="default">$a</span><span class="keyword">;<br />
+&nbsp; private </span><span class="default">$b</span><span class="keyword">;<br />
+<br />
+&nbsp; function </span><span class="default">__construct </span><span class="keyword">(</span><span class="default">$id</span><span class="keyword">, </span><span class="default">$a</span><span class="keyword">, </span><span class="default">$b</span><span class="keyword">)<br />
+&nbsp; {<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">id </span><span class="keyword">= </span><span class="default">$id</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">a </span><span class="keyword">= </span><span class="default">$a</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">b </span><span class="keyword">= </span><span class="default">$b</span><span class="keyword">;<br />
+&nbsp; }<br />
+<br />
+&nbsp; public function </span><span class="default">display</span><span class="keyword">()<br />
+&nbsp; {<br />
+&nbsp;&nbsp;&nbsp; echo </span><span class="string">"&lt;p&gt;id: </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">id</span><span class="string">, a: </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">a</span><span class="string">, b: </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">b</span><span class="string">&lt;/p&gt;"</span><span class="keyword">;<br />
+&nbsp; }<br />
+}<br />
+<br />
+</span><span class="default">$testx </span><span class="keyword">= new </span><span class="default">Test</span><span class="keyword">(</span><span class="default">10</span><span class="keyword">, </span><span class="string">'AAA'</span><span class="keyword">, </span><span class="string">'BBB' </span><span class="keyword">);<br />
+</span><span class="default">$testx</span><span class="keyword">-&gt;</span><span class="default">display</span><span class="keyword">();<br />
+</span><span class="default">$testx </span><span class="keyword">= </span><span class="default">NULL</span><span class="keyword">;<br />
+<br />
+try<br />
+{<br />
+&nbsp; </span><span class="default">$pdo </span><span class="keyword">= new </span><span class="default">PDO</span><span class="keyword">(</span><span class="string">'mysql:host=127.0.0.1;dbname=Testing'</span><span class="keyword">, </span><span class="string">'user'</span><span class="keyword">, </span><span class="string">'pswd'</span><span class="keyword">, array (</span><span class="default">PDO</span><span class="keyword">::</span><span class="default">ATTR_ERRMODE</span><span class="keyword">=&gt;</span><span class="default">PDO</span><span class="keyword">::</span><span class="default">ERRMODE_EXCEPTION</span><span class="keyword">));<br />
+&nbsp; <br />
+&nbsp; </span><span class="comment">// Prepared statement<br />
+&nbsp; </span><span class="default">$stmt </span><span class="keyword">= </span><span class="default">$pdo</span><span class="keyword">-&gt;</span><span class="default">prepare</span><span class="keyword">(</span><span class="string">"SELECT id, a, b FROM test WHERE id = 1"</span><span class="keyword">);<br />
+&nbsp; </span><span class="default">$stmt</span><span class="keyword">-&gt;</span><span class="default">setFetchMode</span><span class="keyword">(</span><span class="default">PDO</span><span class="keyword">::</span><span class="default">FETCH_CLASS</span><span class="keyword">|</span><span class="default">PDO</span><span class="keyword">::</span><span class="default">FETCH_PROPS_LATE</span><span class="keyword">, </span><span class="string">"Test"</span><span class="keyword">, array(</span><span class="string">'id'</span><span class="keyword">, </span><span class="string">'a'</span><span class="keyword">, </span><span class="string">'b'</span><span class="keyword">));<br />
+&nbsp; </span><span class="default">$stmt</span><span class="keyword">-&gt;</span><span class="default">execute</span><span class="keyword">();<br />
+&nbsp; foreach (</span><span class="default">$stmt </span><span class="keyword">as </span><span class="default">$test</span><span class="keyword">)<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$test</span><span class="keyword">-&gt;</span><span class="default">display</span><span class="keyword">();<br />
+<br />
+&nbsp; </span><span class="comment">// Same again with fetchALL()<br />
+&nbsp; </span><span class="default">$stmt </span><span class="keyword">= </span><span class="default">$pdo</span><span class="keyword">-&gt;</span><span class="default">query</span><span class="keyword">(</span><span class="string">"SELECT id, a, b FROM test WHERE id = 2"</span><span class="keyword">);<br />
+&nbsp; </span><span class="default">$test </span><span class="keyword">= </span><span class="default">$stmt</span><span class="keyword">-&gt;</span><span class="default">fetchALL</span><span class="keyword">(</span><span class="default">PDO</span><span class="keyword">::</span><span class="default">FETCH_CLASS</span><span class="keyword">|</span><span class="default">PDO</span><span class="keyword">::</span><span class="default">FETCH_PROPS_LATE</span><span class="keyword">, </span><span class="string">'Test'</span><span class="keyword">, array(</span><span class="string">'id'</span><span class="keyword">, </span><span class="string">'a'</span><span class="keyword">, </span><span class="string">'b'</span><span class="keyword">));<br />
+&nbsp; </span><span class="default">$test</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">]-&gt;</span><span class="default">display</span><span class="keyword">();<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp; </span><span class="default">$pdo </span><span class="keyword">= </span><span class="default">NULL</span><span class="keyword">;<br />
+}<br />
+catch (</span><span class="default">PDOException $e</span><span class="keyword">)<br />
+{<br />
+&nbsp; echo </span><span class="string">'Error: '</span><span class="keyword">, </span><span class="default">$e</span><span class="keyword">-&gt;</span><span class="default">__toString</span><span class="keyword">();<br />
+}<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+You can avoid all this PDO::FETCH_CLASS|PDO::FETCH_PROPS_LATE and constructor fuss, and create an object instance from the result of a PDO query without a constructor, and with class properties declared as public, protected, private, or not at all:&nbsp; just let PDO use reflection injection to populate your object instance with data from your query. This is PDO's default action. PDO will inject the specified variables into your object instance before php calls the constructor, so you should either not have a constructor, or have one with no parameters. Of course, you may have problems using this as a normal class. Also see the comments about reflection injection below.<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">class </span><span class="default">Test1<br />
+</span><span class="keyword">{<br />
+&nbsp; public function </span><span class="default">display</span><span class="keyword">()<br />
+&nbsp; {<br />
+&nbsp;&nbsp;&nbsp; echo </span><span class="string">"&lt;p&gt;id: </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">id</span><span class="string">, a: </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">a</span><span class="string">, b: </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">b</span><span class="string">&lt;/p&gt;"</span><span class="keyword">;<br />
+&nbsp; }<br />
+}<br />
+<br />
+try<br />
+{<br />
+&nbsp; </span><span class="default">$pdo </span><span class="keyword">= new </span><span class="default">PDO</span><span class="keyword">(</span><span class="string">'mysql:host=127.0.0.1;dbname=Testing'</span><span class="keyword">, </span><span class="string">'user'</span><span class="keyword">, </span><span class="string">'pswd'</span><span class="keyword">, array (</span><span class="default">PDO</span><span class="keyword">::</span><span class="default">ATTR_ERRMODE</span><span class="keyword">=&gt;</span><span class="default">PDO</span><span class="keyword">::</span><span class="default">ERRMODE_EXCEPTION</span><span class="keyword">));<br />
+&nbsp; <br />
+&nbsp; </span><span class="default">$stmt </span><span class="keyword">= </span><span class="default">$pdo</span><span class="keyword">-&gt;</span><span class="default">prepare</span><span class="keyword">(</span><span class="string">"SELECT id, a, b FROM test WHERE id = 1"</span><span class="keyword">);<br />
+&nbsp; </span><span class="default">$stmt</span><span class="keyword">-&gt;</span><span class="default">setFetchMode</span><span class="keyword">(</span><span class="default">PDO</span><span class="keyword">::</span><span class="default">FETCH_CLASS</span><span class="keyword">, </span><span class="string">"Test1"</span><span class="keyword">);<br />
+&nbsp; </span><span class="default">$stmt</span><span class="keyword">-&gt;</span><span class="default">execute</span><span class="keyword">();<br />
+&nbsp; foreach (</span><span class="default">$stmt </span><span class="keyword">as </span><span class="default">$test1</span><span class="keyword">)<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$test1</span><span class="keyword">-&gt;</span><span class="default">display</span><span class="keyword">();<br />
+<br />
+&nbsp; </span><span class="default">$stmt </span><span class="keyword">= </span><span class="default">$pdo</span><span class="keyword">-&gt;</span><span class="default">query</span><span class="keyword">(</span><span class="string">"SELECT id, a, b FROM test WHERE id = 2"</span><span class="keyword">);<br />
+&nbsp; </span><span class="default">$test1s </span><span class="keyword">= </span><span class="default">$stmt</span><span class="keyword">-&gt;</span><span class="default">fetchALL</span><span class="keyword">(</span><span class="default">PDO</span><span class="keyword">::</span><span class="default">FETCH_CLASS</span><span class="keyword">, </span><span class="string">'Test1'</span><span class="keyword">);<br />
+&nbsp; foreach (</span><span class="default">$test1s </span><span class="keyword">as </span><span class="default">$test1</span><span class="keyword">)<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$test1</span><span class="keyword">-&gt;</span><span class="default">display</span><span class="keyword">();<br />
+<br />
+&nbsp; </span><span class="default">$pdo </span><span class="keyword">= </span><span class="default">NULL</span><span class="keyword">;<br />
+}<br />
+catch (</span><span class="default">PDOException $e</span><span class="keyword">)<br />
+{<br />
+&nbsp; echo </span><span class="string">'Error: '</span><span class="keyword">, </span><span class="default">$e</span><span class="keyword">-&gt;</span><span class="default">__toString</span><span class="keyword">();<br />
+}<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+You can also use variables with PDO::FETCH_CLASS and the constructor parameter array, what you do is up you.<br />
+<br />
+Reflection injection increases the risk of variable, code, and SQL injection if user input is used unwisely, so ALWAYS validate user input on the server side, and ONLY insert it into your SQL via bound parameters in prepared SQL statements. If you do not use PDO::FETCH_CLASS|PDO::FETCH_PROPS_LATE, and a constructor element name array, you should be especially careful.<br />
+See: <a href="http://www.owasp.org/index.php/Reflection_injection for a non php description of reflection injection." rel="nofollow" target="_blank">http://www.owasp.org/index.php/Reflection_injection for a non php description of reflection injection.</a></span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="98876""></a>
+  <div class="note">
+   <strong class="user">Dormilich at netscape dot net</strong>
+   <a href="#98876" class="date">13-Jul-2010 02:16</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+if you want to fetch your result into a class (by using PDO::FETCH_CLASS) and want the constructor to be executed *before* PDO assings the object properties, you need to use the PDO::FETCH_PROPS_LATE constant:<br />
+<br />
+<span class="default">&lt;?php<br />
+$stmt </span><span class="keyword">= </span><span class="default">$pdo</span><span class="keyword">-&gt;</span><span class="default">prepare</span><span class="keyword">(</span><span class="string">"your query"</span><span class="keyword">);<br />
+<br />
+</span><span class="default">$stmt</span><span class="keyword">-&gt;</span><span class="default">setFetchMode</span><span class="keyword">(</span><span class="default">PDO</span><span class="keyword">::</span><span class="default">FETCH_CLASS</span><span class="keyword">|</span><span class="default">PDO</span><span class="keyword">::</span><span class="default">FETCH_PROPS_LATE</span><span class="keyword">, </span><span class="string">"className"</span><span class="keyword">, </span><span class="default">$constructorArguments</span><span class="keyword">);<br />
+<br />
+</span><span class="comment"># pass parameters, if required by the query<br />
+</span><span class="default">$stmt</span><span class="keyword">-&gt;</span><span class="default">execute</span><span class="keyword">(</span><span class="default">$parameters</span><span class="keyword">);<br />
+<br />
+foreach (</span><span class="default">$stmt </span><span class="keyword">as </span><span class="default">$row</span><span class="keyword">)<br />
+{<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// do something with (each of) your object<br />
+</span><span class="keyword">}<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="83751""></a>
+  <div class="note">
+   <strong class="user">harlequin2 at gmx dot de</strong>
+   <a href="#83751" class="date">10-Jun-2008 05:22</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+You can also set the fetch mode to FETCH_ASSOC if you do not need the column index. This reduces both the size of the resultset and is faster in some cases.<br />
+<br />
+<span class="default">&lt;?php<br />
+$stmt </span><span class="keyword">= </span><span class="default">$dbh</span><span class="keyword">-&gt;</span><span class="default">prepare</span><span class="keyword">(</span><span class="string">"SELECT mykey, myvalue FROM mytable"</span><span class="keyword">);<br />
+</span><span class="default">$stmt</span><span class="keyword">-&gt;</span><span class="default">setFetchMode</span><span class="keyword">(</span><span class="default">PDO</span><span class="keyword">::</span><span class="default">FETCH_ASSOC</span><span class="keyword">);<br />
+</span><span class="default">$arrValues </span><span class="keyword">= </span><span class="default">$stmt</span><span class="keyword">-&gt;</span><span class="default">fetchAll</span><span class="keyword">();<br />
+foreach (</span><span class="default">$arrValues </span><span class="keyword">as </span><span class="default">$row</span><span class="keyword">){<br />
+&nbsp;&nbsp;&nbsp; print </span><span class="default">$row</span><span class="keyword">[</span><span class="string">"mykey"</span><span class="keyword">].</span><span class="string">" -&gt; "</span><span class="keyword">.</span><span class="default">$row</span><span class="keyword">[</span><span class="string">"myvalue"</span><span class="keyword">].</span><span class="string">"&lt;br /&gt;\n"</span><span class="keyword">;<br />
+}<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="79291""></a>
+  <div class="note">
+   <strong class="user">stein_AT_rhrk.uni-kl.de</strong>
+   <a href="#79291" class="date">19-Nov-2007 04:04</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Some note on PDO :: FETCH_CLASS | PDO :: FETCH_CLASSTYPE<br />
+<br />
+It took me some time, to realize, that you can not use this fetch-mode in $stm-&gt;setFetchMode(), when you want to retrieve objects from the database whereas the type is defined by the first column in the resultset.<br />
+You have to define this mode directly in the $stm-&gt;fetch() method.<br />
+<br />
+To make it clearer:<br />
+<br />
+$stm = $pdo-&gt;query("SELECT * FROM `foo`);<br />
+$stm-&gt;setFetchMode(FETCH_CLASS | PDO :: FETCH_CLASSTYPE);<br />
+<br />
+$object = $stm-&gt;fetch();<br />
+<br />
+Will not return the expected object, whereas<br />
+<br />
+$stm = $pdo-&gt;query("SELECT * FROM `foo`");<br />
+<br />
+$object = $stm-&gt;fetch(FETCH_CLASS | PDO :: FETCH_CLASSTYPE);<br />
+<br />
+will give you the object of the class, defined in the first column of `foo`.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="62048""></a>
+  <div class="note">
+   <strong class="user">matt at kynx dot org</strong>
+   <a href="#62048" class="date">18-Feb-2006 03:13</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+To fetch the rows into an existing instance of a class, use PDO::FETCH_INTO and pass the object as the second parameter. <br />
+<br />
+The class _must_ have the column names declared as public members, or the script will die. But overloading with __set() and __get() lets it handle any column your query throws at it.&nbsp; <br />
+<br />
+Set the fetch mode right after you call prepare(). It appears you _must_ use execute() - fetch() won't work. A small example, adapted from ext/pdo/tests/pdo_025.phpt:<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">class </span><span class="default">Test<br />
+</span><span class="keyword">{<br />
+&nbsp;&nbsp;&nbsp; protected </span><span class="default">$cols</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; function </span><span class="default">__set</span><span class="keyword">(</span><span class="default">$name</span><span class="keyword">, </span><span class="default">$value</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">cols</span><span class="keyword">[</span><span class="default">$name</span><span class="keyword">] = </span><span class="default">$value</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; function </span><span class="default">__get</span><span class="keyword">(</span><span class="default">$name</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">cols</span><span class="keyword">[</span><span class="default">$name</span><span class="keyword">];<br />
+&nbsp;&nbsp;&nbsp; }<br />
+}<br />
+<br />
+</span><span class="default">$obj </span><span class="keyword">= new </span><span class="default">Test</span><span class="keyword">();<br />
+</span><span class="default">$db </span><span class="keyword">= </span><span class="default">PDOTest</span><span class="keyword">::</span><span class="default">factory</span><span class="keyword">();<br />
+</span><span class="default">$stmt </span><span class="keyword">= </span><span class="default">$db</span><span class="keyword">-&gt;</span><span class="default">prepare</span><span class="keyword">(</span><span class="string">"select * from test"</span><span class="keyword">);<br />
+</span><span class="default">$stmt</span><span class="keyword">-&gt;</span><span class="default">setFetchMode</span><span class="keyword">(</span><span class="default">PDO</span><span class="keyword">::</span><span class="default">FETCH_INTO</span><span class="keyword">, </span><span class="default">$obj</span><span class="keyword">);<br />
+</span><span class="default">$stmt</span><span class="keyword">-&gt;</span><span class="default">execute</span><span class="keyword">();<br />
+<br />
+foreach (</span><span class="default">$stmt </span><span class="keyword">as </span><span class="default">$a</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">print_r</span><span class="keyword">(</span><span class="default">$a</span><span class="keyword">);<br />
+}<br />
+<br />
+</span><span class="default">print_r</span><span class="keyword">(</span><span class="default">$obj</span><span class="keyword">); </span><span class="comment">// contains the same values as the last iteration above<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="61825""></a>
+  <div class="note">
+   <strong class="user">Dariusz Kielar</strong>
+   <a href="#61825" class="date">12-Feb-2006 10:55</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+PDO::FETCH_CLASS may be used only with this method and it takes up to three parameters then:<br />
+&nbsp;- int mode<br />
+&nbsp;- string className<br />
+&nbsp;- array constructorArgs (optional)<br />
+<br />
+<span class="default">&lt;?php<br />
+$stmt </span><span class="keyword">= </span><span class="default">$pdo </span><span class="keyword">-&gt; </span><span class="default">query</span><span class="keyword">(</span><span class="string">'your query'</span><span class="keyword">);<br />
+</span><span class="default">$stmt </span><span class="keyword">-&gt; </span><span class="default">setFetchMode</span><span class="keyword">(</span><span class="default">PDO</span><span class="keyword">::</span><span class="default">FETCH_CLASS</span><span class="keyword">, </span><span class="string">'yourClass'</span><span class="keyword">, array(</span><span class="default">0 </span><span class="keyword">=&gt; </span><span class="default">false</span><span class="keyword">));<br />
+<br />
+while(</span><span class="default">$row </span><span class="keyword">= </span><span class="default">$stmt </span><span class="keyword">-&gt; </span><span class="default">fetch</span><span class="keyword">())<br />
+{<br />
+&nbsp;&nbsp; </span><span class="comment">// $row is an object of "yourClass" class<br />
+</span><span class="keyword">}<br />
+</span><span class="default">$stmt </span><span class="keyword">-&gt; </span><span class="default">closeCursor</span><span class="keyword">();<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+Note also that the constructor is called AFTER the data is set on the object.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="pdostatement.setattribute.html">PDOStatement::setAttribute</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="class.pdoexception.html">PDOException</a></div>
  <div class="up"><a href="class.pdostatement.html">PDOStatement</a></div>

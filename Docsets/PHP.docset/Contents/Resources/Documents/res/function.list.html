@@ -172,7 +172,738 @@ array(3) {
   </p>
  </div>
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="107208""></a>
+  <div class="note">
+   <strong class="user">dan dot lugg at gmail dot com</strong>
+   <a href="#107208" class="date">14-Jan-2012 05:43</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Although the warning claims of undefined behaviour, it's reasonably straightforward what happens.<br />
+<br />
+<span class="default">&lt;?php<br />
+&nbsp;&nbsp;&nbsp; $a </span><span class="keyword">= array(</span><span class="default">1</span><span class="keyword">, </span><span class="default">2</span><span class="keyword">, </span><span class="default">3</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; list(</span><span class="default">$a</span><span class="keyword">, </span><span class="default">$b</span><span class="keyword">, </span><span class="default">$c</span><span class="keyword">) = </span><span class="default">$a</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">var_dump</span><span class="keyword">(</span><span class="default">$a</span><span class="keyword">, </span><span class="default">$b</span><span class="keyword">, </span><span class="default">$c</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// int(1)<br />
+&nbsp;&nbsp;&nbsp; // int(2)<br />
+&nbsp;&nbsp;&nbsp; // int(3)<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+Since list() works from right to left on the target variables, $a is replaced last, thus keeping the remaining array element values around long enough to populate $b and $c.<br />
+<br />
+<span class="default">&lt;?php<br />
+&nbsp;&nbsp;&nbsp; $a </span><span class="keyword">= array(</span><span class="default">1</span><span class="keyword">, </span><span class="default">2</span><span class="keyword">, </span><span class="default">3</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; list(</span><span class="default">$c</span><span class="keyword">, </span><span class="default">$b</span><span class="keyword">, </span><span class="default">$a</span><span class="keyword">) = </span><span class="default">$a</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">var_dump</span><span class="keyword">(</span><span class="default">$a</span><span class="keyword">, </span><span class="default">$b</span><span class="keyword">, </span><span class="default">$c</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// int(3)<br />
+&nbsp;&nbsp;&nbsp; // NULL<br />
+&nbsp;&nbsp;&nbsp; // NULL<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+$a is populated first (remember, right to left) with the value 3 from itself. Since $a is no longer an array, list() is forced to substitute NULL values for $b and $c.<br />
+<br />
+This appears to be perfectly sensible, though there may be edge cases and other strange behaviour I'm unaware of.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="103881""></a>
+  <div class="note">
+   <strong class="user">Ultimater at gmail dot com</strong>
+   <a href="#103881" class="date">08-May-2011 03:37</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Note that list(...) isn't limited to scalar variables.<br />
+It can even create an associative array:<br />
+<br />
+<span class="default">&lt;?php<br />
+$html</span><span class="keyword">=&lt;&lt;&lt;EOT<br />
+</span><span class="string">&lt;table&gt;<br />
+&lt;tr class="row-odd"&gt;<br />
+&lt;td&gt;&lt;span class="username"&gt;Foo&lt;/span&gt;&lt;/td&gt;<br />
+&lt;td&gt;&lt;span class="userid"&gt;30185&lt;/span&gt;&lt;/td&gt;<br />
+&lt;/tr&gt;&lt;tr class="row-even"&gt;<br />
+&lt;td&gt;&lt;span class="username"&gt;Bar&lt;/span&gt;&lt;/td&gt;<br />
+&lt;td&gt;&lt;span class="userid"&gt;3093&lt;/span&gt;&lt;/td&gt;<br />
+&lt;/tr&gt;<br />
+&lt;/table&gt;<br />
+</span><span class="keyword">EOT;<br />
+<br />
+interface </span><span class="default">RegExps<br />
+</span><span class="keyword">{<br />
+&nbsp;&nbsp;&nbsp; const </span><span class="default">PROFILE_CONTENT</span><span class="keyword">=</span><span class="string">'/&lt;tr[^&gt;]*&gt;.*?&lt;span class="username"&gt;(.*?)&lt;\/span&gt;[<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; ]?.*?&lt;span class="userid"&gt;(.*?)&lt;\/span&gt;.*?&lt;\/tr&gt;/msi'</span><span class="keyword">;<br />
+}<br />
+<br />
+</span><span class="default">preg_match_all</span><span class="keyword">(</span><span class="default">RegExps</span><span class="keyword">::</span><span class="default">PROFILE_CONTENT</span><span class="keyword">,</span><span class="default">$html</span><span class="keyword">, </span><span class="default">$matches</span><span class="keyword">,</span><span class="default">PREG_SET_ORDER</span><span class="keyword">);<br />
+</span><span class="default">$profiles</span><span class="keyword">=array();<br />
+foreach(</span><span class="default">$matches </span><span class="keyword">as </span><span class="default">$match</span><span class="keyword">)<br />
+{<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$profile</span><span class="keyword">=array();<br />
+&nbsp;&nbsp;&nbsp; list(,</span><span class="default">$profile</span><span class="keyword">[</span><span class="string">'username'</span><span class="keyword">],</span><span class="default">$profile</span><span class="keyword">[</span><span class="string">'userid'</span><span class="keyword">])=</span><span class="default">$match</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">//$profile=array_reverse($profile);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$profiles</span><span class="keyword">[]=</span><span class="default">$profile</span><span class="keyword">;<br />
+}<br />
+echo </span><span class="string">'&lt;pre&gt;'</span><span class="keyword">.</span><span class="default">print_r</span><span class="keyword">(</span><span class="default">$profiles</span><span class="keyword">,</span><span class="default">true</span><span class="keyword">).</span><span class="string">'&lt;/pre&gt;'</span><span class="keyword">;<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+Just be careful, as the manual warns us, regarding the right-most parameter being handled first.<br />
+If this becomes a problem, I'd suggest using array_reverse as shown in my code.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="103311""></a>
+  <div class="note">
+   <strong class="user">boukeversteegh at gmail dot com</strong>
+   <a href="#103311" class="date">06-Apr-2011 12:49</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+If your array is shorter than the number of arguments in list(), you will get an "undefined index" notice.<br />
+<br />
+You can solve it by making sure the array is long enough:<br />
+<br />
+<span class="default">&lt;?php<br />
+&nbsp;&nbsp; $array </span><span class="keyword">= Array( </span><span class="string">"one"</span><span class="keyword">, </span><span class="string">"two" </span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp; </span><span class="comment"># This will give a Notice: undefined index [2]:<br />
+&nbsp;&nbsp; </span><span class="keyword">list( </span><span class="default">$one</span><span class="keyword">, </span><span class="default">$two</span><span class="keyword">, </span><span class="default">$three </span><span class="keyword">) = </span><span class="default">$array</span><span class="keyword">;<br />
+<br />
+&nbsp;&nbsp; </span><span class="comment"># This won't:<br />
+&nbsp;&nbsp; </span><span class="keyword">list( </span><span class="default">$one</span><span class="keyword">, </span><span class="default">$two</span><span class="keyword">, </span><span class="default">$three </span><span class="keyword">) = </span><span class="default">$array </span><span class="keyword">+ Array( </span><span class="default">null</span><span class="keyword">, </span><span class="default">null</span><span class="keyword">, </span><span class="default">null </span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp; </span><span class="comment"># If you know count($array) will be at least 1, you could skip the first index:<br />
+&nbsp;&nbsp; </span><span class="keyword">list( </span><span class="default">$one</span><span class="keyword">, </span><span class="default">$two</span><span class="keyword">, </span><span class="default">$three </span><span class="keyword">) = </span><span class="default">$array </span><span class="keyword">+ Array( </span><span class="default">1 </span><span class="keyword">=&gt; </span><span class="default">null</span><span class="keyword">, </span><span class="default">null </span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp; </span><span class="comment"># You could of course also use other default values:<br />
+&nbsp;&nbsp; </span><span class="keyword">list( </span><span class="default">$one</span><span class="keyword">, </span><span class="default">$two</span><span class="keyword">, </span><span class="default">$three </span><span class="keyword">) = </span><span class="default">$array </span><span class="keyword">+ Array( </span><span class="string">"one"</span><span class="keyword">, </span><span class="string">"two"</span><span class="keyword">, </span><span class="string">"three" </span><span class="keyword">);<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="103266""></a>
+  <div class="note">
+   <strong class="user">lili at nikha dot org</strong>
+   <a href="#103266" class="date">04-Apr-2011 04:02</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Keep it simple! <br />
+For associative arrays, my replacement for list() is this:<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">foreach (</span><span class="default">$associative_array </span><span class="keyword">as </span><span class="default">$key </span><span class="keyword">=&gt; </span><span class="default">$value</span><span class="keyword">) { $</span><span class="default">$key </span><span class="keyword">= </span><span class="default">$value</span><span class="keyword">; }<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+Example:<br />
+<span class="default">&lt;?php<br />
+$petnames </span><span class="keyword">= array();<br />
+</span><span class="default">$petnames</span><span class="keyword">[</span><span class="string">'dog'</span><span class="keyword">] = </span><span class="string">'Paul'</span><span class="keyword">;<br />
+</span><span class="default">$petnames</span><span class="keyword">[</span><span class="string">'cat'</span><span class="keyword">] = </span><span class="string">'Lili'</span><span class="keyword">;<br />
+<br />
+foreach (</span><span class="default">$petnames </span><span class="keyword">as </span><span class="default">$name </span><span class="keyword">=&gt; </span><span class="default">$value</span><span class="keyword">) { $</span><span class="default">$name </span><span class="keyword">= </span><span class="default">$value</span><span class="keyword">; }<br />
+<br />
+echo </span><span class="string">'my pets are '</span><span class="keyword">.</span><span class="default">$dog</span><span class="keyword">.</span><span class="string">' and '</span><span class="keyword">.</span><span class="default">$cat</span><span class="keyword">;<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+Will give you:<br />
+my pets are Paul and Lili</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="97074""></a>
+  <div class="note">
+   <strong class="user">develop at dieploegers dot de</strong>
+   <a href="#97074" class="date">31-Mar-2010 03:37</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Remember, that list starts from index 0. You can skip an index if you just leave the column blank like this:<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">list(,</span><span class="default">$a</span><span class="keyword">,</span><span class="default">$b</span><span class="keyword">,</span><span class="default">$c</span><span class="keyword">) = array(</span><span class="default">1</span><span class="keyword">,</span><span class="default">2</span><span class="keyword">,</span><span class="default">3</span><span class="keyword">,</span><span class="default">4</span><span class="keyword">);<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+You CAN'T (at least not in 5.3.1, what I have tested) set the column to null:<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">list(</span><span class="default">null</span><span class="keyword">,</span><span class="default">$a</span><span class="keyword">,</span><span class="default">$b</span><span class="keyword">,</span><span class="default">$c</span><span class="keyword">) = array(</span><span class="default">1</span><span class="keyword">,</span><span class="default">2</span><span class="keyword">,</span><span class="default">3</span><span class="keyword">,</span><span class="default">4</span><span class="keyword">);<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+This will fail.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="96722""></a>
+  <div class="note">
+   <strong class="user">Anonymous</strong>
+   <a href="#96722" class="date">12-Mar-2010 09:29</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Quick little function that is similar to list but for objects.<br />
+<br />
+<span class="default">&lt;?php<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">function </span><span class="default">listObj</span><span class="keyword">() {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$stack </span><span class="keyword">= </span><span class="default">debug_backtrace</span><span class="keyword">();<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if (isset(</span><span class="default">$stack</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">][</span><span class="string">'args'</span><span class="keyword">])) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$i </span><span class="keyword">= </span><span class="default">0</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$args </span><span class="keyword">= </span><span class="default">$stack</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">][</span><span class="string">'args'</span><span class="keyword">];<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; foreach (</span><span class="default">$args</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">] as </span><span class="default">$key </span><span class="keyword">=&gt; </span><span class="default">$value</span><span class="keyword">)<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$args</span><span class="keyword">[++</span><span class="default">$i</span><span class="keyword">] = </span><span class="default">$value</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; class </span><span class="default">obj </span><span class="keyword">{public </span><span class="default">$var </span><span class="keyword">= </span><span class="string">"test"</span><span class="keyword">; public </span><span class="default">$vars </span><span class="keyword">= </span><span class="string">"test2"</span><span class="keyword">; function </span><span class="default">obj</span><span class="keyword">() {}}<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">listObj</span><span class="keyword">(new </span><span class="default">obj</span><span class="keyword">, &amp;</span><span class="default">$var</span><span class="keyword">, &amp;</span><span class="default">$var2</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; echo </span><span class="default">$var</span><span class="keyword">, </span><span class="default">$var2</span><span class="keyword">;<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="90859""></a>
+  <div class="note">
+   <strong class="user">claude dot pache at gmail dot com</strong>
+   <a href="#90859" class="date">13-May-2009 03:26</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+A simple way to swap variables (correction of a note of mario dot mueller dot work at gmail dot com below):<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">list(</span><span class="default">$var1</span><span class="keyword">, </span><span class="default">$var2</span><span class="keyword">) = array(</span><span class="default">$var2</span><span class="keyword">, </span><span class="default">$var1</span><span class="keyword">); </span><span class="comment">// swaps the values of $var1 and $var2<br />
+</span><span class="default">?&gt;<br />
+</span>Note that this is not equivalent to:<br />
+<span class="default">&lt;?php<br />
+$var2 </span><span class="keyword">= </span><span class="default">$var1</span><span class="keyword">; </span><span class="default">$var1 </span><span class="keyword">= </span><span class="default">$var2</span><span class="keyword">; </span><span class="comment">// $var1 and $var2 get both the old value of $var1<br />
+</span><span class="default">?&gt;<br />
+</span>as one could fear. Indeed, the array is constructed with the values of $var1 and $var2 (and not with the variables $var1 and $var2 themselves) before the assignment is carried out.<br />
+<br />
+Similarly, it is possible to bypass the problem pointed by sasha in the previous note by providing an expression rather than a variable on the right-hand side of the assignment operator:<br />
+<span class="default">&lt;?php<br />
+$var </span><span class="keyword">= array (</span><span class="string">"test" </span><span class="keyword">,</span><span class="string">"blah"</span><span class="keyword">);<br />
+list (</span><span class="default">$a</span><span class="keyword">,</span><span class="default">$var</span><span class="keyword">) = </span><span class="default">$var </span><span class="keyword">+ array();<br />
+echo </span><span class="default">$a </span><span class="keyword">; </span><span class="comment">// prints "test", not "b"<br />
+</span><span class="keyword">echo </span><span class="default">$var </span><span class="keyword">; </span><span class="comment">// prints "blah"<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="82388""></a>
+  <div class="note">
+   <strong class="user">tristan in oregon</strong>
+   <a href="#82388" class="date">08-Apr-2008 07:44</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Here's yet another way to make a list()-like construct for associative arrays. This one has the advantage that it doesn't depend on the order of the keys, it only extracts the keys that you specify, and only extracts them into the current scope instead of the global scope (which you can still do, but at least here you have the option).<br />
+<br />
+<span class="default">&lt;?php<br />
+&nbsp;&nbsp;&nbsp; $arr&nbsp; </span><span class="keyword">= array(</span><span class="string">"foo" </span><span class="keyword">=&gt; </span><span class="default">1</span><span class="keyword">, </span><span class="string">"bar" </span><span class="keyword">=&gt; </span><span class="default">2</span><span class="keyword">, </span><span class="string">"baz" </span><span class="keyword">=&gt; </span><span class="default">3</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$keys </span><span class="keyword">= array(</span><span class="string">"baz"</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">//&nbsp; $foo = 10;<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$bar </span><span class="keyword">= </span><span class="default">20</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$baz </span><span class="keyword">= </span><span class="default">30</span><span class="keyword">;<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">extract</span><span class="keyword">(</span><span class="default">array_intersect_key</span><span class="keyword">(</span><span class="default">$arr</span><span class="keyword">, </span><span class="default">$keys</span><span class="keyword">));<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">var_dump</span><span class="keyword">(</span><span class="default">$foo</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">var_dump</span><span class="keyword">(</span><span class="default">$bar</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">var_dump</span><span class="keyword">(</span><span class="default">$baz</span><span class="keyword">);<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+Should print<br />
+NULL<br />
+int(20)<br />
+int(3)<br />
+<br />
+If your version of PHP doesn't have array_intersect_key() yet (below 5.1 I think), it's easy to write a limited feature replacement for this purpose.<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">function </span><span class="default">my_array_intersect_key </span><span class="keyword">(</span><span class="default">$assoc</span><span class="keyword">, </span><span class="default">$keys</span><span class="keyword">)<br />
+{<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$intersection </span><span class="keyword">= array();<br />
+&nbsp;&nbsp;&nbsp; foreach (</span><span class="default">$assoc </span><span class="keyword">as </span><span class="default">$key </span><span class="keyword">=&gt; </span><span class="default">$val</span><span class="keyword">)<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if (</span><span class="default">in_array</span><span class="keyword">(</span><span class="default">$key</span><span class="keyword">, </span><span class="default">$keys</span><span class="keyword">))<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$intersection</span><span class="keyword">[</span><span class="default">$key</span><span class="keyword">] = </span><span class="default">$val</span><span class="keyword">;<br />
+<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">$intersection</span><span class="keyword">;<br />
+}<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="80910""></a>
+  <div class="note">
+   <strong class="user">kevin at vanzonneveld dot net</strong>
+   <a href="#80910" class="date">06-Feb-2008 07:12</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Another way to do it associative (if your array isn't numeric), is to just use array_values like this:<br />
+<br />
+<span class="default">&lt;?php<br />
+$os </span><span class="keyword">= array();<br />
+</span><span class="default">$os</span><span class="keyword">[</span><span class="string">"main"</span><span class="keyword">] = </span><span class="string">"Linux"</span><span class="keyword">;<br />
+</span><span class="default">$os</span><span class="keyword">[</span><span class="string">"distro"</span><span class="keyword">] = </span><span class="string">"Ubuntu"</span><span class="keyword">;<br />
+</span><span class="default">$os</span><span class="keyword">[</span><span class="string">"version"</span><span class="keyword">] = </span><span class="string">"7.10"</span><span class="keyword">;<br />
+<br />
+list(</span><span class="default">$main</span><span class="keyword">, </span><span class="default">$distro</span><span class="keyword">, </span><span class="default">$version</span><span class="keyword">) = </span><span class="default">array_values</span><span class="keyword">(</span><span class="default">$os</span><span class="keyword">);<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="80515""></a>
+  <div class="note">
+   <strong class="user">danieljames3 at g mail</strong>
+   <a href="#80515" class="date">19-Jan-2008 05:51</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+With regard to the note written by ergalvan at bitam dot com:<br />
+<br />
+You must take note that list() assigns variables starting from the rightmost one (as stated in the warning). That makes $record having the value "value4" and then $var1, $var2 and $var3 take their values from the "new" $record variable.<br />
+<br />
+It's clear that the behavior stated in the warning wasn't followed by version 5.0.4 (and perhaps previous versions?)<br />
+<br />
+----------<br />
+<br />
+I'm still seeing this behavior in PHP 5.2.5.&nbsp; Hopefully someone can comment on why it's been changed.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="78958""></a>
+  <div class="note">
+   <strong class="user">Hayley Watson</strong>
+   <a href="#78958" class="date">04-Nov-2007 12:36</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+In the code by tenz699 at hotmail dot com, the list() construct is taking values from the result of the each() function, not from the associative array; the example is therefore spurious.<br />
+<br />
+each() returns an array of four elements, indexed in the order 1, 'value', 0, 'key'. As noted in the documentation, the associative keys are ignored, and the numerically-indexed values are assigned in key order.<br />
+<br />
+<span class="default">&lt;?php<br />
+$array </span><span class="keyword">= array(</span><span class="string">'foo'</span><span class="keyword">=&gt;</span><span class="string">'bar'</span><span class="keyword">);<br />
+</span><span class="default">$t </span><span class="keyword">= </span><span class="default">each</span><span class="keyword">(</span><span class="default">$array</span><span class="keyword">);<br />
+</span><span class="default">print_r</span><span class="keyword">(</span><span class="default">$t</span><span class="keyword">);<br />
+list(</span><span class="default">$a</span><span class="keyword">,</span><span class="default">$b</span><span class="keyword">,</span><span class="default">$c</span><span class="keyword">,</span><span class="default">$d</span><span class="keyword">) = </span><span class="default">$t</span><span class="keyword">;<br />
+</span><span class="default">var_dump</span><span class="keyword">(</span><span class="default">$a</span><span class="keyword">);<br />
+</span><span class="default">var_dump</span><span class="keyword">(</span><span class="default">$b</span><span class="keyword">);<br />
+</span><span class="default">var_dump</span><span class="keyword">(</span><span class="default">$c</span><span class="keyword">);<br />
+</span><span class="default">var_dump</span><span class="keyword">(</span><span class="default">$d</span><span class="keyword">);<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+Output:<br />
+Array<br />
+(<br />
+&nbsp;&nbsp;&nbsp; [1] =&gt; bar<br />
+&nbsp;&nbsp;&nbsp; [value] =&gt; bar<br />
+&nbsp;&nbsp;&nbsp; [0] =&gt; foo<br />
+&nbsp;&nbsp;&nbsp; [key] =&gt; foo<br />
+)<br />
+string(3) "foo"<br />
+string(3) "bar"<br />
+NULL<br />
+NULL</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="77890""></a>
+  <div class="note">
+   <strong class="user">tenz699 at hotmail dot com</strong>
+   <a href="#77890" class="date">18-Sep-2007 10:50</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+PhP manual's NOTE says: list() only works on numerical arrays and assumes the numerical indices start at 0.<br />
+<br />
+I'm finding it do works for associative arrays too,as below:<br />
+<br />
+&lt;?<br />
+$tenzin = array ("1" =&gt; "one", "2" =&gt; "two","3"=&gt;"three");<br />
+while(list($keys,$values) = each($tenzin))<br />
+echo($keys." ".$values."&lt;br&gt;");<br />
+?&gt;<br />
+<br />
+gives O/P<br />
+1 one&nbsp; <br />
+2 two <br />
+3 three<br />
+<br />
+tsarma</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="76980""></a>
+  <div class="note">
+   <strong class="user">mick at wireframe dot com</strong>
+   <a href="#76980" class="date">08-Aug-2007 12:08</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+It's worth noting that, as expected, list() does not have to have as many variables (and/or empty skips) as there are elements in the array. PHP will disregard all elements that there are no variables for. So:<br />
+<br />
+<span class="default">&lt;?php<br />
+$Array_Letters </span><span class="keyword">= array(</span><span class="string">'A'</span><span class="keyword">, </span><span class="string">'B'</span><span class="keyword">, </span><span class="string">'C'</span><span class="keyword">, </span><span class="string">'D'</span><span class="keyword">, </span><span class="string">'E'</span><span class="keyword">, </span><span class="string">'F'</span><span class="keyword">);<br />
+<br />
+list(</span><span class="default">$Letter_1</span><span class="keyword">, </span><span class="default">$Letter_2</span><span class="keyword">) = </span><span class="default">$Array_Letters</span><span class="keyword">;<br />
+<br />
+echo </span><span class="default">$Letter_1 </span><span class="keyword">. </span><span class="default">$Letter_2</span><span class="keyword">;<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+Will output: AB<br />
+<br />
+Mick</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="75005""></a>
+  <div class="note">
+   <strong class="user">tobylewis at logogriph dot com</strong>
+   <a href="#75005" class="date">08-May-2007 03:55</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+The list construct assigns elements from a numbered array starting from element zero.&nbsp; It does not assign elements from associative arrays.&nbsp; So<br />
+<br />
+$arr = array();<br />
+$arr[1] = 'x';<br />
+list($a, $b) = $arr;<br />
+var_dump($a); //outputs NULL because there is no element [0]<br />
+var_dump($b); //outputs 'x'<br />
+<br />
+and <br />
+<br />
+$arr = array('red'=&gt;'stop','green'=&gt;'go');<br />
+list($a, $b) = $arr;<br />
+var_dump($a); //outputs NULL<br />
+var_dump($b); //outputs NULL<br />
+<br />
+If there are not enough elements in the array for the variables in the list the excess variables are assigned NULL.<br />
+<br />
+If there are more elements in the array than variables in the list, the extra array elements are ignored without error.<br />
+<br />
+Also the warning above about order of assignment is confusing until you get used to php arrays.&nbsp; The order in which array elements are stored is the order in which elements are assigned to the array.&nbsp; So even in a numbered array if you assign $may_arr[2] before you assign $my_array[0] then element [2] will be in the array before [0].&nbsp; This becomes apparent when using commands like, push, shift or foreach which work with the stored order of the elements.&nbsp; So the warning only applies when the variables in the list are themselves array elements which have not already been assigned to their array.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="65630""></a>
+  <div class="note">
+   <strong class="user">ergalvan at bitam dot com</strong>
+   <a href="#65630" class="date">04-May-2006 11:29</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+With regard to the note written by dolan at teamsapient dot com:<br />
+<br />
+You must take note that list() assigns variables starting from the rightmost one (as stated in the warning). That makes $record having the value "value4" and then $var1, $var2 and $var3 take their values from the "new" $record variable.<br />
+<br />
+It's clear that the behavior stated in the warning wasn't followed by version 5.0.4 (and perhaps previous versions?)</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="64065""></a>
+  <div class="note">
+   <strong class="user">dolan at teamsapient dot com</strong>
+   <a href="#64065" class="date">06-Apr-2006 11:08</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I noticed w/ version 5.1.2, the behavior of list() has changed (this occurred at some point between version 5.0.4 and 5.1.2).&nbsp; When re-using a variable name in list() that list() is being assigned to, instead of the values being assigned all at once, the reused variable gets overwritten before all the values are read.<br />
+<br />
+Here's an example:<br />
+** disclaimer: obviously this is sloppy code, but I want to point out the behavior change (in case anyone else comes across similar code) **<br />
+<br />
+&lt;?<br />
+$data = array();<br />
+$data[] = array("value1", "value2", "value3", "value4");<br />
+$data[] = array("value1", "value2", "value3", "value4");<br />
+$data[] = array("value1", "value2", "value3", "value4");<br />
+$data[] = array("value1", "value2", "value3", "value4");<br />
+<br />
+foreach($data as $record)<br />
+{<br />
+&nbsp;&nbsp;&nbsp; list($var1, $var2, $var3, $record) = $record;<br />
+&nbsp;&nbsp;&nbsp; echo "var 1: $var1, var 2: $var2, var 3: $var3, record: $record\\n";<br />
+}<br />
+?&gt;<br />
+<br />
+OUTPUT on version 5.0.4:<br />
+var 1: value1, var 2: value2, var 3: value3, record: value4<br />
+var 1: value1, var 2: value2, var 3: value3, record: value4<br />
+var 1: value1, var 2: value2, var 3: value3, record: value4<br />
+var 1: value1, var 2: value2, var 3: value3, record: value4<br />
+<br />
+OUTPUT on version 5.1.2:<br />
+var 1: v, var 2: a, var 3: l, record: value4<br />
+var 1: v, var 2: a, var 3: l, record: value4<br />
+var 1: v, var 2: a, var 3: l, record: value4<br />
+var 1: v, var 2: a, var 3: l, record: value4</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="60303""></a>
+  <div class="note">
+   <strong class="user">mzizka at hotmail dot com</strong>
+   <a href="#60303" class="date">02-Jan-2006 08:49</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Elements on the left-hand side that don't have a corresponding element on the right-hand side will be set to NULL. For example,<br />
+<br />
+<span class="default">&lt;?php<br />
+$y </span><span class="keyword">= </span><span class="default">0</span><span class="keyword">;<br />
+list(</span><span class="default">$x</span><span class="keyword">, </span><span class="default">$y</span><span class="keyword">) = array(</span><span class="string">"x"</span><span class="keyword">);<br />
+</span><span class="default">var_dump</span><span class="keyword">(</span><span class="default">$x</span><span class="keyword">);<br />
+</span><span class="default">var_dump</span><span class="keyword">(</span><span class="default">$y</span><span class="keyword">);<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+Results in:<br />
+<br />
+string(1) "x"<br />
+NULL</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="55092""></a>
+  <div class="note">
+   <strong class="user">Nearsighted</strong>
+   <a href="#55092" class="date">25-Jul-2005 07:34</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+list, coupled with while, makes for a handy way to populate arrays.<br />
+<br />
+while (list($repcnt[], $replnk[], $date[]) = mysql_fetch_row($seek0))<br />
+{<br />
+// insert what you want to do here.<br />
+}<br />
+<br />
+PHP will automatically assign numerical values for the array because of the [] signs after the variable.<br />
+<br />
+From here, you can access their row values by array numbers.<br />
+<br />
+eg.<br />
+<br />
+for ($i=0;$i&lt;$rowcount;$i++)<br />
+{<br />
+echo "The title number $repcnt[$i] was written on $date[$i].";<br />
+}</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="53420""></a>
+  <div class="note">
+   <strong class="user">webmaster at miningstocks dot com</strong>
+   <a href="#53420" class="date">31-May-2005 11:05</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+One way to use the list function with non-numerical keys is to use the array_values() function<br />
+<br />
+<span class="default">&lt;?php<br />
+$array </span><span class="keyword">= array (</span><span class="string">"value1" </span><span class="keyword">=&gt; </span><span class="string">"one"</span><span class="keyword">, </span><span class="string">"value2" </span><span class="keyword">=&gt; </span><span class="string">"two"</span><span class="keyword">);<br />
+list (</span><span class="default">$value1</span><span class="keyword">, </span><span class="default">$value2</span><span class="keyword">) = </span><span class="default">array_values</span><span class="keyword">(</span><span class="default">$array</span><span class="keyword">);<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="50038""></a>
+  <div class="note">
+   <strong class="user">mortoray at ecircle-ag dot com</strong>
+   <a href="#50038" class="date">16-Feb-2005 01:29</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+There is no way to do reference assignment using the list function, therefore list assignment is will always be a copy assignment (which is of course not always what you want).<br />
+<br />
+By example, and showing the workaround (which is to just not use list):<br />
+<br />
+&nbsp;&nbsp;&nbsp; function &amp;pass_refs( &amp;$a ) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return array( &amp;$a );<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; $a = 1;<br />
+&nbsp;&nbsp;&nbsp; list( $b ) = pass_refs( $a ); //*<br />
+&nbsp;&nbsp;&nbsp; $a = 2;<br />
+&nbsp;&nbsp;&nbsp; print( "$b" ); //prints 1<br />
+<br />
+&nbsp;&nbsp;&nbsp; $ret = pass_refs( $a );<br />
+&nbsp;&nbsp;&nbsp; $b =&amp; $ret[0];<br />
+&nbsp;&nbsp;&nbsp; $a = 3;<br />
+&nbsp;&nbsp;&nbsp; print( "$b" ); //prints 3<br />
+<br />
+*This is where some syntax like the following would be desired:<br />
+&nbsp;&nbsp; list( &amp;$b ) = pass_refs( $a );<br />
+or maybe:<br />
+&nbsp;&nbsp; list( $b ) =&amp; pass_refs( $a );</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="46730""></a>
+  <div class="note">
+   <strong class="user">jennevdmeer at zonnet dot nl</strong>
+   <a href="#46730" class="date">21-Oct-2004 08:29</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+This is a function simulair to that of 'list' it lists an array with the 'key' as variable name and then those variables contain the value of the key in the array.<br />
+This is a bit easier then list in my opinion since you dont have to list up all variable names and it just names them as the key.<br />
+<br />
+<span class="default">&lt;?php<br />
+&nbsp;</span><span class="keyword">function </span><span class="default">lista</span><span class="keyword">(</span><span class="default">$a</span><span class="keyword">) {<br />
+&nbsp; foreach (</span><span class="default">$a </span><span class="keyword">as </span><span class="default">$k </span><span class="keyword">=&gt; </span><span class="default">$v</span><span class="keyword">) {<br />
+&nbsp;&nbsp; </span><span class="default">$s </span><span class="keyword">= </span><span class="string">"global \$"</span><span class="keyword">.</span><span class="default">$k</span><span class="keyword">;<br />
+&nbsp;&nbsp; eval(</span><span class="default">$s</span><span class="keyword">.</span><span class="string">";"</span><span class="keyword">);<br />
+&nbsp;&nbsp; </span><span class="default">$s </span><span class="keyword">= </span><span class="string">"\$"</span><span class="keyword">.</span><span class="default">$k </span><span class="keyword">.</span><span class="string">" = \""</span><span class="keyword">. </span><span class="default">$v</span><span class="keyword">.</span><span class="string">"\""</span><span class="keyword">;<br />
+&nbsp;&nbsp; eval(</span><span class="default">$s</span><span class="keyword">.</span><span class="string">";"</span><span class="keyword">);<br />
+&nbsp; }<br />
+&nbsp;}<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="44732""></a>
+  <div class="note">
+   <strong class="user">HW</strong>
+   <a href="#44732" class="date">14-Aug-2004 01:08</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+The list() construct can be used within other list() constructs (so that it can be used to extract the elements of multidimensional arrays):<br />
+<span class="default">&lt;?php<br />
+$matrix </span><span class="keyword">= array(array(</span><span class="default">1</span><span class="keyword">,</span><span class="default">2</span><span class="keyword">),<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; array(</span><span class="default">3</span><span class="keyword">,</span><span class="default">4</span><span class="keyword">));<br />
+<br />
+list(list(</span><span class="default">$tl</span><span class="keyword">,</span><span class="default">$tr</span><span class="keyword">),list(</span><span class="default">$bl</span><span class="keyword">,</span><span class="default">$br</span><span class="keyword">)) = </span><span class="default">$matrix</span><span class="keyword">;<br />
+<br />
+echo </span><span class="string">"</span><span class="default">$tl</span><span class="string"> </span><span class="default">$tr</span><span class="string"> </span><span class="default">$bl</span><span class="string"> </span><span class="default">$br</span><span class="string">"</span><span class="keyword">;<br />
+</span><span class="default">?&gt;<br />
+</span>Outputs "1 2 3 4".</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="39445""></a>
+  <div class="note">
+   <strong class="user">jeronimo at DELETE_THIS dot transartmedia dot com</strong>
+   <a href="#39445" class="date">28-Jan-2004 07:28</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+If you want to swap values between variables without using an intermediary, try using the list() and array() language constructs. For instance:<br />
+<br />
+&lt;?<br />
+<br />
+// Initial values.<br />
+$biggest = 1;<br />
+$smallest = 10;<br />
+<br />
+// Instead of using a temporary variable...<br />
+$temp = $biggest;<br />
+$biggest = $smallest;<br />
+$smallest = $temp;<br />
+<br />
+// ...Just swap the values.<br />
+list($biggest, $smallest) = array($smallest, $biggest);<br />
+<br />
+?&gt;<br />
+<br />
+This works with any number of variables; you're not limited to just two.<br />
+Cheers,<br />
+Jeronimo</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="10334""></a>
+  <div class="note">
+   <strong class="user">rubein at earthlink dot net</strong>
+   <a href="#10334" class="date">28-Dec-2000 05:15</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Note: If you have an array full of arrays, you can't use list() in conjunction to foreach() when traversing said array, e.g.<br />
+<br />
+$someArray = array(<br />
+&nbsp; array(1, "one"),<br />
+&nbsp; array(2, "two"),<br />
+&nbsp; array(3, "three")<br />
+);<br />
+<br />
+foreach($somearray as list($num, $text)) { ... }<br />
+<br />
+<br />
+This, however will work<br />
+<br />
+foreach($somearray as $subarray) {<br />
+&nbsp; list($num, $text) = $subarray;<br />
+&nbsp; ...<br />
+}</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="function.ksort.html">ksort</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.natcasesort.html">natcasesort</a></div>
  <div class="up"><a href="ref.array.html">Array Functions</a></div>

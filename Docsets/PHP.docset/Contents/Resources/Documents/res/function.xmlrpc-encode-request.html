@@ -127,7 +127,338 @@ This function should be used at your own risk.
  </div>
 
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="105172""></a>
+  <div class="note">
+   <strong class="user">ph at km-it dot de</strong>
+   <a href="#105172" class="date">01-Aug-2011 05:13</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+<span class="default">&lt;?php<br />
+</span><span class="comment">/**<br />
+&nbsp;* A small Xml-Rpc Client class as simple as it can be.<br />
+&nbsp;* It uses PHP's magic overloads for a simple worklow.<br />
+&nbsp;* <br />
+&nbsp;* Example:<br />
+&nbsp;* <br />
+&nbsp;* $rpc&nbsp; = new XmlRpcClient( "<a href="http://www.example.com/xmlrpc/" rel="nofollow" target="_blank">http://www.example.com/xmlrpc/</a>" );<br />
+&nbsp;* $data = $rpc-&gt;namespace-&gt;namespace-&gt;method(); // Will produce a method called namespace.namespace.method<br />
+&nbsp;*<br />
+&nbsp;* var_dump( $data );<br />
+&nbsp;*/<br />
+</span><span class="keyword">class </span><span class="default">XmlRpcClient<br />
+</span><span class="keyword">{<br />
+&nbsp;&nbsp;&nbsp; protected </span><span class="default">$_url</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; protected </span><span class="default">$_namespace</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; protected </span><span class="default">$_clients</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; public function </span><span class="default">__construct</span><span class="keyword">( </span><span class="default">$url</span><span class="keyword">, </span><span class="default">$namespace </span><span class="keyword">= </span><span class="string">'' </span><span class="keyword">)<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">_url&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">= (string)</span><span class="default">$url</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">_namespace </span><span class="keyword">= (string)</span><span class="default">$namespace</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">_clients&nbsp;&nbsp; </span><span class="keyword">= array();<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; public function </span><span class="default">__get</span><span class="keyword">( </span><span class="default">$namespace </span><span class="keyword">)<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if( !</span><span class="default">key_exists</span><span class="keyword">( </span><span class="default">$namespace</span><span class="keyword">, </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">_clients </span><span class="keyword">) )<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">_clients</span><span class="keyword">[ </span><span class="default">$namespace </span><span class="keyword">] = new </span><span class="default">XmlRpcClient</span><span class="keyword">( </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">_url</span><span class="keyword">, </span><span class="default">strlen</span><span class="keyword">( </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">_namespace </span><span class="keyword">) &gt; </span><span class="default">0 </span><span class="keyword">? </span><span class="string">"</span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">_namespace</span><span class="string">.</span><span class="default">$namespace</span><span class="string">" </span><span class="keyword">: </span><span class="default">$namespace </span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">_clients</span><span class="keyword">[ </span><span class="default">$namespace </span><span class="keyword">];<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; public function </span><span class="default">__call</span><span class="keyword">( </span><span class="default">$method</span><span class="keyword">, array </span><span class="default">$parameters </span><span class="keyword">= array() )<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$request </span><span class="keyword">= </span><span class="default">xmlrpc_encode_request</span><span class="keyword">( </span><span class="default">strlen</span><span class="keyword">( </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">_namespace </span><span class="keyword">) &gt; </span><span class="default">0 </span><span class="keyword">? </span><span class="string">"</span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">_namespace</span><span class="string">.</span><span class="default">$method</span><span class="string">" </span><span class="keyword">: </span><span class="default">$method</span><span class="keyword">, </span><span class="default">$parameters </span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$context </span><span class="keyword">= </span><span class="default">stream_context_create</span><span class="keyword">(<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; array(<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="string">'http' </span><span class="keyword">=&gt; array(<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="string">'method'&nbsp; </span><span class="keyword">=&gt; </span><span class="string">"POST"</span><span class="keyword">,<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="string">'header'&nbsp; </span><span class="keyword">=&gt; </span><span class="string">"Content-Type: text/xml"</span><span class="keyword">,<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="string">'content' </span><span class="keyword">=&gt; </span><span class="default">$request<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">)<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; )<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; );<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$file&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">= </span><span class="default">file_get_contents</span><span class="keyword">( </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">_url</span><span class="keyword">, </span><span class="default">false</span><span class="keyword">, </span><span class="default">$context </span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$response </span><span class="keyword">= </span><span class="default">xmlrpc_decode</span><span class="keyword">( </span><span class="default">$file </span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if( !</span><span class="default">$response </span><span class="keyword">)<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; throw new </span><span class="default">XmlRpcClientException</span><span class="keyword">( array( </span><span class="string">'faultString' </span><span class="keyword">=&gt; </span><span class="string">'Invalid response from ' </span><span class="keyword">. </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">_url </span><span class="keyword">) );<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if( </span><span class="default">xmlrpc_is_fault</span><span class="keyword">( </span><span class="default">$response </span><span class="keyword">) )<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; throw new </span><span class="default">XmlRpcClientException</span><span class="keyword">( </span><span class="default">$response </span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">$response</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+}<br />
+<br />
+</span><span class="comment">/**<br />
+&nbsp;* Will be thrown by XmlRpcClient on faults.<br />
+&nbsp;*/<br />
+</span><span class="keyword">class </span><span class="default">XmlRpcClientException </span><span class="keyword">extends </span><span class="default">Exception<br />
+</span><span class="keyword">{<br />
+&nbsp;&nbsp;&nbsp; public function </span><span class="default">__construct</span><span class="keyword">( </span><span class="default">$response </span><span class="keyword">)<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">parent</span><span class="keyword">::</span><span class="default">__construct</span><span class="keyword">( </span><span class="default">$response</span><span class="keyword">[ </span><span class="string">'faultString' </span><span class="keyword">], </span><span class="default">$response</span><span class="keyword">[ </span><span class="string">'faultCode' </span><span class="keyword">] );<br />
+&nbsp;&nbsp;&nbsp; }<br />
+}<br />
+<br />
+</span><span class="default">$rpc&nbsp; </span><span class="keyword">= new </span><span class="default">XmlRpcClient</span><span class="keyword">( </span><span class="string">"<a href="http://example.com/astroportal/public/xmlrpc/" rel="nofollow" target="_blank">http://example.com/astroportal/public/xmlrpc/</a>" </span><span class="keyword">);<br />
+</span><span class="default">$data </span><span class="keyword">= </span><span class="default">$rpc</span><span class="keyword">-&gt;</span><span class="default">tarocards</span><span class="keyword">-&gt;</span><span class="default">getCardData</span><span class="keyword">();<br />
+<br />
+</span><span class="default">var_dump</span><span class="keyword">( </span><span class="default">$data </span><span class="keyword">);<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="93189""></a>
+  <div class="note">
+   <strong class="user">Anonymous</strong>
+   <a href="#93189" class="date">27-Aug-2009 12:33</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+ever tried transmitting an array like the following with xmlrpc?<br />
+$var1=array(7=&gt;14,9=&gt;18);<br />
+<br />
+The output array looks quite different! It will look like that:<br />
+$var2=array(14,18);<br />
+<br />
+The only solution i found is to prepend a space to the index:<br />
+$var3=array(' 7'=&gt;14,' 9'=&gt;18);<br />
+<br />
+Using that method you'll get the right result. ($var1)</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="85462""></a>
+  <div class="note">
+   <strong class="user">cometfish at hotmail dot com</strong>
+   <a href="#85462" class="date">01-Sep-2008 12:47</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+The example above is incorrect - the header needs to be an array, see post by "chris dot vigelius at gmx dot net": <a href="http://au.php.net/manual/en/function.stream-context-create.php#74431" rel="nofollow" target="_blank">http://au.php.net/manual/en/function.stream-context-create.php#74431</a><br />
+His post also shows how to do browser authentication, as below:<br />
+<span class="default">&lt;?php<br />
+&nbsp;&nbsp; $request </span><span class="keyword">= </span><span class="default">xmlrpc_encode_request</span><span class="keyword">(</span><span class="string">"methodName"</span><span class="keyword">, array(</span><span class="string">"methodParam"</span><span class="keyword">));<br />
+&nbsp;&nbsp; </span><span class="default">$auth </span><span class="keyword">= </span><span class="default">base64_encode</span><span class="keyword">(</span><span class="default">$username</span><span class="keyword">.</span><span class="string">":"</span><span class="keyword">.</span><span class="default">$password</span><span class="keyword">);<br />
+&nbsp;&nbsp; </span><span class="default">$header </span><span class="keyword">= (</span><span class="default">version_compare</span><span class="keyword">(</span><span class="default">phpversion</span><span class="keyword">(), </span><span class="string">'5.2.8'</span><span class="keyword">))<br />
+&nbsp;&nbsp; &nbsp; ? array(</span><span class="string">"Content-Type: text/xml"</span><span class="keyword">,</span><span class="string">"Authorization: Basic </span><span class="default">$auth</span><span class="string">"</span><span class="keyword">)<br />
+&nbsp;&nbsp; &nbsp; : </span><span class="string">"Content-Type: text/xml\r\nAuthorization: Basic </span><span class="default">$auth</span><span class="string">" </span><span class="keyword">; </span><span class="comment">//[1]<br />
+&nbsp;&nbsp; </span><span class="default">$context </span><span class="keyword">= </span><span class="default">stream_context_create</span><span class="keyword">(array(</span><span class="string">'http' </span><span class="keyword">=&gt; array(<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="string">'method' </span><span class="keyword">=&gt; </span><span class="string">"POST"</span><span class="keyword">,<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="string">'header' </span><span class="keyword">=&gt; </span><span class="default">$header</span><span class="keyword">,<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="string">'content' </span><span class="keyword">=&gt; </span><span class="default">$request<br />
+&nbsp;&nbsp; </span><span class="keyword">)));<br />
+&nbsp;&nbsp; </span><span class="default">$webservice</span><span class="keyword">=</span><span class="string">"<a href="http://www.example.com/rpc" rel="nofollow" target="_blank">http://www.example.com/rpc</a>"</span><span class="keyword">;<br />
+&nbsp;&nbsp; </span><span class="default">$file </span><span class="keyword">= </span><span class="default">file_get_contents</span><span class="keyword">(</span><span class="default">$webservice</span><span class="keyword">, </span><span class="default">false</span><span class="keyword">, </span><span class="default">$context</span><span class="keyword">);<br />
+&nbsp;&nbsp; </span><span class="default">$response </span><span class="keyword">= </span><span class="default">xmlrpc_decode</span><span class="keyword">(</span><span class="default">$file</span><span class="keyword">);<br />
+&nbsp;&nbsp; if (</span><span class="default">xmlrpc_is_fault</span><span class="keyword">(</span><span class="default">$response</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp;&nbsp; return </span><span class="string">"xmlrpc: </span><span class="default">$response</span><span class="keyword">[</span><span class="default">faultString</span><span class="keyword">]</span><span class="string"> (</span><span class="default">$response</span><span class="keyword">[</span><span class="default">faultCode</span><span class="keyword">]</span><span class="string">)"</span><span class="keyword">;<br />
+&nbsp;&nbsp; } else {<br />
+&nbsp;&nbsp; &nbsp;&nbsp; return </span><span class="default">$response</span><span class="keyword">;<br />
+&nbsp;&nbsp; }<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+1 - EDITOR NOTE: THIS IS A FIX FROM "SandersWang dt php at gmail dot com"</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="80907""></a>
+  <div class="note">
+   <strong class="user">fredrik at it dot cdon dot com</strong>
+   <a href="#80907" class="date">06-Feb-2008 05:05</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+It should be noted that encoding does not seem to encode anything, just specify what goes into the XML header.<br />
+<br />
+We had problems with double-encoded UTF strings being saved to database when using this function, sending it of to a apache xml-rpc servlet and storing it in mysql database. It was solved by setting 'escaping' to just 'markup' and 'encoding' to 'UTF-8' (don't forget to set 'utf-8' in xmlrpc_decode too).<br />
+<br />
+It seems that UTF-8 encoded strings gets escaped with their bytes as entities instead of their characters as entites.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="73835""></a>
+  <div class="note">
+   <strong class="user">handco at gmail dot com</strong>
+   <a href="#73835" class="date">12-Mar-2007 08:39</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Simple OO client with function Overload : <br />
+<br />
+the php metho test_helloworld is translated to xmlrpc method test.helloworld.<br />
+<br />
+class RpcClient {<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; private $_methods;<br />
+&nbsp;&nbsp;&nbsp; private $_context;<br />
+&nbsp;&nbsp;&nbsp; private $_url;<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; function __construct ($url, $user, $passwd) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $auth = base64_encode(sprintf('%s:%s', $user,$passwd));<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $this-&gt;_context = stream_context_create(array(<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; 'http' =&gt; array(<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; 'method' =&gt; 'POST',<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; 'header' =&gt; "Content-Type: text/xml\r\n".<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; "Authorization: Basic $auth" ,<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; )<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; ));<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $this-&gt;_url = $url;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $this-&gt;registerMethod ("Test_HelloWorld");<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; function __call($methodName, $params) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if (array_key_exists($methodName,$this-&gt;_methods)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; // on appelle la fonction RPC<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $m = str_replace('_', '.', $methodName);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $r = xmlrpc_encode_request($m, $params,array('verbosity'=&gt;'newlines_only'));<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $c = $this-&gt;_context;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; stream_context_set_option($c,'http','content',$r);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $f = file_get_contents($this-&gt;_url,false,$c);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $resp = xmlrpc_decode($f);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; return $resp;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; } else {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; // on appelle la fonction de l'objet<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; call_user_method_array($methodName, $this,$params);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; private function registerMethod ($method) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $this-&gt;_methods[$method] = true;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; <br />
+}</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="69041""></a>
+  <div class="note">
+   <strong class="user">giunta dot gaetano at sea-aeroportimilano dot it</strong>
+   <a href="#69041" class="date">21-Aug-2006 03:54</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Take care that this function will generate invalid xmlrpc content when invoked with certain parameters (said content will be happily parsed by the lib itself, but not by other implementations).<br />
+<br />
+xmlrpc_encode_request(null, null)<br />
+will generate a response without a value<br />
+<br />
+xmlrpc_encode_request('myfunc', array('faultCode' =&gt; 666, 'faultString' =&gt; 'hello world')<br />
+will generated a request containing a &lt;fault&gt; member instead of &lt;params&gt;</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="53305""></a>
+  <div class="note">
+   <strong class="user">php at hendrik dash krauss dot de</strong>
+   <a href="#53305" class="date">28-May-2005 02:29</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+For examples / documentation of the array output_options, see <a href="http://xmlrpc-epi.sourceforge.net/main.php?t=php_api#output_options" rel="nofollow" target="_blank">http://xmlrpc-epi.sourceforge.net/main.php?t=php_api#output_options</a><br />
+<br />
+In short, output_options lets you send compact xmlrpc (without all the "pretty whitespace" xmlrpc_encode adds normally), apply an own escaping table prior to sending, set the encoding, and a couple of other things (the page even says something about soap 1.1 ... I don't know details).</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="42119""></a>
+  <div class="note">
+   <strong class="user">&lt;URL:http://www.dlitz.net/go/contact/&gt;</strong>
+   <a href="#42119" class="date">03-May-2004 11:28</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Note that as far as I can tell, the &amp;#10; characters generated by PHP in the base64 fields don't appear to violate the XML-RPC standard at all.&nbsp; XML-RPC messages *are* in XML format, and as such, the XML entities should be getting decoded before being passed to a base64 decoder.&nbsp; So, the previously-mentioned Jakarta-based XML-RPC server appears to violate the XML spec.&nbsp; i.e. There's nothing here that needs to be "fixed" in PHP.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="27992""></a>
+  <div class="note">
+   <strong class="user">kelly at seankelly dot biz</strong>
+   <a href="#27992" class="date">28-Dec-2002 04:02</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Binary strings (set with xmlrpc_set_type) go into a &lt;base64&gt;...&lt;/base64&gt; block like you'd expect. But after every 80th character, this function inserts the XML entity "&amp;#10;", which is a Unicode newline, as if to cause a line-wrap, which is admittedly silly.<br />
+<br />
+Silly though it may be, it causes real problems for some XML-RPC servers, such as <a href="http://jakarta.apache.org/xmlrpc/ (nee Helma" rel="nofollow" target="_blank">http://jakarta.apache.org/xmlrpc/ (nee Helma</a>). Stripping out those entities with something like<br />
+<br />
+$req = preg_replace('/&amp;#10;/', '', xmlrpc_encode_request("my.method", $args));<br />
+<br />
+works around the problem.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="24408""></a>
+  <div class="note">
+   <strong class="user">hfuecks at pinkgoblin dot com</strong>
+   <a href="#24408" class="date">15-Aug-2002 09:06</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+This function should be used by an XML-RPC client to create an XML payload for an XML-RPC request;<br />
+<br />
+<span class="default">&lt;?php<br />
+$params </span><span class="keyword">= </span><span class="string">"system.methodSignature"</span><span class="keyword">;<br />
+</span><span class="default">$method </span><span class="keyword">= </span><span class="string">"system.methodHelp"</span><span class="keyword">;<br />
+</span><span class="default">$request </span><span class="keyword">= </span><span class="default">xmlrpc_encode_request</span><span class="keyword">(</span><span class="default">$method</span><span class="keyword">,</span><span class="default">$params</span><span class="keyword">);<br />
+echo ( </span><span class="default">$request </span><span class="keyword">);<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+Produces;<br />
+<br />
+&lt;?xml version='1.0' encoding="iso-8859-1" ?&gt;<br />
+&lt;methodCall&gt;<br />
+&lt;methodName&gt;system.methodHelp&lt;/methodName&gt;<br />
+&lt;params&gt;<br />
+&nbsp;&lt;param&gt;<br />
+&nbsp; &lt;value&gt;<br />
+&nbsp;&nbsp; &lt;string&gt;system.methodSignature&lt;/string&gt;<br />
+&nbsp; &lt;/value&gt;<br />
+&nbsp;&lt;/param&gt;<br />
+&lt;/params&gt;<br />
+&lt;/methodCall&gt;<br />
+<br />
+The second argument recognises the type of variable and generates the correct XML-RPC structure. See xmlrpc_encode() for more details.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="function.xmlrpc-decode.html">xmlrpc_decode</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.xmlrpc-encode.html">xmlrpc_encode</a></div>
  <div class="up"><a href="ref.xmlrpc.html">XML-RPC Functions</a></div>

@@ -87,7 +87,98 @@ array(
  </div>
 
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="101093""></a>
+  <div class="note">
+   <strong class="user">david dot schueler at tel-billig dot de</strong>
+   <a href="#101093" class="date">25-Nov-2010 08:42</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Example for tailing a file (like tail -f) using inotify.<br />
+<span class="default">&lt;?php<br />
+</span><span class="comment">/**<br />
+&nbsp;* Tail a file (UNIX only!)<br />
+&nbsp;* Watch a file for changes using inotify and return the changed data<br />
+&nbsp;*<br />
+&nbsp;* @param string $file - filename of the file to be watched<br />
+&nbsp;* @param integer $pos - actual position in the file<br />
+&nbsp;* @return string<br />
+&nbsp;*/<br />
+</span><span class="keyword">function </span><span class="default">tail</span><span class="keyword">(</span><span class="default">$file</span><span class="keyword">,&amp;</span><span class="default">$pos</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// get the size of the file<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">if(!</span><span class="default">$pos</span><span class="keyword">) </span><span class="default">$pos </span><span class="keyword">= </span><span class="default">filesize</span><span class="keyword">(</span><span class="default">$file</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// Open an inotify instance<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$fd </span><span class="keyword">= </span><span class="default">inotify_init</span><span class="keyword">();<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// Watch $file for changes.<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$watch_descriptor </span><span class="keyword">= </span><span class="default">inotify_add_watch</span><span class="keyword">(</span><span class="default">$fd</span><span class="keyword">, </span><span class="default">$file</span><span class="keyword">, </span><span class="default">IN_ALL_EVENTS</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// Loop forever (breaks are below)<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">while (</span><span class="default">true</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// Read events (inotify_read is blocking!)<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$events </span><span class="keyword">= </span><span class="default">inotify_read</span><span class="keyword">(</span><span class="default">$fd</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// Loop though the events which occured<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">foreach (</span><span class="default">$events </span><span class="keyword">as </span><span class="default">$event</span><span class="keyword">=&gt;</span><span class="default">$evdetails</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// React on the event type<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">switch (</span><span class="default">true</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// File was modified<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">case (</span><span class="default">$evdetails</span><span class="keyword">[</span><span class="string">'mask'</span><span class="keyword">] &amp; </span><span class="default">IN_MODIFY</span><span class="keyword">):<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// Stop watching $file for changes<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">inotify_rm_watch</span><span class="keyword">(</span><span class="default">$fd</span><span class="keyword">, </span><span class="default">$watch_descriptor</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// Close the inotify instance<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">fclose</span><span class="keyword">(</span><span class="default">$fd</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// open the file<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$fp </span><span class="keyword">= </span><span class="default">fopen</span><span class="keyword">(</span><span class="default">$file</span><span class="keyword">,</span><span class="string">'r'</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if (!</span><span class="default">$fp</span><span class="keyword">) return </span><span class="default">false</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// seek to the last EOF position<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">fseek</span><span class="keyword">(</span><span class="default">$fp</span><span class="keyword">,</span><span class="default">$pos</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// read until EOF<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">while (!</span><span class="default">feof</span><span class="keyword">(</span><span class="default">$fp</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$buf </span><span class="keyword">.= </span><span class="default">fread</span><span class="keyword">(</span><span class="default">$fp</span><span class="keyword">,</span><span class="default">8192</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// save the new EOF to $pos<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$pos </span><span class="keyword">= </span><span class="default">ftell</span><span class="keyword">(</span><span class="default">$fp</span><span class="keyword">); </span><span class="comment">// (remember: $pos is called by reference)<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; // close the file pointer<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">fclose</span><span class="keyword">(</span><span class="default">$fp</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// return the new data and leave the function<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">return </span><span class="default">$buf</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// be a nice guy and program good code ;-)<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">break;<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// File was moved or deleted<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">case (</span><span class="default">$evdetails</span><span class="keyword">[</span><span class="string">'mask'</span><span class="keyword">] &amp; </span><span class="default">IN_MOVE</span><span class="keyword">):<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; case (</span><span class="default">$evdetails</span><span class="keyword">[</span><span class="string">'mask'</span><span class="keyword">] &amp; </span><span class="default">IN_MOVE_SELF</span><span class="keyword">):<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; case (</span><span class="default">$evdetails</span><span class="keyword">[</span><span class="string">'mask'</span><span class="keyword">] &amp; </span><span class="default">IN_DELETE</span><span class="keyword">):<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; case (</span><span class="default">$evdetails</span><span class="keyword">[</span><span class="string">'mask'</span><span class="keyword">] &amp; </span><span class="default">IN_DELETE_SELF</span><span class="keyword">):<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// Stop watching $file for changes<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">inotify_rm_watch</span><span class="keyword">(</span><span class="default">$fd</span><span class="keyword">, </span><span class="default">$watch_descriptor</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// Close the inotify instance<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">fclose</span><span class="keyword">(</span><span class="default">$fd</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// Return a failure<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">return </span><span class="default">false</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; break;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; }<br />
+}<br />
+<br />
+</span><span class="comment">// Use it like that:<br />
+</span><span class="default">$lastpos </span><span class="keyword">= </span><span class="default">0</span><span class="keyword">;<br />
+while (</span><span class="default">true</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; echo </span><span class="default">tail</span><span class="keyword">(</span><span class="default">$file</span><span class="keyword">,</span><span class="default">$lastpos</span><span class="keyword">);<br />
+}<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="function.inotify-add-watch.html">inotify_add_watch</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.inotify-queue-len.html">inotify_queue_len</a></div>
  <div class="up"><a href="ref.inotify.html">Inotify Functions</a></div>

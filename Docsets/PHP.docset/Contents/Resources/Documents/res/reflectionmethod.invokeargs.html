@@ -135,7 +135,136 @@ to be references, then they must be references in the passed argument list.
  </div>
 
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="103098""></a>
+  <div class="note">
+   <strong class="user">cweiske at cweiske dot de</strong>
+   <a href="#103098" class="date">25-Mar-2011 07:34</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Passing arguments by reference works:<br />
+<span class="default">&lt;?php $rm</span><span class="keyword">-&gt;</span><span class="default">invokeArgs</span><span class="keyword">(</span><span class="default">$object</span><span class="keyword">, array(&amp;</span><span class="default">$foo</span><span class="keyword">, </span><span class="default">$bar</span><span class="keyword">)); </span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="102419""></a>
+  <div class="note">
+   <strong class="user">agent_harris at secure-mail dot biz</strong>
+   <a href="#102419" class="date">13-Feb-2011 07:12</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+There is a simple workaround for the reference passing problem:<br />
+Since the reflection api has to handle all parameters in a generic way it has no chance to guess if you wish to pass data per value or reference.<br />
+<br />
+But it seems that you can also decide to pass a reference from where you call the function or method (not just only by the ampersand prefix in its declaration).<br />
+<br />
+So just do the following; which worked for me:<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="comment">//...<br />
+</span><span class="default">$method</span><span class="keyword">-&gt;</span><span class="default">invoke</span><span class="keyword">(</span><span class="default">$object</span><span class="keyword">, </span><span class="default">$inputValue</span><span class="keyword">, &amp;</span><span class="default">$outputValue</span><span class="keyword">);<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+Since this will only be necessary with arrays and primitive data types it should be acceptable in most cases to know in advance if you need to pass per reference. But it is probably although necessary to keep the ampersand always in the declaration (because of the at least two layers between the actual function and your invoke call).<br />
+<br />
+If this is the expected behavior it will maybe make sense to mention it in the documentation for invoke and invokeArgs.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="100041""></a>
+  <div class="note">
+   <strong class="user">serg dot smertin at gmail dot com</strong>
+   <a href="#100041" class="date">21-Sep-2010 06:51</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+We can do black magic, which is useful in templating block calls:<br />
+<br />
+<span class="default">&lt;?php<br />
+&nbsp;&nbsp; &nbsp; $object</span><span class="keyword">-&gt;</span><span class="default">__named</span><span class="keyword">(</span><span class="string">'methodNameHere'</span><span class="keyword">, array(</span><span class="string">'arg3' </span><span class="keyword">=&gt; </span><span class="string">'three'</span><span class="keyword">, </span><span class="string">'arg1' </span><span class="keyword">=&gt; </span><span class="string">'one'</span><span class="keyword">));<br />
+<br />
+&nbsp;&nbsp; &nbsp; ...<br />
+<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="comment">/**<br />
+&nbsp;&nbsp; &nbsp; &nbsp; * Pass method arguments by name<br />
+&nbsp;&nbsp; &nbsp; &nbsp; *<br />
+&nbsp;&nbsp; &nbsp; &nbsp; * @param string $method<br />
+&nbsp;&nbsp; &nbsp; &nbsp; * @param array $args<br />
+&nbsp;&nbsp; &nbsp; &nbsp; * @return mixed<br />
+&nbsp;&nbsp; &nbsp; &nbsp; */<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="keyword">public function </span><span class="default">__named</span><span class="keyword">(</span><span class="default">$method</span><span class="keyword">, array </span><span class="default">$args </span><span class="keyword">= array())<br />
+&nbsp;&nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$reflection </span><span class="keyword">= new </span><span class="default">ReflectionMethod</span><span class="keyword">(</span><span class="default">$this</span><span class="keyword">, </span><span class="default">$method</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$pass </span><span class="keyword">= array();<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; foreach(</span><span class="default">$reflection</span><span class="keyword">-&gt;</span><span class="default">getParameters</span><span class="keyword">() as </span><span class="default">$param</span><span class="keyword">)<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">/* @var $param ReflectionParameter */<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">if(isset(</span><span class="default">$args</span><span class="keyword">[</span><span class="default">$param</span><span class="keyword">-&gt;</span><span class="default">getName</span><span class="keyword">()]))<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$pass</span><span class="keyword">[] = </span><span class="default">$args</span><span class="keyword">[</span><span class="default">$param</span><span class="keyword">-&gt;</span><span class="default">getName</span><span class="keyword">()];<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; else<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$pass</span><span class="keyword">[] = </span><span class="default">$param</span><span class="keyword">-&gt;</span><span class="default">getDefaultValue</span><span class="keyword">();<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">$reflection</span><span class="keyword">-&gt;</span><span class="default">invokeArgs</span><span class="keyword">(</span><span class="default">$this</span><span class="keyword">, </span><span class="default">$pass</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp;&nbsp; }<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="98013""></a>
+  <div class="note">
+   <strong class="user">addiks at gmx dot de</strong>
+   <a href="#98013" class="date">20-May-2010 08:14</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+it seems that ReflectionMethod::invodeArgs() dont like reference-arguments in the method to call:<br />
+<br />
+<span class="default">&lt;?php <br />
+<br />
+</span><span class="keyword">class </span><span class="default">Test</span><span class="keyword">{<br />
+&nbsp; function </span><span class="default">foo</span><span class="keyword">(&amp;</span><span class="default">$arg</span><span class="keyword">){<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$arg</span><span class="keyword">++;<br />
+&nbsp; }<br />
+}<br />
+<br />
+</span><span class="default">$test </span><span class="keyword">= new </span><span class="default">Test</span><span class="keyword">();<br />
+<br />
+</span><span class="default">$class </span><span class="keyword">= new </span><span class="default">ReflectionClass</span><span class="keyword">(</span><span class="string">"Test"</span><span class="keyword">);<br />
+</span><span class="default">$method </span><span class="keyword">= </span><span class="default">$class</span><span class="keyword">-&gt;</span><span class="default">getMethod</span><span class="keyword">(</span><span class="string">"foo"</span><span class="keyword">);<br />
+<br />
+</span><span class="default">$bar </span><span class="keyword">= </span><span class="default">9</span><span class="keyword">;<br />
+<br />
+</span><span class="default">$method</span><span class="keyword">-&gt;</span><span class="default">invokeArgs</span><span class="keyword">(</span><span class="default">$test</span><span class="keyword">, array(</span><span class="default">$bar</span><span class="keyword">));<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+RESULT: "Invocation of method Test::foo() failed"</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="reflectionmethod.invoke.html">ReflectionMethod::invoke</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="reflectionmethod.isabstract.html">ReflectionMethod::isAbstract</a></div>
  <div class="up"><a href="class.reflectionmethod.html">ReflectionMethod</a></div>

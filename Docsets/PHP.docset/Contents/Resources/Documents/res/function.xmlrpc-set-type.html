@@ -121,7 +121,91 @@ something similar to:</p></div>
  </div>
 
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="63582""></a>
+  <div class="note">
+   <strong class="user">bmatheny at mobocracy dot net</strong>
+   <a href="#63582" class="date">24-Mar-2006 03:08</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+The following code segfaults some older (pre 5.1.2) versions of PHP:<br />
+<br />
+$foo = date('c', time());<br />
+xmlrpc_set_type($foo, 'datetime');<br />
+<br />
+Please upgrade before reporting as a bug.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="47017""></a>
+  <div class="note">
+   <strong class="user">shem((at))etkDOTca [aka.Przemyslaw Szot]</strong>
+   <a href="#47017" class="date">30-Oct-2004 02:23</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Once you use the xmlrpc_set_type function, the data is encoded into a PHP object.&nbsp; In your XMLRPC server, in order to access the data you must be able to access the necessary part of the object.<br />
+<br />
+So.. to expend on the example above:<br />
+<br />
+&lt;---------- CLIENT ----------&gt;<br />
+$string = "My logging event."; <br />
+$date = "20030115T12:22:37"; // Must be this format <br />
+$binary = fread($fp, 128); <br />
+xmlrpc_set_type(&amp;$date, "datetime"); <br />
+xmlrpc_set_type(&amp;$binary, "base64"); <br />
+$xmlrpcReq = xmlrpc_encode_request("log.data", array($string, $date, $binary)); <br />
+<br />
+In order to retrieve the binary file data you would need to get the scalar portion of the object:<br />
+<br />
+&lt;---------- SERVER ------------&gt;<br />
+$string=$params[0];<br />
+$date_obj=$params[1];<br />
+$binary_obj=$params[2];<br />
+<br />
+$date=$date_obj-&gt;scalar;<br />
+$binary_data=$binary_obj-&gt;scalar;<br />
+<br />
+// Then you can proceed to write the binary<br />
+fwrite($handle,$binary_data);</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="27981""></a>
+  <div class="note">
+   <strong class="user">kelly at seankelly dot biz</strong>
+   <a href="#27981" class="date">28-Dec-2002 07:53</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+The problem is that PHP has a string type which is also used to hold binary data and dates.&nbsp; But XML-RPC defines three separate types for strings, binary data, and dates.&nbsp; How do you tell how you want strings encoded?&nbsp; That's where this function comes in.<br />
+<br />
+Suppose the XML-RPC method "log.data" took a string, a date, and a binary object.&nbsp; To tell XML-RPC that the date (which is a PHP string) is a really a date and that the binary data (which is also a PHP string) is really binary data, try:<br />
+<br />
+$string = "My logging event.";<br />
+$date = "20030115T12:22:37"; // Must be this format<br />
+$binary = fread($fp, 128);<br />
+xmlrpc_set_type(&amp;$date, "datetime");<br />
+xmlrpc_set_type(&amp;$binary, "base64");<br />
+$xmlrpcReq = xmlrpc_encode_request("log.data", array($string, $date, $binary));<br />
+<br />
+Note the reference passing in the calls to xmlrpc_set_type; that enables the function to change the values from strings into what xmlrpc_encode/_request expects (which are objects that include a bonus field that tells the desired XML-RPC type).</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="function.xmlrpc-server-register-method.html">xmlrpc_server_register_method</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="refs.utilspec.windows.html">Windows Only Extensions</a></div>
  <div class="up"><a href="ref.xmlrpc.html">XML-RPC Functions</a></div>

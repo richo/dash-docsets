@@ -111,7 +111,182 @@
  </div>
 
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="97170""></a>
+  <div class="note">
+   <strong class="user">orwellophile at spamtrak dot org</strong>
+   <a href="#97170" class="date">06-Apr-2010 04:17</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Quote: "Will it ever support resource identifiers like pfsockopen() pointers ...&nbsp; we run PHP as a Apache Module ... no way to have true persistent sockets"<br />
+<br />
+Sorry, but that doesn't make sense to me... the socket is still persistent, if you wish to resume it, simply call pfsockopen() with the same host and port - and you will get the same socket.&nbsp; There is no need to pass the actual resource variable.<br />
+<br />
+If there is something amazingly special and unique about each socket, you can do the following - and this should apply to any persistent resource:<br />
+<br />
+To differentiate between or obtain a specific resource - simply serialize/store an index of each resource's unique ID, along with the particulars that make that resource unique.<br />
+<br />
+You can get a unique resource identifier as an integer value like so:<br />
+<br />
+<span class="default">&lt;?php<br />
+&nbsp;&nbsp; $rid </span><span class="keyword">= </span><span class="default">str_replace</span><span class="keyword">(</span><span class="string">"Resource id #"</span><span class="keyword">, </span><span class="string">""</span><span class="keyword">, </span><span class="default">print_r</span><span class="keyword">(</span><span class="default">$fp</span><span class="keyword">, </span><span class="default">true</span><span class="keyword">));<br />
+&nbsp;&nbsp; </span><span class="comment">// $rid = 2<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+As pfsockopen() uses the hostname and port as a unique key to resume a persistent connection, you can add a DNS wildcard, or a number of manual entries in /etc/hosts (or windows equiv.) as follows:<br />
+<br />
+resource-0.host.com&nbsp; 192.168.100.1<br />
+resource-1.host.com&nbsp; 192.168.100.1<br />
+resource-2.host.com&nbsp; 192.168.100.1<br />
+resource-3.host.com&nbsp; 192.168.100.1<br />
+<br />
+Then, after consulting your serialized list of resources, you can connect to a specific resource by using it's resource id.<br />
+<br />
+eg:&nbsp; $pf = pfsockopen("resource-$rid.host.com", $port, $timeout);<br />
+<br />
+The new resource will be identical to the original in every way.<br />
+<br />
+For file based stream resources you could do something similar with symlinks, or use the next method...<br />
+<br />
+For URL based or other resources with "paths" (I don't know if there *are* persistent functions that involve such things) you could differentiate between them with using extraneous information in the path.&nbsp; eg:<br />
+<br />
+&nbsp; <a href="http://host.com/resource-4/../script.php" rel="nofollow" target="_blank">http://host.com/resource-4/../script.php</a><br />
+&nbsp; <a href="http://resource4@host.com/script.php" rel="nofollow" target="_blank">http://resource4@host.com/script.php</a><br />
+&nbsp; /tmp/././././file.txt<br />
+<br />
+In the first example, the extraneous "resource-4" would be ignored by the webserver.<br />
+<br />
+In the second, the superfluous username would be ignored by the webserver.&nbsp; (Something similar for mysql_pconnect could be done with multiple usernames).<br />
+<br />
+And in the the third example, four sequential occurrences of the "do nothing" string "./" would indicate resource #4. <br />
+<br />
+If this isn't enough, then you can use the fact that PHP shared memory resources are themselves interoperable with those created by their .c counterparts.&nbsp;&nbsp; That allows you to write a thin .c application to handle the dirty work.<br />
+<br />
+Or you could attempt to reconnect to your own webserver, using persistent streams and the methods outlined above, to achieve the end result.&nbsp;&nbsp; I can't think of an example of where something so extreme would be necessary, but I'm sure it's not outside the realm of possibility.<br />
+<br />
+I personally use an 117 MB binary database, which is stored in shared memory, both from the command line (using a complied .c application), and from the web (via PHP, and ftok()/shmop_open()/shmop_read()).</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="94023""></a>
+  <div class="note">
+   <strong class="user">ygbr at me dot com</strong>
+   <a href="#94023" class="date">12-Oct-2009 02:25</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Will it ever support resource identifiers like pfsockopen() pointers?<br />
+<br />
+The main problem is that when we run PHP as a Apache Module we never know in which process the next request will bind to, making impossible to have true persistent socket connections unless we can store the pointer to it or directly open the socket inode with fopen() like functions and retrieve the same resource pointer again.<br />
+<br />
+I thought I could use shm, but it seems that shm doesn't allow o store resource pointers... sad... :(</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="88657""></a>
+  <div class="note">
+   <strong class="user">Hendrik Klindworth</strong>
+   <a href="#88657" class="date">02-Feb-2009 08:28</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+shm_put_var has no protection against race conditions. If two scripts insert the same key at the same time php might segfault.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="82792""></a>
+  <div class="note">
+   <strong class="user">jasonrlester at yahoo dot com</strong>
+   <a href="#82792" class="date">25-Apr-2008 12:51</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+sadly troy is right<br />
+<br />
+the following script will return:<br />
+<br />
+resource(5) of type (stream)<br />
+int(0)<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+define</span><span class="keyword">(</span><span class="string">"FOPEN_RESOURCE"</span><span class="keyword">, </span><span class="default">1</span><span class="keyword">);<br />
+</span><span class="default">define</span><span class="keyword">(</span><span class="string">"FOPEN_FILEPATH"</span><span class="keyword">, </span><span class="string">"/path/to/file"</span><span class="keyword">);<br />
+<br />
+</span><span class="default">$fopen_resource </span><span class="keyword">= </span><span class="default">fopen</span><span class="keyword">(</span><span class="default">FOPEN_FILEPATH</span><span class="keyword">, </span><span class="string">"w"</span><span class="keyword">);<br />
+<br />
+</span><span class="default">var_dump</span><span class="keyword">(</span><span class="default">$fopen_resource</span><span class="keyword">);<br />
+<br />
+</span><span class="default">$shm_id </span><span class="keyword">= </span><span class="default">shm_attach</span><span class="keyword">(</span><span class="default">1</span><span class="keyword">);<br />
+if (</span><span class="default">$shm_id </span><span class="keyword">=== </span><span class="default">false</span><span class="keyword">)<br />
+{<br />
+&nbsp;&nbsp;&nbsp; echo </span><span class="string">"Fail to attach shared memory.\n"</span><span class="keyword">;<br />
+}<br />
+<br />
+if (!</span><span class="default">shm_put_var</span><span class="keyword">(</span><span class="default">$shm_id</span><span class="keyword">, </span><span class="default">FOPEN_RESOURCE</span><span class="keyword">, </span><span class="default">$fopen_resource</span><span class="keyword">))<br />
+{<br />
+&nbsp;&nbsp;&nbsp; echo </span><span class="string">"Failed to put var 1 in shared memory </span><span class="default">$shm_id</span><span class="string">.\n"</span><span class="keyword">;<br />
+}<br />
+<br />
+</span><span class="default">$sm_fopen_resource </span><span class="keyword">= </span><span class="default">shm_get_var</span><span class="keyword">(</span><span class="default">$shm_id</span><span class="keyword">, </span><span class="default">FOPEN_RESOURCE</span><span class="keyword">);<br />
+if (</span><span class="default">$sm_fopen_resource </span><span class="keyword">=== </span><span class="default">false</span><span class="keyword">)<br />
+{<br />
+&nbsp;&nbsp;&nbsp; echo </span><span class="string">"Failed to retreive fopen_resource from Shared memory\r\n"</span><span class="keyword">;<br />
+}<br />
+<br />
+</span><span class="default">var_dump</span><span class="keyword">(</span><span class="default">$sm_fopen_resource</span><span class="keyword">);<br />
+<br />
+if(</span><span class="default">$shm_id</span><span class="keyword">) </span><span class="default">shm_remove</span><span class="keyword">(</span><span class="default">$shm_id</span><span class="keyword">);<br />
+if(</span><span class="default">$fopen_resource</span><span class="keyword">) </span><span class="default">fclose</span><span class="keyword">(</span><span class="default">$fopen_resource</span><span class="keyword">);<br />
+<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="81619""></a>
+  <div class="note">
+   <strong class="user">troy</strong>
+   <a href="#81619" class="date">06-Mar-2008 07:02</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+This isn't entirely accurate. Not all variable types are supported, you can't put a resource variable into shared memory.<br />
+<br />
+When you try to take it out, it will be a zero.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="46149""></a>
+  <div class="note">
+   <strong class="user">tomlove at gmail dot com</strong>
+   <a href="#46149" class="date">30-Sep-2004 04:53</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Use as few variable_keys as you can. With large arrays of data, rather make the array multi-dimensional and store under one variable_key than use variable_key as your index. The benefit is especially noticeable when repeated fetching from the end of the array is necessary and updates are less frequent.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="function.shm-has-var.html">shm_has_var</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.shm-remove-var.html">shm_remove_var</a></div>
  <div class="up"><a href="ref.sem.html">Semaphore Functions</a></div>

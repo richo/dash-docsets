@@ -220,7 +220,191 @@ OK.
  </div>
 
                      
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="56161""></a>
+  <div class="note">
+   <strong class="user">rathamahata at rathamahata dot net</strong>
+   <a href="#56161" class="date">25-Aug-2005 04:44</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+It looks like that mysterious flags are just the recv(2) flags passed to your OS syscall and nothing more...<br />
+<br />
+ext/sockets/sockets.c:PHP_FUNCTION(socket_recv)<br />
+...<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if ((retval = recv(php_sock-&gt;bsd_socket, recv_buf, len, flags)) &lt; 1) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; efree(recv_buf);<br />
+...<br />
+<br />
+for linux you can type `man 2 recv' and you will see complete description of thouse flags.<br />
+<br />
+Sergey S. Kosrtyliov &lt;rathamahata@rathamahata.net&gt;<br />
+<a href="http://www.rathamahata.net/" rel="nofollow" target="_blank">http://www.rathamahata.net/</a></span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="52582""></a>
+  <div class="note">
+   
+   <a href="#52582" class="date">06-May-2005 04:59</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+My last post was incorrect. The int flag set to 2 apparently reset the file position pointer so what I was reading was the first record repeatedly. <br />
+<br />
+My workaroud ended up being the following:<br />
+<br />
+for($ct=1; $ct&lt;=$numrecs; $ct++) {<br />
+&nbsp;&nbsp;&nbsp; $rec = "";<br />
+&nbsp;&nbsp;&nbsp; $nr=socket_recv($fp,$rec,76,0);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; //grab the extra bytes.<br />
+&nbsp;&nbsp;&nbsp; $terminator = "";<br />
+&nbsp;&nbsp;&nbsp; while ($terminator != ".") {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $nr=socket_recv($fp,$terminator,1,0);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; $custarray[]=substr($rec,0,76);&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <br />
+}<br />
+<br />
+Martin K.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="52552""></a>
+  <div class="note">
+   
+   <a href="#52552" class="date">05-May-2005 07:42</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I'm glad that Bastion left the above post about the mysterious int flag. He just helped to fix a problem that I've spent six hours on. Here's my code:<br />
+<br />
+for($ct=1; $ct&lt;=$numrecs; $ct++) {<br />
+&nbsp;&nbsp; &nbsp; $rec = "";<br />
+&nbsp;&nbsp; &nbsp; $nr=socket_recv($fp,$rec,77,0);<br />
+&nbsp;&nbsp; &nbsp; print "Rec # $ct --&gt;";<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; print "$rec";<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; print "&lt;br&gt;";<br />
+&nbsp;&nbsp; &nbsp;&nbsp; }<br />
+<br />
+The code is pretty simple, it just loops through all my records and prints them out. All records are 77 bytes and all end with a period. The first 36 records print perfectly then at 37 things go bad. The records start to get offset. The last few characters of the 37th record end up printing on the 38th record. The data on the sending side was perfect, so I knew that the problem was with socked_recv.<br />
+<br />
+After reading the above post I tried changing the int flag. Changing the flag to 2 worked:<br />
+$nr=socket_recv($fp,$rec,77,2);<br />
+<br />
+Now everything lines up perfectly. I had always left int flag as 0 since it's undocumented. <br />
+<br />
+Martin K.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="47789""></a>
+  <div class="note">
+   <strong class="user">engine at [NO SPAM] illusiononly dot com</strong>
+   <a href="#47789" class="date">30-Nov-2004 04:58</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+To read from socket both on linux and windows OS having&nbsp; flash as a client I use function bellow. $length is the size of&nbsp; a chunk, not the max length to read. It will continue reading until EOL char&nbsp; occures or client disconnects (or in case of error), so it works for bigger packets as well.<br />
+<br />
+&nbsp;&nbsp; &nbsp; function read($descriptor, $length = 1024) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $this-&gt;method = "read";<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if(!$client){<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; echo("No valid socket descriptor !\n");<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; return false;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $read ='';<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; while(($flag=socket_recv($descriptor, $buf, $length,0))&gt;0){<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $asc=ord(substr($buf, -1));<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if ($asc==0) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $read.=substr($buf,0,-1);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; break;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }else{<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $read.=$buf;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; if ($flag&lt;0){<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; //error<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; return false;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }elseif ($flag==0){<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; //Client disconnected<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; return&nbsp; false;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }else{<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; return $read;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp; &nbsp; }</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="47182""></a>
+  <div class="note">
+   <strong class="user">dgk at tcde dot ru</strong>
+   <a href="#47182" class="date">05-Nov-2004 03:57</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I've used socket_select and socket_recv with a while loop and found myself in trouble when remote side closed connection. The code below produced infinite loop and socket_select returned immediately (which lead to high cpu time consumption).<br />
+<br />
+&lt;?<br />
+<br />
+socket_set_nonblock($my_socket);<br />
+$streams = array($my_socket/*, ... */);<br />
+<br />
+$lastAccess = time();<br />
+while (socket_select($streams, $write = NULL, $except = NULL, SLEEP_TIME_SECONDS, SLEEP_TIME_MILLISECONDS) !== FALSE) {<br />
+&nbsp;&nbsp;&nbsp; if (in_array($my_socket, $streams)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; while (@socket_recv($my_socket, $data, 8192, 0)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; echo $data;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $lastAccess = time();<br />
+&nbsp;&nbsp;&nbsp; } else {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if (time()-$lastAccess &gt; LAST_ACCESS_TIMEOUT) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; break;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; // ...<br />
+&nbsp;&nbsp;&nbsp; $streams = array($my_socket/*, ... */);<br />
+}<br />
+<br />
+?&gt;<br />
+<br />
+The solution was simple, but quite hard to find because socket_recv is not documented. socket_recv returns FALSE if there is no data and 0 if the socket is widowed (disconnected by remote side). So I had just to check return value of socket_recv. The problem now sounds stupid, but I've spend some time to find it out.<br />
+I hope this will save some of somebody's hair ;)</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="41278""></a>
+  <div class="note">
+   <strong class="user">bastiaan at [no-spam] megabass dot nl</strong>
+   <a href="#41278" class="date">05-Apr-2004 09:35</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+in case you want to empty/unset $buffer, but failing to do so, try using 0 as flag.<br />
+PHP_NORMAL_READ and PHP_BINARY_READ respectively hold 1 and 2 as value.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="function.socket-read.html">socket_read</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.socket-recvfrom.html">socket_recvfrom</a></div>
  <div class="up"><a href="ref.sockets.html">Socket Functions</a></div>

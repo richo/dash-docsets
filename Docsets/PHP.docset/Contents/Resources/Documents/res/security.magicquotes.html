@@ -33,6 +33,131 @@ highly discouraged.</p></div>
    
 
   </div>
+<div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="103630""></a>
+  <div class="note">
+   <strong class="user">NanoCaiordo</strong>
+   <a href="#103630" class="date">24-Apr-2011 08:22</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Magic Quotes are depreciated and going to be removed in PHP6.<br />
+If you still want your code to be portable, no warnings etc, as of PHP52 you can use the following code.<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">foreach (</span><span class="default">$_GET </span><span class="keyword">as </span><span class="default">$key </span><span class="keyword">=&gt; &amp;</span><span class="default">$val</span><span class="keyword">) </span><span class="default">$val </span><span class="keyword">= </span><span class="default">filter_input</span><span class="keyword">(</span><span class="default">INPUT_GET</span><span class="keyword">, </span><span class="default">$key</span><span class="keyword">);<br />
+<br />
+foreach (</span><span class="default">$_POST </span><span class="keyword">as </span><span class="default">$key </span><span class="keyword">=&gt; &amp;</span><span class="default">$val</span><span class="keyword">) </span><span class="default">$val </span><span class="keyword">= </span><span class="default">filter_input</span><span class="keyword">(</span><span class="default">INPUT_POST</span><span class="keyword">, </span><span class="default">$key</span><span class="keyword">);<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+The above will retrieve an-escaped GETs and POSTs regardless system settings. It can also be used for $_COOKIES and others.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="102907""></a>
+  <div class="note">
+   <strong class="user">cHao</strong>
+   <a href="#102907" class="date">14-Mar-2011 08:38</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+The very reason magic quotes are deprecated is that a one-size-fits-all approach to escaping/quoting is wrongheaded and downright dangerous.&nbsp; Different types of content have different special chars and different ways of escaping them, and what works in one tends to have side effects elsewhere.&nbsp; Any sample code, here or anywhere else, that pretends to work like magic quotes --or does a similar conversion for HTML, SQL, or anything else for that matter -- is similarly wrongheaded and similarly dangerous.<br />
+<br />
+Magic quotes are not for security.&nbsp; They never have been.&nbsp; It's a convenience thing -- they exist so a PHP noob can fumble along and eventually write some mysql queries that kinda work, without having to learn about escaping/quoting data properly.&nbsp; They prevent a few accidental syntax errors, as is their job.&nbsp; But they won't stop a malicious and semi-knowledgeable attacker from trashing the PHP noob's database.&nbsp; And that poor noob may never even know how or why his database is now gone, because magic quotes (or his spiffy "i'm gonna escape everything" function) gave him a false sense of security.&nbsp; He never had to learn how to really handle untrusted input.<br />
+<br />
+Data should be escaped where you need it escaped, and for the domain in which it will be used.&nbsp; (mysql_real_escape_string -- NOT addslashes! -- for MySQL (and that's only unless you have a clue and use prepared statements), htmlentities or htmlspecialchars for HTML, etc.)&nbsp; Anything else is doomed to failure.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="102145""></a>
+  <div class="note">
+   <strong class="user">shazdeh1358 at yahoo dot com</strong>
+   <a href="#102145" class="date">29-Jan-2011 05:41</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+for those who want an automatic sanitization of GET, POST, COOKIE, etc variables:<br />
+<br />
+the code escapes ALL vars! That is, it effectively prevents SQL injection and XSS attaks. It lifts the need for 'magic_quotes_gpc = On' directive.<br />
+<br />
+However it treats all variables as text and does not do type-cheking. So it is suitable only for making SQL queries or displaying html content.<br />
+<br />
+the following code can be included in all pages which need html and sql sanitization.<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+</span><span class="comment">// escaping and slashing all POST and GET variables. you may add $_COOKIE and $_REQUEST if you want them sanitized.<br />
+</span><span class="default">array_walk_recursive</span><span class="keyword">(</span><span class="default">$_POST</span><span class="keyword">, </span><span class="string">'sanitizeVariables'</span><span class="keyword">); <br />
+</span><span class="default">array_walk_recursive</span><span class="keyword">(</span><span class="default">$_GET</span><span class="keyword">, </span><span class="string">'sanitizeVariables'</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">// sanitization<br />
+</span><span class="keyword">function </span><span class="default">sanitizeVariables</span><span class="keyword">(&amp;</span><span class="default">$item</span><span class="keyword">, </span><span class="default">$key</span><span class="keyword">)<br />
+{<br />
+&nbsp;&nbsp;&nbsp; if (!</span><span class="default">is_array</span><span class="keyword">(</span><span class="default">$item</span><span class="keyword">))<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// undoing 'magic_quotes_gpc = On' directive<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">if (</span><span class="default">get_magic_quotes_gpc</span><span class="keyword">())<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$item </span><span class="keyword">= </span><span class="default">stripcslashes</span><span class="keyword">(</span><span class="default">$item</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$item </span><span class="keyword">= </span><span class="default">sanitizeText</span><span class="keyword">(</span><span class="default">$item</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+}<br />
+<br />
+</span><span class="comment">// does the actual 'html' and 'sql' sanitization. customize if you want. <br />
+</span><span class="keyword">function </span><span class="default">sanitizeText</span><span class="keyword">(</span><span class="default">$text</span><span class="keyword">)<br />
+{<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$text </span><span class="keyword">= </span><span class="default">str_replace</span><span class="keyword">(</span><span class="string">"&lt;"</span><span class="keyword">, </span><span class="string">"&amp;lt;"</span><span class="keyword">, </span><span class="default">$text</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$text </span><span class="keyword">= </span><span class="default">str_replace</span><span class="keyword">(</span><span class="string">"&gt;"</span><span class="keyword">, </span><span class="string">"&amp;gt;"</span><span class="keyword">, </span><span class="default">$text</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$text </span><span class="keyword">= </span><span class="default">str_replace</span><span class="keyword">(</span><span class="string">"\""</span><span class="keyword">, </span><span class="string">"&amp;quot;"</span><span class="keyword">, </span><span class="default">$text</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$text </span><span class="keyword">= </span><span class="default">str_replace</span><span class="keyword">(</span><span class="string">"'"</span><span class="keyword">, </span><span class="string">"&amp;#039;"</span><span class="keyword">, </span><span class="default">$text</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// it is recommended to replace 'addslashes' with 'mysql_real_escape_string' or whatever db specific fucntion used for escaping. However 'mysql_real_escape_string' is slower because it has to connect to mysql.<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$text </span><span class="keyword">= </span><span class="default">addslashes</span><span class="keyword">(</span><span class="default">$text</span><span class="keyword">); <br />
+<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">$text</span><span class="keyword">;<br />
+}<br />
+<br />
+</span><span class="comment">// export POST variables as GLOBALS. remove if you want<br />
+</span><span class="keyword">foreach (</span><span class="default">array_keys</span><span class="keyword">(</span><span class="default">$_POST</span><span class="keyword">) as </span><span class="default">$ehsanKey</span><span class="keyword">)<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$GLOBALS</span><span class="keyword">[</span><span class="default">$ehsanKey</span><span class="keyword">] = </span><span class="default">$_POST</span><span class="keyword">[</span><span class="default">$ehsanKey</span><span class="keyword">];<br />
+<br />
+</span><span class="comment">// export GET variables as GLOBALS. remove if you want<br />
+</span><span class="keyword">foreach (</span><span class="default">array_keys</span><span class="keyword">(</span><span class="default">$_GET</span><span class="keyword">) as </span><span class="default">$ehsanKey</span><span class="keyword">)<br />
+{<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$GLOBALS</span><span class="keyword">[</span><span class="default">$ehsanKey</span><span class="keyword">] = </span><span class="default">$_GET</span><span class="keyword">[</span><span class="default">$ehsanKey</span><span class="keyword">];<br />
+}<br />
+<br />
+</span><span class="comment">// preventing the key used above for iteration from getting into globals (in case&nbsp; 'register_globals = On')<br />
+</span><span class="keyword">unset(</span><span class="default">$ehsanKey</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">// the reverse function of 'sanitizeText'. you may use it in pages which need the original data (e.g. for an HTML editor)<br />
+</span><span class="keyword">function </span><span class="default">unsanitizeText</span><span class="keyword">(</span><span class="default">$text</span><span class="keyword">)<br />
+{<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$text </span><span class="keyword">=&nbsp; </span><span class="default">stripcslashes</span><span class="keyword">(</span><span class="default">$text</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$text </span><span class="keyword">= </span><span class="default">str_replace</span><span class="keyword">(</span><span class="string">"&amp;#039;"</span><span class="keyword">, </span><span class="string">"'"</span><span class="keyword">, </span><span class="default">$text</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$text </span><span class="keyword">= </span><span class="default">str_replace</span><span class="keyword">(</span><span class="string">"&amp;gt;"</span><span class="keyword">, </span><span class="string">"&gt;"</span><span class="keyword">, </span><span class="default">$text</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$text </span><span class="keyword">= </span><span class="default">str_replace</span><span class="keyword">(</span><span class="string">"&amp;quot;"</span><span class="keyword">, </span><span class="string">"\""</span><span class="keyword">, </span><span class="default">$text</span><span class="keyword">);&nbsp; &nbsp; <br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$text </span><span class="keyword">= </span><span class="default">str_replace</span><span class="keyword">(</span><span class="string">"&amp;lt;"</span><span class="keyword">, </span><span class="string">"&lt;"</span><span class="keyword">, </span><span class="default">$text</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">$text</span><span class="keyword">;<br />
+}<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
 <hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="security.variables.html">User Submitted Data</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="security.magicquotes.what.html">What are Magic Quotes</a></div>

@@ -104,7 +104,260 @@
   </p>
  </div>
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="97256""></a>
+  <div class="note">
+   <strong class="user">Alex</strong>
+   <a href="#97256" class="date">10-Apr-2010 08:45</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Beware of the "gotcha" (works as designed but not as expected): if you use loadHTML, you cannot validate the document. Validation is only for XML. Details here: <a href="http://bugs.php.net/bug.php?id=43771&amp;edit=1" rel="nofollow" target="_blank">http://bugs.php.net/bug.php?id=43771&amp;edit=1</a></span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="95463""></a>
+  <div class="note">
+   <strong class="user">Shane Harter</strong>
+   <a href="#95463" class="date">04-Jan-2010 08:42</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+DOMDocument is very good at dealing with imperfect markup, but it throws warnings all over the place when it does. <br />
+<br />
+This isn't well documented here. The solution to this is to implement a separate aparatus for dealing with just these errors. <br />
+<br />
+Set libxml_use_internal_errors(true) before calling loadHTML. This will prevent errors from bubbling up to your default error handler. And you can then get at them (if you desire) using other libxml error functions. <br />
+<br />
+You can find more info here <a href="http://www.php.net/manual/en/ref.libxml.php" rel="nofollow" target="_blank">http://www.php.net/manual/en/ref.libxml.php</a></span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="95251""></a>
+  <div class="note">
+   <strong class="user">mdmitry at gmail dot com</strong>
+   <a href="#95251" class="date">21-Dec-2009 09:02</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+You can also load HTML as UTF-8 using this simple hack:<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+$doc </span><span class="keyword">= new </span><span class="default">DOMDocument</span><span class="keyword">();<br />
+</span><span class="default">$doc</span><span class="keyword">-&gt;</span><span class="default">loadHTML</span><span class="keyword">(</span><span class="string">'&lt;?xml encoding="UTF-8"&gt;' </span><span class="keyword">. </span><span class="default">$html</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">// dirty fix<br />
+</span><span class="keyword">foreach (</span><span class="default">$doc</span><span class="keyword">-&gt;</span><span class="default">childNodes </span><span class="keyword">as </span><span class="default">$item</span><span class="keyword">)<br />
+&nbsp;&nbsp;&nbsp; if (</span><span class="default">$item</span><span class="keyword">-&gt;</span><span class="default">nodeType </span><span class="keyword">== </span><span class="default">XML_PI_NODE</span><span class="keyword">)<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$doc</span><span class="keyword">-&gt;</span><span class="default">removeChild</span><span class="keyword">(</span><span class="default">$item</span><span class="keyword">); </span><span class="comment">// remove hack<br />
+</span><span class="default">$doc</span><span class="keyword">-&gt;</span><span class="default">encoding </span><span class="keyword">= </span><span class="string">'UTF-8'</span><span class="keyword">; </span><span class="comment">// insert proper<br />
+<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="91513""></a>
+  <div class="note">
+   <strong class="user">piopier</strong>
+   <a href="#91513" class="date">14-Jun-2009 08:29</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Here is a function I wrote to capitalize the previous remarks about charset problems (UTF-8...) when using loadHTML and then DOM functions.<br />
+It adds the charset meta tag just after &lt;head&gt; to improve automatic encoding detection, converts any specific character to an html entity, thus PHP DOM functions/attributes will return correct values.<br />
+<br />
+<span class="default">&lt;?php<br />
+mb_detect_order</span><span class="keyword">(</span><span class="string">"ASCII,UTF-8,ISO-8859-1,windows-1252,iso-8859-15"</span><span class="keyword">);<br />
+function </span><span class="default">loadNprepare</span><span class="keyword">(</span><span class="default">$url</span><span class="keyword">,</span><span class="default">$encod</span><span class="keyword">=</span><span class="string">''</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$content&nbsp; &nbsp; &nbsp; &nbsp; </span><span class="keyword">= </span><span class="default">file_get_contents</span><span class="keyword">(</span><span class="default">$url</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if (!empty(</span><span class="default">$content</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if (empty(</span><span class="default">$encod</span><span class="keyword">))<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$encod&nbsp; </span><span class="keyword">= </span><span class="default">mb_detect_encoding</span><span class="keyword">(</span><span class="default">$content</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$headpos&nbsp; &nbsp; &nbsp; &nbsp; </span><span class="keyword">= </span><span class="default">mb_strpos</span><span class="keyword">(</span><span class="default">$content</span><span class="keyword">,</span><span class="string">'&lt;head&gt;'</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if (</span><span class="default">FALSE</span><span class="keyword">=== </span><span class="default">$headpos</span><span class="keyword">)<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$headpos</span><span class="keyword">= </span><span class="default">mb_strpos</span><span class="keyword">(</span><span class="default">$content</span><span class="keyword">,</span><span class="string">'&lt;HEAD&gt;'</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if (</span><span class="default">FALSE</span><span class="keyword">!== </span><span class="default">$headpos</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$headpos</span><span class="keyword">+=</span><span class="default">6</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$content </span><span class="keyword">= </span><span class="default">mb_substr</span><span class="keyword">(</span><span class="default">$content</span><span class="keyword">,</span><span class="default">0</span><span class="keyword">,</span><span class="default">$headpos</span><span class="keyword">) . </span><span class="string">'&lt;meta http-equiv="Content-Type" content="text/html; charset='</span><span class="keyword">.</span><span class="default">$encod</span><span class="keyword">.</span><span class="string">'"&gt;' </span><span class="keyword">.</span><span class="default">mb_substr</span><span class="keyword">(</span><span class="default">$content</span><span class="keyword">,</span><span class="default">$headpos</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$content</span><span class="keyword">=</span><span class="default">mb_convert_encoding</span><span class="keyword">(</span><span class="default">$content</span><span class="keyword">, </span><span class="string">'HTML-ENTITIES'</span><span class="keyword">, </span><span class="default">$encod</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$dom </span><span class="keyword">= new </span><span class="default">DomDocument</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$res </span><span class="keyword">= </span><span class="default">$dom</span><span class="keyword">-&gt;</span><span class="default">loadHTML</span><span class="keyword">(</span><span class="default">$content</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if (!</span><span class="default">$res</span><span class="keyword">) return </span><span class="default">FALSE</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">$dom</span><span class="keyword">;<br />
+}<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+NB: it uses mb_strpos/mb_substr instead of mb_ereg_replace because that seemed more efficient with huge html pages.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="88864""></a>
+  <div class="note">
+   <strong class="user">Errol</strong>
+   <a href="#88864" class="date">11-Feb-2009 08:05</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+It should be noted that when any text is provided within the body tag<br />
+outside of a containing element, the DOMDocument will encapsulate that<br />
+text into a paragraph tag (&lt;p&gt;).<br />
+<br />
+For example:<br />
+<span class="default">&lt;?php<br />
+$doc </span><span class="keyword">= new </span><span class="default">DOMDocument</span><span class="keyword">();<br />
+</span><span class="default">$doc</span><span class="keyword">-&gt;</span><span class="default">loadHTML</span><span class="keyword">(</span><span class="string">"&lt;html&gt;&lt;body&gt;Test&lt;br&gt;&lt;div&gt;Text&lt;/div&gt;&lt;/body&gt;&lt;/html&gt;"</span><span class="keyword">);<br />
+echo </span><span class="default">$doc</span><span class="keyword">-&gt;</span><span class="default">saveHTML</span><span class="keyword">();<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+will yield:<br />
+&lt;!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN"<br />
+"<a href="http://www.w3.org/TR/REC-html40/loose.dtd" rel="nofollow" target="_blank">http://www.w3.org/TR/REC-html40/loose.dtd</a>"&gt;<br />
+&lt;html&gt;&lt;body&gt;<br />
+&lt;p&gt;Test&lt;br&gt;&lt;/p&gt;<br />
+&lt;div&gt;Text&lt;/div&gt;<br />
+&lt;/body&gt;&lt;/html&gt;<br />
+<br />
+while:<br />
+<span class="default">&lt;?php<br />
+$doc </span><span class="keyword">= new </span><span class="default">DOMDocument</span><span class="keyword">();<br />
+</span><span class="default">$doc</span><span class="keyword">-&gt;</span><span class="default">loadHTML</span><span class="keyword">(<br />
+&nbsp;&nbsp;&nbsp; </span><span class="string">"&lt;html&gt;&lt;body&gt;&lt;i&gt;Test&lt;/i&gt;&lt;br&gt;&lt;div&gt;Text&lt;/div&gt;&lt;/body&gt;&lt;/html&gt;"</span><span class="keyword">);<br />
+echo </span><span class="default">$doc</span><span class="keyword">-&gt;</span><span class="default">saveHTML</span><span class="keyword">();<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+will yield:<br />
+&lt;!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN"<br />
+"<a href="http://www.w3.org/TR/REC-html40/loose.dtd" rel="nofollow" target="_blank">http://www.w3.org/TR/REC-html40/loose.dtd</a>"&gt;<br />
+&lt;html&gt;&lt;body&gt;<br />
+&lt;i&gt;Test&lt;/i&gt;&lt;br&gt;&lt;div&gt;Text&lt;/div&gt;<br />
+&lt;/body&gt;&lt;/html&gt;</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="86450""></a>
+  <div class="note">
+   <strong class="user">jamesedwardcooke+php at gmail dot com</strong>
+   <a href="#86450" class="date">19-Oct-2008 11:37</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Using loadHTML() automagically sets the doctype property of your DOMDocument instance(to the doctype in the html, or defaults to 4.0 Transitional). If you set the doctype with DOMImplementation it will be overridden.<br />
+<br />
+I assumed it was possible to set it and then load html with the doctype I defined(in order to decide the doctype at runtime), and ran into a huge headache trying to find out where my doctype was going. Hopefully this helps someone else.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="78243""></a>
+  <div class="note">
+   <strong class="user">xuanbn at yahoo dot com</strong>
+   <a href="#78243" class="date">04-Oct-2007 01:38</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+If you use loadHTML() to process utf HTML string (eg in Vietnamese), you may experience result in garbage text, while some files were OK. Even your HTML already have meta charset&nbsp; like<br />
+<br />
+&nbsp; &lt;meta http-equiv="content-type" content="text/html; charset=utf-8"&gt;<br />
+<br />
+I have discovered that, to help loadHTML() process utf file correctly, the meta tag should come first, before any utf string appear. For example, this HTML file<br />
+<br />
+&lt;html&gt;<br />
+&nbsp;&lt;head&gt;<br />
+&nbsp;&nbsp;&nbsp; &lt;meta http-equiv="content-type" content="text/html; charset=utf-8"&gt;<br />
+&nbsp;&nbsp;&nbsp; &lt;title&gt; Vietnamese - Tiáº¿ng Viá»‡t&lt;/title&gt;<br />
+&nbsp; &lt;/head&gt;<br />
+&lt;body&gt;&lt;/body&gt;<br />
+&lt;/html&gt;<br />
+<br />
+will be OK with loadHTML() when &lt;meta&gt; tag appear &lt;title&gt; tag.<br />
+<br />
+But the file below will not regcornize by loadHTML() because &lt;title&gt; tag contains utf string appear before &lt;meta&gt; tag.<br />
+<br />
+&lt;html&gt;<br />
+&nbsp;&lt;head&gt;<br />
+&nbsp;&nbsp;&nbsp; &lt;title&gt; Vietnamese - Tiáº¿ng Viá»‡t&lt;/title&gt;<br />
+&nbsp;&nbsp;&nbsp; &lt;meta http-equiv="content-type" content="text/html; charset=utf-8"&gt;<br />
+&nbsp; &lt;/head&gt;<br />
+&lt;body&gt;&lt;/body&gt;<br />
+&lt;/html&gt;</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="74777""></a>
+  <div class="note">
+   <strong class="user">hanhvansu at yahoo dot com</strong>
+   <a href="#74777" class="date">26-Apr-2007 08:50</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+When using loadHTML() to process UTF-8 pages, you may meet the problem that the output of dom functions are not like the input. For example, if you want to get "Cáº¡nh tranh", you will receive "CÃ¡ÂºÂ¡nh tranh".&nbsp; I suggest we use mb_convert_encoding before load UTF-8 page :<br />
+<span class="default">&lt;?php<br />
+&nbsp;&nbsp;&nbsp; $pageDom </span><span class="keyword">= new </span><span class="default">DomDocument</span><span class="keyword">();&nbsp; &nbsp; <br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$searchPage </span><span class="keyword">= </span><span class="default">mb_convert_encoding</span><span class="keyword">(</span><span class="default">$htmlUTF8Page</span><span class="keyword">, </span><span class="string">'HTML-ENTITIES'</span><span class="keyword">, </span><span class="string">"UTF-8"</span><span class="keyword">); <br />
+&nbsp;&nbsp;&nbsp; @</span><span class="default">$pageDom</span><span class="keyword">-&gt;</span><span class="default">loadHTML</span><span class="keyword">(</span><span class="default">$htmlUTF8Page</span><span class="keyword">);<br />
+<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="73278""></a>
+  <div class="note">
+   <strong class="user">romain dot lalaut at laposte dot net</strong>
+   <a href="#73278" class="date">15-Feb-2007 08:31</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Note that the elements of such document will have no namespace even with &lt;html xmlns="<a href="http://www.w3.org/1999/xhtml" rel="nofollow" target="_blank">http://www.w3.org/1999/xhtml</a>"&gt;</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="52251""></a>
+  <div class="note">
+   <strong class="user">bigtree at DONTSPAM dot 29a dot nl</strong>
+   <a href="#52251" class="date">26-Apr-2005 02:15</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Pay attention when loading html that has a different charset than iso-8859-1. Since this method does not actively try to figure out what the html you are trying to load is encoded in (like most browsers do), you have to specify it in the html head. If, for instance, your html is in utf-8, make sure you have a meta tag in the html's head section:<br />
+<br />
+&lt;head&gt;<br />
+&lt;meta http-equiv="Content-Type" content="text/html; charset=utf-8"/&gt;<br />
+&lt;/head&gt;<br />
+<br />
+If you do not specify the charset like this, all high-ascii bytes will be html-encoded. It is not enough to set the dom document you are loading the html in to UTF-8.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="domdocument.load.html">DOMDocument::load</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="domdocument.loadhtmlfile.html">DOMDocument::loadHTMLFile</a></div>
  <div class="up"><a href="class.domdocument.html">DOMDocument</a></div>

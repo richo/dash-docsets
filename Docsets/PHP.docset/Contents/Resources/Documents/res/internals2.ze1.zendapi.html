@@ -5300,7 +5300,874 @@ ZEND_MSHUTDOWN_FUNCTION(mymodule)
 
 
 
- </div><hr /><div class="manualnavbar" style="text-align: center;">
+ </div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="73787""></a>
+  <div class="note">
+   <strong class="user">bhavacakra at gmail dot com</strong>
+   <a href="#73787" class="date">10-Mar-2007 01:41</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+A very nice resource <a href="http://devzone.zend.com/public/view/tag/Extension" rel="nofollow" target="_blank">http://devzone.zend.com/public/view/tag/Extension</a></span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="56861""></a>
+  <div class="note">
+   <strong class="user">vijay at planetbazaar dot com</strong>
+   <a href="#56861" class="date">17-Sep-2005 12:53</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Notes for Windows PHP5 extension developers:<br />
+<br />
+First, two great articles at <a href="http://www.zend.com/php/internals/index.php are in the must read category. Unfortunately an article on building extensions on Windows is yet to arrive at this time. So one gets stuck at section " rel="nofollow" target="_blank">http://www.zend.com/php/internals/index.php are in the must read category. Unfortunately an article on building extensions on Windows is yet to arrive at this time. So one gets stuck at section </a>'Building Your Extension' in the first article - because there is no 'phpize' for Windows to the best of my knowledge.<br />
+<br />
+First point of curiosity is how the extensions that are available for Windows appear in the output of "cscript /nologo configure.js --help". Turns out the magic happens by executing "buildconf.bat". To cut a long story short, it turns out that for Windows, the build system looks for config.w32 in each extension directory instead of config.m4; config.w32 is actually a javascript (from what I gather reading the "vim:ft=javascript" comment at the top of the files).<br />
+<br />
+To get going with the "hello world" sample in the article mentioned above here is the config.w32 to replace config.m4;<br />
+<br />
+--- begin file: config.w32 ---<br />
+// hello world module configuration<br />
+// vim:ft=javascript<br />
+ARG_ENABLE("hello", "hello Enable Hello World support", "no");<br />
+<br />
+if (PHP_HELLO == "yes") {<br />
+&nbsp; EXTENSION("hello", "hello.c", null, "-Iext/hello");<br />
+&nbsp; AC_DEFINE('HAVE_HELLO', 1, 'Whether you ave Hello World');<br />
+}<br />
+<br />
+--- end file: config.w32 ---<br />
+<br />
+And just to compare, here is the config.m4<br />
+<br />
+--- begin file: config.m4 ---<br />
+dnl vim:ft=m4<br />
+dnl hello world module configuration<br />
+PHP_ARG_ENABLE(hello, whether to enable Hellow World support,<br />
+[ --enable-hello&nbsp; Enable Hello World support])<br />
+<br />
+if test "$PHP_HELLO" = "yes"; then<br />
+&nbsp; AC_DEFINE(HAVE_HELLO, 1 [Whether you have Hello World])<br />
+&nbsp; PHP_NEW_EXTENSION(hello, hello.c, $ext_shared)<br />
+fi<br />
+<br />
+--- end file: config.m4 ---<br />
+<br />
+And finally the key step is to execute 'buildconf.bat'; after this step:<br />
+<br />
+&nbsp; cscript /nologo configure.js | find "hello"<br />
+<br />
+should show something like:<br />
+"--enable-hello&nbsp; &nbsp;&nbsp; hello Enable Hello World support"</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="56010""></a>
+  <div class="note">
+   <strong class="user">tony dot dodd at btinternet dot com</strong>
+   <a href="#56010" class="date">20-Aug-2005 08:15</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+These macros are defined in a separate header file called php_ini.h.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="55286""></a>
+  <div class="note">
+   <strong class="user">josephmdaly at gmail dot com</strong>
+   <a href="#55286" class="date">29-Jul-2005 01:58</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+It looks like PHP 5 uses a newer version of the windows socket library.<br />
+<br />
+If your extension links to a library that uses the old version you might get a lot of errors about redefining things.<br />
+<br />
+To fix this problem make sure the PHP header files are included before the library’s header files.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="54356""></a>
+  <div class="note">
+   <strong class="user">josephmdaly at gmail dot com</strong>
+   <a href="#54356" class="date">01-Jul-2005 03:26</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Here is a quick example of how to read arrays passed as parameters:<br />
+<br />
+int i;<br />
+/* data will be used to store one element on each iteration of a loop */<br />
+zval **data = NULL;<br />
+/* data_array is the array we are copying values into */<br />
+char **data_array = NULL;<br />
+<br />
+/* Use zend_parse_parameters as you normally would with an 'a' in the type <br />
+&nbsp;&nbsp; string.<br />
+&nbsp;&nbsp; In this example it sets the variables data_arg and array_length <br />
+*/<br />
+<br />
+data_array = emalloc(sizeof(char *) * array_length);<br />
+<br />
+for (i = 0; i &lt; array_length; i++) {<br />
+&nbsp; /* Get an element out of the hash table as a zval */<br />
+&nbsp; zend_hash_index_find(Z_ARRVAL_P(data_arg), i, (void **)&amp;data);<br />
+<br />
+&nbsp; /* Make sure the zval is a string */<br />
+&nbsp; convert_to_string(*data);<br />
+<br />
+&nbsp; /* Convert the zval into a string and store it */<br />
+&nbsp; data_array[i] = Z_STRVAL_PP(data);<br />
+}</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="53822""></a>
+  <div class="note">
+   <strong class="user">seymour_levine at hotmail dot com</strong>
+   <a href="#53822" class="date">14-Jun-2005 05:18</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+A small amount of administration is needed to make this work.<br />
+<br />
+Mainly the dl command does not pick up the module created.<br />
+<br />
+To remedy, use a full path for the extension_dir parameter in php.ini. Then create that subdirectory mod 755 vis:<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; extension_dir=/usr/lib/php411<br />
+<br />
+And create php411. The name is arbitrary.<br />
+<br />
+In the php dl command, specify dl('firstmod.so'); do not use any slashes.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="53783""></a>
+  <div class="note">
+   <strong class="user">Sy Levine</strong>
+   <a href="#53783" class="date">13-Jun-2005 05:29</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I installed and run 4.1.1 on RH 7.1&nbsp; It runs on a separate Apache Server than the one furnished by Red Hat.<br />
+<br />
+A few adminisrative changes were necessary to get&nbsp; the function going.<br />
+<br />
+The main one was finding and modifying php.ini.<br />
+<br />
+The command: find . -print | grep php.ini should do that.<br />
+Mine was in /usr/local/lib <br />
+<br />
+Look for extension_dir in php.ini then type the directive as<br />
+<br />
+extension_dir=/usr/lib/php4&nbsp; <br />
+<br />
+Use no trailing / in the directive. This is where the dl('firstmod.so') php statement accesses your module. <br />
+<br />
+Tip: I do not use a leading / like dl('/firstmod.so') which will be misparsed.&nbsp; {Note by Ed a PHP ...}<br />
+<br />
+The source module is named firstmod.c.<br />
+<br />
+I compiled and created the firstmod.so with a script based on the various notes about the compile parameters. See<br />
+markjolesen, ywarnier, 17-Apr, wish I .</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="51663""></a>
+  <div class="note">
+   <strong class="user">davide dot chiodi at poste dot it</strong>
+   <a href="#51663" class="date">06-Apr-2005 10:34</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+to build with lcc-win32 compiler:<br />
+<br />
+change #include "php.h" to #include "php-lcc.h"<br />
+this is php-lcc.h (copied from excellent windbinder project by Rubem Pechansky)<br />
+<br />
+//ZEND constants<br />
+#if defined(_MSC_VER)&nbsp; &nbsp; &nbsp; &nbsp; // Rick<br />
+#&nbsp; &nbsp; if defined(ZEND_EXPORTS)<br />
+#&nbsp; &nbsp; &nbsp; &nbsp; undef ZEND_EXPORTS<br />
+#&nbsp; &nbsp; endif<br />
+#&nbsp; &nbsp; undef ZEND_DEBUG<br />
+#else<br />
+#&nbsp; &nbsp; define PHP_WIN32<br />
+#&nbsp; &nbsp; define ZEND_WIN32<br />
+#endif<br />
+<br />
+#define ZEND_DEBUG&nbsp; &nbsp; FALSE&nbsp; &nbsp; // Must be FALSE<br />
+#define ZTS&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; // Must define ZTS (Zend Thread Safety)<br />
+#define PHP_REGEX_H&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; // Skip php_regex.h: '_off_t' not defined anywhere<br />
+#define COMPILE_DL_FIRST_MODULE 1<br />
+//----------------------------------------------------------------- DEPENDENCIES<br />
+<br />
+#include &lt;php.h&gt;<br />
+<br />
+//---------------------------------------------------------- AUXILIARY FUNCTIONS<br />
+<br />
+int parse_array(zval *array, const char *fmt, ...);<br />
+<br />
+//------------------------------------------------------------------ END OF FILE<br />
+<br />
+you must also used tweaked headers file from winbinder author at this link: <a href="http://hypervisual.com/winbinder/files/archived/php4_tweaked_headers.zip" rel="nofollow" target="_blank">http://hypervisual.com/winbinder/files/archived/php4_tweaked_headers.zip</a><br />
+(php 4).<br />
+I used php 4.3.10 and all worked fine</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="46835""></a>
+  <div class="note">
+   <strong class="user">ywarnier at beeznest dot org</strong>
+   <a href="#46835" class="date">25-Oct-2004 04:19</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Quick note to save time to beginners<br />
+<br />
+To make the example above work, I had to add -I../TSRM because the file tsrm_virtual_cwd.h couldn't be found otherwise (it's located in the TSRM directory which is not included above)<br />
+<br />
+In my case (pure Debian Woody install), php libraries were located in /usr/include/php4 (and php.h was in the 'main' subdirectory) so I had to use this path instead of /usr/local/include</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="44256""></a>
+  <div class="note">
+   <strong class="user">ppmm at wuxinan dot net</strong>
+   <a href="#44256" class="date">19-Jul-2004 05:40</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+In fact, empty string is not writeable, even when we add an slash after the type decl. Say the implementation of my_test() is like this:<br />
+<br />
+char *s;<br />
+int s_len;<br />
+zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s/", &amp;s, &amp;s_len) <br />
+<br />
+and you pass an empty string my_test("") from the PHP script, then s[0] is not writeable. You will get a seg fault. The reason is that Zend doesn't emalloc a new copy of the empty string dynamically, instead it just assigns the empty_string (which is defined at compile time and located in unwriteable data seg) pointer to s.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="42070""></a>
+  <div class="note">
+   <strong class="user">someone at apple</strong>
+   <a href="#42070" class="date">01-May-2004 10:55</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+When following the directions for compiling via make, it may be necessary to delete the configure script before running buildconf.&nbsp; Otherwise you may get a complaint about buggy cache code and the configure script won't actually be updated.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="41909""></a>
+  <div class="note">
+   
+   <a href="#41909" class="date">25-Apr-2004 10:13</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+If you want to free zval, you can do this:<br />
+<br />
+{<br />
+zval *new_var;<br />
+<br />
+/* allocate and initialize new container */<br />
+MAKE_STD_ZVAL(new_var);<br />
+<br />
+/* set type and variable contents here, see the following sections */<br />
+<br />
+ZVAL_STRING(new_var, "123456", 1);<br />
+<br />
+/* introduce this variable by the name "new_variable_name" into the symbol table */<br />
+zend_hash_update(<br />
+&nbsp;&nbsp;&nbsp; EG(active_symbol_table),<br />
+&nbsp;&nbsp;&nbsp; "new_var",<br />
+&nbsp;&nbsp;&nbsp; strlen("new_var") + 1,<br />
+&nbsp;&nbsp;&nbsp; &amp;new_var,<br />
+&nbsp;&nbsp;&nbsp; sizeof(zval *),<br />
+&nbsp;&nbsp;&nbsp; NULL<br />
+);<br />
+<br />
+zend_hash_del(<br />
+&nbsp;&nbsp;&nbsp; EG(active_symbol_table),<br />
+&nbsp;&nbsp;&nbsp; "new_var",<br />
+&nbsp;&nbsp;&nbsp; strlen("new_var") + 1);<br />
+<br />
+FREE_ZVAL(new_var);<br />
+}</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="41867""></a>
+  <div class="note">
+   <strong class="user">php-lists at nomeaning dot net</strong>
+   <a href="#41867" class="date">24-Apr-2004 12:36</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+phpmanual at oderwat dot de is incorrect:<br />
+<br />
+TSRMLS_DC and TSRMLS_CC are both correct as listed in the original text.&nbsp; <br />
+<br />
+TSRMLS_DC is used for Zend internal function declarations and TSRMLS_CC must be used when calling such functions.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="41363""></a>
+  <div class="note">
+   <strong class="user">Julien CROUZET jucrouzet_at_cpan.org</strong>
+   <a href="#41363" class="date">07-Apr-2004 02:51</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Remember that even if RETURN_* macros sets the return_value to return variable to user, they also RETURN FROM YOU CODE by a "return ;", any code after these macro will be ignored.<br />
+<br />
+If you want to place code after a return of variable (which is not a good idea for code readability), you'll have to use RETVAL_* macro instead.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="41362""></a>
+  <div class="note">
+   <strong class="user">Julien CROUZET jucrouzet_at_cpan.org</strong>
+   <a href="#41362" class="date">07-Apr-2004 02:44</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Just an example of the way of the way of returning array :<br />
+<br />
+/*<br />
+** Creates a array of on element (a long of value 42)<br />
+*/<br />
+ZEND_FUNCTION("make_42_array")<br />
+{<br />
+&nbsp; zval *my_long;<br />
+<br />
+&nbsp; // Declaring and allocating return_value to be an array<br />
+&nbsp; array_init(return_value);<br />
+<br />
+&nbsp; //Creates and assign the long element at (long)42<br />
+&nbsp; MAKE_STD_ZVAL(my_long);<br />
+&nbsp; ZVAL_LONG(new_element, 42);<br />
+<br />
+&nbsp; //Make this our $array[0] I do not use add_index_long to<br />
+&nbsp; //to show a "by-hand" assignation<br />
+&nbsp; zend_hash_index_update(HASH_OF(return_value), 0, (void *)&amp;my_long, sizeof(zval *), NULL);<br />
+<br />
+&nbsp; //Returns nothing to satisfy the void prototype<br />
+&nbsp; return ;<br />
+<br />
+}</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="41290""></a>
+  <div class="note">
+   <strong class="user">Julien CROUZET jucrouzet_at_cpan.org</strong>
+   <a href="#41290" class="date">05-Apr-2004 03:28</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+All associate array functions (add_assoc_long for example) are now just aliases of their extended version (add_assoc_long_ex). <br />
+<br />
+The key lenght is calculated with strlen(key) + 1, but remember that this is NOT binary safe (strlen stops on the first null byte).<br />
+<br />
+Users may want to use binary keys, so always prefer extended versions with a secure length !</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="41132""></a>
+  <div class="note">
+   <strong class="user">jason dot lambert at uk dot clara dot net</strong>
+   <a href="#41132" class="date">31-Mar-2004 05:18</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Just a note of caution, when using a string value within zend_parse_parameters() you MUST specify the length parameter also, or php may segfault on some machines.<br />
+<br />
+Example possible segfault code:<br />
+<br />
+char *s;<br />
+zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &amp;s)<br />
+<br />
+Correct code:<br />
+<br />
+char *s;<br />
+int s_len;<br />
+zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &amp;s, &amp;s_len)</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="40962""></a>
+  <div class="note">
+   <strong class="user">Julien CROUZET jucrouzet_at_cpan.org</strong>
+   <a href="#40962" class="date">24-Mar-2004 02:44</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+As a completion to k at ailis dot de :<br />
+<br />
+According to ARG_SHOULD_BE_SENT_BY_REF macro in zend_compile.h, BYREF_FORCE_REST force the rest of the arguments to be passed as ref.<br />
+<br />
+The first byte have to be the index of BYREF_FORCE_REST in the array.<br />
+<br />
+Means, if you have, 5 args, the first two ones are NOT passed as ref, and the 3 others are, you can do :<br />
+<br />
+static unsigned char rest_arguments_force_ref[] = { 3, BYREF_NONE, BYREF_NONE, BYREF_FORCE_REST };<br />
+<br />
+We can see a few things in this example :<br />
+<br />
+&nbsp; * As k at ailis dot de said, the first byte is _NOT_ the number of args passed to the function.<br />
+&nbsp; * The argument corresponding to BYREF_FORCE_REST MUST be passed as a reference<br />
+&nbsp; * The others arguments MUST be passed as a reference</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="34799""></a>
+  <div class="note">
+   <strong class="user">glamm at a-s-i dot com</strong>
+   <a href="#34799" class="date">06-Aug-2003 11:14</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Regarding the note written by jo-shi at web dot de:<br />
+<br />
+I do not think that the line<br />
+&nbsp; ce = emalloc(sizeof(zend_class_entry));<br />
+is required, as the line<br />
+&nbsp; ce = zend_register_internal_class(&amp;class_entry TSRMLS_CC);<br />
+actually appears to go through the process of performing the memory allocation and reference counting of the object.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="33052""></a>
+  <div class="note">
+   <strong class="user">wilf at bigpond dot net dot au</strong>
+   <a href="#33052" class="date">15-Jun-2003 12:26</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Another caching problem:<br />
+<br />
+If you seen a message saying that 'may contain buggy cache code', ensure that you delete the 'autom4k...cache' directory before running buildconf.&nbsp; <br />
+<br />
+A good test the see if your new module has been picked up by buildconf is:<br />
+<br />
+$ grep -c my_module configure<br />
+(if that returns 0 then buildconf did not work).<br />
+<br />
+Unfortunately this means that you have to completely rebuild your configure script each time you change an M4 file but it doesnt take too long.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="31978""></a>
+  <div class="note">
+   <strong class="user">wendywds at hotmail dot com</strong>
+   <a href="#31978" class="date">11-May-2003 03:39</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Using php-4.3.1 on Redhat Linux 8, step 6 did not work as written.&nbsp; There is no php executable in /usr/php-4.3.1.&nbsp; Instead, with help from the pear-general mailing list, I discovered that the newly built php executable is in /usr/php-4.3.1/sapi/cli.&nbsp; (The very end of the output of 'make' shows -o sapi/cli/php.&nbsp; According to Johannes on pear-general, it might be in sapi/cgi instead.)<br />
+<br />
+So I had to change step 6 to:<br />
+6.&nbsp; $ sapi/cli/php -f ext/my_module/my_module.php</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="31606""></a>
+  <div class="note">
+   <strong class="user">Ed a PHP enthusiast from NYC</strong>
+   <a href="#31606" class="date">27-Apr-2003 10:55</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Thank you very much for the comments above!<br />
+<br />
+Here is a distillation of how to compile your module as a dynamic library, placing it in your web server and loading it in your test .php file being served (PHP 4.3.1).<br />
+<br />
+*** Compiling a module as a .so<br />
+<br />
+$ cd ext/mystuff<br />
+<br />
+$ cc -fpic -DCOMPILE_DL_MYSTUFF=1 -I/usr/local/include -I../../TSRM -I../.. -I../../main -I../../Zend -I../../ext/bcmath/libbcmath/src -c -o mystuff.o mystuff.c<br />
+<br />
+$ cc -shared -L/usr/local/lib -rdynamic -o mystuff.so mystuff.o<br />
+<br />
+*** Move it to the web server (doc root is /www)<br />
+<br />
+$ cp mystuff.so /www/.<br />
+<br />
+$ chmod 644 /www/mystuff.so<br />
+<br />
+*** load the module in the .php file for testing purposes<br />
+<br />
+&lt;?<br />
+dl('/mystuff.so');<br />
+<br />
+/*&nbsp; your php code here&nbsp; */<br />
+?&gt;<br />
+<br />
+The other thing that threw me off my tracks is that when dealing with strings you can allocate memory with emalloc and return the result with the RETURN_STRING macro (duplicate set to 0) and presumably PHP will take care of the efree -- or else I got it wrong and have plenty of leaks&nbsp; ;-)</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="31312""></a>
+  <div class="note">
+   
+   <a href="#31312" class="date">16-Apr-2003 11:08</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Compiling Manually NOTE:<br />
+remenber add -DHAVE_CONFIG_H flag<br />
+otherwise you .so can't be ld. then you cp it to php modules directory.<br />
+i.e<br />
+Compiling cc -fpic -DHAVE_CONFIG_H&nbsp; -I/usr/local/include -I. -I.. -I../Zend -c -o &lt;your_object_file&gt; &lt;your_c_file&gt;</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="30486""></a>
+  <div class="note">
+   <strong class="user">Mac Mühleisen</strong>
+   <a href="#30486" class="date">19-Mar-2003 11:55</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+To built the modules shipped with the source just cd into the ext dir for example <br />
+<br />
+cd ext/oci8 <br />
+<br />
+and type<br />
+<br />
+export SHLIB_SUFFIX_NAME=so<br />
+phpize &amp;&amp; aclocal &amp;&amp; ./configure &amp;&amp; make<br />
+<br />
+now you have a subdir called "modules" with the .so file. Copy it to your extension dir and set everything up in php.ini.<br />
+<br />
+This way you can add extensions to binary distributions like RPMS.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="30139""></a>
+  <div class="note">
+   <strong class="user">staffan dot palmroos at surfbuy dot se</strong>
+   <a href="#30139" class="date">07-Mar-2003 10:30</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+The specified_type_or_NULL operator ! in the type specifier string of zend_parse_parameters seems to work for strings too, in addition to (a, o, O, r, and z) as noted.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="27367""></a>
+  <div class="note">
+   <strong class="user">jo-shi at web dot de</strong>
+   <a href="#27367" class="date">03-Dec-2002 10:54</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+add_property_[*](*) overwrites existing values in your object:<br />
+<br />
+ex:<br />
+&nbsp;var_dump($myobj);<br />
+&nbsp;object(objectname)(1){<br />
+&nbsp;&nbsp; ["_myvalue"]=&gt;int(23);<br />
+&nbsp;}<br />
+&nbsp;so in func1 i "add" a property again:<br />
+&nbsp;PHP_FUNCTION(func1){<br />
+&nbsp;&nbsp; add_property_long(getThis(),"_myvalue",32);<br />
+&nbsp;}<br />
+&nbsp;should (as expected) result<br />
+&nbsp;object(objectname)(1){<br />
+&nbsp;&nbsp; ["_myvalue"]=&gt;int(32);<br />
+&nbsp;}<br />
+/* annotation: getThis() is a function used by many extensions to find out the $this value in an object */</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="27366""></a>
+  <div class="note">
+   <strong class="user">jo-shi at web dot de</strong>
+   <a href="#27366" class="date">03-Dec-2002 10:47</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+you can add functions to your object:<br />
+you may declare global<br />
+&nbsp; static zend_function_entry <br />
+&nbsp;&nbsp;&nbsp; php_my_class_functions[] = {<br />
+&nbsp;&nbsp; &nbsp;&nbsp; ZEND_FE (func1, NULL)<br />
+&nbsp;&nbsp; &nbsp;&nbsp; ZEND_FE (func2, NULL)<br />
+&nbsp;&nbsp; &nbsp;&nbsp; {NULL, NULL, NULL}<br />
+&nbsp;&nbsp;&nbsp; };<br />
+<br />
+you may declare local<br />
+&nbsp; zend_class_entry my_class_entry;<br />
+&nbsp; zend_class_entry *ce;<br />
+<br />
+you should do something like this<br />
+&nbsp; INIT_CLASS_ENTRY(<br />
+&nbsp;&nbsp;&nbsp; func_class_entry, <br />
+&nbsp;&nbsp;&nbsp; "CLASSNAME",<br />
+&nbsp;&nbsp;&nbsp; php_my_class_functions);<br />
+&nbsp; ce = emalloc(sizeof(zend_class_entry));<br />
+&nbsp; ce = zend_register_internal_class (<br />
+&nbsp; &amp;my_class_entry TSRMLS_CC);<br />
+&nbsp; object_init_ex(return_value, ce);<br />
+this should produce a returned object in your php_code:<br />
+$myobj = yourfunc(/*yourparams*/);<br />
+$myobj-&gt;func1();<br />
+$myobj-&gt;func2();</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="20520""></a>
+  <div class="note">
+   <strong class="user">k at ailis dot de</strong>
+   <a href="#20520" class="date">06-Apr-2002 03:56</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+If you are using one of the above macros you definitely want to use one of those convert-functions if you are not sure what data type is stored in the zval:<br />
+<br />
+&nbsp; convert_to_string(zval_p)<br />
+&nbsp; convert_to_long(zval_p)<br />
+&nbsp; convert_to_double(zval_p)<br />
+&nbsp; convert_to_boolean(zval_p)<br />
+&nbsp; convert_to_array(zval_p)<br />
+&nbsp; convert_to_object(zval_p)<br />
+<br />
+Otherwise you may get undefined results, because Z_STRVAL_P(zval_p) returns nonsense if the zval contains not a string. If you use convert_to_string() before, the value is converted to a string and you can safely access it via the Z_STRVAL* macros.<br />
+<br />
+There are more useful convert-functions:<br />
+<br />
+Resets the zval to NULL:<br />
+&nbsp; convert_to_null(zval_p)<br />
+<br />
+Converts to a long by using a special base:<br />
+&nbsp; convert_to_long_base(zval_p, base)<br />
+<br />
+There are some more functions which may be useful, but I don't know exactly what they are doing. Just take a look at Zend/zend_operaters.h.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="20519""></a>
+  <div class="note">
+   <strong class="user">k at ailis dot de</strong>
+   <a href="#20519" class="date">06-Apr-2002 03:41</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+To complete the macro list:<br />
+<br />
+Access an object:<br />
+&nbsp; Z_OBJ(zval)<br />
+&nbsp; Z_OBJ_P(zval)<br />
+&nbsp; Z_OBJ_PP(zval)<br />
+<br />
+Access object property hash table:<br />
+&nbsp; Z_OBJPROP(zval)<br />
+&nbsp; Z_OBJPROP_P(zval)<br />
+&nbsp; Z_OBJPROP_PP(zval)<br />
+<br />
+Access object class entry:<br />
+&nbsp; Z_OBJCE(zval)<br />
+&nbsp; Z_OBJCE_P(zval)<br />
+&nbsp; Z_OBJCE_PP(zval)<br />
+<br />
+Access a ressource (which is fairly the same as Z_LVAL*):<br />
+&nbsp; Z_RESVAL(zval)<br />
+&nbsp; Z_RESVAL_P(zval)<br />
+&nbsp; Z_RESVAL_PP(zval)</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="20518""></a>
+  <div class="note">
+   <strong class="user">k at ailis dot de</strong>
+   <a href="#20518" class="date">06-Apr-2002 03:33</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+These macros can be used to access the boolean value of a zval. Yes, you can use Z_LVAL* for booleans, too, but these macros also do a type cast to zend_bool:<br />
+<br />
+Z_BVAL(zval)<br />
+Z_BVAL_P(zval)<br />
+Z_BVAL_PP(zval)</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="20275""></a>
+  <div class="note">
+   <strong class="user">k at ailis dot de</strong>
+   <a href="#20275" class="date">28-Mar-2002 05:57</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Because it is not explained how the arg_types parameter works, I'll try to explain it myself: The arg_types parameter is an array of bytes. The first byte marks how many arg_type-specifiers follows. There are the following macros which can be used to regulate the reference forcing and I interprete them like this (No guarentee):<br />
+<br />
+BYREF_NONE = Force passing by value<br />
+BYREF_FORCE = Force passing by reference<br />
+BYREF_ALLOW = Allow passing by reference<br />
+BYREF_FORCE_REST = ???<br />
+<br />
+Commonly the arg_types parameter is used like this:<br />
+<br />
+static unsigned char third_argument_force_ref[] = { 3, BYREF_NONE, BYREF_NONE, BYREF_FORCE };<br />
+ZEND_FE(foobar, third_argument_force_ref)<br />
+<br />
+Note that the first element in the array does NOT specify how many arguments the function is expecting, only how many arg_type-Specifiers follows. Checking of the number of arguments has to be done in the function body itself (i.E. by using the zend_parse_parameters() function)</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="20274""></a>
+  <div class="note">
+   <strong class="user">k at ailis dot de</strong>
+   <a href="#20274" class="date">28-Mar-2002 05:43</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+An information that is missing here: The function name parameter can be an array with two elements. The first element is an object reference or a class name and the second element is the method name. Zend recognizes if the parameter is a string (which results in a normal function call or a normal method call if the object parameter is used) or if it is an array.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="20210""></a>
+  <div class="note">
+   <strong class="user">john dot gallet at wanadoo dot fr</strong>
+   <a href="#20210" class="date">26-Mar-2002 11:58</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Concerning all add_*_stringl() functions : <br />
+they do not behave like snprintf() for instance, i.e. the length of the string is not a *maximum length* but an *exact* length, and you end up with null '\000' or '\@'&nbsp; caracters in your PHP string if the length parameter is greater than the actual length of the string to be associated with return_value.<br />
+<br />
+Yes, it is clearly written but still a trick if you are used to strncpy() or snprintf().<br />
+HTH</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="19989""></a>
+  <div class="note">
+   <strong class="user">k at ailis dot de</strong>
+   <a href="#19989" class="date">18-Mar-2002 08:32</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+object_init() and object_init_ex() are not calling the constructor of a class. You have to do this by yourself after creating the object.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="19969""></a>
+  <div class="note">
+   <strong class="user">k at ailis dot de</strong>
+   <a href="#19969" class="date">17-Mar-2002 06:48</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+There are also the following functions to add zvals to an array or hash:<br />
+<br />
+ZEND_API int add_index_zval(zval *arg, uint index, zval *value);<br />
+ZEND_API int add_next_index_zval(zval *arg, zval *value);<br />
+ZEND_API int add_assoc_zval_ex(zval *arg, char *key, uint key_len, zval *value)<br />
+add_assoc_zval(__arg, __key, __value)</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="17956""></a>
+  <div class="note">
+   <strong class="user">john dot gallet at wanadoo dot fr</strong>
+   <a href="#17956" class="date">04-Jan-2002 04:39</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Distinction between --with and --enable : the "something external" means for exemple a shared object. If you are writing a C wrapper for an existing .so library, you should use --with<br />
+<br />
+Do not forget the "cache" effect to modifyng M4 files. When you are testing and getting erros, be sure to delete config.cache before re-running buildconf and ./configure (I spent an hour looking for an error that was not there any more because of that).<br />
+<br />
+HTH and happy developpment.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="internals2.ze1.streams.html">Streams API for PHP Extension Authors</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="internals2.ze1.tsrm.html">TSRM API</a></div>
  <div class="up"><a href="internals2.ze1.html">Zend Engine 1</a></div>

@@ -94,7 +94,128 @@ imap_stream</tt></i></span><dd>
   </p>
  </div>
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="89735""></a>
+  <div class="note">
+   <strong class="user">tiznull</strong>
+   <a href="#89735" class="date">20-Mar-2009 11:44</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+One should understand that even though it says "create mailbox", you are really creating a FOLDER. Now, as a imap admin you can create mailboxes and more with this function.<br />
+<br />
+So in reality, you are always creating folders when creating "mailboxes". Mail admin's get this, but programmers may not understand the concept completely.<br />
+<br />
+If you auth a single user account and use these functions, they will not create mailboxes where mail is delivered, they will actually create a folder where you can copy messages to.<br />
+<br />
+Here is a translation:<br />
+imap_createmailbox = create a folder in the account for the current authenticated user's imap session (imap_open)<br />
+imap_deletemailbox = delete a folder (and the email in it) for the current authenticated user's imap session (imap_open)<br />
+imap_getmailboxes = get all your folders for the current authenticated user's imap session (imap_open)<br />
+imap_renamemailbox = Rename a folder for the current authenticated user's imap session (imap_open)<br />
+<br />
+================<br />
+<br />
+Here is a quick class to login to an account, generate all of your base folders, and return the connection, success message and returns all the base folders for an imap account using PHP5:<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+</span><span class="keyword">class </span><span class="default">Imap </span><span class="keyword">{<br />
+&nbsp;&nbsp;&nbsp; public </span><span class="default">$folders</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; public </span><span class="default">$connection</span><span class="keyword">;<br />
+<br />
+&nbsp;&nbsp;&nbsp; public function </span><span class="default">login</span><span class="keyword">(</span><span class="default">$user</span><span class="keyword">, </span><span class="default">$pass</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$mbox </span><span class="keyword">= @</span><span class="default">imap_open</span><span class="keyword">(</span><span class="string">"{imap.example.org:143}"</span><span class="keyword">, </span><span class="default">$user</span><span class="keyword">, </span><span class="default">$pass</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if(!</span><span class="default">$mbox</span><span class="keyword">)<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; return (</span><span class="string">'Your login failed for user &lt;strong&gt;'</span><span class="keyword">.</span><span class="default">$user</span><span class="keyword">.</span><span class="string">'&lt;/strong&gt;. Please try to enter your username and password again.&lt;br /&gt;'</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// Login worked, let us begin!!!!....<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; // gather folder lost...<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$fldrs_made </span><span class="keyword">= </span><span class="default">0</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$folders </span><span class="keyword">= </span><span class="default">imap_listmailbox</span><span class="keyword">(</span><span class="default">$mbox</span><span class="keyword">, </span><span class="string">"{localhost:143}"</span><span class="keyword">, </span><span class="string">"*"</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// create the default folders....<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">if(</span><span class="default">1 </span><span class="keyword">=== </span><span class="default">mailgui</span><span class="keyword">::</span><span class="default">create_default_folders</span><span class="keyword">(</span><span class="default">$mbox</span><span class="keyword">,</span><span class="default">$folders</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$folders </span><span class="keyword">= </span><span class="default">imap_listmailbox</span><span class="keyword">(</span><span class="default">$mbox</span><span class="keyword">, </span><span class="string">"{localhost:143}"</span><span class="keyword">, </span><span class="string">"*"</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$fldrs_made </span><span class="keyword">= </span><span class="default">1</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">sort</span><span class="keyword">(</span><span class="default">$folders</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">folders </span><span class="keyword">= </span><span class="default">$folders</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">connection </span><span class="keyword">= </span><span class="default">$mbox</span><span class="keyword">;<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if(</span><span class="default">1 </span><span class="keyword">=== </span><span class="default">$fldrs_made</span><span class="keyword">)<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; return (</span><span class="string">'User logged in successfully as '</span><span class="keyword">.</span><span class="default">$user</span><span class="keyword">.</span><span class="string">'. This is your first time logging in, welcome to our webmail!!!&lt;br /&gt;'</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; else<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; return (</span><span class="string">'User logged in successfully as '</span><span class="keyword">.</span><span class="default">$user</span><span class="keyword">.</span><span class="string">'.&lt;br /&gt;'</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; private function </span><span class="default">create_default_folders</span><span class="keyword">(</span><span class="default">$imap_stream</span><span class="keyword">, </span><span class="default">$folders</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$change</span><span class="keyword">=</span><span class="default">0</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if(!</span><span class="default">in_array</span><span class="keyword">(</span><span class="string">'{imap.example.org}TRASH'</span><span class="keyword">,</span><span class="default">$folders</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; @</span><span class="default">imap_createmailbox</span><span class="keyword">(</span><span class="default">$imap_stream</span><span class="keyword">, </span><span class="default">imap_utf7_encode</span><span class="keyword">(</span><span class="string">"{imap.example.org:143}TRASH"</span><span class="keyword">));<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$change</span><span class="keyword">=</span><span class="default">1</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if(!</span><span class="default">in_array</span><span class="keyword">(</span><span class="string">'{imap.example.org}SENT'</span><span class="keyword">,</span><span class="default">$folders</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; @</span><span class="default">imap_createmailbox</span><span class="keyword">(</span><span class="default">$imap_stream</span><span class="keyword">, </span><span class="default">imap_utf7_encode</span><span class="keyword">(</span><span class="string">"{imap.example.org:143}SENT"</span><span class="keyword">));<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$change</span><span class="keyword">=</span><span class="default">1</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if(!</span><span class="default">in_array</span><span class="keyword">(</span><span class="string">'{imap.example.org}SPAM'</span><span class="keyword">,</span><span class="default">$folders</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; @</span><span class="default">imap_createmailbox</span><span class="keyword">(</span><span class="default">$imap_stream</span><span class="keyword">, </span><span class="default">imap_utf7_encode</span><span class="keyword">(</span><span class="string">"{imap.example.org:143}SPAM"</span><span class="keyword">));<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$change</span><span class="keyword">=</span><span class="default">1</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if(!</span><span class="default">in_array</span><span class="keyword">(</span><span class="string">'{imap.example.org}SENT'</span><span class="keyword">,</span><span class="default">$folders</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; @</span><span class="default">imap_createmailbox</span><span class="keyword">(</span><span class="default">$imap_stream</span><span class="keyword">, </span><span class="default">imap_utf7_encode</span><span class="keyword">(</span><span class="string">"{imap.example.org:143}SENT"</span><span class="keyword">));<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$change</span><span class="keyword">=</span><span class="default">1</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if(!</span><span class="default">in_array</span><span class="keyword">(</span><span class="string">'{imap.example.org}SENT'</span><span class="keyword">,</span><span class="default">$folders</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; @</span><span class="default">imap_createmailbox</span><span class="keyword">(</span><span class="default">$imap_stream</span><span class="keyword">, </span><span class="default">imap_utf7_encode</span><span class="keyword">(</span><span class="string">"{imap.example.org:143}DRAFTS"</span><span class="keyword">));<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$change</span><span class="keyword">=</span><span class="default">1</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if(!</span><span class="default">in_array</span><span class="keyword">(</span><span class="string">'{imap.example.org}MY_FOLDERS'</span><span class="keyword">,</span><span class="default">$folders</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; @</span><span class="default">imap_createmailbox</span><span class="keyword">(</span><span class="default">$imap_stream</span><span class="keyword">, </span><span class="default">imap_utf7_encode</span><span class="keyword">(</span><span class="string">"{imap.example.org:143}PERSONAL EMAIL"</span><span class="keyword">));<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$change</span><span class="keyword">=</span><span class="default">1</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">$change</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; public function </span><span class="default">close_mail_connection</span><span class="keyword">() {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; @</span><span class="default">imap_close</span><span class="keyword">(</span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">connection</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+}<br />
+<br />
+</span><span class="comment">// usage, create a form, post it....<br />
+</span><span class="keyword">if(</span><span class="default">$_POST</span><span class="keyword">[</span><span class="string">'imap_username'</span><span class="keyword">] &amp;&amp; </span><span class="default">$_POST</span><span class="keyword">[</span><span class="string">'imap_password'</span><span class="keyword">]) {<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$imap_login </span><span class="keyword">= new </span><span class="default">Imap</span><span class="keyword">();<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$imap_login</span><span class="keyword">-&gt;</span><span class="default">login</span><span class="keyword">(</span><span class="default">$_POST</span><span class="keyword">[</span><span class="string">'imap_username'</span><span class="keyword">],</span><span class="default">$_POST</span><span class="keyword">[</span><span class="string">'imap_password'</span><span class="keyword">]);<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// Do some mail stuff here, like get headers...., use obj connection<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$message_headers </span><span class="keyword">= </span><span class="default">imap_mailboxmsginfo</span><span class="keyword">(</span><span class="default">$imap_login</span><span class="keyword">-&gt;</span><span class="default">connection</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// show the folders....<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">print_r</span><span class="keyword">(</span><span class="default">$imap_login</span><span class="keyword">-&gt;</span><span class="default">folders</span><span class="keyword">, </span><span class="default">true</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; print </span><span class="string">'&lt;br /&gt;&lt;hr size="1" noshade /&gt;'</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">print_r</span><span class="keyword">(</span><span class="default">$message_headers</span><span class="keyword">, </span><span class="default">true</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; <br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// close the connection<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$imap_login</span><span class="keyword">-&gt;</span><span class="default">close_mail_connection</span><span class="keyword">();<br />
+}<br />
+<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="function.imap-create.html">imap_create</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.imap-delete.html">imap_delete</a></div>
  <div class="up"><a href="ref.imap.html">IMAP Functions</a></div>

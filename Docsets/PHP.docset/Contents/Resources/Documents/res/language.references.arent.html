@@ -40,7 +40,802 @@
     You can use <a href="language.references.return.html" class="link">returning
     references</a> to reference variables selected by the function.
    </p>
-  </div><hr /><div class="manualnavbar" style="text-align: center;">
+  </div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="102066""></a>
+  <div class="note">
+   <strong class="user">briank at kappacs dot com</strong>
+   <a href="#102066" class="date">25-Jan-2011 02:38</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I think the terminology is tripping people up when it comes to assigning objects.<br />
+<br />
+Try thinking of binding and references like this:<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="comment"># Code:<br />
+</span><span class="default">$a </span><span class="keyword">= </span><span class="default">5</span><span class="keyword">; </span><span class="default">$b </span><span class="keyword">=&amp; </span><span class="default">$a</span><span class="keyword">; </span><span class="default">$c </span><span class="keyword">= new </span><span class="default">stdClass</span><span class="keyword">(); </span><span class="default">$d </span><span class="keyword">= </span><span class="default">$c</span><span class="keyword">;<br />
+<br />
+</span><span class="comment"># Behind the scenes symbol table and values:<br />
+</span><span class="default">$global_names </span><span class="keyword">= array(<br />
+</span><span class="string">'a' </span><span class="keyword">=&gt; array(</span><span class="string">'binding' </span><span class="keyword">=&gt; </span><span class="default">0</span><span class="keyword">),<br />
+</span><span class="string">'b' </span><span class="keyword">=&gt; array(</span><span class="string">'binding' </span><span class="keyword">=&gt; </span><span class="default">0</span><span class="keyword">),<br />
+</span><span class="string">'c' </span><span class="keyword">=&gt; array(</span><span class="string">'binding' </span><span class="keyword">=&gt; </span><span class="default">1</span><span class="keyword">),<br />
+</span><span class="string">'d' </span><span class="keyword">=&gt; array(</span><span class="string">'binding' </span><span class="keyword">=&gt; </span><span class="default">2</span><span class="keyword">),<br />
+);<br />
+</span><span class="default">$values </span><span class="keyword">= array(<br />
+</span><span class="default">0 </span><span class="keyword">=&gt; array(</span><span class="string">'type' </span><span class="keyword">=&gt; </span><span class="string">'scalar'</span><span class="keyword">, </span><span class="string">'value' </span><span class="keyword">=&gt; </span><span class="default">5</span><span class="keyword">),<br />
+</span><span class="default">1 </span><span class="keyword">=&gt; array(</span><span class="string">'type' </span><span class="keyword">=&gt; </span><span class="string">'objId'</span><span class="keyword">, </span><span class="string">'value' </span><span class="keyword">=&gt; </span><span class="default">0</span><span class="keyword">),<br />
+</span><span class="default">2 </span><span class="keyword">=&gt; array(</span><span class="string">'type' </span><span class="keyword">=&gt; </span><span class="string">'objId'</span><span class="keyword">, </span><span class="string">'value' </span><span class="keyword">=&gt; </span><span class="default">0</span><span class="keyword">)<br />
+);<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+$a is bound to (or references, or is a reference to) the value at index 0 (scalar 5).<br />
+$b is bound to the same thing as $a--the value at index 0 (scalar 5).<br />
+$c is bound to the value at index 1 (object ID 0).<br />
+$d is bound to the value at index 2 (a separate and distinct value also referring to object ID 0).<br />
+<br />
+When the documentation states that you cannot [re-]bind $bar to something else from within the example function foo, it means you can't change what in my pseudo-engine would be $global_names['bar']['binding']. You can only change $values[$names['var']['binding']] (using "$var ="; the same value referenced/bound by $values[$global_names['bar']['binding']) or $names['var']['binding'] (using "$var =&amp;").<br />
+<br />
+Also consider this code:<br />
+<br />
+<span class="default">&lt;?php<br />
+$a </span><span class="keyword">= </span><span class="default">3</span><span class="keyword">; </span><span class="default">$b </span><span class="keyword">=&amp; </span><span class="default">$a</span><span class="keyword">;<br />
+function </span><span class="default">foo </span><span class="keyword">(&amp;</span><span class="default">$c</span><span class="keyword">) { </span><span class="default">$c </span><span class="keyword">= new </span><span class="default">stdClass</span><span class="keyword">(); }<br />
+function </span><span class="default">bar </span><span class="keyword">() { return new </span><span class="default">stdClass</span><span class="keyword">(); }<br />
+function &amp;</span><span class="default">fum </span><span class="keyword">() { return new </span><span class="default">stdClass</span><span class="keyword">(); }<br />
+if (!</span><span class="default">is_object</span><span class="keyword">(</span><span class="default">$a</span><span class="keyword">)) { echo </span><span class="string">"\$a does not initially refer to an object\n"</span><span class="keyword">; }<br />
+</span><span class="default">foo</span><span class="keyword">(</span><span class="default">$b</span><span class="keyword">);<br />
+echo </span><span class="string">"\$b "</span><span class="keyword">, (</span><span class="default">$a </span><span class="keyword">=== </span><span class="default">$b</span><span class="keyword">)? </span><span class="string">"has not"</span><span class="keyword">: </span><span class="string">"has"</span><span class="keyword">, </span><span class="string">" been re-bound by foo\n"</span><span class="keyword">;<br />
+if (</span><span class="default">is_object</span><span class="keyword">(</span><span class="default">$a</span><span class="keyword">)) { echo </span><span class="string">"\$a now contains an object identifier\n"</span><span class="keyword">; }<br />
+</span><span class="default">$b </span><span class="keyword">=&amp; </span><span class="default">bar</span><span class="keyword">();<br />
+echo </span><span class="string">"\$b "</span><span class="keyword">, (</span><span class="default">$a </span><span class="keyword">=== </span><span class="default">$b</span><span class="keyword">)? </span><span class="string">"has not"</span><span class="keyword">: </span><span class="string">"has"</span><span class="keyword">, </span><span class="string">" been re-bound by bar\n"</span><span class="keyword">;<br />
+</span><span class="default">$b </span><span class="keyword">=&amp; </span><span class="default">fum</span><span class="keyword">();<br />
+echo </span><span class="string">"\$b "</span><span class="keyword">, (</span><span class="default">$a </span><span class="keyword">=== </span><span class="default">$b</span><span class="keyword">)? </span><span class="string">"has not"</span><span class="keyword">: </span><span class="string">"has"</span><span class="keyword">, </span><span class="string">" been re-bound by fum\n"</span><span class="keyword">;<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+which outputs:<br />
+<br />
+$a does not initially refer to an object<br />
+$b has not been re-bound by foo<br />
+$a now contains an object identifier<br />
+$b has not been re-bound by bar<br />
+$b has been re-bound by fum<br />
+<br />
+In other words, the value can be changed but the binding does not (except for returning a reference), exactly as stated.<br />
+<br />
+Object identifiers do make object "values" work like pointers (but not to the extent of C/C++, and not like references).</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="98801""></a>
+  <div class="note">
+   <strong class="user">Anonymous</strong>
+   <a href="#98801" class="date">08-Jul-2010 09:25</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I understand this like that:<br />
+ã€€The reference in PHP is like creating single pointer at own variable in C/C++ and point at variable ( without pointers arithmetic and we can't get number of variable address in memory).<br />
+<br />
+For example<br />
+<span class="default">&lt;?php<br />
+$a </span><span class="keyword">= </span><span class="default">4</span><span class="keyword">;<br />
+</span><span class="default">$b </span><span class="keyword">= &amp;</span><span class="default">$a</span><span class="keyword">;<br />
+</span><span class="default">$c </span><span class="keyword">= &amp;</span><span class="default">$b</span><span class="keyword">;<br />
+echo </span><span class="string">"</span><span class="default">$a</span><span class="string"> - </span><span class="default">$b</span><span class="string"> - </span><span class="default">$c</span><span class="string">&lt;br&gt;"</span><span class="keyword">;<br />
+</span><span class="comment">// 3 pointers ( a , b , c) point at memory location where&nbsp; stored value of number is 4.<br />
+</span><span class="default">$c </span><span class="keyword">= </span><span class="default">5</span><span class="keyword">;<br />
+echo </span><span class="string">"</span><span class="default">$a</span><span class="string"> - </span><span class="default">$b</span><span class="string"> - </span><span class="default">$c</span><span class="string">&lt;br&gt;"</span><span class="keyword">;<br />
+</span><span class="comment">// all variables equals 5;<br />
+</span><span class="keyword">unset(</span><span class="default">$a</span><span class="keyword">);<br />
+</span><span class="default">$c </span><span class="keyword">= </span><span class="default">6</span><span class="keyword">;<br />
+echo </span><span class="string">"</span><span class="default">$a</span><span class="string"> - </span><span class="default">$b</span><span class="string"> - </span><span class="default">$c</span><span class="string">&lt;br&gt;"</span><span class="keyword">;<br />
+</span><span class="comment">//$a is not exist but it was only pointer ( not real part of memory) so we have to way to get value or change it<br />
+</span><span class="default">?&gt;<br />
+</span>----<br />
+When we want create some "pointer of pointer" in PHP i can't do that because it's impossible in PHP. We need pointer to another pointer to change the place that the pointer refers to. In your exaple you just change value of variable in function. ( no operation of pointers )</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="97695""></a>
+  <div class="note">
+   <strong class="user">russrobinson at tectite dot com</strong>
+   <a href="#97695" class="date">03-May-2010 02:22</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+The example shown is correct for scalars.<br />
+<br />
+However, in PHP5 the example does not cover objects, which behave the opposite of the way this documentation indicates.<br />
+<br />
+It is my view that object references in PHP5 are exactly like pointers in C++.<br />
+<br />
+This example code illustrates my point:<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">class </span><span class="default">Dog<br />
+</span><span class="keyword">{<br />
+&nbsp; var </span><span class="default">$Name</span><span class="keyword">;<br />
+&nbsp; function </span><span class="default">Dog</span><span class="keyword">(</span><span class="default">$name</span><span class="keyword">)<br />
+&nbsp; {<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">Name </span><span class="keyword">= </span><span class="default">$name</span><span class="keyword">;<br />
+&nbsp; }<br />
+&nbsp; function </span><span class="default">GetName</span><span class="keyword">()<br />
+&nbsp; {<br />
+&nbsp;&nbsp;&nbsp; return (</span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">Name</span><span class="keyword">);<br />
+&nbsp; }<br />
+};<br />
+<br />
+</span><span class="default">$bar </span><span class="keyword">= new </span><span class="default">Dog</span><span class="keyword">(</span><span class="string">"Spot"</span><span class="keyword">);<br />
+function </span><span class="default">foo</span><span class="keyword">(&amp;</span><span class="default">$var</span><span class="keyword">)<br />
+{<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$var </span><span class="keyword">= new </span><span class="default">Dog</span><span class="keyword">(</span><span class="string">"Gypsy"</span><span class="keyword">);<br />
+}<br />
+</span><span class="default">foo</span><span class="keyword">(</span><span class="default">$bar</span><span class="keyword">);<br />
+echo </span><span class="string">"&lt;p&gt;"</span><span class="keyword">.</span><span class="default">$bar</span><span class="keyword">-&gt;</span><span class="default">GetName</span><span class="keyword">();<br />
+echo </span><span class="string">"&lt;p&gt;"</span><span class="keyword">.</span><span class="string">"If that said 'Gypsy', then object references are really pointers"</span><span class="keyword">;<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+And the output is:<br />
+<br />
+****<br />
+Gypsy<br />
+<br />
+If that said 'Gypsy', then object references are really pointers<br />
+****<br />
+<br />
+Therefore, corrected documentation should read (or similar):<br />
+<br />
+"<br />
+Unless $bar is an object, there's no way to bind $bar in the calling scope to something else using the reference mechanism since $bar is not available in the function foo (it is represented by $var, but $var has only variable contents and not name-to-value binding in the calling symbol table).<br />
+<br />
+If $bar is an object, then you can change $bar in the calling scope using the reference mechanism inside a function.<br />
+"<br />
+<br />
+However, note that when I said:<br />
+<br />
+"It is my view that object references in PHP5 are exactly like pointers in C++."<br />
+<br />
+The "exactly like" part is misleading...<br />
+<br />
+To clarify:<br />
+<br />
+I don't mean PHP5 object references support pointer arithmetic or they contain memory addresses.<br />
+<br />
+I mean that, in PHP5, when you pass object variables to functions they *behave* exactly like pointers to objects do in the same situation when writing in C++ (with the exception of the C++ features that just don't exist in PHP, such as pointer arithmetic).<br />
+<br />
+Namely,<br />
+1. When you pass the object variable, the formal parameter behaves like a C++ pointer to the object inside the function.<br />
+2. When you pass the object variable by reference, the formal parameter behaves like a C++ reference to a pointer to the object inside the function.<br />
+<br />
+The syntax is different between the languages, but the semantics are identical.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="87311""></a>
+  <div class="note">
+   <strong class="user">reggae dot player at centrum dot cz</strong>
+   <a href="#87311" class="date">29-Nov-2008 07:52</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I have $scriptVar and $_SESSION['sessionVar'] and I want to bind them together using a custom SessionManager class. I want to selectively prefer the content of either var upon the situation - to be able to "link" either $scriptVar to $_SESSION['sessionVar'] (thus override the "content" of $scriptVar with the content of $_SESSION['sessionVar']) or to link $_SESSION['sessionVar'] to $scriptVar (vice versa).<br />
+<br />
+But as somebody mentioned here already, PHP's references aren't really references, so the simplistic way to do this is impossible to use. I came up with the following:<br />
+&lt;code&gt;<br />
+... class def and other method declarations ...<br />
+public static function &amp;linkVar($varName, &amp;$var = null, $overrideSessionValue = false) {<br />
+&nbsp; if ($overrideSessionValue === true) {<br />
+&nbsp;&nbsp;&nbsp; $_SESSION[$varName] =&amp; $var;<br />
+&nbsp; } else {<br />
+&nbsp;&nbsp;&nbsp; return $_SESSION[$varName];<br />
+&nbsp; }<br />
+}<br />
+... class def and other method declarations continue ...<br />
+&lt;/code&gt;<br />
+Now, when I want to override the Session value, I simply call the function with three params, first being the session var name, second being a reference to the $scriptVar and the third a "true" telling the function to link $_SESSION[$varName] to $var, which links to $scriptVar and therefore to link $_SESSION[$varName] to $scriptVar. When I want to link it the other way, to override $scriptVar's value with $_SESSION[$varName] and link them together, I call the function with only the $varName argument and assign it's output to $scriptVar as a reference. Tested, working... at least under PHP 5.3.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="85533""></a>
+  <div class="note">
+   <strong class="user">Andrew</strong>
+   <a href="#85533" class="date">04-Sep-2008 10:56</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+What References are not: References.<br />
+<br />
+References are opaque things that are like pointers, except A) smarter and B) referring to HLL objects, rather than memory addresses. PHP doesn't have references. PHP has a syntax for creating *aliases* which are multiple names for the same object. PHP has a few pieces of syntax for calling and returning "by reference", which really just means inhibiting copying. At no point in this "references" section of the manual are there any references.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="83733""></a>
+  <div class="note">
+   <strong class="user">Anonymous</strong>
+   <a href="#83733" class="date">09-Jun-2008 11:52</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+The example given in the text:<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">function </span><span class="default">foo</span><span class="keyword">(&amp;</span><span class="default">$var</span><span class="keyword">)<br />
+{<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$var </span><span class="keyword">=&amp; </span><span class="default">$GLOBALS</span><span class="keyword">[</span><span class="string">"baz"</span><span class="keyword">];<br />
+}<br />
+</span><span class="default">foo</span><span class="keyword">(</span><span class="default">$bar</span><span class="keyword">); <br />
+</span><span class="default">?&gt;<br />
+</span><br />
+illustrates (to my mind anyway) why the = and &amp; should be written together as a new kind of replacement operator and not apart as in C, like&nbsp; $var = &amp;$GLOBALS["baz"];<br />
+<br />
+Using totally new terminology:<br />
+<br />
+To me the result of this function is not surprising because the =&amp; means 'change the "destination" of $var from wherever it was to the same as the destination of $GLOBALS["baz"]. Well it 'was' the actual parameter $bar, but now it will be the global at "baz".<br />
+<br />
+If you simply remove the &amp; in the the replacement, it will place the value of $GLOBALS["baz'] into the destination of $var, which is $bar (unless $bar was already a reference, then the value goes into that destination.)<br />
+<br />
+To summarize, =, replaces the 'destination's value; =&amp;, changes the destination.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="83121""></a>
+  <div class="note">
+   <strong class="user">Anonymous</strong>
+   <a href="#83121" class="date">11-May-2008 09:52</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+<span class="default">&lt;?php<br />
+</span><span class="keyword">function </span><span class="default">foo</span><span class="keyword">(&amp;</span><span class="default">$var</span><span class="keyword">)<br />
+{<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$var </span><span class="keyword">=&amp; </span><span class="default">$GLOBALS</span><span class="keyword">[</span><span class="string">"baz"</span><span class="keyword">];<br />
+}<br />
+</span><span class="default">foo</span><span class="keyword">(</span><span class="default">$bar</span><span class="keyword">); <br />
+</span><span class="default">?&gt;<br />
+</span><br />
+As the example bellow, which just say out the reference is&nbsp; equal to the pointer of variables as c.<br />
+See the $var as the pointer, firstly it point to the $bar, then as we use "=&amp;" assign it, it change the pointer itself(not content) and point to the $GLOBALS["baz"].In this flow, the $bar change neighter its ponter nor the content.<br />
+This is just the concept in C, isn't it?</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="80538""></a>
+  <div class="note">
+   <strong class="user">frank</strong>
+   <a href="#80538" class="date">21-Jan-2008 02:46</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+A little warning: my function my_make_vars()&nbsp; (see other post) has a side-effect, of course...<br />
+<br />
+$a=array('x'=&gt;1,'y'=&gt;2);<br />
+<br />
+$x0=&amp;$a['x'];<br />
+<br />
+my_make_vars($a);<br />
+<br />
+# $x0&nbsp; now is not any more a reference to&nbsp; $a['x'] !!!<br />
+<br />
+$x1=&amp;$a['x'];&nbsp; # (but $x1 is, because done after the my_make_vars($a);)<br />
+$x=4; print $a['x'].' '; #&nbsp; -&gt;4<br />
+print $x0.' '.$x1;&nbsp;&nbsp; # -&gt; 1 4</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="72876""></a>
+  <div class="note">
+   <strong class="user">Stevel</strong>
+   <a href="#72876" class="date">03-Feb-2007 08:30</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+The manual states: "There's no way to bind $bar in the calling scope to something else using the reference mechanism"<br />
+<br />
+This is actually incorrect. It is possible to bind $bar to another object. The given example doesn't work for obvious reasons: $var is redeclared as an alias for $GLOBALS["baz"], instead of an alias for $bar.<br />
+<br />
+You should use an ordinary assignment to assign another object to the same variable. This works because variables containing objects actually contain a reference to that object, and the reference is copied to $var, and therefore is copied to $bar as well.<br />
+<br />
+When using primitive values, such as integers or strings, the values itself are copied. In the example (when excluding the ampersand from the assignment), suppose that $GLOBALS['baz'] contains the value 3, after calling foo($bar), $bar will contain the integer 3, but they won't point to the same memory space.<br />
+<br />
+The correct sentence would be thus:<br />
+"There's no way make $bar in the calling scope an alias for something else using the reference mechanism"</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="69027""></a>
+  <div class="note">
+   <strong class="user">Tee Cee</strong>
+   <a href="#69027" class="date">20-Aug-2006 05:59</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+You can think of references as pointers, if you translate a=b into "*a = *b" and a =&amp; b into "a=b".<br />
+<br />
+Let's translate to C:<br />
+<br />
+<span class="default">&lt;?PHP<br />
+</span><span class="keyword">const </span><span class="default">int c_1 </span><span class="keyword">= </span><span class="default">1</span><span class="keyword">, </span><span class="default">c_2 </span><span class="keyword">= </span><span class="default">2</span><span class="keyword">;<br />
+</span><span class="default">int </span><span class="keyword">* </span><span class="default">a </span><span class="keyword">= &amp;</span><span class="default">c_1</span><span class="keyword">;<br />
+</span><span class="default">int </span><span class="keyword">* </span><span class="default">b </span><span class="keyword">= &amp;</span><span class="default">c_2</span><span class="keyword">;<br />
+<br />
+</span><span class="default">void foo </span><span class="keyword">(</span><span class="default">int </span><span class="keyword">* var)<br />
+{<br />
+&nbsp;&nbsp; var = </span><span class="default">a</span><span class="keyword">;<br />
+}<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+Here, it's obvious that calling foo(b) won't change the value of a, because var is a copy of b. You also have to be careful: order does matter. I could draw a diagram, but I won't.<br />
+<br />
+<span class="default">&lt;?php<br />
+$b</span><span class="keyword">=</span><span class="default">1</span><span class="keyword">; </span><span class="default">$d</span><span class="keyword">=</span><span class="default">2</span><span class="keyword">;<br />
+</span><span class="default">$a </span><span class="keyword">=&amp; </span><span class="default">$b</span><span class="keyword">;<br />
+</span><span class="default">$c </span><span class="keyword">=&amp; </span><span class="default">$d</span><span class="keyword">;<br />
+</span><span class="comment">// now a=b=1; c=d=2;<br />
+</span><span class="default">$b </span><span class="keyword">=&amp; </span><span class="default">$c</span><span class="keyword">;<br />
+</span><span class="comment">// now a=1, b=c=d=2;<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+It's also important to treat =&amp; as its own operator, though you can stick spaces in the middle. The &amp; does not bind to the variable, as shown by<br />
+<span class="default">&lt;?php<br />
+$a </span><span class="keyword">= (&amp;</span><span class="default">$b</span><span class="keyword">); </span><span class="comment">// parse error<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="61300""></a>
+  <div class="note">
+   <strong class="user">jagatpreet</strong>
+   <a href="#61300" class="date">30-Jan-2006 11:27</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+In response to the example by mdiricks.<br />
+<br />
+Extending the example given by mdiricks, the following code provides an explains the concept of re-referencing that is involved in making a call to function foo with the prototype foo(&amp; var):<br />
+<br />
+&lt;!-- C re-referenced --&gt;<br />
+&lt;?<br />
+<br />
+$a = 'eh';<br />
+$b = &amp; $a;// $b == 'eh'<br />
+$c = &amp; $b;// $c == 'eh'<br />
+$d = 'meh';<br />
+<br />
+echo "\$a = $a\n";<br />
+echo "\$b = $b\n";<br />
+echo "\$c = $c\n";<br />
+echo "\$d = $d\n";<br />
+<br />
+$c = &amp; $d ;// $c == 'meh'<br />
+echo "\n";<br />
+<br />
+echo "\$a = $a\n";<br />
+echo "\$b = $b\n";<br />
+echo "\$c = $c\n";<br />
+echo "\$d = $d\n";<br />
+<br />
+?&gt;<br />
+<br />
+&lt;!-- Value of c changed --&gt;<br />
+&lt;?<br />
+<br />
+$a = 'eh';<br />
+$b = &amp; $a;// $b == 'eh'<br />
+$c = &amp; $b;// $c == 'eh'<br />
+$d = 'meh';<br />
+<br />
+echo "\$a = $a\n";<br />
+echo "\$b = $b\n";<br />
+echo "\$c = $c\n";<br />
+echo "\$d = $d\n";<br />
+<br />
+$c = 'meh' ;// $c == 'meh'. And also, $a = $b == 'meh'<br />
+echo "\n";<br />
+<br />
+echo "\$a = $a\n";<br />
+echo "\$b = $b\n";<br />
+echo "\$c = $c\n";<br />
+echo "\$d = $d\n";<br />
+<br />
+?&gt;<br />
+<br />
+This results in the following o/p:<br />
+&lt;!-- C re-referenced --&gt;<br />
+$a = eh<br />
+$b = eh<br />
+$c = eh<br />
+$d = meh<br />
+<br />
+$a = eh<br />
+$b = eh<br />
+$c = meh<br />
+$d = meh<br />
+<br />
+&lt;!-- Value of c changed --&gt;<br />
+$a = eh<br />
+$b = eh<br />
+$c = eh<br />
+$d = meh<br />
+<br />
+$a = meh<br />
+$b = meh<br />
+$c = meh<br />
+$d = meh</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="58222""></a>
+  <div class="note">
+   <strong class="user">DanielSan88</strong>
+   <a href="#58222" class="date">27-Oct-2005 08:10</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I can see why there is a big debate on this. I'm hoping this will clarify it a little.<br />
+<br />
+In PHP, as far as I can understand, when you assign a variable in the first place,<br />
+that variable is a refrence to the value that the variable contains.<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+$var </span><span class="keyword">= </span><span class="string">"String"</span><span class="keyword">; </span><span class="comment">// Creates the string "String" somewhere in memory.<br />
+</span><span class="keyword">echo </span><span class="default">$var</span><span class="keyword">;<br />
+<br />
+</span><span class="comment">/* When the echo function is called, it pulls the value of $var out of memory from wherever PHP decided to put it.<br />
+PHP then ships this value off to your standard output. */<br />
+<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+Anyway, when you create a reference to the variable $var,<br />
+it doesn't reference the variable's name, but rather its contents.<br />
+<br />
+For example:<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+$var2 </span><span class="keyword">= &amp; </span><span class="default">$var</span><span class="keyword">;<br />
+echo </span><span class="default">$var2</span><span class="keyword">;<br />
+</span><span class="comment">/* Calling this echo does ecactly the same thing as the echo in the code snippet above this one.<br />
+Whether you echo $var or $var2, the same string in memory is sent to your standard output. */<br />
+<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+In the same sense of an array, $var and $var2 are like keys to the same value. The value being the string in memory.<br />
+<br />
+When you call a function that uses a reference, the reference is not less than the variable given as the argument, or anything more than it.<br />
+It is that same variable except with a different name.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="58013""></a>
+  <div class="note">
+   <strong class="user">mdirks at gulfstreamcoach dot com</strong>
+   <a href="#58013" class="date">21-Oct-2005 08:40</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Here's a thought to settle the whole (are/aren't) debacle... <br />
+<br />
+References are *like* pointers, but are not *identical to* pointers. The best comparison I could give is that references are "scope-limited pointers". You can change the value of one variable by changing the other as long as it is in the same scope. Once you set outside that scope (i.e. calling a function), references cease to act the same as pointers.<br />
+<br />
+Example 1:<br />
+$a = 'eh';<br />
+$b = &amp; $a;// $b == 'eh'<br />
+$c = &amp; $b;// $c == 'eh'<br />
+$a = 'meh';// $c == 'meh'<br />
+<br />
+... changing a's value will change c's value. This is where references are like pointers in C/C++<br />
+<br />
+Example 2:<br />
+$GLOBALS["b"] = 'b_val';<br />
+$c = 'c_val';<br />
+<br />
+function foo (&amp;$var)<br />
+{<br />
+&nbsp;&nbsp; $var =&amp; $GLOBALS["b"]; //affects only 'var' copy<br />
+}<br />
+<br />
+$GLOBALS["b"] = &amp; $a; // $GLOBALS["b"] == 'a_val'<br />
+foo($c); // the value of c will remain 'c_val'<br />
+<br />
+... It might help to think of it in a different way. A calling the function by reference mimics the following behavior:<br />
+$var = &amp; $c;<br />
+<br />
+... so when you if you execute this line in foo(): <br />
+$var =&amp; $GLOBALS["b"];<br />
+, you are just re-referencing var from what it was "referenced to" at the function call to a new reference.<br />
+<br />
+This is where references are *not* like pointers in C/C++ as the value of c is not changed as it would be if a similiar function that implemented pointers were used.<br />
+<br />
+I hope this clears up the confusion.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="54650""></a>
+  <div class="note">
+   <strong class="user">mstasak at access4less dot net</strong>
+   <a href="#54650" class="date">11-Jul-2005 07:18</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Note references in array elements behave very much the same as pointers.&nbsp; The following seems to defy the simple definition of array assignment as copy-by-value:<br />
+<br />
+unset($a);<br />
+unset($b);<br />
+<br />
+$a[1]=1;<br />
+$a[2]=&amp;$a[1];<br />
+<br />
+$b=$a;<br />
+$b[2]=7;<br />
+<br />
+print_r($a);<br />
+Array<br />
+(<br />
+&nbsp;&nbsp;&nbsp; [1] =&gt; 7<br />
+&nbsp;&nbsp;&nbsp; [2] =&gt; 7<br />
+)<br />
+print_r($b);<br />
+Array<br />
+(<br />
+&nbsp;&nbsp;&nbsp; [1] =&gt; 7<br />
+&nbsp;&nbsp;&nbsp; [2] =&gt; 7<br />
+)<br />
+<br />
+- so array assignment is a very shallow copy-by-value, which preserves reference associations in any array elements.&nbsp; Oddly, I believe PHP lacks a deep array-copy-by-value function.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="53895""></a>
+  <div class="note">
+   <strong class="user">fzamperini_at_tin.it</strong>
+   <a href="#53895" class="date">16-Jun-2005 02:35</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+References are not like pointers.<br />
+<br />
+If you try the example above in C/C++ you will find that after calling foo(var) you can get or set the value of $GLOBALS["baz"] by reading or writing variable 'var' (I didn't actually try it, but I vaguely remember it works this way).<br />
+In PHP this is also true if you do:<br />
+<br />
+<span class="default">&lt;?PHP<br />
+&nbsp;&nbsp;&nbsp; $var </span><span class="keyword">=&amp; </span><span class="default">$GLOBALS</span><span class="keyword">[</span><span class="string">"baz"</span><span class="keyword">];<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+but *IT IS NOT* if you use a function to do that, in spite of<br />
+- using a reference as a parameter (function foo(&amp;$var)) and<br />
+- assigning it a reference to the variable you want to bind ($var =&amp; $GLOBALS["baz"]) inside the function<br />
+<br />
+I tried this:<br />
+<br />
+<span class="default">&lt;?PHP<br />
+$GLOBALS</span><span class="keyword">[</span><span class="string">"baz"</span><span class="keyword">] = </span><span class="string">'globals_baz'</span><span class="keyword">;<br />
+</span><span class="default">$bar </span><span class="keyword">= </span><span class="string">'bar'</span><span class="keyword">;<br />
+<br />
+function </span><span class="default">foo </span><span class="keyword">(&amp;</span><span class="default">$var</span><span class="keyword">)<br />
+{<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$var </span><span class="keyword">=&amp; </span><span class="default">$GLOBALS</span><span class="keyword">[</span><span class="string">"baz"</span><span class="keyword">];<br />
+}<br />
+<br />
+</span><span class="comment">// Before 'binding' $bar to $GLOBALS["baz"] using a function<br />
+</span><span class="keyword">echo </span><span class="string">'$GLOBALS[baz]: ' </span><span class="keyword">. </span><span class="default">$GLOBALS</span><span class="keyword">[</span><span class="string">"baz"</span><span class="keyword">] . </span><span class="string">"&lt;BR&gt;\n"</span><span class="keyword">;&nbsp; &nbsp; </span><span class="comment">// Output is 'globals_baz'<br />
+</span><span class="keyword">echo </span><span class="string">"\$bar: </span><span class="default">$bar</span><span class="string"> &lt;BR&gt;\n"</span><span class="keyword">;&nbsp; &nbsp; </span><span class="comment">// Output is 'bar'<br />
+<br />
+</span><span class="default">foo</span><span class="keyword">(</span><span class="default">$bar</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">// After (what you may expected to be a) binding you should see that $bar is the same as $GLOBALS[baz]:<br />
+</span><span class="keyword">echo </span><span class="string">"\$bar: </span><span class="default">$bar</span><span class="string"> &lt;BR&gt;\n"</span><span class="keyword">; </span><span class="comment">// it didn't work: output is still 'bar' (not 'globals_baz')<br />
+<br />
+// And setting $bar should set $GLOBALS[baz]:<br />
+</span><span class="default">$bar </span><span class="keyword">= </span><span class="string">'bar'</span><span class="keyword">;<br />
+echo </span><span class="string">'$GLOBALS[baz]: ' </span><span class="keyword">. </span><span class="default">$GLOBALS</span><span class="keyword">[</span><span class="string">"baz"</span><span class="keyword">] . </span><span class="string">"&lt;BR&gt;\n"</span><span class="keyword">; </span><span class="comment">// it didn't work, too: output is still 'globals_baz' (not 'bar')<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+If you change the calling of foo($bar) with $bar =&amp; $GLOBALS["baz"]; it all works as expected.<br />
+So the assertion, "references are not like pointers," might be a bit confusing but it is fair.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="40307""></a>
+  <div class="note">
+   <strong class="user">ansonyumo at email dot com</strong>
+   <a href="#40307" class="date">28-Feb-2004 01:47</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+The assertion,&nbsp; "references are not like pointers," is a bit confusing.<br />
+<br />
+In the example, the author shows how assigning a reference to a formal parameter that is also a reference does not affect the value of the actual parameter. This is exactly how pointers behave in C. The only difference is that, in PHP, you don't have to dereference the pointer to get at the value.<br />
+<br />
+-+-+-<br />
+int bar = 99;<br />
+<br />
+void foo(int* a)<br />
+{<br />
+&nbsp;&nbsp;&nbsp; a = &amp;bar;<br />
+}<br />
+<br />
+int main()<br />
+{<br />
+&nbsp;&nbsp; int baz = 1;<br />
+&nbsp;&nbsp; foo(&amp;baz);<br />
+&nbsp;&nbsp; printf("%d\n", baz);<br />
+&nbsp;&nbsp; return 0;<br />
+}<br />
+-+-+-<br />
+<br />
+The output will be 1, because foo does not assign a value to the dereferenced formal parameter. Instead, it reassigns the formal parameter within foo's scope.<br />
+<br />
+Alternatively,<br />
+-+-+-<br />
+int bar = 99;<br />
+<br />
+void foo(int* a)<br />
+{<br />
+&nbsp;&nbsp;&nbsp; *a = bar;<br />
+}<br />
+<br />
+int main()<br />
+{<br />
+&nbsp;&nbsp; int baz = 1;<br />
+&nbsp;&nbsp; foo(&amp;baz);<br />
+&nbsp;&nbsp; printf("%d\n", baz);<br />
+&nbsp;&nbsp; return 0;<br />
+}<br />
+-+-+-<br />
+<br />
+The output will be 9, because foo dereferenced the formal parameter before assignment.<br />
+<br />
+So, while there are differences in syntax, PHP references really are very much like pointers in C.<br />
+<br />
+I would agree that PHP references are very different from Java references, as Java does not have any mechanism to assign a value to a reference in such a way that it modifies the actual parameter's value.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="39372""></a>
+  <div class="note">
+   <strong class="user">schultz __at__ widescreen __dot__ ch</strong>
+   <a href="#39372" class="date">26-Jan-2004 07:57</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+A not so simple Workaround...but still doable...have fun<br />
+<br />
+class My{<br />
+&nbsp;&nbsp;&nbsp; var $value;<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; function get1(&amp;$ref){<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $ref[] =&amp; $this;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; function get2(&amp;$ref){<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $ref =&amp; $this;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; function get3(&amp;$ref){<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $ref = $this;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+}<br />
+<br />
+$m = new My();<br />
+<br />
+$m-&gt;value = 'foo';<br />
+$m-&gt;get1($ref=array());<br />
+$m1 =&amp; $ref[0];<br />
+$m1-&gt;value = 'bar';<br />
+echo "\n".'Works but is ugly...';<br />
+echo "\n".' m:'. get_class($m) . '-&gt;value = '. $m-&gt;value;<br />
+echo "\n".' m1:'. get_class($m1) . '-&gt;value = '. $m1-&gt;value;<br />
+<br />
+echo "\n".'Does not work because references are not pointers...';<br />
+$m-&gt;value = 'foo';<br />
+$m-&gt;get2($m2);<br />
+$m2-&gt;value = 'bar';<br />
+echo "\n".' m:'. get_class($m) . '-&gt;value = '. $m-&gt;value;<br />
+echo "\n".' m2:'. get_class($m2) . '-&gt;value = '. $m2-&gt;value;<br />
+<br />
+$m-&gt;value = 'foo';<br />
+$m-&gt;get3($m3);<br />
+$m3-&gt;value = 'bar';<br />
+echo "\n".'Does not work becuase it is set to a copy';<br />
+echo "\n".' m:'. get_class($m) . '-&gt;value = '.$m-&gt;value;<br />
+echo "\n".' m3:'. get_class($m3) . '-&gt;value = '. $m3-&gt;value;</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="16025""></a>
+  <div class="note">
+   <strong class="user">christian at kno dot at</strong>
+   <a href="#16025" class="date">12-Oct-2001 06:04</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+As said above references are not pointers.<br />
+<br />
+Following example shows a difference between pointers and references.<br />
+<br />
+This Code<br />
+&lt;?<br />
+&nbsp;&nbsp;&nbsp; $b = 1;<br />
+&nbsp;&nbsp;&nbsp; $a =&amp; $b;<br />
+<br />
+&nbsp;&nbsp;&nbsp; print("&lt;pre&gt;");<br />
+&nbsp;&nbsp;&nbsp; print("\$a === \$b: ".(($a === $b) ? "ok" : "failed")."\n");<br />
+&nbsp;&nbsp;&nbsp; print("unsetting \$a...\n");<br />
+&nbsp;&nbsp;&nbsp; unset($a);<br />
+&nbsp;&nbsp;&nbsp; print("now \$a is ".(isset($a) ? "set" : "unset")." and \$b is ".(isset($b) ? "set" : "unset")."\n");<br />
+&nbsp;&nbsp;&nbsp; print("&lt;/pre&gt;");<br />
+<br />
+&nbsp;&nbsp;&nbsp; $b = 1;<br />
+&nbsp;&nbsp;&nbsp; $a =&amp; $b;<br />
+<br />
+&nbsp;&nbsp;&nbsp; print("&lt;pre&gt;");<br />
+&nbsp;&nbsp;&nbsp; print("\$a === \$b: ".(($a === $b) ? "ok" : "failed")."\n");<br />
+&nbsp;&nbsp;&nbsp; print("unsetting \$b...\n");<br />
+&nbsp;&nbsp;&nbsp; unset($b);<br />
+&nbsp;&nbsp;&nbsp; print("now \$a is ".(isset($a) ? "set" : "unset")." and \$b is ".(isset($b) ? "set" : "unset")."\n");<br />
+&nbsp;&nbsp;&nbsp; print("&lt;/pre&gt;");<br />
+?&gt;<br />
+<br />
+will produce this output:<br />
+---------<br />
+$a === $b: ok<br />
+unsetting $a...<br />
+now $a is unset and $b is set<br />
+<br />
+$a === $b: ok<br />
+unsetting $b...<br />
+now $a is set and $b is unset<br />
+---------<br />
+<br />
+So you see that $a and $b are identical ($a === $b -&gt; true), but if one of both is unset, the other is not effected.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="language.references.whatdo.html">What References Do</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="language.references.pass.html">Passing by Reference</a></div>
  <div class="up"><a href="language.references.html">References Explained</a></div>

@@ -138,7 +138,196 @@
  </div>
 
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="82393""></a>
+  <div class="note">
+   <strong class="user">Peter Kehl</strong>
+   <a href="#82393" class="date">09-Apr-2008 02:51</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Here's some clarification about the parameters when renaming a container in Novell eDirectory:<br />
+- $new_rdn is in format "ou=new container name"<br />
+- newparent parameter is NULL - because we're renaming and not moving<br />
+- deleteoldrdn parameter if TRUE then old value of OU attribute is stored as a secondary/further value of LDAP OU attribute. Novell ConsoleOne shows it as 'Other Name' attribute.<br />
+<br />
+$full_old_dn= "ou=Cuckoo,ou=London,ou=UK,ou=Europe,o=Happy";<br />
+$new_rdn= "ou=Cuckoo Group";<br />
+&nbsp;&nbsp;&nbsp; <br />
+ldap_rename( $conn, $full_old_dn, $new_rdn, NULL, TRUE);</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="75778""></a>
+  <div class="note">
+   <strong class="user">backports at gmail dot com</strong>
+   <a href="#75778" class="date">15-Jun-2007 07:26</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Though clearly mentioned, the following had me in spin for a good 10 minutes.<br />
+<br />
+Ensure: <br />
+<br />
+if (!ldap_set_option($conn, LDAP_OPT_PROTOCOL_VERSION, 3)) {<br />
+&nbsp;&nbsp; // do something horrible<br />
+}<br />
+<br />
+has been set _before_ you actually bind :)</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="57521""></a>
+  <div class="note">
+   <strong class="user">hyc at openldap dot org</strong>
+   <a href="#57521" class="date">06-Oct-2005 04:49</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Contrary to Richard Esplin's statement, this *is* the correct function to use for renaming subtrees and moving entries from one place in the tree to another. Just that most LDAP server implementations don't support moving non-leaf entries.<br />
+<br />
+E.g. In OpenLDAP, moving a non-leaf entry is only supported when using the back-hdb database backend. SunOne only has one database backend, and it apparently doesn't handle this type of operation.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="46625""></a>
+  <div class="note">
+   <strong class="user">venakis at ccf dot auth dot gr</strong>
+   <a href="#46625" class="date">18-Oct-2004 02:52</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+If you are using Sun Directory Server 5.2, please note that you can't use ldap_rename to move an entry. According to Sun's own documentation: "[...] At this point in time, Directory Server does not support the ability to use the modify DN operation to move an entry from one location in the directory tree to another location." (<a href="http://docs.sun.com/source/817-6707/resultcodes.html" rel="nofollow" target="_blank">http://docs.sun.com/source/817-6707/resultcodes.html</a>)<br />
+The problem is that php does not return any error and the operation seems to complete succesfully, except for the fact that nothing really happens. If you check the server logs, there will be an "error 53" entry (server is unwilling to perform). <br />
+hope this saves someone's couple of hours nasty searching...</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="44683""></a>
+  <div class="note">
+   <strong class="user">cory at shopwithafriend dot net</strong>
+   <a href="#44683" class="date">12-Aug-2004 03:21</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+When setting a new Rdn value be sure to escape any commas that are not path designators.&nbsp; I spent several hours trying to move user nodes in AD since their cn was set wrong.&nbsp; We wanted the cn to be set to: lastname, firstname.<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="comment">//In this example we are renaming a node with cn of "jsmith" to "Smith, John"<br />
+<br />
+/*<br />
+Setting some variables to values for display purposes.<br />
+In a real script the values would probably come from some outside source (file, ldap query, etc...)<br />
+*/<br />
+</span><span class="default">$dn </span><span class="keyword">= </span><span class="string">'cn=jsmith,ou=mygroup,dc=mydomain'</span><span class="keyword">;<br />
+</span><span class="default">$name </span><span class="keyword">= </span><span class="string">"Smith, John"</span><span class="keyword">;<br />
+<br />
+</span><span class="comment">// Now replace those pesky commas<br />
+</span><span class="default">$newRdn </span><span class="keyword">= </span><span class="string">"cn=" </span><span class="keyword">. </span><span class="default">str_replace</span><span class="keyword">(</span><span class="string">","</span><span class="keyword">, </span><span class="string">"\\,"</span><span class="keyword">, </span><span class="default">$name</span><span class="keyword">);<br />
+<br />
+</span><span class="default">ldap_rename</span><span class="keyword">(</span><span class="default">$link</span><span class="keyword">, </span><span class="default">$dn</span><span class="keyword">, </span><span class="default">$newRdn</span><span class="keyword">, </span><span class="default">$newParent</span><span class="keyword">, </span><span class="default">true</span><span class="keyword">);<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="43682""></a>
+  <div class="note">
+   <strong class="user">Viper_SB at NOSPAMyahoo dot com</strong>
+   <a href="#43682" class="date">30-Jun-2004 02:41</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Since this function isn't documented to well I thought I'd help out those trying to get this to work.<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="comment">// $dn is the full DN of the entry you wish to move<br />
+</span><span class="default">$dn </span><span class="keyword">= </span><span class="string">'cn=user1,ou=group1,dc=mydomain'</span><span class="keyword">;<br />
+</span><span class="comment">/*<br />
+&nbsp;&nbsp;&nbsp; note that $newRdn IS NOT a full DN, it is only the start<br />
+&nbsp;&nbsp;&nbsp; I've NOT gotten it to change attributes for the RDN<br />
+&nbsp;&nbsp;&nbsp; but that could just be my schema<br />
+*/<br />
+</span><span class="default">$newRdn </span><span class="keyword">= </span><span class="string">'cn=user2'</span><span class="keyword">;<br />
+</span><span class="comment">// $newparent IS the full DN to the NEW parent DN that you want to move/rename to<br />
+</span><span class="default">$newParent </span><span class="keyword">= </span><span class="string">'ou=group2,dc=mydomain'</span><span class="keyword">;<br />
+</span><span class="default">ldap_rename</span><span class="keyword">(</span><span class="default">$link</span><span class="keyword">, </span><span class="default">$dn</span><span class="keyword">, </span><span class="default">$newRdn</span><span class="keyword">, </span><span class="default">$newParent</span><span class="keyword">, </span><span class="default">true</span><span class="keyword">);<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+Like I said above I haven't been able to get it to rename to a DIFFERENT attribute so deleteoldrdn has no affect on it.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="37457""></a>
+  <div class="note">
+   <strong class="user">Richard Esplin</strong>
+   <a href="#37457" class="date">15-Nov-2003 06:37</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+ldap_rename can only move leaf nodes of the directory tree. If your ldap entry has any child entries, then ldap_rename is not the tool that you need. We needed to change usernames, but that alters the dn. ldap_rename wouldn't work because each of our user ldap entries has a couple associated child entries. We had to write a function to recursively copy the subtree to the new location, and then delete the original version. Here is the basic algorithm:<br />
+<br />
+function recursive_move($old_username, $new_username)<br />
+&nbsp;&nbsp;&nbsp; ldap_search on the old username to get the correct entry<br />
+&nbsp;&nbsp;&nbsp; ldap_get_attributes to get an array of values from the ldap entry<br />
+&nbsp;&nbsp;&nbsp; foreach attribute in array, replace occurences of $old_username with $new_username<br />
+&nbsp;&nbsp;&nbsp; ldap_add the attribute array into the new location<br />
+&nbsp;&nbsp;&nbsp; ldap_modify any additional attributes<br />
+&nbsp;&nbsp;&nbsp; ldap_list each child entry<br />
+&nbsp;&nbsp;&nbsp; call function recursive_move on each child<br />
+&nbsp;&nbsp;&nbsp; ldap_delete current entry<br />
+&nbsp;&nbsp;&nbsp; return</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="26055""></a>
+  <div class="note">
+   <strong class="user">alex at netflex dot nl</strong>
+   <a href="#26055" class="date">16-Oct-2002 08:29</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Works also with eDirectory 8 (NW6).<br />
+<br />
+If you are moving a user, remember that you also change the uid!</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="20454""></a>
+  <div class="note">
+   
+   <a href="#20454" class="date">04-Apr-2002 03:10</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+To get this function working make sure that the value for $newrdn is relative.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="function.ldap-read.html">ldap_read</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.ldap-sasl-bind.html">ldap_sasl_bind</a></div>
  <div class="up"><a href="ref.ldap.html">LDAP Functions</a></div>

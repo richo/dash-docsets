@@ -177,7 +177,712 @@
  </div>
 
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="102765""></a>
+  <div class="note">
+   <strong class="user">Aurelien Marchand</strong>
+   <a href="#102765" class="date">04-Mar-2011 07:22</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I was having some issues with processing a signal using an object method I use for something else as well. In particular, I wanted to handle SIGCHLD with my own method "do_reap()" which I also call after a stream_select timeout and that uses a non-blocking pcntl_waitpid function.<br />
+<br />
+The method was called when the signal was received but it couldn't reap the child.<br />
+<br />
+The only way it worked was by creating a new handler that itself called do_reap().<br />
+<br />
+So in other words, the following does not work:<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">class </span><span class="default">Parent </span><span class="keyword">{<br />
+&nbsp; </span><span class="comment">/* ... */<br />
+&nbsp; </span><span class="keyword">private function </span><span class="default">do_reap</span><span class="keyword">(){<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$p </span><span class="keyword">= </span><span class="default">pcntl_waitpid</span><span class="keyword">(-</span><span class="default">1</span><span class="keyword">,</span><span class="default">$status</span><span class="keyword">,</span><span class="default">WNOHANG</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; if(</span><span class="default">$p </span><span class="keyword">&gt; </span><span class="default">0</span><span class="keyword">){<br />
+&nbsp;&nbsp; &nbsp;&nbsp; echo </span><span class="string">"\nReaped zombie child " </span><span class="keyword">. </span><span class="default">$p</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp; public function </span><span class="default">run</span><span class="keyword">(){<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">/* ... */<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">pcntl_signal</span><span class="keyword">(</span><span class="default">SIGCHLD</span><span class="keyword">,array(&amp;</span><span class="default">$this</span><span class="keyword">,</span><span class="string">"do_reap"</span><span class="keyword">));<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$readable </span><span class="keyword">= @</span><span class="default">stream_select</span><span class="keyword">(</span><span class="default">$read</span><span class="keyword">,</span><span class="default">$null</span><span class="keyword">,</span><span class="default">$null</span><span class="keyword">,</span><span class="default">5</span><span class="keyword">); </span><span class="comment">// 5 sec timeout<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">if(</span><span class="default">$readable </span><span class="keyword">=== </span><span class="default">0</span><span class="keyword">){<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="comment">// we got a timeout<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">do_reap</span><span class="keyword">();<br />
+&nbsp;&nbsp; }<br />
+}<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+But this work:<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">class </span><span class="default">Parent </span><span class="keyword">{<br />
+&nbsp; </span><span class="comment">/* ... */<br />
+&nbsp; </span><span class="keyword">private function </span><span class="default">do_reap</span><span class="keyword">(){<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$p </span><span class="keyword">= </span><span class="default">pcntl_waitpid</span><span class="keyword">(-</span><span class="default">1</span><span class="keyword">,</span><span class="default">$status</span><span class="keyword">,</span><span class="default">WNOHANG</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; if(</span><span class="default">$p </span><span class="keyword">&gt; </span><span class="default">0</span><span class="keyword">){<br />
+&nbsp;&nbsp; &nbsp;&nbsp; echo </span><span class="string">"\nReaped zombie child " </span><span class="keyword">. </span><span class="default">$p</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp; public function </span><span class="default">run</span><span class="keyword">(){<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">/* ... */<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">pcntl_signal</span><span class="keyword">(</span><span class="default">SIGCHLD</span><span class="keyword">,array(&amp;</span><span class="default">$this</span><span class="keyword">,</span><span class="string">"child_died"</span><span class="keyword">));<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$readable </span><span class="keyword">= @</span><span class="default">stream_select</span><span class="keyword">(</span><span class="default">$read</span><span class="keyword">,</span><span class="default">$null</span><span class="keyword">,</span><span class="default">$null</span><span class="keyword">,</span><span class="default">5</span><span class="keyword">); </span><span class="comment">// 5 sec timeout<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">if(</span><span class="default">$readable </span><span class="keyword">=== </span><span class="default">0</span><span class="keyword">){<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="comment">// we got a timeout<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">do_reap</span><span class="keyword">();<br />
+&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; private function </span><span class="default">child_died</span><span class="keyword">(){<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">do_reap</span><span class="keyword">();<br />
+&nbsp;&nbsp;&nbsp; }<br />
+}<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="92803""></a>
+  <div class="note">
+   <strong class="user">webmaster at ajeux dot com</strong>
+   <a href="#92803" class="date">10-Aug-2009 06:56</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+For PHP &gt;= 5.3.0, instead of declare(ticks = 1), you should now use pcntl_ signal_ dispatch().</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="92455""></a>
+  <div class="note">
+   <strong class="user">benjamin at josefus dot /NO+SPAM/ net</strong>
+   <a href="#92455" class="date">24-Jul-2009 01:25</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Since php &gt;= 5.3 handles Closures, you are now able to define the Callback directly.<br />
+Try this:<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">declare(</span><span class="default">ticks </span><span class="keyword">= </span><span class="default">1</span><span class="keyword">);<br />
+<br />
+</span><span class="default">pcntl_signal</span><span class="keyword">(</span><span class="default">SIGUSR1</span><span class="keyword">, function (</span><span class="default">$signal</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; echo </span><span class="string">'HANDLE SIGNAL ' </span><span class="keyword">. </span><span class="default">$signal </span><span class="keyword">. </span><span class="default">PHP_EOL</span><span class="keyword">;<br />
+});<br />
+<br />
+</span><span class="default">posix_kill</span><span class="keyword">(</span><span class="default">posix_getpid</span><span class="keyword">(), </span><span class="default">SIGUSR1</span><span class="keyword">);<br />
+<br />
+die;<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="90418""></a>
+  <div class="note">
+   <strong class="user">ewout dot NOSPAM dot zigterman at custosys dot nl</strong>
+   <a href="#90418" class="date">21-Apr-2009 08:32</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I found out then when you use pcntl_signal in a 'deamon' script and you run it before you fork childs it does not work as expected.<br />
+<br />
+instead you need to use pcntl_signal in the child code of the child you are forking<br />
+<br />
+and if you want to cach signals for the 'deamon' part you should use pcntl_signal in the parent code.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="88945""></a>
+  <div class="note">
+   <strong class="user">seong at respice dot net</strong>
+   <a href="#88945" class="date">14-Feb-2009 08:48</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Be careful, when using an object in your callback. It seems this elevates the reference count. You may not want it to happen in repeated child processes.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="83981""></a>
+  <div class="note">
+   <strong class="user">rbotzer at yahoo dot com</strong>
+   <a href="#83981" class="date">21-Jun-2008 11:50</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+You cannot assign a signal handler for SIGKILL (kill -9).</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="83719""></a>
+  <div class="note">
+   <strong class="user">Holger Hees</strong>
+   <a href="#83719" class="date">09-Jun-2008 12:49</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+you should use following code to prevent situation described by anxious2006 (children exit near simultaneously)<br />
+<br />
+public function sig_handler($signo){<br />
+&nbsp; switch ($signo) {<br />
+&nbsp;&nbsp;&nbsp; case SIGCLD:<br />
+&nbsp;&nbsp; &nbsp;&nbsp; while( ( $pid = pcntl_wait ( $signo, WNOHANG ) ) &gt; 0 ){<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $signal = pcntl_wexitstatus ( $signo );<br />
+&nbsp;&nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp;&nbsp; break;<br />
+&nbsp; }<br />
+}</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="79948""></a>
+  <div class="note">
+   <strong class="user">Anonymous</strong>
+   <a href="#79948" class="date">20-Dec-2007 08:44</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Multiple children return less than the number of children exiting at a given moment SIGCHLD signals is normal behavior for Unix (POSIX) systems.&nbsp; SIGCHLD might be read as "one or more children changed status -- go examine your children and harvest their status values".&nbsp; Signals are implemented as bit masks in most Unix systems, so there can only be 1 SIGCHLD bit set in any given kernel tick for a process.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="78859""></a>
+  <div class="note">
+   <strong class="user">anxious2006</strong>
+   <a href="#78859" class="date">30-Oct-2007 09:35</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Under my setup (FreeBSD 6.2-RELEASE / PHP 5.2.4 CLI) I've noticed that when a child exits the SIGCHLD handler in the parent is not always invoked. It seems to happen when two children exit near simultaneously.<br />
+<br />
+In this instance the child prints "EXIT" and the parent prints "SIGCHLD received":<br />
+<br />
+- EXIT<br />
+- SIGCHLD received<br />
+<br />
+This works as expected, but now look what happens when three exit in quick succession:<br />
+<br />
+- EXIT<br />
+- EXIT<br />
+- EXIT<br />
+- SIGCHLD received<br />
+- SIGCHLD received<br />
+<br />
+Because of this quirk any code which tries to limit the maximum number of children by incrementing on fork and decrementing on SIGCHLD will eventually end up with a single child (or no further forks), since the "active children" count is always above the maximum. I've noticed similar behaviour with using decrement after pcntl_wait(). Hopefully there's a workaround for this.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="71205""></a>
+  <div class="note">
+   <strong class="user">rob at robertjohnkaper dot com</strong>
+   <a href="#71205" class="date">16-Nov-2006 03:00</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Tip: when using objects, don't set the signal handler from the constructor or even a method called from the constructor - your internal variables will be uninitialised.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="70807""></a>
+  <div class="note">
+   <strong class="user">nate at example dot com</strong>
+   <a href="#70807" class="date">29-Oct-2006 04:10</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+If you have a script that needs certain sections to not be interrupted by a signal (especially SIGTERM or SIGINT), but want to make your script ready to process that signal ASAP, there's only one way to do it. Flag the script as having received the signal, and wait for your script to say its ready to process it.<br />
+<br />
+Here's a sample script:<br />
+<br />
+&lt;?<br />
+&nbsp;&nbsp;&nbsp; $allow_exit = true;&nbsp; // are we permitting exit?<br />
+&nbsp;&nbsp;&nbsp; $force_exit = false; // do we need to exit?<br />
+<br />
+&nbsp;&nbsp;&nbsp; declare(ticks = 1);<br />
+&nbsp;&nbsp;&nbsp; register_tick_function('check_exit');<br />
+&nbsp;&nbsp;&nbsp; pcntl_signal(SIGTERM, 'sig_handler');<br />
+&nbsp;&nbsp;&nbsp; pcntl_signal(SIGINT, 'sig_handler');<br />
+<br />
+&nbsp;&nbsp;&nbsp; function sig_handler () {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; global $allow_exit, $force_exit;<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if ($allow_exit)<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; exit;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; else<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $force_exit = true;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; function check_exit () {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; global $allow_exit, $force_exit;<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if ($force_exit &amp;&amp; $allow_exit)<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; exit;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; $allow_exit = false;<br />
+<br />
+&nbsp;&nbsp;&nbsp; $i = 0;<br />
+&nbsp;&nbsp;&nbsp; while (++$i) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; echo "still going (${i})\n";<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if ($i == 10)<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $allow_exit = true;<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; sleep(2);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+?&gt;<br />
+<br />
+You set $allow_exit to true at all times when it is perfectly acceptable that your script could exit without warning. In sections where you really need the script to continue running, you set $allow_exit to false. Any signals received while $allow_exit is false will not take effect until you set $allow_exit to true.<br />
+<br />
+&lt;?<br />
+&nbsp;&nbsp;&nbsp; $allow_exit = true;<br />
+<br />
+&nbsp;&nbsp;&nbsp; // unimportant stuff here. exiting will not harm anything<br />
+<br />
+&nbsp;&nbsp;&nbsp; $allow_exit = false;<br />
+<br />
+&nbsp;&nbsp;&nbsp; // really important stuff not to be interrupted<br />
+<br />
+&nbsp;&nbsp;&nbsp; $allow_exit = true;<br />
+<br />
+&nbsp;&nbsp;&nbsp; // more unimportant stuff. if signal was received during<br />
+&nbsp;&nbsp;&nbsp; // important processing above, script will exit here<br />
+?&gt;</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="70161""></a>
+  <div class="note">
+   <strong class="user">imslushie at hotmaildotcom dot com</strong>
+   <a href="#70161" class="date">04-Oct-2006 07:16</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I have been having trouble reaping my child process. It seemed most of the time, children were reaped properly but *sometimes* they would stay as zombies. I was catching the CHLD signal to reap child processes with the following code:<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+</span><span class="keyword">function </span><span class="default">childFinished</span><span class="keyword">(</span><span class="default">$signal</span><span class="keyword">)<br />
+{<br />
+&nbsp; global </span><span class="default">$kids</span><span class="keyword">;<br />
+&nbsp; </span><span class="default">$kids</span><span class="keyword">--;<br />
+&nbsp; </span><span class="default">pcntl_waitpid</span><span class="keyword">(-</span><span class="default">1</span><span class="keyword">, </span><span class="default">$status</span><span class="keyword">);<br />
+}<br />
+<br />
+</span><span class="default">$kids </span><span class="keyword">= </span><span class="default">0</span><span class="keyword">;<br />
+</span><span class="default">pcntl_signal</span><span class="keyword">(</span><span class="default">SIGCHLD</span><span class="keyword">, </span><span class="string">"childFinished"</span><span class="keyword">);<br />
+for (</span><span class="default">$i </span><span class="keyword">= </span><span class="default">0</span><span class="keyword">; </span><span class="default">$i </span><span class="keyword">&lt; </span><span class="default">1000</span><span class="keyword">; </span><span class="default">$i</span><span class="keyword">++)<br />
+{<br />
+&nbsp; while (</span><span class="default">$kids </span><span class="keyword">&gt;= </span><span class="default">50</span><span class="keyword">) </span><span class="default">sleep</span><span class="keyword">(</span><span class="default">1</span><span class="keyword">);<br />
+&nbsp; <br />
+&nbsp; </span><span class="default">$pid </span><span class="keyword">= </span><span class="default">pcntl_fork</span><span class="keyword">();<br />
+&nbsp; if (</span><span class="default">$pid </span><span class="keyword">== -</span><span class="default">1</span><span class="keyword">) die(</span><span class="string">'failed to fork :('</span><span class="keyword">);<br />
+<br />
+&nbsp; </span><span class="comment">/* child process */<br />
+&nbsp; </span><span class="keyword">if (</span><span class="default">$pid </span><span class="keyword">== </span><span class="default">0</span><span class="keyword">) <br />
+&nbsp; {<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">/* do something */<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">exit(</span><span class="default">0</span><span class="keyword">);<br />
+&nbsp; }<br />
+<br />
+&nbsp; </span><span class="comment">/* parent */<br />
+&nbsp; </span><span class="keyword">else { </span><span class="default">$kids</span><span class="keyword">++; }<br />
+}<br />
+<br />
+</span><span class="comment">/* when finished, just clean up the children */<br />
+</span><span class="keyword">print </span><span class="string">"Reaping </span><span class="default">$kids</span><span class="string"> children...\n"</span><span class="keyword">;<br />
+while (</span><span class="default">$kids</span><span class="keyword">) </span><span class="default">sleep</span><span class="keyword">(</span><span class="default">1</span><span class="keyword">);<br />
+<br />
+print </span><span class="string">"Finished.\n"</span><span class="keyword">;<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+The problem was, $kids never became zero so it would effectively wait forever. After wracking my brains (UNIX forks are new to me) I finally read the Perl IPC docs and viola, a solution! It turns out that because signal handlers are not re-entrant, my handler will not be called again while it is in use. The scenario that caused me trouble was that one child would exit and call the signal handler, which would pcntl_waitpid() it and decrement the counter. Meanwhile, another child would exit while the first child was still being reaped,&nbsp; so the second would never get to notify the parent! <br />
+<br />
+The solution was to continually reap children from the SIGCHLD handler, so long as there were children to reap. Here is the *fixed* childFinished function:<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+</span><span class="keyword">function </span><span class="default">childFinished</span><span class="keyword">(</span><span class="default">$signal</span><span class="keyword">)<br />
+{<br />
+&nbsp; global </span><span class="default">$kids</span><span class="keyword">;<br />
+<br />
+&nbsp; while( </span><span class="default">pcntl_waitpid</span><span class="keyword">(-</span><span class="default">1</span><span class="keyword">, </span><span class="default">$status</span><span class="keyword">, </span><span class="default">WNOHANG</span><span class="keyword">) &gt; </span><span class="default">0 </span><span class="keyword">)<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$kids</span><span class="keyword">--;<br />
+}<br />
+<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="67704""></a>
+  <div class="note">
+   <strong class="user">aeolianmeson at NOSPAXM dot blitzeclipse dot com</strong>
+   <a href="#67704" class="date">09-Jun-2006 01:19</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+This issue occurs in at least PHP 5.1.2.<br />
+<br />
+When a SIGINT is sent via CTRL+C or CTRL+BREAK, the handler is called. If this handler sends a SIGTERM to other children, the signals are not received.<br />
+<br />
+SIGINT can be sent via posix_kill() and it work exactly as expected-- This only applies when initiated via a hard break.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="66808""></a>
+  <div class="note">
+   <strong class="user">aeolianmeson at NOSPAM dot blitzeclipse dot com</strong>
+   <a href="#66808" class="date">29-May-2006 08:43</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+In at least version 5.1.4, the parameter passed to the handler is not a strict integer.<br />
+<br />
+I have had such problems as trying to add the signal to an array, but the array is completely screwed up when viewed (but not viewed immediately after being added). This occurs when the handler is a method (array($this, 'methodname')), or a traditional functions.<br />
+<br />
+To avoid this bug, typecast the parameter to an integer:<br />
+(note that each newline may appear to just be 'n'.)<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">print(</span><span class="string">"pid= " </span><span class="keyword">. </span><span class="default">posix_getpid</span><span class="keyword">() . </span><span class="string">"\n"</span><span class="keyword">);<br />
+declare(</span><span class="default">ticks</span><span class="keyword">=</span><span class="default">1</span><span class="keyword">);<br />
+</span><span class="default">$arrsignals </span><span class="keyword">= array();<br />
+<br />
+function </span><span class="default">handler</span><span class="keyword">(</span><span class="default">$nsig</span><span class="keyword">)<br />
+{<br />
+&nbsp;&nbsp;&nbsp; global </span><span class="default">$arrsignals</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$arrsignals</span><span class="keyword">[] = (int)</span><span class="default">$nsig</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; print(</span><span class="string">"Signal caught and registered.\n"</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">var_dump</span><span class="keyword">(</span><span class="default">$arrsignals</span><span class="keyword">);<br />
+}<br />
+<br />
+</span><span class="default">pcntl_signal</span><span class="keyword">(</span><span class="default">SIGTERM</span><span class="keyword">, </span><span class="string">'handler'</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">// Wait for signals from the command-line (just a simple 'kill (pid)').<br />
+</span><span class="default">$n </span><span class="keyword">= </span><span class="default">15</span><span class="keyword">;<br />
+while(</span><span class="default">$n</span><span class="keyword">)<br />
+{<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">sleep</span><span class="keyword">(</span><span class="default">1</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$n</span><span class="keyword">--;<br />
+}<br />
+<br />
+print(</span><span class="string">"terminated.\n\n"</span><span class="keyword">);<br />
+</span><span class="default">var_dump</span><span class="keyword">(</span><span class="default">$arrsignals</span><span class="keyword">);<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+Dustin</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="63710""></a>
+  <div class="note">
+   <strong class="user">zenyatta22 at hotmail</strong>
+   <a href="#63710" class="date">28-Mar-2006 02:26</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Process handling is not available when using a blocking socket! Bear this in mind.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="60609""></a>
+  <div class="note">
+   <strong class="user">sezer yalcin</strong>
+   <a href="#60609" class="date">12-Jan-2006 12:29</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+You should pay attention to this issue.<br />
+<br />
+I realized "some" files need specific declare() where some do not.<br />
+<br />
+It is good idea to include in all "main" files, not in include files.<br />
+<br />
+junkmail at konvergencia dot hu<br />
+06-May-2003 04:21<br />
+It seems like the scope of declare() when used in it's new global form e.g.<br />
+&nbsp; declare(ticks = 1);<br />
+<br />
+is restricted to the file it is used in and the one's include() -ed or require() -ed by the script. So you can NOT do this:</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="60553""></a>
+  <div class="note">
+   <strong class="user">wm161 at wm161 dot net</strong>
+   <a href="#60553" class="date">10-Jan-2006 03:45</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+When you are running a script inside of a loop that checks a socket, and it hangs on that checking (Either by flaw or design), it can't handle signals until some data is received.<br />
+<br />
+A suggested workaround would be to use the stream_set_blocking function, or stream_select on the offending reads.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="60119""></a>
+  <div class="note">
+   <strong class="user">erik at phpcastle dot com</strong>
+   <a href="#60119" class="date">27-Dec-2005 03:46</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+When you want to stop a CLI script by a keyboard interupt then you should use SIGINT.<br />
+<br />
+Example script:<br />
+#!/usr/bin/php5<br />
+<span class="default">&lt;?php<br />
+<br />
+</span><span class="comment">// tick use required as of PHP 4.3.0<br />
+</span><span class="keyword">declare(</span><span class="default">ticks </span><span class="keyword">= </span><span class="default">1</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">// signal handler function<br />
+</span><span class="keyword">function </span><span class="default">sig_handler</span><span class="keyword">(</span><span class="default">$signo</span><span class="keyword">)<br />
+{<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; switch (</span><span class="default">$signo</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; case </span><span class="default">SIGINT</span><span class="keyword">:<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span class="comment">// handle shutdown tasks<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span class="keyword">echo </span><span class="string">"Keyboard pressed...\n"</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; exit;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; break;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; default:<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span class="comment">// handle all other signals<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; </span><span class="keyword">}<br />
+<br />
+}<br />
+<br />
+echo </span><span class="string">"Installing signal handler...\n"</span><span class="keyword">;<br />
+<br />
+</span><span class="comment">// setup signal handlers<br />
+</span><span class="default">pcntl_signal</span><span class="keyword">(</span><span class="default">SIGINT</span><span class="keyword">, </span><span class="string">"sig_handler"</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">// or use an object, available as of PHP 4.3.0<br />
+// pcntl_signal(SIGUSR1, array($obj, "do_something");<br />
+<br />
+// Just a stupid simple loop<br />
+</span><span class="keyword">for (</span><span class="default">$i </span><span class="keyword">= </span><span class="default">1</span><span class="keyword">; </span><span class="default">$i </span><span class="keyword">&lt;= </span><span class="default">10</span><span class="keyword">; </span><span class="default">$i</span><span class="keyword">++){<br />
+&nbsp;&nbsp;&nbsp; echo </span><span class="string">"."</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">sleep</span><span class="keyword">(</span><span class="default">1</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; <br />
+}<br />
+<br />
+echo </span><span class="string">"Done\n"<br />
+<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="49663""></a>
+  <div class="note">
+   <strong class="user">codeslinger at compsalot dot com</strong>
+   <a href="#49663" class="date">03-Feb-2005 09:23</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I ran into an interesting problem. CLI 4.3.10 Linux<br />
+<br />
+The parent forked a child.&nbsp; The child did a bunch of stuff, and when it was done it sent SIGUSR1 to the parent and immediately exited.<br />
+<br />
+Result: <br />
+The child turned into a zombie process waiting for the parent to harvest it, as it should.<br />
+<br />
+But the parent was unable to harvest the child because it was receiving an endless barrage of SIGUSR1s.&nbsp; In fact, it logged over 200000 before I shut it down (SIGKILL).&nbsp; The parent was not able to do anything else (respond to other events) during that time.<br />
+<br />
+No, it wasn't a bug in my child code.&nbsp; Apparently, after sending a signal there is some "behind the covers" work that needs to occur to acknowledge signal completion, and when you exit immediately it is not able to happen, so the system just keeps trying.<br />
+<br />
+Solution:&nbsp; I introduced a small delay in the child, after sending the signal, and before exiting.&nbsp; <br />
+No more Sig loops...<br />
+<br />
+----------<br />
+<br />
+P.S.&nbsp; With respect to the note below.&nbsp; The whole point of the sleep function is to enable the processing of other events.&nbsp; So, yes, your non-renterent code, will suddenly get re-entered when you do a sleep, because you have just handed off control to the next pending event.<br />
+<br />
+Ignoring the signal is only an option if the signal is unimportant to your program....&nbsp;&nbsp; The better way to approach it, is to not do lengthy processing inside of the signal event.&nbsp; Instead set a global flag and get the heck out of there as fast as possible.&nbsp; Allow another part of your program to check the flag and do the processing outside of the signal event.&nbsp; Usually your program is in some kind of loop when it is receiving signals, so checking a flag regularly shouldn't be a problem.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="49202""></a>
+  <div class="note">
+   <strong class="user">ieure at php dot net</strong>
+   <a href="#49202" class="date">19-Jan-2005 05:15</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Some weird signal interactions going on here. I'm running PHP 4.3.9.<br />
+<br />
+sleep() calls seem to be interrupted when any signal is received by the PHP script. But things get weird when you sleep() inside a signal handler.<br />
+<br />
+Ordinarily, signal handlers are non-reentrant. That is, if the signal handler is running, sending another signal has no effect. However, sleep() seems to override PHP's signal handling. If you sleep() inside a signal handler, the signal is received and the sleep() is interrupted.<br />
+<br />
+This can be worked around like this:<br />
+<br />
+function handler($signal)<br />
+{<br />
+&nbsp;&nbsp;&nbsp; // Ignore this signal<br />
+&nbsp;&nbsp;&nbsp; pcntl_signal($signal, SIG_IGN);<br />
+<br />
+&nbsp;&nbsp;&nbsp; sleep(10);<br />
+<br />
+&nbsp;&nbsp;&nbsp; // Reinstall signal handler<br />
+&nbsp;&nbsp;&nbsp; pcntl_signal($signal, __FUNCTION__);<br />
+}<br />
+<br />
+I don't see any mention of this behavior in the documentation.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="48022""></a>
+  <div class="note">
+   <strong class="user">cp at ltur dot de</strong>
+   <a href="#48022" class="date">09-Dec-2004 02:21</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+@spam at etcpasswd dot de<br />
+<br />
+Yes it is possible to use a Handler inside of a Class:<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">declare(</span><span class="default">ticks </span><span class="keyword">= </span><span class="default">1</span><span class="keyword">);<br />
+<br />
+class </span><span class="default">SignalHandler<br />
+</span><span class="keyword">{<br />
+&nbsp;&nbsp;&nbsp; function </span><span class="default">__construct</span><span class="keyword">() {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">_init</span><span class="keyword">();<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; function </span><span class="default">_init</span><span class="keyword">() {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">pcntl_signal</span><span class="keyword">(</span><span class="default">SIGTERM</span><span class="keyword">, array(&amp;</span><span class="default">$this</span><span class="keyword">,</span><span class="string">"handleSignals"</span><span class="keyword">));<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; function </span><span class="default">handleSignals</span><span class="keyword">(</span><span class="default">$signal</span><span class="keyword">)<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; echo </span><span class="string">"</span><span class="default">$signal</span><span class="string">\n"</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+}<br />
+</span><span class="default">$o </span><span class="keyword">= new </span><span class="default">SignalHandler</span><span class="keyword">();<br />
+</span><span class="default">posix_kill</span><span class="keyword">(</span><span class="default">getmypid</span><span class="keyword">(),</span><span class="default">SIGTERM</span><span class="keyword">);<br />
+</span><span class="comment">// prints 15<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+HTH<br />
+.Ape</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="31843""></a>
+  <div class="note">
+   <strong class="user">junkmail at konvergencia dot hu</strong>
+   <a href="#31843" class="date">06-May-2003 04:21</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+It seems like the scope of declare() when used in it's new global form e.g.<br />
+&nbsp; declare(ticks = 1);<br />
+<br />
+is restricted to the file it is used in and the one's include() -ed or require() -ed by the script. So you can NOT do this:<br />
+<br />
+main.php:<br />
+<span class="default">&lt;?php<br />
+&nbsp;<br />
+&nbsp; </span><span class="keyword">include (</span><span class="string">'signals.php'</span><span class="keyword">);<br />
+&nbsp;<br />
+&nbsp; </span><span class="default">do_something_here</span><span class="keyword">();<br />
+<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+signals.php:<br />
+<span class="default">&lt;?php<br />
+<br />
+&nbsp;</span><span class="keyword">declare(</span><span class="default">ticks </span><span class="keyword">= </span><span class="default">1</span><span class="keyword">);<br />
+<br />
+&nbsp; function </span><span class="default">sig_handler</span><span class="keyword">(</span><span class="default">$signo</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; </span><span class="default">handle_the_signal_here</span><span class="keyword">();<br />
+&nbsp; }<br />
+<br />
+&nbsp; </span><span class="default">pcntl_signal </span><span class="keyword">(</span><span class="default">SIGINT</span><span class="keyword">, </span><span class="string">'sig_handler'</span><span class="keyword">);<br />
+<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+Your signal handler function will not be called. In the above examples you have to declare() in the main.php file.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="19454""></a>
+  <div class="note">
+   <strong class="user">daniel[at]lorch.cc</strong>
+   <a href="#19454" class="date">27-Feb-2002 06:17</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+There are two documents I consider reading:<br />
+<br />
+&nbsp; Unix Signals Programming<br />
+&nbsp; <a href="http://users.actcom.co.il/~choo/lupg/tutorials/" rel="nofollow" target="_blank">http://users.actcom.co.il/~choo/lupg/tutorials/</a><br />
+<br />
+&nbsp; Beej's Guide to Unix Interprocess Communication <br />
+&nbsp; <a href="http://www.ecst.csuchico.edu/~beej/guide/ipc/" rel="nofollow" target="_blank">http://www.ecst.csuchico.edu/~beej/guide/ipc/</a><br />
+<br />
+Also, have a look at the manpage:<br />
+<br />
+&nbsp; <a href="http://www.mcsr.olemiss.edu/cgi-bin/man-cgi?signal+5" rel="nofollow" target="_blank">http://www.mcsr.olemiss.edu/cgi-bin/man-cgi?signal+5</a></span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="function.pcntl-signal-dispatch.html">pcntl_signal_dispatch</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.pcntl-sigprocmask.html">pcntl_sigprocmask</a></div>
  <div class="up"><a href="ref.pcntl.html">PCNTL Functions</a></div>

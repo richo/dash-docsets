@@ -154,7 +154,83 @@
   </p>
  </div>
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="31828""></a>
+  <div class="note">
+   <strong class="user">andrea dot galli at acotel dot com</strong>
+   <a href="#31828" class="date">05-May-2003 10:21</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+<span class="default">&lt;?php<br />
+</span><span class="comment">// --------- OPEN CONN ---<br />
+<br />
+&nbsp;&nbsp; </span><span class="default">$conn </span><span class="keyword">= </span><span class="default">pg_connect</span><span class="keyword">(</span><span class="string">"host='127.0.0.1' dbname='test' user='usertest' password='passtest'"</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">// --------- OPEN FILE ---<br />
+<br />
+&nbsp;&nbsp; </span><span class="default">$fp </span><span class="keyword">= </span><span class="default">fopen</span><span class="keyword">(</span><span class="string">'logo.gif'</span><span class="keyword">, </span><span class="string">"r"</span><span class="keyword">);<br />
+&nbsp;&nbsp; </span><span class="default">$buffer </span><span class="keyword">= </span><span class="default">fread</span><span class="keyword">(</span><span class="default">$fp</span><span class="keyword">, </span><span class="default">filesize</span><span class="keyword">(</span><span class="string">'logo.gif'</span><span class="keyword">));<br />
+&nbsp;&nbsp; </span><span class="default">fclose</span><span class="keyword">(</span><span class="default">$fp</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">// --------- CREATE - INSERT OID ---<br />
+<br />
+&nbsp;&nbsp; </span><span class="default">pg_exec</span><span class="keyword">(</span><span class="default">$conn</span><span class="keyword">, </span><span class="string">"begin"</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp; </span><span class="default">$oid </span><span class="keyword">= </span><span class="default">pg_locreate</span><span class="keyword">(</span><span class="default">$conn</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp; </span><span class="default">$rs </span><span class="keyword">= </span><span class="default">pg_exec</span><span class="keyword">(</span><span class="default">$conn</span><span class="keyword">,</span><span class="string">"INSERT INTO test(tipo, images) VALUES('A1', </span><span class="default">$oid</span><span class="string">);"</span><span class="keyword">);<br />
+&nbsp;&nbsp; </span><span class="default">$handle </span><span class="keyword">= </span><span class="default">pg_loopen </span><span class="keyword">(</span><span class="default">$conn</span><span class="keyword">, </span><span class="default">$oid</span><span class="keyword">, </span><span class="string">"w"</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp; </span><span class="default">pg_lowrite </span><span class="keyword">(</span><span class="default">$handle</span><span class="keyword">, </span><span class="default">$buffer</span><span class="keyword">);<br />
+&nbsp;&nbsp; </span><span class="default">pg_loclose </span><span class="keyword">(</span><span class="default">$handle</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp; </span><span class="default">pg_exec</span><span class="keyword">(</span><span class="default">$conn</span><span class="keyword">, </span><span class="string">"commit"</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">// --------- OPEN - INSERT OID ---<br />
+<br />
+&nbsp;&nbsp; </span><span class="default">$rs </span><span class="keyword">= </span><span class="default">pg_exec</span><span class="keyword">(</span><span class="default">$conn</span><span class="keyword">, </span><span class="string">"SELECT images FROM test WHERE tipo = 'A1';"</span><span class="keyword">);<br />
+&nbsp;&nbsp; </span><span class="default">$row </span><span class="keyword">= </span><span class="default">pg_fetch_row</span><span class="keyword">(</span><span class="default">$rs</span><span class="keyword">, </span><span class="default">0</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp; </span><span class="default">pg_exec</span><span class="keyword">(</span><span class="default">$conn</span><span class="keyword">, </span><span class="string">"begin"</span><span class="keyword">);<br />
+&nbsp;&nbsp; </span><span class="default">$loid </span><span class="keyword">= </span><span class="default">pg_loopen</span><span class="keyword">(</span><span class="default">$conn</span><span class="keyword">, </span><span class="default">$row</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">], </span><span class="string">"r"</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp; </span><span class="default">header</span><span class="keyword">(</span><span class="string">"Content-type: image/gif"</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp; </span><span class="default">pg_loreadall</span><span class="keyword">(</span><span class="default">$loid</span><span class="keyword">);<br />
+&nbsp;&nbsp; </span><span class="default">pg_loclose</span><span class="keyword">(</span><span class="default">$loid</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp; </span><span class="default">pg_exec </span><span class="keyword">(</span><span class="default">$conn</span><span class="keyword">, </span><span class="string">"commit"</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">// --------- UNLINK OID ---<br />
+<br />
+&nbsp;&nbsp; </span><span class="default">pg_exec</span><span class="keyword">(</span><span class="default">$conn</span><span class="keyword">, </span><span class="string">"begin"</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp; </span><span class="default">$loid </span><span class="keyword">= </span><span class="default">$row</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">];<br />
+&nbsp;&nbsp; </span><span class="default">pg_lounlink</span><span class="keyword">(</span><span class="default">$conn</span><span class="keyword">, </span><span class="default">$loid</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp; </span><span class="default">pg_exec </span><span class="keyword">(</span><span class="default">$conn</span><span class="keyword">, </span><span class="string">"commit"</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">// --------- DELETE OID ---<br />
+<br />
+&nbsp;&nbsp; </span><span class="default">pg_exec</span><span class="keyword">(</span><span class="default">$conn</span><span class="keyword">, </span><span class="string">"DELETE FROM test WHERE tipo = 'A1';"</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">// --------- CLOSE CONN ---<br />
+<br />
+&nbsp;&nbsp; </span><span class="default">pg_close</span><span class="keyword">();<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="function.pg-lo-close.html">pg_lo_close</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.pg-lo-export.html">pg_lo_export</a></div>
  <div class="up"><a href="ref.pgsql.html">PostgreSQL Functions</a></div>

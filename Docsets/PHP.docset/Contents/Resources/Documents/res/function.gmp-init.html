@@ -163,7 +163,153 @@
  </div>
 
  
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="105359""></a>
+  <div class="note">
+   <strong class="user">marcus at synchromedia dot co dot uk</strong>
+   <a href="#105359" class="date">11-Aug-2011 04:41</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I discovered that the gmp functions use [0-9a-f] up to base 16, but [0-9A-Za-z] (i.e. upper case first) from bases 17 to 62. This differs from most of the base-62 implementations I've found that tend to use lower case first.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="103170""></a>
+  <div class="note">
+   <strong class="user">karl dot debisschop at pearson dot com</strong>
+   <a href="#103170" class="date">29-Mar-2011 12:15</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Unless the base is 16, gpm_init will fail if the string begins with "0b". <br />
+<br />
+&gt; php -r '$v = gmp_init("b83", 17); print("$v\n");'<br />
+<br />
+Resource id #4<br />
+<br />
+&gt; php -r '$v = gmp_init("0b83", 17); print("$v\n");'<br />
+<br />
+[nothing prints]<br />
+<br />
+In may case, where I am explicitly specifying the base, the solution is to apply ltrim first:<br />
+<br />
+&gt; php -r '$v = gmp_init(ltrim("0b83", "0"), 17); print("$v\n");'<br />
+<br />
+Resource id #4</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="73328""></a>
+  <div class="note">
+   <strong class="user">charlie at oblivion dot cz</strong>
+   <a href="#73328" class="date">18-Feb-2007 04:55</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+gmp_* functions don't accept strings with a leading '+':<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">echo </span><span class="default">gmp_strval</span><span class="keyword">(</span><span class="default">gmp_init</span><span class="keyword">(</span><span class="string">'+42'</span><span class="keyword">));&nbsp; &nbsp; &nbsp; </span><span class="comment">#0<br />
+</span><span class="keyword">echo </span><span class="default">gmp_strval</span><span class="keyword">(</span><span class="default">gmp_add</span><span class="keyword">(</span><span class="string">'42'</span><span class="keyword">, </span><span class="string">'+42'</span><span class="keyword">)); </span><span class="comment">#42<br />
+</span><span class="keyword">echo </span><span class="default">bcadd</span><span class="keyword">(</span><span class="string">'+42'</span><span class="keyword">, </span><span class="string">'+42'</span><span class="keyword">);&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span class="comment">#84<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="69774""></a>
+  <div class="note">
+   <strong class="user">php at richardneill dot org</strong>
+   <a href="#69774" class="date">20-Sep-2006 03:30</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Here's a way to parse a decimal (eg 3.25) into an integer and exponent:<br />
+<br />
+&lt;?<br />
+if (preg_match("/^[0-9]+\.[0-9]+$/",$input)){ <br />
+&nbsp;&nbsp; &nbsp; //Input is a base-10 decimal. Multiply as necessary to remove the decimal<br />
+&nbsp;&nbsp; &nbsp; //point. Convert that to a gmp_resource, then decrement the exponent <br />
+&nbsp;&nbsp; &nbsp; //to compensate.<br />
+<br />
+&nbsp;&nbsp; &nbsp; $pieces=explode(".", $input);&nbsp; &nbsp;&nbsp; //Split at the d.p.<br />
+&nbsp;&nbsp; &nbsp; $input="$pieces[0]$pieces[1]";&nbsp; //Remove the decimal point.<br />
+<br />
+&nbsp;&nbsp; &nbsp; $input=ltrim($input,'0');&nbsp; &nbsp; <br />
+&nbsp;&nbsp; &nbsp; //Remove any leading zeros, or gmp_init will parse the number as octal.<br />
+<br />
+&nbsp;&nbsp; &nbsp; if ($input==''){&nbsp; &nbsp; //Deal with "0.0" which would otherwise be ''.<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $input=0;<br />
+&nbsp;&nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp;&nbsp; $integer=gmp_init($input);&nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp;&nbsp; $ns_exponent=-strlen($pieces[1]);&nbsp; <br />
+&nbsp;&nbsp; &nbsp; //exponent = (-)&nbsp; the number of characters after the decimal point.<br />
+}<br />
+?&gt;</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="69772""></a>
+  <div class="note">
+   <strong class="user">php at richardneill dot org</strong>
+   <a href="#69772" class="date">20-Sep-2006 03:14</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Note: Leading zeros will make gmp_init parse this as octal.<br />
+Thus gmp_init(010) becomes 8.&nbsp; <br />
+<br />
+$a=010;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; //8<br />
+$b="010" + 0;&nbsp; &nbsp;&nbsp; //10<br />
+$c=gmp_strval(gmp_init(010));&nbsp; &nbsp; //8<br />
+$d=gmp_strval(gmp_init("010")); //8<br />
+<br />
+This behaviour is inconsistent: either $d should equal $b, or<br />
+$b should equal $a.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="55948""></a>
+  <div class="note">
+   <strong class="user">thomas dot hebinck at digionline dot de</strong>
+   <a href="#55948" class="date">18-Aug-2005 10:23</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+If you call a gmp_* function directly with an interger as parameter, this integer MUST NOT be 0:<br />
+<br />
+for($i=-1;$i&lt;=1;$i++) {&nbsp; echo gmp_strval(gmp_add(2,gmp_mul(1,$i))) . ' ';&nbsp; }<br />
+<br />
+The result is 1 0 3 (wrong)<br />
+<br />
+In this case you have to use gmp_init():<br />
+<br />
+for($i=-1;$i&lt;=1;$i++) {&nbsp; echo gmp_strval(gmp_add(2,gmp_mul(1,gmp_init($i)))) . ' ';&nbsp; }<br />
+<br />
+The result is 1 2 3 (right)<br />
+<br />
+Happy number crunching! :-)</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="function.gmp-hamdist.html">gmp_hamdist</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.gmp-intval.html">gmp_intval</a></div>
  <div class="up"><a href="ref.gmp.html">GMP Functions</a></div>

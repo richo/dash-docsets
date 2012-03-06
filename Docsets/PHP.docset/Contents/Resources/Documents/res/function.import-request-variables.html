@@ -136,7 +136,233 @@
  </div>
 
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="77996""></a>
+  <div class="note">
+   <strong class="user">michal dot kocarek at NO_SPAM dot seznam dot cz</strong>
+   <a href="#77996" class="date">23-Sep-2007 02:47</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Regarding the last post:<br />
+<br />
+When $_GET[$k] is compared against NULL or '' (empty string) inside the foreach loop, it should be compared only against one of the expressions or strict equality operator should be used.<br />
+In this case, second part of expression ($_GET[$k] == NULL) will be *never* executed, because of NULL gets converted to empty string.<br />
+Also be aware that zero is equal (==) to empty string, so if passing zeroes through the $_GET, use strict comparsion to check whether variable exist or not.<br />
+Next notice: when nothing will be set into $_GET array, all comparsions will generate lot of E_NOTICE errors, because you are accessing unassigned variable.<br />
+<br />
+&lt;?<br />
+// Slightly modified previous example<br />
+$input = array('name' =&gt; null, 'age' =&gt; 26) ;<br />
+// 26 is the default age, if $_GET['age'] is empty or not set<br />
+<br />
+/**<br />
+&nbsp;* Extracts $_GET variables to global scope by the definition from the $input array<br />
+&nbsp;* @return void<br />
+&nbsp;*/<br />
+function extract_get() {<br />
+&nbsp;&nbsp;&nbsp; global $input;<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; if (isset($input) &amp;&amp; is_array($input)) foreach ($input as $k =&gt; $v) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if (!isset($_GET[$k])) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $GLOBALS[$k] = $v;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; continue;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $getval = $_GET[$k];<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if ($getval === null || $getval === '') {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $getval = $v;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; } elseif (is_numeric($v)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $getval = (int) $getval;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; } elseif (get_magic_quotes_gpc() == 1) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $getval = stripslashes_deep($getval);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $GLOBALS[$k] = $getval;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; unset($getval);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+}<br />
+<br />
+/**<br />
+&nbsp;* Performs stripslashes function recursively on the array or on the single variable<br />
+&nbsp;* @param mixed $var Variable - can be scalar variable or the array<br />
+&nbsp;* @return mixed Variable with slashes stripped with function stripslashes()<br />
+&nbsp;*/<br />
+function stripslashes_deep($var) {<br />
+&nbsp;&nbsp;&nbsp; if (!is_array($var))<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return stripslashes($var);<br />
+&nbsp;&nbsp;&nbsp; foreach($var as $k =&gt; $v) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $var[$k] = stripslashes_deep($v);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; return $var;<br />
+}<br />
+?&gt;</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="66145""></a>
+  <div class="note">
+   <strong class="user">samb06 at gmail dot com</strong>
+   <a href="#66145" class="date">15-May-2006 04:09</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+What i do is have a small script in my header file that takes an array called $input, and loops through the array to extract variables. that way the security hole can be closed, as you specify what variables you would like extracted<br />
+<br />
+$input = array('name' =&gt; null, 'age' =&gt; 26) ;<br />
+<br />
+// 26 is the default age, if $_GET['age'] is empty or not set<br />
+<br />
+function extract_get()<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; global $input ;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if ($input)<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; foreach ($input as $k =&gt; $v)<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if ($_GET[$k] == '' or $_GET[$k] == NULL)<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $GLOBALS[$k] = $v ;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; else<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $GLOBALS = $_GET[$k] ;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; }</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="54600""></a>
+  <div class="note">
+   <strong class="user">jason</strong>
+   <a href="#54600" class="date">08-Jul-2005 12:35</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+reply to ceo AT l-i-e DOT com:<br />
+<br />
+I don't think it's a risk, as all of your request variables will be tagged with the prefix. As long as you don't prefix any of your internal variables with the same, you should be fine.<br />
+<br />
+If someone tries to access an uninitiated security-related variable like $admin_level through request data, it will get imported as $RV_admin_level.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="49884""></a>
+  <div class="note">
+   <strong class="user">nexxer at rogers dot com</strong>
+   <a href="#49884" class="date">10-Feb-2005 10:47</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+PHP5 seems to have fixed that, in the sense that import_request_variables("g") works like extract($_GET). It doesn't seem to be passing a reference to the global, but instead creating a copy of it as expected</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="48884""></a>
+  <div class="note">
+   <strong class="user">cornflake4 at gmx dot at</strong>
+   <a href="#48884" class="date">10-Jan-2005 02:52</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+oops, a typo in my comment:<br />
+<br />
+The last line in the second example (the on using the extract() function) should read:<br />
+<br />
+echo $_GET['var']; # prints 1, so $_GET has been unchanged</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="48857""></a>
+  <div class="note">
+   <strong class="user">cornflake4 at gmx dot at</strong>
+   <a href="#48857" class="date">09-Jan-2005 09:39</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Beware:<br />
+<br />
+import_request_variables() does not copy the request variables into local scope variables. Instead, it copies the *reference* to the request variable content to local variables Important implication: any change to the local variable means a changes to the respective request variable, too!<br />
+<br />
+This is a clear difference to extract($_GET) which copies the content of the request variables into local variables.<br />
+<br />
+To shed some light on the implication, consider this (assuming the query string "...&amp;var=1"):<br />
+<br />
+echo $_GET['var']; # prints: 1<br />
+import_request_variables();<br />
+echo $var; # prints 1<br />
+$var = 2;<br />
+echo $_GET['var']; # prints 2 !!!!<br />
+<br />
+So, $_GET has changed as well!<br />
+<br />
+On the other hand:<br />
+<br />
+echo $_GET['var']; # prints: 1<br />
+extract($_GET);<br />
+echo $var; # prints 1<br />
+$var = 2;<br />
+echo $_GET['var']; # prints 2 !!!!<br />
+<br />
+Because of this, I recommend NOT using import_request_variables(), but extract($_GET); extract($_POST); extract($_COOKIE); instead, since this combination bears not these unexspected side effects.<br />
+<br />
+PS: not to mention that you have to reconsider your coding style if any need to import_request_variables arises at all!</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="48077""></a>
+  <div class="note">
+   <strong class="user">ceo AT l-i-e DOT com</strong>
+   <a href="#48077" class="date">10-Dec-2004 12:56</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Call me crazy, but it seems to me that if you use this function, even WITH the prefix, then you might as well just turn register_globals back on...<br />
+<br />
+Sooner or later, somebody will find a "hole" with your prefixed variables in an un-initialized variable.<br />
+<br />
+Better to import precisely the variables you need, and initialize anything else properly.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="47965""></a>
+  <div class="note">
+   <strong class="user">brian at enchanter dot net</strong>
+   <a href="#47965" class="date">07-Dec-2004 05:19</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+import_request_variables does *not* read from the $_GET, $_POST, or $_COOKIE arrays - it reads the data directly from what was submitted. This is an important distinction if, for example, the server has magic_quotes turned on and you massage the data to run stripslashes on it; if you then use import_request_variables, your variables will still have slashes in them.<br />
+<br />
+In other words: even if you say $_GET=""; $_POST=""; then use import_request_variables, it'll still get all the request data.<br />
+<br />
+If you change the contents of $_GET and you then want to bring this data into global variables, use extract($_GET, EXTR_PREFIX_ALL, "myprefix") instead.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="function.gettype.html">gettype</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.intval.html">intval</a></div>
  <div class="up"><a href="ref.var.html">Variable handling Functions</a></div>

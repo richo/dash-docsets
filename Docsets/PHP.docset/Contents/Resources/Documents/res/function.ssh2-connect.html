@@ -342,7 +342,177 @@
  </div>
 
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="104758""></a>
+  <div class="note">
+   <strong class="user">Steve Kamerman</strong>
+   <a href="#104758" class="date">05-Jul-2011 03:06</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Due to a lack of complete examples, here's a simple SSH2 class for connecting to a server, authenticating with public key authentication, verifying the server's fingerprint, issuing commands and reading their STDOUT and properly disconnecting.&nbsp; Note: You may need to make sure you commands produce output so the response can be pulled.&nbsp; Some people suggest that the command is not executed until you pull the response back.<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">class </span><span class="default">NiceSSH </span><span class="keyword">{<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// SSH Host<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">private </span><span class="default">$ssh_host </span><span class="keyword">= </span><span class="string">'myserver.example.com'</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// SSH Port<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">private </span><span class="default">$ssh_port </span><span class="keyword">= </span><span class="default">22</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// SSH Server Fingerprint<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">private </span><span class="default">$ssh_server_fp </span><span class="keyword">= </span><span class="string">'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// SSH Username<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">private </span><span class="default">$ssh_auth_user </span><span class="keyword">= </span><span class="string">'username'</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// SSH Public Key File<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">private </span><span class="default">$ssh_auth_pub </span><span class="keyword">= </span><span class="string">'/home/username/.ssh/id_rsa.pub'</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// SSH Private Key File<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">private </span><span class="default">$ssh_auth_priv </span><span class="keyword">= </span><span class="string">'/home/username/.ssh/id_rsa'</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// SSH Private Key Passphrase (null == no passphrase)<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">private </span><span class="default">$ssh_auth_pass</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// SSH Connection<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">private </span><span class="default">$connection</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; public function </span><span class="default">connect</span><span class="keyword">() {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if (!(</span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">connection </span><span class="keyword">= </span><span class="default">ssh2_connect</span><span class="keyword">(</span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">ssh_host</span><span class="keyword">, </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">ssh_port</span><span class="keyword">))) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; throw new </span><span class="default">Exception</span><span class="keyword">(</span><span class="string">'Cannot connect to server'</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$fingerprint </span><span class="keyword">= </span><span class="default">ssh2_fingerprint</span><span class="keyword">(</span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">connection</span><span class="keyword">, </span><span class="default">SSH2_FINGERPRINT_MD5 </span><span class="keyword">| </span><span class="default">SSH2_FINGERPRINT_HEX</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if (</span><span class="default">strcmp</span><span class="keyword">(</span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">ssh_master_fp</span><span class="keyword">, </span><span class="default">$fingerprint</span><span class="keyword">) !== </span><span class="default">0</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; throw new </span><span class="default">Exception</span><span class="keyword">(</span><span class="string">'Unable to verify server identity!'</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if (!</span><span class="default">ssh2_auth_pubkey_file</span><span class="keyword">(</span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">connection</span><span class="keyword">, </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">ssh_auth_user</span><span class="keyword">, </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">ssh_auth_pub</span><span class="keyword">, </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">ssh_auth_priv</span><span class="keyword">, </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">ssh_auth_pass</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; throw new </span><span class="default">Exception</span><span class="keyword">(</span><span class="string">'Autentication rejected by server'</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; public function </span><span class="default">exec</span><span class="keyword">(</span><span class="default">$cmd</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if (!(</span><span class="default">$stream </span><span class="keyword">= </span><span class="default">ssh2_exec</span><span class="keyword">(</span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">connection</span><span class="keyword">, </span><span class="default">$cmd</span><span class="keyword">))) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; throw new </span><span class="default">Exception</span><span class="keyword">(</span><span class="string">'SSH command failed'</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">stream_set_blocking</span><span class="keyword">(</span><span class="default">$stream</span><span class="keyword">, </span><span class="default">true</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$data </span><span class="keyword">= </span><span class="string">""</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; while (</span><span class="default">$buf </span><span class="keyword">= </span><span class="default">fread</span><span class="keyword">(</span><span class="default">$stream</span><span class="keyword">, </span><span class="default">4096</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$data </span><span class="keyword">.= </span><span class="default">$buf</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">fclose</span><span class="keyword">(</span><span class="default">$stream</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">$data</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; public function </span><span class="default">disconnect</span><span class="keyword">() {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">exec</span><span class="keyword">(</span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">connection</span><span class="keyword">, </span><span class="string">'echo "EXITING" &amp;&amp; exit;'</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">connection </span><span class="keyword">= </span><span class="default">null</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; public function </span><span class="default">__destruct</span><span class="keyword">() {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">disconnect</span><span class="keyword">();<br />
+&nbsp;&nbsp;&nbsp; }<br />
+}<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="50311""></a>
+  <div class="note">
+   <strong class="user">suri dot suribala dot com</strong>
+   <a href="#50311" class="date">24-Feb-2005 05:00</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+With Sara's help, I have the following SS2 class that is quite flexible. If anyone improves it, please feel free to let me know.<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+</span><span class="comment">// ssh protocols<br />
+// note: once openShell method is used, cmdExec does not work<br />
+<br />
+</span><span class="keyword">class </span><span class="default">ssh2 </span><span class="keyword">{<br />
+<br />
+&nbsp; private </span><span class="default">$host </span><span class="keyword">= </span><span class="string">'host'</span><span class="keyword">;<br />
+&nbsp; private </span><span class="default">$user </span><span class="keyword">= </span><span class="string">'user'</span><span class="keyword">;<br />
+&nbsp; private </span><span class="default">$port </span><span class="keyword">= </span><span class="string">'22'</span><span class="keyword">;<br />
+&nbsp; private </span><span class="default">$password </span><span class="keyword">= </span><span class="string">'password'</span><span class="keyword">;<br />
+&nbsp; private </span><span class="default">$con </span><span class="keyword">= </span><span class="default">null</span><span class="keyword">;<br />
+&nbsp; private </span><span class="default">$shell_type </span><span class="keyword">= </span><span class="string">'xterm'</span><span class="keyword">;<br />
+&nbsp; private </span><span class="default">$shell </span><span class="keyword">= </span><span class="default">null</span><span class="keyword">;<br />
+&nbsp; private </span><span class="default">$log </span><span class="keyword">= </span><span class="string">''</span><span class="keyword">;<br />
+<br />
+&nbsp; function </span><span class="default">__construct</span><span class="keyword">(</span><span class="default">$host</span><span class="keyword">=</span><span class="string">''</span><span class="keyword">, </span><span class="default">$port</span><span class="keyword">=</span><span class="string">''&nbsp; </span><span class="keyword">) {<br />
+<br />
+&nbsp;&nbsp; &nbsp; if( </span><span class="default">$host</span><span class="keyword">!=</span><span class="string">'' </span><span class="keyword">) </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">host&nbsp; </span><span class="keyword">= </span><span class="default">$host</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; if( </span><span class="default">$port</span><span class="keyword">!=</span><span class="string">'' </span><span class="keyword">) </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">port&nbsp; </span><span class="keyword">= </span><span class="default">$port</span><span class="keyword">;<br />
+<br />
+&nbsp;&nbsp; &nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">con&nbsp; </span><span class="keyword">= </span><span class="default">ssh2_connect</span><span class="keyword">(</span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">host</span><span class="keyword">, </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">port</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; if( !</span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">con </span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">log </span><span class="keyword">.= </span><span class="string">"Connection failed !"</span><span class="keyword">; <br />
+&nbsp;&nbsp; &nbsp; }<br />
+<br />
+&nbsp; }<br />
+<br />
+&nbsp; function </span><span class="default">authPassword</span><span class="keyword">( </span><span class="default">$user </span><span class="keyword">= </span><span class="string">''</span><span class="keyword">, </span><span class="default">$password </span><span class="keyword">= </span><span class="string">'' </span><span class="keyword">) {<br />
+<br />
+&nbsp;&nbsp; &nbsp; if( </span><span class="default">$user</span><span class="keyword">!=</span><span class="string">'' </span><span class="keyword">) </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">user&nbsp; </span><span class="keyword">= </span><span class="default">$user</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; if( </span><span class="default">$password</span><span class="keyword">!=</span><span class="string">'' </span><span class="keyword">) </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">password&nbsp; </span><span class="keyword">= </span><span class="default">$password</span><span class="keyword">;<br />
+<br />
+&nbsp;&nbsp; &nbsp; if( !</span><span class="default">ssh2_auth_password</span><span class="keyword">( </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">con</span><span class="keyword">, </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">user</span><span class="keyword">, </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">password </span><span class="keyword">) ) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">log </span><span class="keyword">.= </span><span class="string">"Authorization failed !"</span><span class="keyword">; <br />
+&nbsp;&nbsp; &nbsp; }<br />
+<br />
+&nbsp; }<br />
+<br />
+&nbsp; function </span><span class="default">openShell</span><span class="keyword">( </span><span class="default">$shell_type </span><span class="keyword">= </span><span class="string">'' </span><span class="keyword">) {<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if ( </span><span class="default">$shell_type </span><span class="keyword">!= </span><span class="string">'' </span><span class="keyword">) </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">shell_type </span><span class="keyword">= </span><span class="default">$shell_type</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">shell </span><span class="keyword">= </span><span class="default">ssh2_shell</span><span class="keyword">( </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">con</span><span class="keyword">,&nbsp; </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">shell_type </span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; if( !</span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">shell </span><span class="keyword">) </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">log </span><span class="keyword">.= </span><span class="string">" Shell connection failed !"</span><span class="keyword">;<br />
+<br />
+&nbsp; }<br />
+<br />
+&nbsp; function </span><span class="default">writeShell</span><span class="keyword">( </span><span class="default">$command </span><span class="keyword">= </span><span class="string">'' </span><span class="keyword">) {<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">fwrite</span><span class="keyword">(</span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">shell</span><span class="keyword">, </span><span class="default">$command</span><span class="keyword">.</span><span class="string">"\n"</span><span class="keyword">);<br />
+<br />
+&nbsp; }<br />
+<br />
+&nbsp; function </span><span class="default">cmdExec</span><span class="keyword">( ) {<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$argc </span><span class="keyword">= </span><span class="default">func_num_args</span><span class="keyword">();<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$argv </span><span class="keyword">= </span><span class="default">func_get_args</span><span class="keyword">();<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$cmd </span><span class="keyword">= </span><span class="string">''</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; for( </span><span class="default">$i</span><span class="keyword">=</span><span class="default">0</span><span class="keyword">; </span><span class="default">$i</span><span class="keyword">&lt;</span><span class="default">$argc </span><span class="keyword">; </span><span class="default">$i</span><span class="keyword">++) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if( </span><span class="default">$i </span><span class="keyword">!= (</span><span class="default">$argc</span><span class="keyword">-</span><span class="default">1</span><span class="keyword">) ) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$cmd </span><span class="keyword">.= </span><span class="default">$argv</span><span class="keyword">[</span><span class="default">$i</span><span class="keyword">].</span><span class="string">" &amp;&amp; "</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }else{<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$cmd </span><span class="keyword">.= </span><span class="default">$argv</span><span class="keyword">[</span><span class="default">$i</span><span class="keyword">];<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; echo </span><span class="default">$cmd</span><span class="keyword">;<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$stream </span><span class="keyword">= </span><span class="default">ssh2_exec</span><span class="keyword">( </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">con</span><span class="keyword">, </span><span class="default">$cmd </span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">stream_set_blocking</span><span class="keyword">( </span><span class="default">$stream</span><span class="keyword">, </span><span class="default">true </span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">fread</span><span class="keyword">( </span><span class="default">$stream</span><span class="keyword">, </span><span class="default">4096 </span><span class="keyword">);<br />
+<br />
+&nbsp; }<br />
+<br />
+&nbsp; function </span><span class="default">getLog</span><span class="keyword">() {<br />
+<br />
+&nbsp;&nbsp; &nbsp; return </span><span class="default">$this</span><span class="keyword">-&gt;</span><span class="default">log</span><span class="keyword">; <br />
+<br />
+&nbsp; }<br />
+<br />
+}<br />
+<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="function.ssh2-auth-pubkey-file.html">ssh2_auth_pubkey_file</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.ssh2-exec.html">ssh2_exec</a></div>
  <div class="up"><a href="ref.ssh2.html">SSH2 Functions</a></div>

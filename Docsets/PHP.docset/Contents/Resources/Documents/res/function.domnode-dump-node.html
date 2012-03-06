@@ -36,7 +36,197 @@ currently not documented; only its argument list is available.
   </p>
  </div>
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="51894""></a>
+  <div class="note">
+   <strong class="user">sofa77 at gmx dot de</strong>
+   <a href="#51894" class="date">14-Apr-2005 02:04</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+the function below to dump only the contents of a node looks as follows in php5. necessarry to say, that there is no dump_node() function in php5... it took me some time to find this out.<br />
+<br />
+function dump_child_nodes($node)<br />
+{<br />
+&nbsp; $output = '';<br />
+&nbsp; $owner_document = $node-&gt;ownerDocument;<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp; foreach ($node-&gt;childNodes as $el){<br />
+&nbsp;&nbsp;&nbsp; $output .= $owner_document-&gt;saveXML($el);<br />
+&nbsp; }<br />
+&nbsp; return $output;<br />
+}</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="37208""></a>
+  <div class="note">
+   <strong class="user">zombie(at)artattack(dot)to</strong>
+   <a href="#37208" class="date">06-Nov-2003 02:19</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Here is a handy little function for dumping the contents of a element node when you do not want the element itself yet you do not want the output escaped. For example, you have an HTML body tag and you want to dump the children, but you do not want all the children HTML tags escaped, which it seems like the get value/content functions do. There might be a better way of doing this, but this is pretty stable. <br />
+<br />
+function dump_child_nodes($node){<br />
+&nbsp;&nbsp;&nbsp; $owner_document = $node-&gt;owner_document();<br />
+&nbsp;&nbsp;&nbsp; $children = $node-&gt;child_nodes();<br />
+&nbsp;&nbsp;&nbsp; $total_children = count($children);<br />
+&nbsp;&nbsp;&nbsp; for ($i = 0; $i &lt; $total_children; $i++){<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $cur_child_node = $children[$i];<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $output .= $owner_document-&gt;dump_node($cur_child_node);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; return $output;<br />
+}<br />
+<br />
+Blaine Garrett<br />
+Webmaster of Art Attack<br />
+<a href="http://artattack.to" rel="nofollow" target="_blank">http://artattack.to</a></span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="30269""></a>
+  <div class="note">
+   
+   <a href="#30269" class="date">12-Mar-2003 11:47</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+The note above is exact :<br />
+dump_node is not a method of the DomNode class anymore but a method of DomDocument class.<br />
+Note that "$dom-&gt;dump_node($myNodeObject); " also works in PHP 4.2.<br />
+So I recommand to use it like this.<br />
+<br />
+Last thing : you can't specified the encoding in the dump_node methode contrary to the dump_mem method.<br />
+So characters like 'Ž' are always converted in UTF-8.<br />
+The function below does exactly the same work as dump_node but also take in argument the encoding :<br />
+(it's not elegant but it works)<br />
+<br />
+function my_dump_node($node,$encoding){<br />
+&nbsp;&nbsp;&nbsp; $domNode = domxml_new_doc("1.0");<br />
+&nbsp;&nbsp;&nbsp; $clonedNode = $node-&gt;clone_node(true);<br />
+&nbsp;&nbsp;&nbsp; $domNode-&gt;append_child($clonedNode);<br />
+&nbsp;&nbsp;&nbsp; $result = $domNode-&gt;dump_mem(true,$encoding);<br />
+&nbsp;&nbsp;&nbsp; $pos = strpos($result,"?&gt;");<br />
+&nbsp;&nbsp;&nbsp; return substr($result,$pos+2);<br />
+}<br />
+so<br />
+$dom-&gt;dump_node($myNodeObject); <br />
+becomes<br />
+my_dump_node($myNodeObject,"ISO-8859-1");</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="29223""></a>
+  <div class="note">
+   <strong class="user">gerret at oneota dot net</strong>
+   <a href="#29223" class="date">06-Feb-2003 07:59</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I migrated some code from PHP 4.2.1 to PHP 4.3.0. Platform was Apache 1.3.9 on Windows. My code kept crashing Apache until I saw the previous note. dump_node() now appears to be a member of DomDocument, and not of DomNode as it used to be. At least, when I changed my code<br />
+<br />
+$node-&gt;dump_node($node)<br />
+<br />
+to<br />
+<br />
+$doc-&gt;dump_node($node)<br />
+<br />
+Apache quit crashing and the dump_node() method worked as intended.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="28367""></a>
+  <div class="note">
+   <strong class="user">gk at proliberty dot com</strong>
+   <a href="#28367" class="date">10-Jan-2003 12:39</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+The first comment above is wrong, at least, now in PHP 4.3.0<br />
+Example:<br />
+<span class="default">&lt;?php<br />
+$xml</span><span class="keyword">=&lt;&lt;&lt;eot<br />
+</span><span class="string">&lt;node attr="test"&gt;&lt;test&gt;hi&lt;/test&gt;<br />
+&lt;/node&gt;<br />
+</span><span class="keyword">eot;<br />
+</span><span class="default">$doc </span><span class="keyword">= </span><span class="default">domxml_open_mem</span><span class="keyword">(</span><span class="default">$xml</span><span class="keyword">);<br />
+</span><span class="default">$root</span><span class="keyword">=</span><span class="default">$doc</span><span class="keyword">-&gt;</span><span class="default">document_element</span><span class="keyword">();<br />
+</span><span class="comment">//This will NOT work:<br />
+//$nodeDump =$doc-&gt;dump_node($doc);&nbsp; <br />
+//This works:<br />
+</span><span class="default">$nodeDump </span><span class="keyword">=</span><span class="default">$doc</span><span class="keyword">-&gt;</span><span class="default">dump_node</span><span class="keyword">(</span><span class="default">$root</span><span class="keyword">); <br />
+echo </span><span class="default">htmlentities</span><span class="keyword">(</span><span class="default">$nodeDump</span><span class="keyword">);<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="26443""></a>
+  <div class="note">
+   <strong class="user">lukeN~O at S~P~A~Mbenoire dot com</strong>
+   <a href="#26443" class="date">30-Oct-2002 05:43</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I'm running PHP 4.2.3 and there is a second parameter which defines the format of the output, as with dump_mem() - see the notes for dump_mem() for usage of this.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="24589""></a>
+  <div class="note">
+   <strong class="user">KDan</strong>
+   <a href="#24589" class="date">22-Aug-2002 06:22</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Note: This also dumps the tag that defines the node you are trying to dump. It is useful because it is the only way I could find to get a node's content including the tags in it.<br />
+<br />
+Example:<br />
+From this xml bit of file:<br />
+&lt;block&gt;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; Blah blah blah &lt;some_stuff/&gt;<br />
+&lt;/block&gt;<br />
+<br />
+doing a dump_node on this block node will return exactly all of the xml typed above, including the &lt;block&gt; tags. Trying to get the value or content of the node, however, will only return "Blah blah blah" as &lt;some_stuff&gt; is considered a child, not part of the /text() xpath.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="21070""></a>
+  <div class="note">
+   <strong class="user">dan at mojavelinux dot com</strong>
+   <a href="#21070" class="date">27-Apr-2002 06:37</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+As of right now, php 4.2.0 this function requires that the first parameter be the node, so it would require<br />
+<br />
+DomNode-&gt;dump_node(DomNode)</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="function.domnode-clone-node.html">DomNode::clone_node</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.domnode-first-child.html">DomNode::first_child</a></div>
  <div class="up"><a href="ref.domxml.html">DOM XML (PHP 4) Functions</a></div>

@@ -202,6 +202,666 @@
     to indicate any valid PHP expression.
    </p>
   </div>
+<div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="90327""></a>
+  <div class="note">
+   <strong class="user">Magnus Deininger, dma05 at web dot de</strong>
+   <a href="#90327" class="date">16-Apr-2009 08:04</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Note that even though PHP borrows large portions of its syntax from C, the ',' is treated quite differently. It's not possible to create combined expressions in PHP using the comma-operator that C has, except in for() loops.<br />
+<br />
+Example (parse error):<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+$a </span><span class="keyword">= </span><span class="default">2</span><span class="keyword">, </span><span class="default">$b </span><span class="keyword">= </span><span class="default">4</span><span class="keyword">;<br />
+<br />
+echo </span><span class="default">$a</span><span class="keyword">.</span><span class="string">"\n"</span><span class="keyword">;<br />
+echo </span><span class="default">$b</span><span class="keyword">.</span><span class="string">"\n"</span><span class="keyword">;<br />
+<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+Example (works):<br />
+<span class="default">&lt;?php<br />
+<br />
+</span><span class="keyword">for (</span><span class="default">$a </span><span class="keyword">= </span><span class="default">2</span><span class="keyword">, </span><span class="default">$b </span><span class="keyword">= </span><span class="default">4</span><span class="keyword">; </span><span class="default">$a </span><span class="keyword">&lt; </span><span class="default">3</span><span class="keyword">; </span><span class="default">$a</span><span class="keyword">++)<br />
+{<br />
+&nbsp; echo </span><span class="default">$a</span><span class="keyword">.</span><span class="string">"\n"</span><span class="keyword">;<br />
+&nbsp; echo </span><span class="default">$b</span><span class="keyword">.</span><span class="string">"\n"</span><span class="keyword">;<br />
+}<br />
+<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+This is because PHP doesn't actually have a proper comma-operator, it's only supported as syntactic sugar in for() loop headers. In C, it would have been perfectly legitimate to have this:<br />
+<br />
+int f()<br />
+{<br />
+&nbsp; int a, b;<br />
+&nbsp; a = 2, b = 4;<br />
+<br />
+&nbsp; return a;<br />
+}<br />
+<br />
+or even this:<br />
+<br />
+int g()<br />
+{<br />
+&nbsp; int a, b;<br />
+&nbsp; a = (2, b = 4);<br />
+<br />
+&nbsp; return a;<br />
+}<br />
+<br />
+In f(), a would have been set to 2, and b would have been set to 4.<br />
+In g(), (2, b = 4) would be a single expression which evaluates to 4, so both a and b would have been set to 4.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="84184""></a>
+  <div class="note">
+   <strong class="user">phpsourcecode at blogspot dot com</strong>
+   <a href="#84184" class="date">02-Jul-2008 06:37</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+The ternary conditional operator is a useful way of avoiding <br />
+<a href="http://phpsourcecode.blogspot.com" rel="nofollow" target="_blank">http://phpsourcecode.blogspot.com</a><br />
+<br />
+inconvenient if statements.&nbsp; They can even be used in the middle of a string concatenation, if you use parentheses. <br />
+<br />
+Example:<br />
+<br />
+if ( $wakka ) {<br />
+&nbsp; $string = 'foo' ;<br />
+} else {<br />
+&nbsp; $string = 'bar' ;<br />
+}<br />
+<br />
+The above can be expressed like the following:<br />
+<br />
+$string = $wakka ? 'foo' : 'bar' ;<br />
+<br />
+If $wakka is true, $string is assigned 'foo', and if it's false, $string is assigned 'bar'.<br />
+<br />
+To do the same in a concatenation, try:<br />
+<br />
+$string = $otherString . ( $wakka ? 'foo' : 'bar' ) ;</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="81849""></a>
+  <div class="note">
+   <strong class="user">denzoo at gmail dot com</strong>
+   <a href="#81849" class="date">16-Mar-2008 04:52</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+To jvm at jvmyers dot com:<br />
+Your first two if statements just check if there's anything in the string, if you wish to actually execute the code in your string you need eval().</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="81363""></a>
+  <div class="note">
+   <strong class="user">jvm at jvmyers dot com</strong>
+   <a href="#81363" class="date">24-Feb-2008 12:20</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+<span class="default">&lt;?php<br />
+</span><span class="comment">// Compound booleans expressed as string args in an 'if' statement don't work as expected:<br />
+//<br />
+//&nbsp; &nbsp; Context:<br />
+//&nbsp; &nbsp; &nbsp; &nbsp; 1.&nbsp; I generate an array of counters<br />
+//&nbsp; &nbsp; &nbsp; &nbsp; 2.&nbsp; I dynamically generate a compound boolean based on selected counters in the array<br />
+//&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Note: since the real array is sparse, I must use the 'empty' operator<br />
+//&nbsp; &nbsp; &nbsp; &nbsp; 3.&nbsp; When I submit the compound boolean as the expression of an 'if' statement, <br />
+//&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; the 'if' appears to resolve ONLY the first element of the compound boolean.<br />
+//&nbsp; &nbsp; Conclusion: appears to be a short-circuiting issue<br />
+<br />
+</span><span class="default">$aArray </span><span class="keyword">= array(</span><span class="default">1</span><span class="keyword">,</span><span class="default">0</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">// Case 1: 'if' expression passed as string:<br />
+<br />
+</span><span class="default">$sCondition </span><span class="keyword">= </span><span class="string">"!empty(</span><span class="default">$aArray</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">]</span><span class="string">) &amp;&amp; !empty(</span><span class="default">$aArray</span><span class="keyword">[</span><span class="default">1</span><span class="keyword">]</span><span class="string">)"</span><span class="keyword">;<br />
+if (</span><span class="default">$sCondition</span><span class="keyword">)<br />
+{<br />
+&nbsp;&nbsp;&nbsp; echo </span><span class="string">"1. Conditions met&lt;br /&gt;"</span><span class="keyword">;<br />
+}<br />
+else<br />
+{<br />
+&nbsp;&nbsp;&nbsp; echo </span><span class="string">"1. Conditions not met&lt;br /&gt;"</span><span class="keyword">;<br />
+}<br />
+<br />
+</span><span class="comment">// Case 1 output:&nbsp; "1. Conditions met"<br />
+<br />
+// Case 2: same as Case 1, but using catenation operator<br />
+<br />
+</span><span class="keyword">if (</span><span class="string">""</span><span class="keyword">.</span><span class="default">$sCondition</span><span class="keyword">.</span><span class="string">""</span><span class="keyword">)<br />
+{<br />
+&nbsp;&nbsp;&nbsp; echo </span><span class="string">"2. Conditions met&lt;br /&gt;"</span><span class="keyword">;<br />
+}<br />
+else<br />
+{<br />
+&nbsp;&nbsp;&nbsp; echo </span><span class="string">"2. Conditions not met&lt;br /&gt;"</span><span class="keyword">;<br />
+}<br />
+<br />
+</span><span class="comment">// Case 2 output:&nbsp; "2. Conditions met"<br />
+<br />
+// Case 3: same 'if' expression but passed in context:<br />
+<br />
+</span><span class="keyword">if (!empty(</span><span class="default">$aArray</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">]) &amp;&amp; !empty(</span><span class="default">$aArray</span><span class="keyword">[</span><span class="default">1</span><span class="keyword">]))<br />
+{<br />
+&nbsp;&nbsp;&nbsp; echo </span><span class="string">"3. Conditions met&lt;br /&gt;"</span><span class="keyword">;<br />
+}<br />
+else<br />
+{<br />
+&nbsp;&nbsp;&nbsp; echo </span><span class="string">"3. Conditions not met&lt;br /&gt;"</span><span class="keyword">;<br />
+}<br />
+<br />
+</span><span class="comment">// Case 3 output:&nbsp; "3. Conditions not met"<br />
+<br />
+// jvm@jvmyers.com<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+PS: the bug folks say this "does not imply a bug in PHP itself."&nbsp; Sure bugs me!</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="78636""></a>
+  <div class="note">
+   <strong class="user">petruzanauticoyahoo?com!ar</strong>
+   <a href="#78636" class="date">20-Oct-2007 08:41</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Regarding the ternary operator, I would rather say that the best option is to enclose all the expression in parantheses, to avoid errors and improve clarity:<br />
+<br />
+<span class="default">&lt;?php<br />
+&nbsp;&nbsp; </span><span class="keyword">print ( </span><span class="default">$a </span><span class="keyword">&gt; </span><span class="default">1 </span><span class="keyword">? </span><span class="string">"many" </span><span class="keyword">: </span><span class="string">"just one" </span><span class="keyword">);<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+PS: for php, C++, and any other language that has it.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="77291""></a>
+  <div class="note">
+   <strong class="user">winks716</strong>
+   <a href="#77291" class="date">23-Aug-2007 01:42</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+reply to egonfreeman at gmail dot com<br />
+04-Apr-2007 07:45 <br />
+<br />
+the second example u mentioned as follow:<br />
+=====================================<br />
+<br />
+$n = 3;<br />
+$n * $n++<br />
+<br />
+from 3 * 3 into 3 * 4. Post- operations operate on a variable after it has been 'checked', but it doesn't necessarily state that it should happen AFTER an evaluation is over (on the contrary, as a matter of fact).<br />
+<br />
+===========================================<br />
+<br />
+everything works correctly but one sentence should be modified:<br />
+<br />
+"from 3 * 3 into 3 * 4"&nbsp; should be "from 3 * 3 into 4 * 3"<br />
+<br />
+best regards~ :)</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="76571""></a>
+  <div class="note">
+   <strong class="user">george dot langley at shaw dot ca</strong>
+   <a href="#76571" class="date">20-Jul-2007 11:01</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Here's a quick example of Pre and Post-incrementation, in case anyone does feel confused (ref anonymous poster 31 May 2005)<br />
+<br />
+<span class="default">&lt;?PHP<br />
+</span><span class="keyword">echo </span><span class="string">"Using Pre-increment ++\$a:&lt;br&gt;"</span><span class="keyword">;<br />
+</span><span class="default">$a </span><span class="keyword">= </span><span class="default">1</span><span class="keyword">;<br />
+echo </span><span class="string">"\$a = </span><span class="default">$a</span><span class="string">&lt;br&gt;"</span><span class="keyword">;<br />
+</span><span class="default">$b </span><span class="keyword">= ++</span><span class="default">$a</span><span class="keyword">;<br />
+echo </span><span class="string">"\$b = ++\$a, so \$b = </span><span class="default">$b</span><span class="string"> and \$a = </span><span class="default">$a</span><span class="string">&lt;br&gt;"</span><span class="keyword">;<br />
+echo </span><span class="string">"&lt;br&gt;"</span><span class="keyword">;<br />
+echo </span><span class="string">"Using Post-increment \$a++:&lt;br&gt;"</span><span class="keyword">;<br />
+</span><span class="default">$a </span><span class="keyword">= </span><span class="default">1</span><span class="keyword">;<br />
+echo </span><span class="string">"\$a = </span><span class="default">$a</span><span class="string">&lt;br&gt;"</span><span class="keyword">;<br />
+</span><span class="default">$b </span><span class="keyword">= </span><span class="default">$a</span><span class="keyword">++;<br />
+echo </span><span class="string">"\$b = \$a++, so \$b = </span><span class="default">$b</span><span class="string"> and \$a = </span><span class="default">$a</span><span class="string">&lt;br&gt;"</span><span class="keyword">;<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+HTH</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="74308""></a>
+  <div class="note">
+   <strong class="user">egonfreeman at gmail dot com</strong>
+   <a href="#74308" class="date">04-Apr-2007 07:45</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+It is worthy to mention that:<br />
+<br />
+$n = 3;<br />
+$n * --$n<br />
+<br />
+WILL RETURN 4 instead of 6.<br />
+<br />
+It can be a hard to spot "error", because in our human thought process this really isn't an error at all! But you have to remember that PHP (as it is with many other high-level languages) evaluates its statements RIGHT-TO-LEFT, and therefore "--$n" comes BEFORE multiplying, so - in the end - it's really "2 * 2", not "3 * 2".<br />
+<br />
+It is also worthy to mention that the same behavior will change:<br />
+<br />
+$n = 3;<br />
+$n * $n++<br />
+<br />
+from 3 * 3 into 3 * 4. Post- operations operate on a variable after it has been 'checked', but it doesn't necessarily state that it should happen AFTER an evaluation is over (on the contrary, as a matter of fact).<br />
+<br />
+So, if you ever find yourself on a 'wild goose chase' for a bug in that "impossible-to-break, so-very-simple" piece of code that uses pre-/post-'s, remember this post. :)<br />
+<br />
+(just thought I'd check it out - turns out I was right :P)</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="73261""></a>
+  <div class="note">
+   <strong class="user">shawnster</strong>
+   <a href="#73261" class="date">14-Feb-2007 04:56</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+An easy fix (although intuitively tough to do...) is to reverse the comparison.<br />
+<br />
+if (5 == $a) {}<br />
+<br />
+If you forget the second '=', you'll get a parse error for trying to assign a value to a non-variable.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="72692""></a>
+  <div class="note">
+   <strong class="user">nabil_kadimi at hotmail dot com</strong>
+   <a href="#72692" class="date">29-Jan-2007 07:46</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Attention! php will not warn you if you write (1) When you mean (2)<br />
+<br />
+(1)<br />
+&lt;?<br />
+if($a=0) <br />
+&nbsp;&nbsp;&nbsp; echo "condition is true";<br />
+else <br />
+&nbsp;&nbsp;&nbsp; echo "condition is false";<br />
+//output: condition is false<br />
+?&gt;<br />
+<br />
+(2)<br />
+&lt;?<br />
+if($a==0) <br />
+&nbsp;&nbsp;&nbsp; echo "condition is true";<br />
+else <br />
+&nbsp;&nbsp;&nbsp; echo "condition is false";<br />
+//output: condition is true<br />
+?&gt;</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="60899""></a>
+  <div class="note">
+   <strong class="user">richard at phase4 dot ie</strong>
+   <a href="#60899" class="date">19-Jan-2006 12:00</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Follow up on Martin K. There are no hard and fast rules regarding operator precedence. Newbies should definitely learn them, but if their use results in code that is not easy to read you should use parentheses. The two important things are that it works properly AND is maintainable by you and others.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="57998""></a>
+  <div class="note">
+   <strong class="user">Martin K</strong>
+   <a href="#57998" class="date">20-Oct-2005 06:28</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+At 04-Feb-2005 05:13, tom at darlingpet dot com said:<br />
+&gt; It's also a good idea to use parenthesis when using something SIMILAR to:<br />
+&gt; <br />
+&gt; <span class="default">&lt;?php<br />
+</span><span class="keyword">&gt; echo (</span><span class="default">trim</span><span class="keyword">(</span><span class="default">$var</span><span class="keyword">)==</span><span class="string">""</span><span class="keyword">) ? </span><span class="string">"empty" </span><span class="keyword">: </span><span class="string">"not empty"</span><span class="keyword">;<br />
+&gt; </span><span class="default">?&gt;<br />
+</span><br />
+No, it's a BAD idea.<br />
+<br />
+All the short-circuiting operators, including the ternary conditional operator, have LOWER precedence than the comparison operators, so they almost NEVER need parentheses around their subexpressions.<br />
+<br />
+Inserting the parentheses suggested above does not change the meaning of the code, but their use misleads inexperienced programmers to expect that things like this will work in a similar manner:<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">function </span><span class="default">my_print</span><span class="keyword">(</span><span class="default">$a</span><span class="keyword">) { print(</span><span class="default">$a</span><span class="keyword">); }<br />
+</span><span class="default">my_print </span><span class="keyword">(</span><span class="default">trim</span><span class="keyword">(</span><span class="default">$var</span><span class="keyword">)==</span><span class="string">""</span><span class="keyword">) ? </span><span class="string">"empty" </span><span class="keyword">: </span><span class="string">"not empty"</span><span class="keyword">;<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+when of course it doesn't.<br />
+<br />
+Rather than worrying that code doesn't work as expected, simply learn the precedence rules (<a href="http://www.php.net/manual/en/language.operators.php" rel="nofollow" target="_blank">http://www.php.net/manual/en/language.operators.php</a>) so that one expects the right things.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="55969""></a>
+  <div class="note">
+   <strong class="user">stochnagara at hotmail dot com</strong>
+   <a href="#55969" class="date">19-Aug-2005 05:06</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+12345alex at gmx dot net 's case is actually handled by the === operator. That's what he needs.<br />
+<br />
+There is also another widely used function. I call it myself is_nil which is true for NULL,FALSE,array() and '', but not for 0 and "0".<br />
+<br />
+function is_nil ($value) {<br />
+&nbsp;return !$value &amp;&amp; $value !== 0 &amp;&amp; $value !== '0';<br />
+}<br />
+<br />
+Another useful function is "get first argument if it is not empty or get second argument otherwise". The code is:<br />
+<br />
+function def ($value, $defaultValue) {<br />
+&nbsp;return is_nil ($value) ? $defaultValue : $value;<br />
+}</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="55815""></a>
+  <div class="note">
+   <strong class="user">12345alex at gmx dot net</strong>
+   <a href="#55815" class="date">14-Aug-2005 07:00</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+this code:<br />
+&nbsp;&nbsp;&nbsp; print array() == NULL ? "True" : "False";<br />
+&nbsp;&nbsp;&nbsp; print " (" . (array() == NULL) . ")\n";<br />
+<br />
+&nbsp;&nbsp;&nbsp; $arr = array();<br />
+&nbsp;&nbsp;&nbsp; print array() == $arr ? "True" : "False";<br />
+&nbsp;&nbsp;&nbsp; print " (" . (array() == $arr) . ")\n";<br />
+<br />
+&nbsp;&nbsp;&nbsp; print count(array()) . "\n";<br />
+&nbsp;&nbsp;&nbsp; print count(NULL) . "\n";<br />
+<br />
+will output (on php4 and php5):<br />
+&nbsp;&nbsp;&nbsp; True (1)<br />
+&nbsp;&nbsp;&nbsp; True (1)<br />
+&nbsp;&nbsp;&nbsp; 0<br />
+&nbsp;&nbsp;&nbsp; 0<br />
+<br />
+so to decide wether i have NULL or an empty array i will also have to use gettype(). this seems some kind of weird for me, although if is this is a bug, somebody should have noticed it before.<br />
+<br />
+alex</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="54179""></a>
+  <div class="note">
+   <strong class="user">sabinx at gmail dot com</strong>
+   <a href="#54179" class="date">26-Jun-2005 11:25</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Pre- and Post-Incrementation, I believe, are important to note and in the correct place. The section deals with the value of an expression. ++$a and $a++ have different values, and both forms have valid uses.<br />
+<br />
+And, because it can be confusing, it is that much more important to note. Although it could be worded better, it does belong.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="53404""></a>
+  <div class="note">
+   
+   <a href="#53404" class="date">31-May-2005 12:07</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I don't see why it is necessary here to explain pre- and post- incrementing.<br />
+<br />
+This is something that will confuse new users of PHP, even longer time programmers will sometimes miss a the fine details of a construct like that.<br />
+<br />
+If something has a side-effect it should be on a line of it's own, or at least be an expression of it's own and not part of an assignment, condition or whatever.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="49666""></a>
+  <div class="note">
+   <strong class="user">tom at darlingpet dot com</strong>
+   <a href="#49666" class="date">04-Feb-2005 02:13</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Something I've noticed with ternary expressions is if you do something like :<br />
+<br />
+&lt;?= $var=="something" ? "is something" : "not something"; ?&gt;<br />
+<br />
+It will give wacky results sometimes...<br />
+<br />
+So be sure to enclose the ternary expression in parenthesis when ever necessary (such as having multiple expressions or nested ternary expressions)<br />
+<br />
+The above could look like:<br />
+<br />
+&lt;?= ($var=="something") ? "is something" : "not something"; ?&gt;<br />
+<br />
+It's also a good idea to use parenthesis when using something SIMILAR to:<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">echo (</span><span class="default">trim</span><span class="keyword">(</span><span class="default">$var</span><span class="keyword">)==</span><span class="string">""</span><span class="keyword">) ? </span><span class="string">"empty" </span><span class="keyword">: </span><span class="string">"not empty"</span><span class="keyword">;<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+In some cases other than the &lt;?= ?&gt; example, not placing the entire expression in appropriate parenthesis might yield undesirable results as well.. but I'm not quite sure.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="29789""></a>
+  <div class="note">
+   <strong class="user">stian at datanerd dot net</strong>
+   <a href="#29789" class="date">25-Feb-2003 02:37</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+The short-circuit feature is indeed intended, and there are two types of evaluators, those who DO short-circuit, and those who DON'T, || / &amp;&amp; and | / &amp; respectively.<br />
+The latter method is the bitwise operators, but works great with the usual boolean values ( 0/1 )<br />
+<br />
+So if you don't want short-circuiting, try using the | and &amp; instead.<br />
+<br />
+Read more about the bitwise operators here:<br />
+<a href="http://www.php.net/manual/en/language.operators.bitwise.php" rel="nofollow" target="_blank">http://www.php.net/manual/en/language.operators.bitwise.php</a></span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="24119""></a>
+  <div class="note">
+   <strong class="user">oliver at hankeln-online dot de</strong>
+   <a href="#24119" class="date">07-Aug-2002 06:06</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+The short-circuiting IS a feature. It is also available in C, so I suppose the developers won«t remove it in future PHP versions.<br />
+<br />
+It is rather nice to write:<br />
+<br />
+$file=fopen("foo","r") or die("Error!");<br />
+<br />
+Greets,<br />
+Oliver</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="23399""></a>
+  <div class="note">
+   <strong class="user">php at cotest dot com</strong>
+   <a href="#23399" class="date">17-Jul-2002 11:08</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+It should probably be mentioned that the short-circuiting of expressions (mentioned in some of the comments above) is often called "lazy evaluation" (in case someone else searches for the term "lazy" on this page and comes up empty!).</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="21750""></a>
+  <div class="note">
+   <strong class="user">Mattias at mail dot ee</strong>
+   <a href="#21750" class="date">25-May-2002 03:29</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+A note about the short-circuit behaviour of the boolean operators.<br />
+<br />
+1. if (func1() || func2())<br />
+Now, if func1() returns true, func2() isn't run, since the expression<br />
+will be true anyway.<br />
+<br />
+2. if (func1() &amp;&amp; func2())<br />
+Now, if func1() returns false, func2() isn't run, since the expression<br />
+will be false anyway.<br />
+<br />
+The reason for this behaviour comes probably from the programming<br />
+language C, on which PHP seems to be based on. There the<br />
+short-circuiting can be a very useful tool. For example:<br />
+<br />
+int * myarray = a_func_to_set_myarray(); // init the array<br />
+if (myarray != NULL &amp;&amp; myarray[0] != 4321) // check<br />
+&nbsp;&nbsp;&nbsp; myarray[0] = 1234;<br />
+<br />
+Now, the pointer myarray is checked for being not null, then the<br />
+contents of the array is validated. This is important, because if<br />
+you try to access an array whose address is invalid, the program<br />
+will crash and die a horrible death. But thanks to the short<br />
+circuiting, if myarray == NULL then myarray[0] won't be accessed,<br />
+and the program will work fine.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="11883""></a>
+  <div class="note">
+   <strong class="user">yasuo_ohgaki at hotmail dot com</strong>
+   <a href="#11883" class="date">11-Mar-2001 11:14</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Manual defines "expression is anything that has value", Therefore, parser will give error for following code.<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">(</span><span class="default">$val</span><span class="keyword">) ? echo(</span><span class="string">'true'</span><span class="keyword">) : echo(</span><span class="string">'false'</span><span class="keyword">);<br />
+</span><span class="default">Note</span><span class="keyword">: </span><span class="string">"? : " </span><span class="default">operator has this syntax&nbsp; </span><span class="string">"expr ? expr : expr;"<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+since echo does not have(return) value and ?: expects expression(value).<br />
+<br />
+However, if function/language constructs that have/return value, such as include(), parser compiles code.<br />
+<br />
+Note: User defined functions always have/return value without explicit return statement (returns NULL if there is no return statement). Therefore, user defined functions are always valid expressions. <br />
+[It may be useful to have VOID as new type to prevent programmer to use function as RVALUE by mistake]<br />
+<br />
+For example,<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">(</span><span class="default">$val</span><span class="keyword">) ? include(</span><span class="string">'true.inc'</span><span class="keyword">) : include(</span><span class="string">'false.inc'</span><span class="keyword">);<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+is valid, since "include" returns value.<br />
+<br />
+The fact "echo" does not return value(="echo" is not a expression), is less obvious to me. <br />
+<br />
+Print() and Echo() is NOT identical since print() has/returns value and can be a valid expression.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="9801""></a>
+  <div class="note">
+   <strong class="user">anthony at n dot o dot s dot p dot a dot m dot trams dot com</strong>
+   <a href="#9801" class="date">24-Nov-2000 11:01</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+The ternary conditional operator is a useful way of avoiding inconvenient if statements.&nbsp; They can even be used in the middle of a string concatenation, if you use parentheses.&nbsp; <br />
+<br />
+Example:<br />
+<br />
+if ( $wakka ) {<br />
+&nbsp; $string = 'foo' ;<br />
+} else {<br />
+&nbsp; $string = 'bar' ;<br />
+}<br />
+<br />
+The above can be expressed like the following:<br />
+<br />
+$string = $wakka ? 'foo' : 'bar' ;<br />
+<br />
+If $wakka is true, $string is assigned 'foo', and if it's false, $string is assigned 'bar'.<br />
+<br />
+To do the same in a concatenation, try:<br />
+<br />
+$string = $otherString . ( $wakka ? 'foo' : 'bar' ) ;</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
 <hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="language.constants.predefined.html">Magic constants</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="language.operators.html">Operators</a></div>

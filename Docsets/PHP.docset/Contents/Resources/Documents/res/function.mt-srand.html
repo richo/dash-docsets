@@ -135,7 +135,878 @@ to seed the random number generator with <span class="function"><a href="functio
   </p>
  </div>
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="106288""></a>
+  <div class="note">
+   <strong class="user">josh at joshstrike dot com</strong>
+   <a href="#106288" class="date">25-Oct-2011 06:29</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+mt_srand effectively performs a modulo % 2147483648 on positive integers over 32 bits, but with negative integers it instead adds 2147483648 to the value it gets.<br />
+<br />
+Seeds with equal results:<br />
+2147483649 == 1<br />
+2147483648 == 0<br />
+2147483647 == -1 <br />
+-2147483646 == 2<br />
+-2147483647 == 1<br />
+-2147483648 == 0<br />
+<br />
+Importantly though, seeding with anything less than -2147483648 will always yield the same result as seeding with zero.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="97322""></a>
+  <div class="note">
+   <strong class="user">limo at anime42 dot com</strong>
+   <a href="#97322" class="date">14-Apr-2010 07:33</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I have spent the last couple of hours trying to track down a bug which affects mt_rand/rand and mt_srand/mt_rand.<br />
+<br />
+OS is Debian 5.0.4 "Lenny".<br />
+PHP version is 5.3.2-0.dotdeb.1 with Suhosin-Patch (cli) (built: Mar&nbsp; 9 2010 11:42:01).<br />
+<br />
+I have tried to fix the issue by appending the following lines into the .htaccess / apache2 main config file:<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; php_value suhosin.mt_srand.ignore Off<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; php_value suhosin.srand.ignore Off<br />
+<br />
+This has helped a bit, stabilizing the beggining of the pseudo random number sequence, but the generator still fails after a fair number of iterations (roughly around 1K~3K.<br />
+<br />
+*** Removing the Suhosin extension has resolved this issue, I am waiting for an official extension build that will work with 5.3.x so that I can reattach it into the php configuration. ***<br />
+<br />
+Here is the code which ought to replicate the problem:<br />
+<br />
+&nbsp;&nbsp;&nbsp; $len = 100000;<br />
+&nbsp;&nbsp;&nbsp; $min = 0;<br />
+&nbsp;&nbsp;&nbsp; $max = 99;<br />
+<br />
+&nbsp;&nbsp;&nbsp; $t = (int)(microtime(true)*0xFFFF);<br />
+<br />
+&nbsp;&nbsp;&nbsp; $a = array();<br />
+&nbsp;&nbsp;&nbsp; srand( $t );<br />
+<br />
+&nbsp;&nbsp;&nbsp; for ( $i = 0; $i &lt; $len; $i ++ )<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $a[$i] = rand( $min, $max );<br />
+<br />
+&nbsp;&nbsp;&nbsp; $b = array();<br />
+&nbsp;&nbsp;&nbsp; srand( $t );<br />
+<br />
+&nbsp;&nbsp;&nbsp; for ( $i = 0; $i &lt; $len; $i ++ )<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $b[$i] = rand( $min, $max );<br />
+<br />
+&nbsp;&nbsp;&nbsp; for ( $i = 0; $i &lt; $len; $i ++ )<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if ( $a[$i] !== $b[$i] )<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; die( 'Pseudo-random sequence borked at #'.$i.'th iteration!');<br />
+<br />
+&nbsp;&nbsp;&nbsp; echo 'Your pseudo-random sequencer is working correctly.';<br />
+&nbsp;&nbsp;&nbsp; exit( 0 );</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="96922""></a>
+  <div class="note">
+   <strong class="user">dev at 10e12 dot net</strong>
+   <a href="#96922" class="date">23-Mar-2010 04:44</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Sorry for the error in the previous...<br />
+Due to the glitch with the wordwrap I got annoyed and lost focus on the copy and paste move.<br />
+<br />
+The last part of the actual function should read.<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="comment">// select what we need to return<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">if (((</span><span class="default">$retMax </span><span class="keyword">== </span><span class="default">0</span><span class="keyword">)&amp;&amp;(</span><span class="default">$retMax </span><span class="keyword">= </span><span class="default">mt_getrandmax</span><span class="keyword">))||<br />
+(</span><span class="default">$retMin</span><span class="keyword">==</span><span class="default">$retMax</span><span class="keyword">)){<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">mt_rand</span><span class="keyword">();<br />
+&nbsp;&nbsp;&nbsp; }else{<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">mt_rand</span><span class="keyword">(</span><span class="default">$retMin</span><span class="keyword">,</span><span class="default">$retMax</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+And Nothing else of course...</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="96921""></a>
+  <div class="note">
+   <strong class="user">dev at 10e12 dot net</strong>
+   <a href="#96921" class="date">23-Mar-2010 03:56</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+What about this for an example... <br />
+<br />
+(sorry for the funky line breaks but I have once<br />
+more reported the bug on this issue of word <br />
+wrapping to no avail)<br />
+<br />
+Intending to use it in passing a "semi-guaranteed"<br />
+properly seeded random number to a client, then to <br />
+capture input from the user which must be encrypted <br />
+client side before being sent to the server again <br />
+&nbsp; a) during the same session and, <br />
+&nbsp; b) within a set time limit.<br />
+<br />
+for more reading also see:<br />
+&nbsp; AES Rijndael enc/dec routines for javaScript<br />
+&nbsp; developed and tested by Herbert Hanewinkel, <br />
+&nbsp; <a href="http://www.hanewin.net/encrypt/aes/aes.htm" rel="nofollow" target="_blank">http://www.hanewin.net/encrypt/aes/aes.htm</a><br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="comment">/*<br />
+calling the function, prepping the data to send to <br />
+the client... , who then uses it in a javascript <br />
+implementation of AES Encrypt.<br />
+*/<br />
+<br />
+</span><span class="keyword">function </span><span class="default">SHA256</span><span class="keyword">(</span><span class="default">$str</span><span class="keyword">, </span><span class="default">$keyval</span><span class="keyword">=</span><span class="string">""</span><span class="keyword">){<br />
+&nbsp;&nbsp;&nbsp; if (</span><span class="default">$keyval</span><span class="keyword">!==</span><span class="string">""</span><span class="keyword">){</span><span class="comment">//not null or empty<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$sHash </span><span class="keyword">= </span><span class="default">mhash</span><span class="keyword">(</span><span class="default">Constant</span><span class="keyword">(</span><span class="string">'MHASH_SHA256'</span><span class="keyword">),</span><span class="default">$str</span><span class="keyword">, </span><span class="default">$keyval</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }else{<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$sHash </span><span class="keyword">= </span><span class="default">mhash</span><span class="keyword">(</span><span class="default">Constant</span><span class="keyword">(</span><span class="string">'MHASH_SHA256'</span><span class="keyword">),</span><span class="default">$str</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// same as Binary 2 Hex conversion<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">return </span><span class="default">implode</span><span class="keyword">(</span><span class="default">unpack</span><span class="keyword">(</span><span class="string">'H*'</span><span class="keyword">,</span><span class="default">$sHash</span><span class="keyword">),</span><span class="string">''</span><span class="keyword">);<br />
+}<br />
+<br />
+</span><span class="comment">/*---------------------------------------------------<br />
+Radomizing the random data with fixed data for <br />
+the user and location If return value maximum <br />
+is set to zero (0) the function uses mt_getrandmax<br />
+If both retMin and retMax is zero (0) the function <br />
+uses mt_rand w.o. limits<br />
+*----------------------------------------------------*/<br />
+</span><span class="keyword">function </span><span class="default">local_prgn</span><span class="keyword">(</span><span class="default">$retMin </span><span class="keyword">= </span><span class="default">0</span><span class="keyword">, </span><span class="default">$retMax </span><span class="keyword">= </span><span class="default">0</span><span class="keyword">){<br />
+</span><span class="comment">// first get the session id of the request session<br />
+&nbsp; </span><span class="default">$sSrv </span><span class="keyword">= </span><span class="default">session_id</span><span class="keyword">(); <br />
+<br />
+</span><span class="comment">// the following is valid only on the current server<br />
+&nbsp; </span><span class="default">$sSrv </span><span class="keyword">= </span><span class="default">implode</span><span class="keyword">(</span><span class="default">unpack</span><span class="keyword">(</span><span class="default">$_SERVER</span><span class="keyword">[</span><span class="string">'SERVER_NAME'</span><span class="keyword">].<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span class="default">$_SERVER</span><span class="keyword">[</span><span class="string">'SERVER_ADDR'</span><span class="keyword">].</span><span class="default">$sSrv</span><span class="keyword">),</span><span class="string">''</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">// the following applies only to the requesting client<br />
+&nbsp; </span><span class="default">$sReq </span><span class="keyword">= </span><span class="default">implode</span><span class="keyword">(</span><span class="default">unpack</span><span class="keyword">(</span><span class="default">$_SERVER</span><span class="keyword">[</span><span class="string">'REMOTE_ADDR'</span><span class="keyword">].<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span class="default">$_SERVER</span><span class="keyword">[</span><span class="string">'REQUEST_TIME'</span><span class="keyword">]),</span><span class="string">''</span><span class="keyword">);<br />
+<br />
+</span><span class="comment">// get a SHA256 seed based on the current values<br />
+&nbsp; </span><span class="default">$sSeed </span><span class="keyword">= </span><span class="default">SHA256</span><span class="keyword">(</span><span class="default">$sSrv</span><span class="keyword">,</span><span class="default">$sReq</span><span class="keyword">); <br />
+<br />
+</span><span class="comment">// get a random value based on the uniqueness of the seed above<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">mt_srand</span><span class="keyword">(</span><span class="default">$sSeed</span><span class="keyword">); </span><span class="comment">// seed the random num gen<br />
+<br />
+// some error handling and checking<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">if (</span><span class="default">$retMin </span><span class="keyword">&gt; </span><span class="default">$retMax</span><span class="keyword">){ <br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// swap vars if wrong order<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$rx </span><span class="keyword">= </span><span class="default">$retMax</span><span class="keyword">; </span><span class="default">$retMax </span><span class="keyword">= </span><span class="default">$retMin</span><span class="keyword">; </span><span class="default">$retMin </span><span class="keyword">= </span><span class="default">$rx</span><span class="keyword">; <br />
+<br />
+&nbsp;&nbsp;&nbsp; } else if (</span><span class="default">$retMin </span><span class="keyword">== </span><span class="default">$retMax</span><span class="keyword">){<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">//meaningless range, not very random<br />
+&nbsp;&nbsp;&nbsp; //ensure for next check in this range<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$retMin </span><span class="keyword">= </span><span class="default">0</span><span class="keyword">; </span><span class="default">$retMax </span><span class="keyword">= </span><span class="default">0</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+</span><span class="comment">// select what we need to return<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">if (((</span><span class="default">$retMax </span><span class="keyword">== </span><span class="default">0</span><span class="keyword">)&amp;&amp;(</span><span class="default">$retMax </span><span class="keyword">= </span><span class="default">mt_getrandmax</span><span class="keyword">))||<br />
+(</span><span class="default">$retMin</span><span class="keyword">==</span><span class="default">$retMax</span><span class="keyword">)){<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">mt_getrandmax</span><span class="keyword">();<br />
+&nbsp;&nbsp;&nbsp; }else{<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">mt_getrandmax</span><span class="keyword">(</span><span class="default">$retMin</span><span class="keyword">,</span><span class="default">$retMax</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+}<br />
+<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="79301""></a>
+  <div class="note">
+   <strong class="user">Alderin1 at gmail dot com</strong>
+   <a href="#79301" class="date">19-Nov-2007 10:55</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I think Joe was a little confused by the wording.&nbsp; The note meant that implementations of mt_rand() before the change would generate a different set of pseudorandom numbers than would implementations of mt_rand() after the change for the same seed.<br />
+<br />
+That's how it reads for me, anyway.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="79152""></a>
+  <div class="note">
+   <strong class="user">Hayley Watson</strong>
+   <a href="#79152" class="date">13-Nov-2007 03:53</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I don't know what Joe is referring to, but the following code never seems to output 'FOO!' however many times I run it:<br />
+<br />
+<span class="default">&lt;?php<br />
+$trials </span><span class="keyword">= </span><span class="default">1000</span><span class="keyword">;<br />
+</span><span class="default">$trial_length </span><span class="keyword">= </span><span class="default">500</span><span class="keyword">;<br />
+</span><span class="default">$seed </span><span class="keyword">= </span><span class="default">rand</span><span class="keyword">(); </span><span class="comment">// Not mt_rand!<br />
+</span><span class="default">$s </span><span class="keyword">= </span><span class="default">array_fill</span><span class="keyword">(</span><span class="default">0</span><span class="keyword">, </span><span class="default">$trials</span><span class="keyword">, </span><span class="string">''</span><span class="keyword">);<br />
+for(</span><span class="default">$j</span><span class="keyword">=</span><span class="default">0</span><span class="keyword">; </span><span class="default">$j</span><span class="keyword">&lt;</span><span class="default">$trials</span><span class="keyword">; ++</span><span class="default">$j</span><span class="keyword">)<br />
+{<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">mt_srand</span><span class="keyword">(</span><span class="default">$seed</span><span class="keyword">); </span><span class="comment">// Same seed =&gt; same results (?)<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">for(</span><span class="default">$i</span><span class="keyword">=</span><span class="default">0</span><span class="keyword">; </span><span class="default">$i</span><span class="keyword">&lt;</span><span class="default">$trial_length</span><span class="keyword">; ++</span><span class="default">$i</span><span class="keyword">)<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$s</span><span class="keyword">[</span><span class="default">$j</span><span class="keyword">] .= </span><span class="default">chr</span><span class="keyword">(</span><span class="default">mt_rand</span><span class="keyword">()); </span><span class="comment">// Exploit the fact that chr($n)==chr($n%256)<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">}<br />
+}<br />
+for(</span><span class="default">$j</span><span class="keyword">=</span><span class="default">0</span><span class="keyword">; </span><span class="default">$j</span><span class="keyword">&lt;</span><span class="default">$trials</span><span class="keyword">; ++</span><span class="default">$j</span><span class="keyword">)<br />
+{<br />
+&nbsp;&nbsp;&nbsp; for(</span><span class="default">$i</span><span class="keyword">=</span><span class="default">$j</span><span class="keyword">+</span><span class="default">1</span><span class="keyword">; </span><span class="default">$i</span><span class="keyword">&lt;</span><span class="default">$trials</span><span class="keyword">; ++</span><span class="default">$i</span><span class="keyword">)<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if(</span><span class="default">$s</span><span class="keyword">[</span><span class="default">$i</span><span class="keyword">]!=</span><span class="default">$s</span><span class="keyword">[</span><span class="default">$j</span><span class="keyword">]) echo </span><span class="string">"FOO! Different random strings generated from the same seed!\n"</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+}<br />
+</span><span class="default">$sample </span><span class="keyword">= </span><span class="default">rand</span><span class="keyword">(</span><span class="default">0</span><span class="keyword">,</span><span class="default">$trials</span><span class="keyword">-</span><span class="default">1</span><span class="keyword">);<br />
+echo </span><span class="default">0</span><span class="keyword">,</span><span class="string">"\t"</span><span class="keyword">,</span><span class="default">base64_encode</span><span class="keyword">(</span><span class="default">$s</span><span class="keyword">[</span><span class="default">0</span><span class="keyword">]),</span><span class="string">"\n"</span><span class="keyword">;<br />
+echo </span><span class="default">$sample</span><span class="keyword">,</span><span class="string">"\t"</span><span class="keyword">,</span><span class="default">base64_encode</span><span class="keyword">(</span><span class="default">$s</span><span class="keyword">[</span><span class="default">$sample</span><span class="keyword">]);<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="77550""></a>
+  <div class="note">
+   <strong class="user">Joe</strong>
+   <a href="#77550" class="date">03-Sep-2007 04:59</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+In some cases it is necessary to be able to create same sequence of pseudo-random numbers. E.g. to run repeatable simulation run with different parameters. Since php 5.2.1 it is not possible even using same seed in mt_srand function. For such cases use srand instead.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="75763""></a>
+  <div class="note">
+   <strong class="user">Kapr</strong>
+   <a href="#75763" class="date">14-Jun-2007 10:25</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+To slonmron:<br />
+Seed for random numbers generator should be initialized only once, before calling proper rand function. After that you give pseudorandom sequence by multiple calling rand. Initialization of random seed is used if 1) You have better source of random seed than implemented algorithm or 2) if You need always the same sequence of pseudorandom numbers. Example given by You shows only that first rand result strongly depends on seed, what is by definition. It is not a bug.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="73934""></a>
+  <div class="note">
+   <strong class="user">slonmron_no_spam_please_ at yahoo dot com</strong>
+   <a href="#73934" class="date">15-Mar-2007 11:44</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Looks like mt_rand() gives same result for different seeds when the lowest bits are different only. Try this:<br />
+<br />
+#!/usr/bin/php -q<br />
+<span class="default">&lt;?php<br />
+<br />
+$min </span><span class="keyword">= -</span><span class="default">17</span><span class="keyword">;<br />
+</span><span class="default">$max </span><span class="keyword">= </span><span class="default">$min </span><span class="keyword">+ </span><span class="default">48</span><span class="keyword">; </span><span class="comment">// 48 is to fit the results in my console<br />
+<br />
+</span><span class="keyword">for (</span><span class="default">$testseed</span><span class="keyword">=</span><span class="default">$min</span><span class="keyword">; </span><span class="default">$testseed</span><span class="keyword">&lt;</span><span class="default">$max</span><span class="keyword">; </span><span class="default">$testseed</span><span class="keyword">++)<br />
+{<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">mt_srand</span><span class="keyword">( </span><span class="default">$testseed </span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$r </span><span class="keyword">= </span><span class="default">mt_rand</span><span class="keyword">();<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">printf</span><span class="keyword">(</span><span class="string">"mt_srand( 0x%08x ): mt_rand() == 0x%08x == %d\n"</span><span class="keyword">, </span><span class="default">$testseed</span><span class="keyword">, </span><span class="default">$r</span><span class="keyword">, </span><span class="default">$r</span><span class="keyword">);<br />
+}<br />
+<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+This is a snapshop of the results:<br />
+...<br />
+mt_srand( 0xfffffffc ): mt_rand() == 0x0a223d97 == 170016151<br />
+mt_srand( 0xfffffffd ): mt_rand() == 0x0a223d97 == 170016151<br />
+mt_srand( 0xfffffffe ): mt_rand() == 0x350a9509 == 889885961<br />
+mt_srand( 0xffffffff ): mt_rand() == 0x350a9509 == 889885961<br />
+mt_srand( 0x00000000 ): mt_rand() == 0x71228443 == 1898087491<br />
+mt_srand( 0x00000001 ): mt_rand() == 0x71228443 == 1898087491<br />
+mt_srand( 0x00000002 ): mt_rand() == 0x4e0a2cdd == 1309289693<br />
+mt_srand( 0x00000003 ): mt_rand() == 0x4e0a2cdd == 1309289693<br />
+...<br />
+<br />
+I found this occationally. I have no idea if it is a bug or not. In my real life I do not intend to use sequentional seeds. However, probably this may be important for somebody.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="69546""></a>
+  <div class="note">
+   <strong class="user">oxai NOSPAM post dot htnet dot hr</strong>
+   <a href="#69546" class="date">09-Sep-2006 11:14</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+try this instead(!):<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+</span><span class="comment">// randomizes MT's seed once per process.<br />
+<br />
+</span><span class="keyword">function </span><span class="default">randomizeProcessSeed</span><span class="keyword">()<br />
+{<br />
+&nbsp;&nbsp;&nbsp; static </span><span class="default">$thisProcessHasBeenInitialized</span><span class="keyword">;<br />
+<br />
+&nbsp;&nbsp;&nbsp; if( </span><span class="default">$thisProcessHasBeenInitialized </span><span class="keyword">) return;<br />
+<br />
+&nbsp;&nbsp;&nbsp; list(</span><span class="default">$usec</span><span class="keyword">, </span><span class="default">$sec</span><span class="keyword">) = </span><span class="default">explode</span><span class="keyword">(</span><span class="string">' '</span><span class="keyword">, </span><span class="default">microtime</span><span class="keyword">());<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">mt_srand</span><span class="keyword">( (</span><span class="default">10000000000 </span><span class="keyword">* (float)</span><span class="default">$usec</span><span class="keyword">) ^ (float)</span><span class="default">$sec </span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$thisProcessHasBeenInitialized </span><span class="keyword">= </span><span class="default">true</span><span class="keyword">;<br />
+} </span><span class="default">randomizeProcessSeed</span><span class="keyword">();<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="60633""></a>
+  <div class="note">
+   <strong class="user">gigs</strong>
+   <a href="#60633" class="date">12-Jan-2006 11:13</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+used the little script from mrcheezy at hotmail dot com and got much better results using<br />
+<br />
+mt_srand(crc32(microtime()));</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="59266""></a>
+  <div class="note">
+   <strong class="user">vbassassin at coderheaven dot com</strong>
+   <a href="#59266" class="date">30-Nov-2005 08:57</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+"Better still: Use a 31-bit hash of microtime() as the seed. "<br />
+<br />
+Correct me if i am wrong, but woudlnt using microtime() still limit the total seeds to 1,000,000 again? Since the 31-bit hash will always give the same hash for the same number, and in the microtime() function you could have 1,000,000 or less numbers. So in effect your still no better off at all :-p<br />
+<br />
+Best regards,<br />
+scott<br />
+<br />
+PS: I actually agree that PHP has pretty much resolved the issue and got as close as anyones going to get to solving the seeding issue by introducing the "Mersenne Twister" algorithm which creates a much larger pool than 1,000,000 numbers. Just because the mt_srand() function exists doesnt mean you HAVE to use it ;-) use it if you NEED a specific list of the same numbers (comes in handy for encryptions with passwords ;-)</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="56682""></a>
+  <div class="note">
+   
+   <a href="#56682" class="date">12-Sep-2005 06:03</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+It's better to use the following method instead of the one in the documentation metioned:<br />
+<br />
+<span class="default">&lt;?php<br />
+mt_srand</span><span class="keyword">((double)(</span><span class="default">microtime</span><span class="keyword">() ^ </span><span class="default">posix_getpid</span><span class="keyword">()));<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+Otherwise people requesting the script at the same time could get the same generated number.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="49237""></a>
+  <div class="note">
+   <strong class="user">Schrecktech</strong>
+   <a href="#49237" class="date">20-Jan-2005 06:16</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+::: My seeding report :::<br />
+<br />
+For FreeBSD 4.8-STABLE PHP 4.3.10 it was good enough and faster to not seed at all...although I did not test the random pseudo terminal.&nbsp; <br />
+<br />
+In detail only seeding once by a previous seed using the hex version (case 3 below) for larger numbers and longer run times faired the best.&nbsp; For small numbers it was better to not seed at all (let alone faster).&nbsp; Play with the $loop and $max numbers to see...<br />
+<br />
+&lt;?<br />
+function get_a_good_seed<br />
+(<br />
+&nbsp;&nbsp;&nbsp; $choice = 3<br />
+)<br />
+{<br />
+&nbsp;&nbsp;&nbsp; static $seed;<br />
+&nbsp;&nbsp;&nbsp; $seed = 0;<br />
+&nbsp;&nbsp;&nbsp; switch($choice)<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; case 1:<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; // from php.net documentation.<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; list($usec, $sec) = explode(' ', microtime());<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $seed = (float) $sec + ((float) $usec * 1000000);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; break;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; case 2:<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; // from high primary number.<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $seed = (double)microtime()*1000003;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; break;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; case 3:<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; // from a good random source.<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; $seed = hexdec(substr(md5(microtime()), -8)) &amp; 0x7fffffff;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; break;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; case 4:<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; // from random terminal<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; // NOT TESTED<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; break;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; default:<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; break;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; return($seed);<br />
+}<br />
+function load_last_random<br />
+(<br />
+)<br />
+{<br />
+&nbsp;&nbsp;&nbsp; static $last;<br />
+&nbsp;&nbsp;&nbsp; static $handle;<br />
+&nbsp;&nbsp;&nbsp; // NOTE: create this file with a random integer...<br />
+&nbsp;&nbsp;&nbsp; $handle = fopen("random.txt", "r");<br />
+&nbsp;&nbsp;&nbsp; while (!feof($handle)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $last = fgets($handle, 4096);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; fclose($handle);<br />
+&nbsp;&nbsp;&nbsp; return($last);<br />
+}<br />
+<br />
+function save_last_random<br />
+(<br />
+&nbsp;&nbsp;&nbsp; $save = 0<br />
+)<br />
+{<br />
+&nbsp;&nbsp;&nbsp; $handle = fopen("random.txt", "w");<br />
+&nbsp;&nbsp;&nbsp; fwrite($handle, $save); <br />
+&nbsp;&nbsp;&nbsp; fclose($handle);<br />
+}<br />
+<br />
+function seed_random_number_generator<br />
+(<br />
+&nbsp;&nbsp;&nbsp; $type = 3,<br />
+&nbsp;&nbsp;&nbsp; $ignore_generated_already = FALSE<br />
+)<br />
+{<br />
+&nbsp;&nbsp;&nbsp; static $generator_seeded = FALSE;<br />
+&nbsp;&nbsp;&nbsp; if($ignore_generated_already || !$generator_seeded)<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; // 1) load last with time...force integer.<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; // 2) generate a new random seed and save for next time... <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; mt_srand(( load_last_random()+get_a_good_seed($type) ) &amp; 0x7fffffff);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; save_last_random(mt_rand());<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $generator_seeded= TRUE;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+}<br />
+?&gt;</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="34383""></a>
+  <div class="note">
+   <strong class="user">fasaxc at yahoo dot co dot uk</strong>
+   <a href="#34383" class="date">25-Jul-2003 08:01</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+In fact, here's an even better function than the one below assuming your install provides a random entropy daemon and you're running *nix (to check for the former type "head -c 6 /dev/urandom" on the command line if available - if you get 6 random characters you're set). N.B. php must be able to find the head program so it must be in your path and allowed if you're running safe mode.<br />
+<br />
+The functions db_set_global() and db_get_global() I use to set/get a variable from a central database but you could save/restore the variable from a file instead or just use the function get_random_word().<br />
+<br />
+&lt;?<br />
+<br />
+####################################<br />
+## returns a random 32bit integer.<br />
+## Passing a parameter of True gives a better random<br />
+## number but relies on the /dev/random device<br />
+## which can block for a long time while it gathers<br />
+## enough random data ie. DONT USE IT unless<br />
+##&nbsp;&nbsp; a) You have an entropy generator attatched to<br />
+## your computer set to /dev/random -OR-<br />
+##&nbsp;&nbsp; b) Your script is running locally and generating<br />
+## a good random number is very important<br />
+####################################<br />
+function get_random_word($force_random=False) {<br />
+&nbsp;&nbsp;&nbsp; if ($force_random) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $u='';<br />
+&nbsp;&nbsp;&nbsp; } else {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $u='u';<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; $ran_string=shell_exec("head -c 4 /dev/{$u}random");<br />
+&nbsp;&nbsp;&nbsp; $random=ord(substr($ran_string,0,1))&lt;&lt;24 |<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; ord(substr($ran_string,1,1))&lt;&lt;16 |<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; ord(substr($ran_string,2,1))&lt;&lt;8 |<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; ord(substr($ran_string,3,1));<br />
+&nbsp;&nbsp;&nbsp; return $random;<br />
+}<br />
+<br />
+--EITHER - IF YOU'VE SET UP A DATABASE OF GLOBAL VARIABLES--<br />
+<br />
+## If the seed is found in the database<br />
+if ($seed=db_get_global('seed')) {<br />
+&nbsp;&nbsp;&nbsp; # use mt_rand() to get the next seed<br />
+&nbsp;&nbsp;&nbsp; mt_srand($seed);<br />
+&nbsp;&nbsp;&nbsp; # then XOR that with a random word<br />
+&nbsp;&nbsp;&nbsp; $seed=(mt_rand() ^ get_random_word());<br />
+} else {<br />
+## Make a completely new seed (First Run)<br />
+&nbsp;&nbsp;&nbsp; # Generate the seed as a proper random no using /dev/random<br />
+&nbsp;&nbsp;&nbsp; $seed=get_random_word(True);<br />
+&nbsp;&nbsp;&nbsp; mt_srand($seed);<br />
+}<br />
+<br />
+db_set_global('seed',$seed);<br />
+<br />
+--OR JUST--<br />
+mt_srand(get_random_word());<br />
+<br />
+?&gt;</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="34186""></a>
+  <div class="note">
+   <strong class="user">fasaxc at yahoo dot com</strong>
+   <a href="#34186" class="date">17-Jul-2003 04:14</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+The best way to ensure a random seed is to do the following:<br />
+To start:<br />
+&nbsp;&nbsp; 1) get your initial seed with mt_srand(microtime() * 1000000)<br />
+&nbsp;&nbsp; 2) generate a random no. $random=mt_rand()<br />
+&nbsp;&nbsp; 3) save this number in a file (or database or whatever so that it is available next time the page is loaded)<br />
+<br />
+&nbsp;Now, for each time your script is loaded :<br />
+&nbsp;&nbsp; 1) load the value you saved above and do $new_seed=($random+(microtime() * 1000000))%pow(2,32)<br />
+&nbsp;&nbsp; 2) mt_srand($new_seed);<br />
+&nbsp;&nbsp; 3) generate a new random no. $random=mt_rand()<br />
+&nbsp;&nbsp; 4) save that number back in the file/database<br />
+<br />
+This procedure takes advantage not only of the randomness of microtime() but of all the previous calls to microtime() so your seed becomes better and better with time. It also generates good seeds even on platforms where microtime() doesn't take all the values it can.<br />
+<br />
+Just using microtime() * 1000000 only results in 1000000 possible seeds (and less on some platforms as noted) - the function above gives 2^32 seeds with an avelanche effect accross multiple executions.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="29565""></a>
+  <div class="note">
+   <strong class="user">mrcheezy at hotmail dot com</strong>
+   <a href="#29565" class="date">17-Feb-2003 02:14</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Very good points above on seeds, thank you. If you would like to test a seed try using the code below. It will take between 5 and 20 seconds depending on your system and then will spit out the number of reused keys out of 100,000 attempts.<br />
+<br />
+;&nbsp; for ($i=0; $i&lt;100000; $i++) {<br />
+;&nbsp; &nbsp; mt_srand(hexdec(substr(md5(microtime()), -8)) &amp; 0x7fffffff);<br />
+;&nbsp; &nbsp; $rand = mt_rand();<br />
+;<br />
+;&nbsp; &nbsp; ($arr[$rand] == '1') ? $k++ : $arr[$rand] = '1';<br />
+;&nbsp; }</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="27588""></a>
+  <div class="note">
+   <strong class="user">mattb at columbia dot edu</strong>
+   <a href="#27588" class="date">12-Dec-2002 12:54</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+This is effectively the same thing, but it uses a more efficient bit mask instead of a substring. Here's the verbose version:<br />
+<br />
+&nbsp;&nbsp;&nbsp; function mkseed()<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $hash = md5(microtime());<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $loWord = substr($hash, -8);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $seed = hexdec($loWord);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; $seed &amp;= 0x7fffffff;<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return $seed;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+Or, if you're a real hacker, this is a more concise version:<br />
+<br />
+&nbsp;&nbsp;&nbsp; function mkseed()<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return hexdec(substr(md5(microtime()), -8)) &amp; 0x7fffffff;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+Note, the range on the md5 sum is really arbitrary. You could use whatever portion you like, just so long as it's 32 bits.<br />
+<br />
+Now just call mt_srand() (once) as follows:<br />
+<br />
+&nbsp;&nbsp;&nbsp; mt_srand(mkseed());<br />
+<br />
+Of course, unless you wanted the mkseed() function for something else, you could skip all that jive and just do this somewhere in a global include file:<br />
+<br />
+&nbsp;&nbsp;&nbsp; <span class="default">&lt;?php<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">/*<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; Global include file. Make sure this gets included before using<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; mt_rand().<br />
+&nbsp;&nbsp;&nbsp; */<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">if (!isset(</span><span class="default">$_MyApp_MtSrand</span><span class="keyword">)<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; || !</span><span class="default">$_MyApp_MtSrand</span><span class="keyword">)<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$_MyApp_MtSrand </span><span class="keyword">= </span><span class="default">true</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">mt_srand</span><span class="keyword">(</span><span class="default">hexdec</span><span class="keyword">(</span><span class="default">substr</span><span class="keyword">(</span><span class="default">md5</span><span class="keyword">(</span><span class="default">microtime</span><span class="keyword">()), -</span><span class="default">8</span><span class="keyword">)) &amp; </span><span class="default">0x7fffffff</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="25382""></a>
+  <div class="note">
+   <strong class="user">ghaecker_no_spam at idworld dot net</strong>
+   <a href="#25382" class="date">21-Sep-2002 01:20</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+The range of unique seeds using this method is a bit over 2 billion.&nbsp; This approach also prevents re-seeding.<br />
+<br />
+function seed_mt_rand() {<br />
+  static $done;<br />
+  if (!$done) {<br />
+    $hash = md5(microtime());<br />
+    $length = ((substr($hash,0,1) &lt; '8') ? 8 : 7 );<br />
+    mt_srand((int)base_convert(substr($hash,0,$length),16,10));<br />
+    $done = TRUE;<br />
+  }<br />
+}</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="22323""></a>
+  <div class="note">
+   <strong class="user">maxim at php dot net</strong>
+   <a href="#22323" class="date">13-Jun-2002 02:57</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+to : l_rossato@libero.it<br />
+<br />
+doing ...<br />
+<br />
+list($usec,$sec)=explode(" ",microtime());<br />
+$unique = mt_srand($sec * $usec);<br />
+<br />
+theoretiaclly, makes just as much sense as <br />
+<br />
+list($usec,$sec)=explode(" ",microtime());<br />
+$unique = $usec + 0;<br />
+<br />
+Once every while, depending on the microsecond resolution of your computer, the millisecond value will be a zero (0), and as I hope you know, in mathematics, any number multiplied by a zero becomes a zero itself.<br />
+<br />
+(x * 0 = 0)<br />
+<br />
+In real life, on a good machine, with a resolution to 1 million miliseconds per each second (i.e: Win2k server), you will be reduplicating your unique ID each million's ID issued. This means if you use it as your cookie encryption algorithm or a visitor ID, you will not exceed some million instances.<br />
+<br />
+Futhermore, if that would be for a software development that you re-distribuite, installed on some weird old PC, where resolution can be as small as 100 milliseconds per second - a code with this uniqueness algorithm just wouldn't last any long.<br />
+<br />
+Good Luck,<br />
+<br />
+Maxim Maletsky<br />
+maxim@php.net<br />
+<br />
+PHPBeginner.com</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="19244""></a>
+  <div class="note">
+   <strong class="user">changminyang at hananet dot net</strong>
+   <a href="#19244" class="date">20-Feb-2002 02:00</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+list($usec,$sec) = explode(" ",microtime());<br />
+<br />
+/* Test: Each get rand sequence are 10time. */<br />
+/* ex) 5.3point meaning 5point integer + 3point decimal */<br />
+<br />
+// case A:<br />
+// 5.0point - 1time<br />
+// 6.0point - 9time<br />
+$rand = (double)microtime()*1000000;<br />
+<br />
+// case B:<br />
+// 8.6point - 1time<br />
+// 9.4point - 1time<br />
+// 9.5point - 7time<br />
+// 10.3point - 1time<br />
+$rand = (double)$sec * $usec;<br />
+<br />
+// My case A:<br />
+// 8.0point - 10time<br />
+$rand = explode(".",$usec * $sec);<br />
+$rand = (double)substr($rand[0]*$rand[1],0,8);<br />
+<br />
+// My case B:<br />
+// 9.0point - 9time<br />
+// 10.0point - 1time<br />
+$rand = explode(".",$usec * $sec);<br />
+$rand = $rand[0] + $rand[1];<br />
+<br />
+mt_srand($rand);<br />
+srand($rand);<br />
+<br />
+// P.S&gt; My previous note is has wrong lines, sorry about it.&nbsp; This is right.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="16755""></a>
+  <div class="note">
+   <strong class="user">l_rossato at libero dot it</strong>
+   <a href="#16755" class="date">12-Nov-2001 08:47</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Try this much simpler approach:<br />
+list($usec,$sec)=explode(" ",microtime());<br />
+mt_srand($sec * $usec);<br />
+<br />
+This won't cause an overflow during the float-to-integer conversion.<br />
+Of course, if you only need ONE random number just take $sec * $usec! Otherwise, call mt_srand just once at the start of your program.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="16549""></a>
+  <div class="note">
+   <strong class="user">roundeye_no_spam at roundeye dot net</strong>
+   <a href="#16549" class="date">03-Nov-2001 05:23</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Since I've seen this problem in so many other manual comments I'm writing a note here.&nbsp; Basically, calling mt_srand() every time you call mt_rand() defeats the whole purpose of a generator like the Mersenne Twister, and will greatly reduce the quality of the number stream you produce.&nbsp; For cryptographic or security purposes this is A Bad Thing.<br />
+&lt;br&gt;<br />
+DON'T do this:<br />
+&lt;br&gt;<br />
+function bad_pick_random_number($min, $max) {<br />
+&nbsp; mt_srand();<br />
+&nbsp; return mt_rand($min, $max);<br />
+}<br />
+&lt;br&gt;<br />
+Instead, call mt_srand() *once* early in the execution of your program and pick your numbers separately after that:<br />
+&lt;br&gt;<br />
+function good_pick_random_number($min, $max) {<br />
+&nbsp;&nbsp; return mt_rand($min, $max);<br />
+}<br />
+&lt;br&gt;<br />
+Of course, if you're doing that sort of thing you might as well just call mt_rand() directly.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="16502""></a>
+  <div class="note">
+   <strong class="user">trobinson-a-t-gksystems-d-o-t-com</strong>
+   <a href="#16502" class="date">02-Nov-2001 02:15</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I see a problem with seeding with:<br />
+mt_srand((double)microtime()*1000000);<br />
+Too few seeds.<br />
+This chooses the seed from a space of only one million seeds. This is a shame, because the Mersenne Twister algorithm has a period of 2**19937-1.<br />
+So of all the possible starting points in the MT sequence, the above seed only chooses at random from among 1000000 starting points, or about 0.000...0001% of the possible starting points, where "..." is a string of about 5986 more zeros!<br />
+In real life, this means that if you note the first few random numbers, when you see the same first few numbers again, the chances are very good that you have the same seed and the rest of the sequence will be the same too.<br />
+<br />
+If you generate a random "unique" 100-character key for say cookie use, seeding as above, you will likely get a duplicate key after only 1000 keys or so. <br />
+Better: To supplement the results from mt_rand, also hash in the entire contents of the microtime() string.<br />
+Better still: Use a 31-bit hash of microtime() as the seed.<br />
+<br />
+Problem 2. Way too few seeds on some hardware. It is bad to rely on a clock ticking every microsecond. I have used computers where 100ms was the finest-resolution clock available. That would be just 10 different seeds, as the results from (double)microtime() would look like:<br />
+0.10000000<br />
+0.20000000<br />
+etc.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="15892""></a>
+  <div class="note">
+   <strong class="user">php_public at macfreek dot nl</strong>
+   <a href="#15892" class="date">07-Oct-2001 08:57</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+The seed is not good. The make_seed() function returns a big number (around 1.0E14), this number is bigger then 2147483647, the max. size of an integer. If the result of make_seed is first converted to an integer, which -on my setup- always becomes -2147483648. So, the above code always returns the same seed and I always end up with the same random numbers.<br />
+<br />
+Note: This might be related to a bug noted on <a href="http://www.php.net/manual/en/language.types.integer.php. But I couldn" rel="nofollow" target="_blank">http://www.php.net/manual/en/language.types.integer.php. But I couldn</a>'t confirm this, since it will be fixed in PHP 4.0.7, but that isn't released yet at the time of writing)<br />
+<br />
+I was also not able to fix it by return the seed modulo 2147483647.<br />
+So for now, I just suggest change the seed function as:<br />
+<br />
+function make_seed() {<br />
+&nbsp;&nbsp;&nbsp; return (double)microtime()*1000000;<br />
+}<br />
+<br />
+See also: uniqid()</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="function.mt-rand.html">mt_rand</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.octdec.html">octdec</a></div>
  <div class="up"><a href="ref.math.html">Math Functions</a></div>

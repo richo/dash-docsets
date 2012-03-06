@@ -75,7 +75,217 @@ C:\Windows\Temp\TuxA318.tmp
  </div>
 
 
-</div><hr /><div class="manualnavbar" style="text-align: center;">
+</div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="97044""></a>
+  <div class="note">
+   <strong class="user">bert-jan at bugbyte dot nl</strong>
+   <a href="#97044" class="date">29-Mar-2010 01:06</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+This function does not account for virtualhost-specific modifications to the temp path and/or open_basedir:<br />
+<br />
+&lt;Virtualhost&gt;<br />
+php_admin_value open_basedir /home/user<br />
+php_admin_value upload_tmp_dir /home/user/tmp<br />
+php_admin_value session.save_path /home/user/tmp<br />
+&lt;/Virtualhost&gt;<br />
+<br />
+Within this config it still returns /tmp</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="94119""></a>
+  <div class="note">
+   <strong class="user">php at ktools.eu</strong>
+   <a href="#94119" class="date">16-Oct-2009 11:29</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+-better to use the php methode 'getenv()' to access the enviroment vars<br />
+-the original 'sys_get_temp_dir()' don't use realpath, than it's better to make 'realpath(sys_get_temp_dir())'<br />
+<br />
+<span class="default">&lt;?php<br />
+&nbsp;</span><span class="keyword">if ( !</span><span class="default">function_exists</span><span class="keyword">(</span><span class="string">'sys_get_temp_dir'</span><span class="keyword">)) {<br />
+&nbsp; function </span><span class="default">sys_get_temp_dir</span><span class="keyword">() {<br />
+&nbsp;&nbsp; &nbsp;&nbsp; if( </span><span class="default">$temp</span><span class="keyword">=</span><span class="default">getenv</span><span class="keyword">(</span><span class="string">'TMP'</span><span class="keyword">) )&nbsp; &nbsp; &nbsp; &nbsp; return </span><span class="default">$temp</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp;&nbsp; if( </span><span class="default">$temp</span><span class="keyword">=</span><span class="default">getenv</span><span class="keyword">(</span><span class="string">'TEMP'</span><span class="keyword">) )&nbsp; &nbsp; &nbsp; &nbsp; return </span><span class="default">$temp</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp;&nbsp; if( </span><span class="default">$temp</span><span class="keyword">=</span><span class="default">getenv</span><span class="keyword">(</span><span class="string">'TMPDIR'</span><span class="keyword">) )&nbsp; &nbsp; return </span><span class="default">$temp</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">$temp</span><span class="keyword">=</span><span class="default">tempnam</span><span class="keyword">(</span><span class="default">__FILE__</span><span class="keyword">,</span><span class="string">''</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp;&nbsp; if (</span><span class="default">file_exists</span><span class="keyword">(</span><span class="default">$temp</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">unlink</span><span class="keyword">(</span><span class="default">$temp</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">dirname</span><span class="keyword">(</span><span class="default">$temp</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp;&nbsp; return </span><span class="default">null</span><span class="keyword">;<br />
+&nbsp; }<br />
+&nbsp;}<br />
+<br />
+&nbsp;echo </span><span class="default">realpath</span><span class="keyword">(</span><span class="default">sys_get_temp_dir</span><span class="keyword">());<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="93390""></a>
+  <div class="note">
+   <strong class="user">dannel at aaronexodus dot com</strong>
+   <a href="#93390" class="date">07-Sep-2009 01:11</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+There's no need to use a random name for the directory for tempnam.<br />
+<br />
+Since a file and a directory can't share the same name on the filesystem, we can exploit this and simply use the name of the current file. It is guaranteed that the directory won't exist (because it's a file, of course).<br />
+<br />
+Improving on the last post...<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">if ( !</span><span class="default">function_exists</span><span class="keyword">(</span><span class="string">'sys_get_temp_dir'</span><span class="keyword">)) {<br />
+&nbsp; function </span><span class="default">sys_get_temp_dir</span><span class="keyword">() {<br />
+&nbsp;&nbsp;&nbsp; if (!empty(</span><span class="default">$_ENV</span><span class="keyword">[</span><span class="string">'TMP'</span><span class="keyword">])) { return </span><span class="default">realpath</span><span class="keyword">(</span><span class="default">$_ENV</span><span class="keyword">[</span><span class="string">'TMP'</span><span class="keyword">]); }<br />
+&nbsp;&nbsp;&nbsp; if (!empty(</span><span class="default">$_ENV</span><span class="keyword">[</span><span class="string">'TMPDIR'</span><span class="keyword">])) { return </span><span class="default">realpath</span><span class="keyword">( </span><span class="default">$_ENV</span><span class="keyword">[</span><span class="string">'TMPDIR'</span><span class="keyword">]); }<br />
+&nbsp;&nbsp;&nbsp; if (!empty(</span><span class="default">$_ENV</span><span class="keyword">[</span><span class="string">'TEMP'</span><span class="keyword">])) { return </span><span class="default">realpath</span><span class="keyword">( </span><span class="default">$_ENV</span><span class="keyword">[</span><span class="string">'TEMP'</span><span class="keyword">]); }<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$tempfile</span><span class="keyword">=</span><span class="default">tempnam</span><span class="keyword">(</span><span class="default">__FILE__</span><span class="keyword">,</span><span class="string">''</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; if (</span><span class="default">file_exists</span><span class="keyword">(</span><span class="default">$tempfile</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp;&nbsp; </span><span class="default">unlink</span><span class="keyword">(</span><span class="default">$tempfile</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp;&nbsp; return </span><span class="default">realpath</span><span class="keyword">(</span><span class="default">dirname</span><span class="keyword">(</span><span class="default">$tempfile</span><span class="keyword">));<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">null</span><span class="keyword">;<br />
+&nbsp; }<br />
+}<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="85261""></a>
+  <div class="note">
+   <strong class="user">php [spat] hm2k.org</strong>
+   <a href="#85261" class="date">22-Aug-2008 04:20</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I went ahead and slightly improved the function provided.<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">if ( !</span><span class="default">function_exists</span><span class="keyword">(</span><span class="string">'sys_get_temp_dir'</span><span class="keyword">)) {<br />
+&nbsp; function </span><span class="default">sys_get_temp_dir</span><span class="keyword">() {<br />
+&nbsp;&nbsp;&nbsp; if (!empty(</span><span class="default">$_ENV</span><span class="keyword">[</span><span class="string">'TMP'</span><span class="keyword">])) { return </span><span class="default">realpath</span><span class="keyword">(</span><span class="default">$_ENV</span><span class="keyword">[</span><span class="string">'TMP'</span><span class="keyword">]); }<br />
+&nbsp;&nbsp;&nbsp; if (!empty(</span><span class="default">$_ENV</span><span class="keyword">[</span><span class="string">'TMPDIR'</span><span class="keyword">])) { return </span><span class="default">realpath</span><span class="keyword">( </span><span class="default">$_ENV</span><span class="keyword">[</span><span class="string">'TMPDIR'</span><span class="keyword">]); }<br />
+&nbsp;&nbsp;&nbsp; if (!empty(</span><span class="default">$_ENV</span><span class="keyword">[</span><span class="string">'TEMP'</span><span class="keyword">])) { return </span><span class="default">realpath</span><span class="keyword">( </span><span class="default">$_ENV</span><span class="keyword">[</span><span class="string">'TEMP'</span><span class="keyword">]); }<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$tempfile</span><span class="keyword">=</span><span class="default">tempnam</span><span class="keyword">(</span><span class="default">uniqid</span><span class="keyword">(</span><span class="default">rand</span><span class="keyword">(),</span><span class="default">TRUE</span><span class="keyword">),</span><span class="string">''</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; if (</span><span class="default">file_exists</span><span class="keyword">(</span><span class="default">$tempfile</span><span class="keyword">)) {<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">unlink</span><span class="keyword">(</span><span class="default">$tempfile</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">realpath</span><span class="keyword">(</span><span class="default">dirname</span><span class="keyword">(</span><span class="default">$tempfile</span><span class="keyword">));<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp; }<br />
+}<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="84849""></a>
+  <div class="note">
+   <strong class="user">radon8472 at hotmail dot com</strong>
+   <a href="#84849" class="date">01-Aug-2008 01:31</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+better use<br />
+tempnam(":\n\\/?&gt;&lt;","");<br />
+<br />
+To detect path by creating a temporary file. <br />
+A random directoryname can exist&nbsp; (the chance is low, but it can be).<br />
+Better is to use signs, like :\n\\/?&gt;&lt; which are not valid, so realy NEVER a directory with this name can exist.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="80690""></a>
+  <div class="note">
+   <strong class="user">Anonymous</strong>
+   <a href="#80690" class="date">29-Jan-2008 04:08</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+This function does not always add trailing slash. This behaviour is inconsistent across systems, so you have keep an eye on it.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="71332""></a>
+  <div class="note">
+   <strong class="user">minghong at gmail dot com</strong>
+   <a href="#71332" class="date">22-Nov-2006 06:04</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+To add support of sys_get_temp_dir for PHP4/5, use the following code:<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">if ( !</span><span class="default">function_exists</span><span class="keyword">(</span><span class="string">'sys_get_temp_dir'</span><span class="keyword">) )<br />
+{<br />
+&nbsp;&nbsp;&nbsp; </span><span class="comment">// Based on <a href="http://www.phpit.net/" rel="nofollow" target="_blank">http://www.phpit.net/</a><br />
+&nbsp;&nbsp;&nbsp; // article/creating-zip-tar-archives-dynamically-php/2/<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">function </span><span class="default">sys_get_temp_dir</span><span class="keyword">()<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// Try to get from environment variable<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">if ( !empty(</span><span class="default">$_ENV</span><span class="keyword">[</span><span class="string">'TMP'</span><span class="keyword">]) )<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">realpath</span><span class="keyword">( </span><span class="default">$_ENV</span><span class="keyword">[</span><span class="string">'TMP'</span><span class="keyword">] );<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; else if ( !empty(</span><span class="default">$_ENV</span><span class="keyword">[</span><span class="string">'TMPDIR'</span><span class="keyword">]) )<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">realpath</span><span class="keyword">( </span><span class="default">$_ENV</span><span class="keyword">[</span><span class="string">'TMPDIR'</span><span class="keyword">] );<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; else if ( !empty(</span><span class="default">$_ENV</span><span class="keyword">[</span><span class="string">'TEMP'</span><span class="keyword">]) )<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">realpath</span><span class="keyword">( </span><span class="default">$_ENV</span><span class="keyword">[</span><span class="string">'TEMP'</span><span class="keyword">] );<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// Detect by creating a temporary file<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">else<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// Try to use system's temporary directory<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; // as random name shouldn't exist<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$temp_file </span><span class="keyword">= </span><span class="default">tempnam</span><span class="keyword">( </span><span class="default">md5</span><span class="keyword">(</span><span class="default">uniqid</span><span class="keyword">(</span><span class="default">rand</span><span class="keyword">(), </span><span class="default">TRUE</span><span class="keyword">)), </span><span class="string">'' </span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if ( </span><span class="default">$temp_file </span><span class="keyword">)<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$temp_dir </span><span class="keyword">= </span><span class="default">realpath</span><span class="keyword">( </span><span class="default">dirname</span><span class="keyword">(</span><span class="default">$temp_file</span><span class="keyword">) );<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">unlink</span><span class="keyword">( </span><span class="default">$temp_file </span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">$temp_dir</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; else<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">FALSE</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; }<br />
+}<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="function.set-time-limit.html">set_time_limit</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.version-compare.html">version_compare</a></div>
  <div class="up"><a href="ref.info.html">PHP Options/Info Functions</a></div>

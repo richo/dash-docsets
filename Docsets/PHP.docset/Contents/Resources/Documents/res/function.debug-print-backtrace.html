@@ -175,7 +175,369 @@ something similar to:</p></div>
    </p>
   </div>
 
- </div><hr /><div class="manualnavbar" style="text-align: center;">
+ </div><div id="usernotes">
+ <div class="head">
+  <h3 class="title">User Contributed Notes</h3>
+ </div>
+<div id="allnotes">  <a name="102609""></a>
+  <div class="note">
+   <strong class="user">Sammaye</strong>
+   <a href="#102609" class="date">24-Feb-2011 04:26</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Most methods of getting the backtrace and printing are susceptible to a certain runtime flaw.<br />
+<br />
+If the user is able to produce 100+ errors this will throw an error which in turn will throw 100+ errors on each nest of get_args() creating an infinite loop and eventually downing your server.<br />
+<br />
+If you are looking for a simple backtrace that (so far) will not fall to this error then use this:<br />
+<br />
+<span class="default">&lt;?php<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">foreach(</span><span class="default">debug_backtrace</span><span class="keyword">() as </span><span class="default">$k</span><span class="keyword">=&gt;</span><span class="default">$v</span><span class="keyword">){<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if(</span><span class="default">$v</span><span class="keyword">[</span><span class="string">'function'</span><span class="keyword">] == </span><span class="string">"include" </span><span class="keyword">|| </span><span class="default">$v</span><span class="keyword">[</span><span class="string">'function'</span><span class="keyword">] == </span><span class="string">"include_once" </span><span class="keyword">|| </span><span class="default">$v</span><span class="keyword">[</span><span class="string">'function'</span><span class="keyword">] == </span><span class="string">"require_once" </span><span class="keyword">|| </span><span class="default">$v</span><span class="keyword">[</span><span class="string">'function'</span><span class="keyword">] == </span><span class="string">"require"</span><span class="keyword">){<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$backtracel </span><span class="keyword">.= </span><span class="string">"#"</span><span class="keyword">.</span><span class="default">$k</span><span class="keyword">.</span><span class="string">" "</span><span class="keyword">.</span><span class="default">$v</span><span class="keyword">[</span><span class="string">'function'</span><span class="keyword">].</span><span class="string">"("</span><span class="keyword">.</span><span class="default">$v</span><span class="keyword">[</span><span class="string">'args'</span><span class="keyword">][</span><span class="default">0</span><span class="keyword">].</span><span class="string">") called at ["</span><span class="keyword">.</span><span class="default">$v</span><span class="keyword">[</span><span class="string">'file'</span><span class="keyword">].</span><span class="string">":"</span><span class="keyword">.</span><span class="default">$v</span><span class="keyword">[</span><span class="string">'line'</span><span class="keyword">].</span><span class="string">"]&lt;br /&gt;"</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }else{<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$backtracel </span><span class="keyword">.= </span><span class="string">"#"</span><span class="keyword">.</span><span class="default">$k</span><span class="keyword">.</span><span class="string">" "</span><span class="keyword">.</span><span class="default">$v</span><span class="keyword">[</span><span class="string">'function'</span><span class="keyword">].</span><span class="string">"() called at ["</span><span class="keyword">.</span><span class="default">$v</span><span class="keyword">[</span><span class="string">'file'</span><span class="keyword">].</span><span class="string">":"</span><span class="keyword">.</span><span class="default">$v</span><span class="keyword">[</span><span class="string">'line'</span><span class="keyword">].</span><span class="string">"]&lt;br /&gt;"</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; }<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="97101""></a>
+  <div class="note">
+   <strong class="user">chris dot kistner at gmail dot com</strong>
+   <a href="#97101" class="date">01-Apr-2010 04:31</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Here's a function that returns a string with the same information shown in debug_print_backtrace(), with the option to exclude a certain amount of traces (by altering the $traces_to_ignore argument).<br />
+<br />
+I've done a couple of tests to ensure that it prints exactly the same information, but I might have missed something.<br />
+<br />
+This solution is a nice workaround to get the debug_print_backtrace() information if you're already using ob_start() in your PHP code.<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">function </span><span class="default">get_debug_print_backtrace</span><span class="keyword">(</span><span class="default">$traces_to_ignore </span><span class="keyword">= </span><span class="default">1</span><span class="keyword">){<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$traces </span><span class="keyword">= </span><span class="default">debug_backtrace</span><span class="keyword">();<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$ret </span><span class="keyword">= array();<br />
+&nbsp;&nbsp;&nbsp; foreach(</span><span class="default">$traces </span><span class="keyword">as </span><span class="default">$i </span><span class="keyword">=&gt; </span><span class="default">$call</span><span class="keyword">){<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if (</span><span class="default">$i </span><span class="keyword">&lt; </span><span class="default">$traces_to_ignore </span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; continue;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$object </span><span class="keyword">= </span><span class="string">''</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if (isset(</span><span class="default">$call</span><span class="keyword">[</span><span class="string">'class'</span><span class="keyword">])) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$object </span><span class="keyword">= </span><span class="default">$call</span><span class="keyword">[</span><span class="string">'class'</span><span class="keyword">].</span><span class="default">$call</span><span class="keyword">[</span><span class="string">'type'</span><span class="keyword">];<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if (</span><span class="default">is_array</span><span class="keyword">(</span><span class="default">$call</span><span class="keyword">[</span><span class="string">'args'</span><span class="keyword">])) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; foreach (</span><span class="default">$call</span><span class="keyword">[</span><span class="string">'args'</span><span class="keyword">] as &amp;</span><span class="default">$arg</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">get_arg</span><span class="keyword">(</span><span class="default">$arg</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; }<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }&nbsp; &nbsp; &nbsp; &nbsp; <br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$ret</span><span class="keyword">[] = </span><span class="string">'#'</span><span class="keyword">.</span><span class="default">str_pad</span><span class="keyword">(</span><span class="default">$i </span><span class="keyword">- </span><span class="default">$traces_to_ignore</span><span class="keyword">, </span><span class="default">3</span><span class="keyword">, </span><span class="string">' '</span><span class="keyword">)<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; .</span><span class="default">$object</span><span class="keyword">.</span><span class="default">$call</span><span class="keyword">[</span><span class="string">'function'</span><span class="keyword">].</span><span class="string">'('</span><span class="keyword">.</span><span class="default">implode</span><span class="keyword">(</span><span class="string">', '</span><span class="keyword">, </span><span class="default">$call</span><span class="keyword">[</span><span class="string">'args'</span><span class="keyword">])<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; .</span><span class="string">') called at ['</span><span class="keyword">.</span><span class="default">$call</span><span class="keyword">[</span><span class="string">'file'</span><span class="keyword">].</span><span class="string">':'</span><span class="keyword">.</span><span class="default">$call</span><span class="keyword">[</span><span class="string">'line'</span><span class="keyword">].</span><span class="string">']'</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp;&nbsp; return </span><span class="default">implode</span><span class="keyword">(</span><span class="string">"\n"</span><span class="keyword">,</span><span class="default">$ret</span><span class="keyword">);<br />
+}<br />
+<br />
+function </span><span class="default">get_arg</span><span class="keyword">(&amp;</span><span class="default">$arg</span><span class="keyword">) {<br />
+&nbsp;&nbsp;&nbsp; if (</span><span class="default">is_object</span><span class="keyword">(</span><span class="default">$arg</span><span class="keyword">)) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$arr </span><span class="keyword">= (array)</span><span class="default">$arg</span><span class="keyword">;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$args </span><span class="keyword">= array();<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; foreach(</span><span class="default">$arr </span><span class="keyword">as </span><span class="default">$key </span><span class="keyword">=&gt; </span><span class="default">$value</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if (</span><span class="default">strpos</span><span class="keyword">(</span><span class="default">$key</span><span class="keyword">, </span><span class="default">chr</span><span class="keyword">(</span><span class="default">0</span><span class="keyword">)) !== </span><span class="default">false</span><span class="keyword">) {<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$key </span><span class="keyword">= </span><span class="string">''</span><span class="keyword">;&nbsp; &nbsp; </span><span class="comment">// Private variable found<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="keyword">}<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$args</span><span class="keyword">[] =&nbsp; </span><span class="string">'['</span><span class="keyword">.</span><span class="default">$key</span><span class="keyword">.</span><span class="string">'] =&gt; '</span><span class="keyword">.</span><span class="default">get_arg</span><span class="keyword">(</span><span class="default">$value</span><span class="keyword">);<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; }<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$arg </span><span class="keyword">= </span><span class="default">get_class</span><span class="keyword">(</span><span class="default">$arg</span><span class="keyword">) . </span><span class="string">' Object ('</span><span class="keyword">.</span><span class="default">implode</span><span class="keyword">(</span><span class="string">','</span><span class="keyword">, </span><span class="default">$args</span><span class="keyword">).</span><span class="string">')'</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+}<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="92542""></a>
+  <div class="note">
+   <strong class="user">bishop</strong>
+   <a href="#92542" class="date">28-Jul-2009 01:20</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Another way to manipulate and print a backtrace, without using output buffering:<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="comment">// print backtrace, getting rid of repeated absolute path on each file<br />
+</span><span class="default">$e </span><span class="keyword">= new </span><span class="default">Exception</span><span class="keyword">();<br />
+</span><span class="default">print_r</span><span class="keyword">(</span><span class="default">str_replace</span><span class="keyword">(</span><span class="string">'/path/to/code/'</span><span class="keyword">, </span><span class="string">''</span><span class="keyword">, </span><span class="default">$e</span><span class="keyword">-&gt;</span><span class="default">getTraceAsString</span><span class="keyword">()));<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="88176""></a>
+  <div class="note">
+   <strong class="user">bradley dot giesbrecht at gmail dot com</strong>
+   <a href="#88176" class="date">13-Jan-2009 04:51</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I was using the function by dany dot dylan at gmail dot com and found that preg_replace had string length limits. So here is yet another output format function.<br />
+<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">if ( !</span><span class="default">function_exists </span><span class="keyword">( </span><span class="string">"mydie" </span><span class="keyword">) ) { <br />
+&nbsp;&nbsp;&nbsp; function </span><span class="default">mydie </span><span class="keyword">(&nbsp; ) { </span><span class="default">$this_file </span><span class="keyword">= </span><span class="default">__FILE__ </span><span class="keyword">; </span><span class="default">$this_line </span><span class="keyword">= </span><span class="default">__LINE__ </span><span class="keyword">; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$buffer </span><span class="keyword">= array (&nbsp; ) ; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$trace_calls </span><span class="keyword">= </span><span class="string">"" </span><span class="keyword">; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">ob_start </span><span class="keyword">(&nbsp; ) ; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">debug_print_backtrace </span><span class="keyword">(&nbsp; ) ; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$buffer</span><span class="keyword">[ </span><span class="string">"0" </span><span class="keyword">] = </span><span class="default">ob_get_contents </span><span class="keyword">(&nbsp; ) ; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">ob_end_clean </span><span class="keyword">(&nbsp; ) ; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$buffer</span><span class="keyword">[ </span><span class="string">"0" </span><span class="keyword">] = </span><span class="default">array_slice </span><span class="keyword">( </span><span class="default">explode </span><span class="keyword">( </span><span class="string">"#" </span><span class="keyword">, </span><span class="default">$buffer</span><span class="keyword">[ </span><span class="string">"0" </span><span class="keyword">] ) , </span><span class="default">1 </span><span class="keyword">, -</span><span class="default">1 </span><span class="keyword">, </span><span class="default">false </span><span class="keyword">) ; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; foreach ( </span><span class="default">$buffer</span><span class="keyword">[ </span><span class="string">"0" </span><span class="keyword">] as </span><span class="default">$key </span><span class="keyword">=&gt; </span><span class="default">$value </span><span class="keyword">) { <br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$value </span><span class="keyword">= </span><span class="default">explode </span><span class="keyword">( </span><span class="string">") called at [" </span><span class="keyword">, </span><span class="default">$value </span><span class="keyword">) ; <br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; if ( </span><span class="default">$key </span><span class="keyword">== </span><span class="default">0 </span><span class="keyword">) { <br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$value</span><span class="keyword">[ </span><span class="string">"0" </span><span class="keyword">] = </span><span class="string">"0&nbsp; " </span><span class="keyword">. </span><span class="default">__FUNCTION__ </span><span class="keyword">. </span><span class="string">"(see above vars)" </span><span class="keyword">; <br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; } <br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$trace_calls </span><span class="keyword">.= </span><span class="string">"#" </span><span class="keyword">. </span><span class="default">implode </span><span class="keyword">( </span><span class="string">")\n\tcalled at [" </span><span class="keyword">, </span><span class="default">$value </span><span class="keyword">) ;<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; } <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; unset ( </span><span class="default">$buffer </span><span class="keyword">, </span><span class="default">$key </span><span class="keyword">, </span><span class="default">$value </span><span class="keyword">) ; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; echo </span><span class="string">"&lt;pre&gt;function " </span><span class="keyword">. </span><span class="default">__FUNCTION__ </span><span class="keyword">. </span><span class="string">" lives here:</span><span class="keyword">{</span><span class="default">$this_file</span><span class="keyword">}</span><span class="string">:</span><span class="keyword">{</span><span class="default">$this_line</span><span class="keyword">}</span><span class="string">&lt;/pre&gt;" </span><span class="keyword">; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; echo ( </span><span class="string">"&lt;pre&gt;" </span><span class="keyword">. </span><span class="default">print_r</span><span class="keyword">( </span><span class="default">func_get_args </span><span class="keyword">(&nbsp; ) , </span><span class="default">true </span><span class="keyword">) . </span><span class="string">"&lt;/pre&gt;" </span><span class="keyword">) ;&nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; if ( </span><span class="default">$trace_calls </span><span class="keyword">== </span><span class="string">"" </span><span class="keyword">) </span><span class="default">$trace_calls </span><span class="keyword">= </span><span class="string">"No functions were called." </span><span class="keyword">; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; echo ( </span><span class="string">"&lt;pre&gt;" </span><span class="keyword">. </span><span class="default">$trace_calls </span><span class="keyword">. </span><span class="string">"&lt;/pre&gt;" </span><span class="keyword">) ;&nbsp; &nbsp;&nbsp; <br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; die ; <br />
+&nbsp;&nbsp;&nbsp; } <br />
+}<br />
+function </span><span class="default">a </span><span class="keyword">(&nbsp; ) { <br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">b </span><span class="keyword">( </span><span class="default">func_get_args </span><span class="keyword">(&nbsp; ) , </span><span class="default">2 </span><span class="keyword">) ; <br />
+}<br />
+function </span><span class="default">b </span><span class="keyword">(&nbsp; ) { <br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">c </span><span class="keyword">( </span><span class="default">func_get_args </span><span class="keyword">(&nbsp; ) , </span><span class="default">3 </span><span class="keyword">) ; <br />
+}<br />
+function </span><span class="default">c </span><span class="keyword">(&nbsp; ) { <br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">mydie </span><span class="keyword">( </span><span class="default">func_get_args </span><span class="keyword">(&nbsp; ) , </span><span class="default">4 </span><span class="keyword">) ; <br />
+}<br />
+</span><span class="default">a </span><span class="keyword">( </span><span class="default">1 </span><span class="keyword">) ; <br />
+</span><span class="default">?&gt;<br />
+</span><br />
+## outputs <br />
+function mydie lives here:/path/file.php:4<br />
+Array<br />
+(<br />
+&nbsp;&nbsp;&nbsp; [0] =&gt; Array<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; (<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [0] =&gt; Array<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; (<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [0] =&gt; Array<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; (<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [0] =&gt; 1<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; )<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [1] =&gt; 2<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; )<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; [1] =&gt; 3<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; )<br />
+<br />
+&nbsp;&nbsp;&nbsp; [1] =&gt; 4<br />
+)<br />
+#0&nbsp; mydie(see above vars))<br />
+&nbsp;&nbsp;&nbsp; called at [/path/file.php:54]<br />
+#1&nbsp; c(Array ([0] =&gt; Array ([0] =&gt; 1),[1] =&gt; 2), 3)<br />
+&nbsp;&nbsp;&nbsp; called at [/path/file.php:49]<br />
+#2&nbsp; b(Array ([0] =&gt; 1), 2)<br />
+&nbsp;&nbsp;&nbsp; called at [/path/file.php:43]</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="86932""></a>
+  <div class="note">
+   <strong class="user">dany dot dylan at gmail dot com</strong>
+   <a href="#86932" class="date">10-Nov-2008 09:51</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+I like the output of debug_print_backtrace() but I sometimes want it as a string.<br />
+<br />
+bortuzar's solution to use output buffering is great, but I'd like to factorize that into a function.&nbsp; Doing that however always results in whatever function name I use appearing at the top of the stack which is redundant.<br />
+<br />
+Below is my noddy (simple) solution.&nbsp; If you don't care for renumbering the call stack, omit the second preg_replace().<br />
+<br />
+<span class="default">&lt;?php<br />
+&nbsp;&nbsp;&nbsp; </span><span class="keyword">function </span><span class="default">debug_string_backtrace</span><span class="keyword">() {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">ob_start</span><span class="keyword">();<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">debug_print_backtrace</span><span class="keyword">();<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$trace </span><span class="keyword">= </span><span class="default">ob_get_contents</span><span class="keyword">();<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">ob_end_clean</span><span class="keyword">();<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// Remove first item from backtrace as it's this function which<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; // is redundant.<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$trace </span><span class="keyword">= </span><span class="default">preg_replace </span><span class="keyword">(</span><span class="string">'/^#0\s+' </span><span class="keyword">. </span><span class="default">__FUNCTION__ </span><span class="keyword">. </span><span class="string">"[^\n]*\n/"</span><span class="keyword">, </span><span class="string">''</span><span class="keyword">, </span><span class="default">$trace</span><span class="keyword">, </span><span class="default">1</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="comment">// Renumber backtrace items.<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">$trace </span><span class="keyword">= </span><span class="default">preg_replace </span><span class="keyword">(</span><span class="string">'/^#(\d+)/me'</span><span class="keyword">, </span><span class="string">'\'#\' . ($1 - 1)'</span><span class="keyword">, </span><span class="default">$trace</span><span class="keyword">);<br />
+<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; return </span><span class="default">$trace</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="81242""></a>
+  <div class="note">
+   <strong class="user">harmor</strong>
+   <a href="#81242" class="date">19-Feb-2008 01:54</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+Input (Using: PHP Version 5.2.5-pl1-gentoo):<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">class </span><span class="default">CTest<br />
+</span><span class="keyword">{<br />
+&nbsp;&nbsp;&nbsp; public static function </span><span class="default">say</span><span class="keyword">(</span><span class="default">$a_szVar</span><span class="keyword">)<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">debug_print_backtrace</span><span class="keyword">();<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; echo </span><span class="string">'&lt;br /&gt;'</span><span class="keyword">;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+}<br />
+<br />
+</span><span class="default">CTest</span><span class="keyword">::</span><span class="default">say</span><span class="keyword">(</span><span class="string">'static call'</span><span class="keyword">);<br />
+<br />
+</span><span class="default">$obj </span><span class="keyword">= new </span><span class="default">CTest</span><span class="keyword">;<br />
+</span><span class="default">$obj</span><span class="keyword">-&gt;</span><span class="default">say</span><span class="keyword">(</span><span class="string">'object call'</span><span class="keyword">);<br />
+&nbsp;&nbsp;&nbsp; <br />
+</span><span class="default">?&gt;<br />
+</span><br />
+Output:<br />
+#0 CTest::say(static call) called at [C:\PHPDocument4.php:11]<br />
+#0 CTest::say(object call) called at [C:\PHPDocument4.php:15]<br />
+<br />
+Notice that the second line of the output outputs "::" instead of "-&gt;" when calling the function using an object.</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="77242""></a>
+  <div class="note">
+   <strong class="user">taner</strong>
+   <a href="#77242" class="date">21-Aug-2007 04:52</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+bortuzar: a simpler version, w/o output buffering:<br />
+<br />
+<span class="default">&lt;?php<br />
+<br />
+$query </span><span class="keyword">= </span><span class="default">sprintf</span><span class="keyword">(</span><span class="string">"INSERT INTO EventLog (Trace) VALUES ('%s')"</span><span class="keyword">,<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">mysql_real_escape_string</span><span class="keyword">(</span><span class="default">join</span><span class="keyword">(</span><span class="string">"\n"</span><span class="keyword">, </span><span class="default">debug_backtrace</span><span class="keyword">())) );<br />
+</span><span class="default">mysql_query</span><span class="keyword">(</span><span class="default">$query</span><span class="keyword">);<br />
+<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="75565""></a>
+  <div class="note">
+   <strong class="user">bortuzar at gmail dot com</strong>
+   <a href="#75565" class="date">05-Jun-2007 11:23</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+If you want to get the trace into a variable or DB, I suggest to do the following:<br />
+<br />
+<span class="default">&lt;?php<br />
+&nbsp;&nbsp;&nbsp; ob_start</span><span class="keyword">();<br />
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">debug_print_backtrace</span><span class="keyword">();<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">$trace </span><span class="keyword">= </span><span class="default">ob_get_contents</span><span class="keyword">();<br />
+&nbsp;&nbsp;&nbsp; </span><span class="default">ob_end_clean</span><span class="keyword">();<br />
+<br />
+</span><span class="default">$query </span><span class="keyword">= </span><span class="default">sprintf</span><span class="keyword">(</span><span class="string">"INSERT INTO EventLog (Trace) VALUES ('%s')"</span><span class="keyword">,<br />
+&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; </span><span class="default">mysql_real_escape_string</span><span class="keyword">(</span><span class="default">$trace</span><span class="keyword">));<br />
+</span><span class="default">mysql_query</span><span class="keyword">(</span><span class="default">$query</span><span class="keyword">);<br />
+</span><span class="default">?&gt;</span>
+</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="74167""></a>
+  <div class="note">
+   <strong class="user">petermarkellis at googlemail dot com</strong>
+   <a href="#74167" class="date">28-Mar-2007 02:10</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+A cleaner example:<br />
+<span class="default">&lt;?php<br />
+</span><span class="keyword">function </span><span class="default">a</span><span class="keyword">() {<br />
+&nbsp;&nbsp; </span><span class="default">b</span><span class="keyword">();<br />
+}<br />
+<br />
+function </span><span class="default">b</span><span class="keyword">() {<br />
+&nbsp;&nbsp; </span><span class="default">c</span><span class="keyword">();<br />
+}<br />
+<br />
+function </span><span class="default">c</span><span class="keyword">(){<br />
+&nbsp;&nbsp; </span><span class="default">debug_print_backtrace</span><span class="keyword">();<br />
+}<br />
+<br />
+</span><span class="default">a</span><span class="keyword">();<br />
+<br />
+</span><span class="default">?&gt;<br />
+</span><br />
+outputs:<br />
+#0&nbsp; c() called at [C:\debugbacktracetest.php:7]<br />
+#1&nbsp; b() called at [C:\debugbacktracetest.php:3]<br />
+#2&nbsp; a() called at [C:\debugbacktracetest.php:14]</span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+  <a name="50968""></a>
+  <div class="note">
+   <strong class="user">aidan at php dot net</strong>
+   <a href="#50968" class="date">15-Mar-2005 01:47</a>
+   <div class="text">
+    <div class="phpcode">
+<code><span class="html">
+This functionality is now implemented in the PEAR package PHP_Compat.<br />
+<br />
+More information about using this function without upgrading your version of PHP can be found on the below link:<br />
+<br />
+<a href="http://pear.php.net/package/PHP_Compat" rel="nofollow" target="_blank">http://pear.php.net/package/PHP_Compat</a></span>
+</code>
+    </div>
+   </div>
+  </div>
+ <div class="foot"></div>
+</div>
+</div>
+<hr /><div class="manualnavbar" style="text-align: center;">
  <div class="prev" style="text-align: left; float: left;"><a href="function.debug-backtrace.html">debug_backtrace</a></div>
  <div class="next" style="text-align: right; float: right;"><a href="function.error-get-last.html">error_get_last</a></div>
  <div class="up"><a href="ref.errorfunc.html">Error Handling Functions</a></div>
