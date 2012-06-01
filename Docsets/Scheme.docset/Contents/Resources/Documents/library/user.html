@@ -1,0 +1,143 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" SYSTEM "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta content="text/html; charset=utf-8" http-equiv="Content-Type"/><title>27.15. user — User-specific configuration hook — Python v2.7.2 documentation</title><link href="../_static/default.css" rel="stylesheet" type="text/css"/><link href="../_static/pygments.css" rel="stylesheet" type="text/css"/><script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2.7.2',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script><script src="../_static/jquery.js" type="text/javascript"></script><script src="../_static/doctools.js" type="text/javascript"></script><link href="../_static/opensearch.xml" rel="search" title="Search within Python v2.7.2 documentation" type="application/opensearchdescription+xml"/><link href="../about.html" rel="author" title="About these documents"/><link href="../copyright.html" rel="copyright" title="Copyright"/><link href="../index.html" rel="top" title="Python v2.7.2 documentation"/><link href="python.html" rel="up" title="27. Python Runtime Services"/><link href="fpectl.html" rel="next" title="27.16. fpectl — Floating point exception control"/><link href="site.html" rel="prev" title="27.14. site — Site-specific configuration hook"/><link href="../_static/py.png" rel="shortcut icon" type="image/png"/><script src="../_static/copybutton.js" type="text/javascript"></script></head><body>
+<div class="related">
+<h3>Navigation</h3>
+<ul>
+<li class="right" style="margin-right: 10px">
+<a accesskey="I" href="../genindex.html" title="General Index">index</a></li>
+<li class="right">
+<a accesskey="M" href="../modindex.html" title="Global Module Index">modules</a> |</li>
+<li class="right">
+<a accesskey="N" href="fpectl.html" title="27.16. fpectl — Floating point exception control">next</a> |</li>
+<li class="right">
+<a accesskey="P" href="site.html" title="27.14. site — Site-specific configuration hook">previous</a> |</li>
+<li><img alt="" src="../_static/py.png" style="vertical-align: middle; margin-top: -1px"/></li>
+<li><a href="../index.html">Python v2.7.2 documentation</a> »</li>
+<li><a href="index.html">The Python Standard Library</a> »</li>
+<li><a accesskey="U" href="python.html">27. Python Runtime Services</a> »</li>
+</ul>
+</div>
+<div class="document">
+<div class="documentwrapper">
+<div class="bodywrapper">
+<div class="body">
+<div class="section" id="module-user">
+<h1>27.15. <tt class="xref docutils literal"><span class="pre">user</span></tt> — User-specific configuration hook<a class="headerlink" href="#module-user" title="Permalink to this headline">¶</a></h1>
+<p class="deprecated">
+<span class="versionmodified">Deprecated since version 2.6: </span>The <tt class="xref docutils literal"><span class="pre">user</span></tt> module has been removed in Python 3.0.</p>
+<p id="index-763">As a policy, Python doesn’t run user-specified code on startup of Python
+programs.  (Only interactive sessions execute the script specified in the
+<span class="target" id="index-764"></span><a class="reference external" href="../using/cmdline.html#envvar-PYTHONSTARTUP"><strong class="xref">PYTHONSTARTUP</strong></a> environment variable if it exists).</p>
+<p>However, some programs or sites may find it convenient to allow users to have a
+standard customization file, which gets run when a program requests it.  This
+module implements such a mechanism.  A program that wishes to use the mechanism
+must execute the statement</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">user</span>
+</pre></div>
+</div>
+<p id="index-765">The <tt class="xref docutils literal"><span class="pre">user</span></tt> module looks for a file <tt class="docutils literal"><span class="pre">.pythonrc.py</span></tt> in the user’s home
+directory and if it can be opened, executes it (using <a class="reference external" href="functions.html#execfile" title="execfile"><tt class="xref docutils literal"><span class="pre">execfile()</span></tt></a>) in its
+own (the module <tt class="xref docutils literal"><span class="pre">user</span></tt>‘s) global namespace.  Errors during this phase are
+not caught; that’s up to the program that imports the <tt class="xref docutils literal"><span class="pre">user</span></tt> module, if it
+wishes.  The home directory is assumed to be named by the <span class="target" id="index-766"></span><strong class="xref">HOME</strong>
+environment variable; if this is not set, the current directory is used.</p>
+<p>The user’s <tt class="docutils literal"><span class="pre">.pythonrc.py</span></tt> could conceivably test for <tt class="docutils literal"><span class="pre">sys.version</span></tt> if it
+wishes to do different things depending on the Python version.</p>
+<p>A warning to users: be very conservative in what you place in your
+<tt class="docutils literal"><span class="pre">.pythonrc.py</span></tt> file.  Since you don’t know which programs will use it,
+changing the behavior of standard modules or functions is generally not a good
+idea.</p>
+<p>A suggestion for programmers who wish to use this mechanism: a simple way to let
+users specify options for your package is to have them define variables in their
+<tt class="docutils literal"><span class="pre">.pythonrc.py</span></tt> file that you test in your module.  For example, a module
+<tt class="xref docutils literal"><span class="pre">spam</span></tt> that has a verbosity level can look for a variable
+<tt class="docutils literal"><span class="pre">user.spam_verbose</span></tt>, as follows:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">user</span>
+
+<span class="n">verbose</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="s">"spam_verbose"</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>(The three-argument form of <a class="reference external" href="functions.html#getattr" title="getattr"><tt class="xref docutils literal"><span class="pre">getattr()</span></tt></a> is used in case the user has not
+defined <tt class="docutils literal"><span class="pre">spam_verbose</span></tt> in their <tt class="docutils literal"><span class="pre">.pythonrc.py</span></tt> file.)</p>
+<p>Programs with extensive customization needs are better off reading a
+program-specific customization file.</p>
+<p>Programs with security or privacy concerns should <em>not</em> import this module; a
+user can easily break into a program by placing arbitrary code in the
+<tt class="docutils literal"><span class="pre">.pythonrc.py</span></tt> file.</p>
+<p>Modules for general use should <em>not</em> import this module; it may interfere with
+the operation of the importing program.</p>
+<div class="admonition-see-also admonition seealso">
+<p class="first admonition-title">See also</p>
+<dl class="last docutils">
+<dt>Module <a class="reference external" href="site.html#module-site" title="Module responsible for site-specific configuration."><tt class="xref docutils literal"><span class="pre">site</span></tt></a></dt>
+<dd>Site-wide customization mechanism.</dd>
+</dl>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sphinxsidebar">
+<div class="sphinxsidebarwrapper">
+<h4>Previous topic</h4>
+<p class="topless"><a href="site.html" title="previous chapter">27.14. <tt class="docutils literal docutils literal docutils literal"><span class="pre">site</span></tt> — Site-specific configuration hook</a></p>
+<h4>Next topic</h4>
+<p class="topless"><a href="fpectl.html" title="next chapter">27.16. <tt class="docutils literal docutils literal docutils literal"><span class="pre">fpectl</span></tt> — Floating point exception control</a></p>
+<h3>This Page</h3>
+<ul class="this-page-menu">
+<li><a href="../bugs.html">Report a Bug</a></li>
+<li><a href="../_sources/library/user.txt" rel="nofollow">Show Source</a></li>
+</ul>
+<div id="searchbox" style="display: none">
+<h3>Quick search</h3>
+<form action="../search.html" class="search" method="get">
+<input name="q" size="18" type="text"/>
+<input type="submit" value="Go"/>
+<input name="check_keywords" type="hidden" value="yes"/>
+<input name="area" type="hidden" value="default"/>
+</form>
+<p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+</div>
+</div>
+<div class="clearer"></div>
+</div>
+<div class="related">
+<h3>Navigation</h3>
+<ul>
+<li class="right" style="margin-right: 10px">
+<a href="../genindex.html" title="General Index">index</a></li>
+<li class="right">
+<a href="../modindex.html" title="Global Module Index">modules</a> |</li>
+<li class="right">
+<a href="fpectl.html" title="27.16. fpectl — Floating point exception control">next</a> |</li>
+<li class="right">
+<a href="site.html" title="27.14. site — Site-specific configuration hook">previous</a> |</li>
+<li><img alt="" src="../_static/py.png" style="vertical-align: middle; margin-top: -1px"/></li>
+<li><a href="../index.html">Python v2.7.2 documentation</a> »</li>
+<li><a href="index.html">The Python Standard Library</a> »</li>
+<li><a href="python.html">27. Python Runtime Services</a> »</li>
+</ul>
+</div>
+<div class="footer">
+    © <a href="../copyright.html">Copyright</a> 1990-2012, Python Software Foundation.
+    <br/>
+    The Python Software Foundation is a non-profit corporation.  
+    <a href="http://www.python.org/psf/donations/">Please donate.</a>
+<br/>
+    Last updated on Jan 13, 2012.
+    <a href="../bugs.html">Found a bug</a>?
+    <br/>
+    Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.7.
+    </div>
+</body></html>
